@@ -8,10 +8,11 @@ import time
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -118,24 +119,46 @@ async def get_current_user(
             detail=f"User account is not active (current status: {user.status}).",
         )
 
+    now = datetime.now(UTC)
+
     # Validate session status in DB
     session_stmt = select(UserSession).where(
         UserSession.id == session_id,
         UserSession.user_id == user.id,
-        UserSession.is_active == True,  # noqa: E712
     )
     user_session = (await session.execute(session_stmt)).scalar_one_or_none()
 
-    if not user_session:
-        logger.warning(f"Access token presented for revoked/expired session {session_id}")
+    if not user_session or not user_session.is_active or user_session.revoked_at is not None:
+        logger.warning(f"Access token presented for revoked/non-existent session {session_id}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session has been terminated or expired. Please sign in again.",
+            detail="Session has been terminated or revoked. Please sign in again.",
             headers={"WWW-Authenticate": "Bearer error='invalid_token'"},
         )
 
-    # Set context variable for current user
+    # Validate session expiration
+    if user_session.expires_at <= now:
+        logger.warning(
+            f"Database session {session_id} has expired (expires_at={user_session.expires_at})"
+        )
+        user_session.is_active = False
+        user_session.revoked_at = now
+        await session.commit()
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Session has expired. Please sign in again.",
+            headers={"WWW-Authenticate": "Bearer error='invalid_token'"},
+        )
+
+    # Update session activity
+    user_session.last_active_at = now
+
+    # Set context variables and database session context
     current_user_id_ctx.set(user.id)
+    await session.execute(
+        text("SELECT set_config('app.current_user_id', :uid, true)"),
+        {"uid": str(user.id)},
+    )
 
     return user, session_id
 
@@ -210,7 +233,7 @@ async def get_current_tenant_context(
     current_roles_ctx.set(roles)
 
     # 6. Apply database-level tenant isolation
-    await set_db_tenant_context(session, tenant.id)
+    await set_db_tenant_context(session, tenant.id, user_id=user.id)
 
     return TenantContext(
         user=user,
@@ -278,25 +301,40 @@ class RateLimiter:
     """Redis-backed sliding-window rate limiter dependency.
 
     Protects sensitive auth endpoints against brute force and credential stuffing.
+    Validates reverse proxy trustworthiness before evaluating forwarded headers,
+    and enforces fail-closed security for sensitive authentication boundaries.
     """
 
-    def __init__(self, max_requests: int = 5, window_seconds: int = 60, prefix: str = "auth"):
+    def __init__(
+        self,
+        max_requests: int = 5,
+        window_seconds: int = 60,
+        prefix: str = "auth",
+        fail_closed: bool = True,
+    ):
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.prefix = prefix
+        self.fail_closed = fail_closed
 
     async def __call__(self, request: Request) -> None:
-        if settings.is_testing:
+        if settings.is_testing and not getattr(
+            request.app.state, "enable_rate_limiting_tests", False
+        ):
             return
 
-        # Determine client IP address
+        # 1. Resolve peer client IP securely without trusting arbitrary client headers
+        peer_host = request.client.host if request.client else "127.0.0.1"
+
+        trusted_proxies = set(settings.TRUSTED_PROXIES)
         forwarded_for = request.headers.get("X-Forwarded-For")
-        if forwarded_for:
+
+        if peer_host in trusted_proxies and forwarded_for:
+            # Proxy is verified. Use client address preceding the trusted reverse proxy chain
             client_ip = forwarded_for.split(",")[0].strip()
-        elif request.client:
-            client_ip = request.client.host
         else:
-            client_ip = "127.0.0.1"
+            # Untrusted caller or direct connection: strictly ignore X-Forwarded-For to prevent spoofing
+            client_ip = peer_host
 
         key = f"ratelimit:{self.prefix}:{client_ip}"
         now = time.time()
@@ -325,5 +363,11 @@ class RateLimiter:
         except HTTPException:
             raise
         except Exception as exc:
-            # Resilient fail-open for rate-limiting infrastructure failures
-            logger.warning(f"Rate limiting degraded due to Redis error: {exc}")
+            if self.fail_closed:
+                logger.error(f"Rate limiting service failure in security boundary: {exc}")
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Authentication security rate limiting service is temporarily unavailable. Please retry shortly.",
+                ) from exc
+            else:
+                logger.warning(f"Rate limiting degraded due to Redis error: {exc}")

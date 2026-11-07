@@ -98,6 +98,7 @@ async def test_tenant_scoped_repository_enforces_partitioning(
     # Under Tenant A context
     token_ta = current_tenant_id_ctx.set(tenant_a.id)
     token_ua = current_user_id_ctx.set(user_a.id)
+    await set_db_tenant_context(db_session, tenant_a.id, user_a.id)
 
     records_a = await repo_a.list_all()
     assert len(records_a) >= 1
@@ -108,6 +109,7 @@ async def test_tenant_scoped_repository_enforces_partitioning(
     # Switch to Tenant B context
     current_tenant_id_ctx.set(tenant_b.id)
     current_user_id_ctx.set(user_b.id)
+    await set_db_tenant_context(db_session, tenant_b.id, user_b.id)
 
     records_b = await repo_b.list_all()
     assert len(records_b) >= 1

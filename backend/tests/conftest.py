@@ -3,11 +3,17 @@
 import os
 import uuid
 from collections.abc import AsyncGenerator
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import pool, text
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 # Ensure testing environment variables are active
 os.environ["ENVIRONMENT"] = "testing"
@@ -15,7 +21,7 @@ os.environ["DEBUG"] = "true"
 os.environ["LOG_LEVEL"] = "DEBUG"
 os.environ["POSTGRES_DB"] = "wealthos_test"
 
-from app.core.database import get_engine, get_session_factory
+from app.core.database import get_session_factory
 from app.domains.identity.models import User
 from app.domains.identity.passwords import hash_password
 from app.domains.identity.tokens import create_access_token
@@ -132,12 +138,28 @@ def app():
     return create_app()
 
 
+_test_admin_engine: AsyncEngine | None = None
+
+
+def get_test_admin_engine() -> AsyncEngine:
+    global _test_admin_engine
+    if _test_admin_engine is None:
+        from app.core.config import settings
+
+        _test_admin_engine = create_async_engine(
+            settings.get_database_admin_url(),
+            poolclass=pool.NullPool,
+        )
+    return _test_admin_engine
+
+
 @pytest.fixture(autouse=True)
 async def clean_database():
     """Clean test tables before each test execution, preserving system RBAC."""
-    engine = get_engine()
+    admin_engine = get_test_admin_engine()
     tables = [
         "security_audit_logs",
+        "system_audit_logs",
         "tenant_invitations",
         "membership_roles",
         "tenant_memberships",
@@ -151,7 +173,8 @@ async def clean_database():
         "tenants",
         "users",
     ]
-    async with engine.begin() as conn:
+    async with admin_engine.begin() as conn:
+        await conn.execute(text("SET LOCAL wealthos.allow_audit_cleanup = 'on';"))
         for tbl in tables:
             await conn.execute(text(f"DELETE FROM {tbl};"))
         await conn.execute(text("DELETE FROM roles WHERE is_system_role = false;"))
@@ -159,9 +182,26 @@ async def clean_database():
     yield
 
 
+_test_admin_session_factory: async_sessionmaker[AsyncSession] | None = None
+
+
+def get_test_admin_session_factory() -> async_sessionmaker[AsyncSession]:
+    global _test_admin_session_factory
+    if _test_admin_session_factory is None:
+        admin_eng = get_test_admin_engine()
+        _test_admin_session_factory = async_sessionmaker(
+            bind=admin_eng,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+    return _test_admin_session_factory
+
+
 @pytest.fixture
 async def db_session() -> AsyncGenerator[AsyncSession, None]:
-    """Provide an isolated database session for testing."""
+    """Provide an isolated database session for testing using the application role."""
     factory = get_session_factory()
     async with factory() as session:
         try:
@@ -226,7 +266,7 @@ async def test_user_factory(db_session: AsyncSession):
             id=session_id,
             user_id=user.id,
             is_active=True,
-            expires_at=user.created_at,
+            expires_at=datetime.now(UTC) + timedelta(days=7),
         )
         db_session.add(user_session)
         await db_session.flush()

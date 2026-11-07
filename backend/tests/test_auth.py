@@ -7,6 +7,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.tenant_context import set_db_tenant_context
 from app.domains.identity.models import (
     EmailVerificationToken,
     User,
@@ -48,6 +49,7 @@ async def test_register_user_success(client: AsyncClient, db_session: AsyncSessi
     assert cred.password_hash.startswith("$argon2id$")
 
     # Verify membership in personal workspace
+    await set_db_tenant_context(db_session, personal_tenant_id, user_id)
     mem_stmt = select(TenantMembership).where(
         TenantMembership.user_id == user_id,
         TenantMembership.tenant_id == personal_tenant_id,

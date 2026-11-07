@@ -15,31 +15,74 @@ from app.domains.audit.models import SecurityAuditLog
 logger = get_logger("wealthos.audit")
 
 # Redacted keys that must never appear in audit details
-_SENSITIVE_DETAIL_KEYS = {
+_EXACT_SENSITIVE_KEYS = {
     "password",
     "plain_password",
     "current_password",
     "new_password",
+    "confirm_password",
     "token",
     "raw_token",
+    "access_token",
+    "refresh_token",
+    "bearer_token",
+    "auth_token",
+    "id_token",
     "secret",
     "secret_key",
+    "client_secret",
+    "master_key",
+    "encryption_key",
+    "private_key",
+    "api_key",
+    "apikey",
+    "recovery_code",
     "recovery_codes",
     "code",
+    "totp_secret",
+    "mfa_secret",
+    "authorization",
+    "cookie",
+    "set-cookie",
+    "session_token",
 }
+
+_SENSITIVE_PATTERNS = (
+    "password",
+    "secret",
+    "token",
+    "api_key",
+    "apikey",
+    "private_key",
+    "recovery_code",
+)
+
+
+def _is_sensitive_key(key: str) -> bool:
+    clean_k = key.strip().lower()
+    if clean_k in _EXACT_SENSITIVE_KEYS:
+        return True
+    return any(pattern in clean_k for pattern in _SENSITIVE_PATTERNS)
+
+
+def _scrub_value(val: Any) -> Any:
+    if isinstance(val, dict):
+        return {
+            k: ("[REDACTED]" if _is_sensitive_key(k) else _scrub_value(v)) for k, v in val.items()
+        }
+    elif isinstance(val, (list, tuple)):
+        return [_scrub_value(item) for item in val]
+    elif isinstance(val, set):
+        return {_scrub_value(item) for item in val}
+    return val
 
 
 def _scrub_details(details: dict[str, Any]) -> dict[str, Any]:
-    """Ensure sensitive credentials or tokens are never persisted in audit details."""
-    cleaned: dict[str, Any] = {}
-    for k, v in details.items():
-        if k.lower() in _SENSITIVE_DETAIL_KEYS:
-            cleaned[k] = "[REDACTED]"
-        elif isinstance(v, dict):
-            cleaned[k] = _scrub_details(v)
-        else:
-            cleaned[k] = v
-    return cleaned
+    """Ensure sensitive credentials, tokens, and secrets are never persisted in audit details.
+
+    Recursively scrubs nested dictionaries, lists of dictionaries, and sensitive keys.
+    """
+    return _scrub_value(details)
 
 
 # Public alias
