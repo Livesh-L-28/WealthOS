@@ -97,8 +97,10 @@ jobs:
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           POSTGRES_DB: wealthos_test
-          POSTGRES_USER: wealthos_admin
-          POSTGRES_PASSWORD: wealthos_local_dev_password_change_in_prod
+          POSTGRES_USER: wealthos_app
+          POSTGRES_PASSWORD: wealthos_app_dev_password_change_in_prod
+          POSTGRES_ADMIN_USER: wealthos_admin
+          POSTGRES_ADMIN_PASSWORD: wealthos_local_dev_password_change_in_prod
           REDIS_HOST: localhost
           REDIS_PORT: 6379
           REDIS_PASSWORD: wealthos_local_dev_redis_change_in_prod
@@ -109,7 +111,7 @@ jobs:
       - name: Dependency Security Scanning (pip-audit)
         run: |
           cd backend
-          pip-audit --desc || true
+          pip-audit --desc
 
   frontend-quality-and-build:
     name: Frontend Quality, Lint, Typecheck, Tests & Build
