@@ -166,6 +166,9 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
             await session.rollback()
             raise
         finally:
+            from app.core.tenant_context import reset_db_session_state
+
+            await reset_db_session_state(session)
             await session.close()
 
 

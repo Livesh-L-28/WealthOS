@@ -8,12 +8,13 @@ import re
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import delete, desc, select
+from sqlalchemy import delete, desc, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 from app.core.logging import get_logger
+from app.core.tenant_context import set_db_tenant_context
 from app.domains.identity.crypto import generate_secure_token, hash_token
 from app.domains.identity.email_service import get_email_service
 from app.domains.identity.models import User
@@ -64,6 +65,9 @@ async def create_personal_tenant(session: AsyncSession, user: User) -> Tenant:
     session.add(tenant)
     await session.flush()
 
+    # Set transaction-local context for RLS enforcement
+    await set_db_tenant_context(session, tenant.id, user_id=user.id)
+
     # Retrieve 'owner' role
     owner_role = await get_system_role_by_name(session, "owner")
 
@@ -100,6 +104,9 @@ async def create_workspace(
     )
     session.add(tenant)
     await session.flush()
+
+    # Set transaction-local context for RLS enforcement
+    await set_db_tenant_context(session, tenant.id, user_id=user.id)
 
     owner_role = await get_system_role_by_name(session, "owner")
 
@@ -291,6 +298,10 @@ async def accept_invitation(
     raw_token: str,
 ) -> TenantMembership:
     """Accept pending invitation and create workspace membership."""
+    await session.execute(
+        text("SELECT set_config('app.current_user_id', :uid, true)"),
+        {"uid": str(user.id)},
+    )
     token_digest = hash_token(raw_token.strip())
 
     stmt = select(TenantInvitation).where(

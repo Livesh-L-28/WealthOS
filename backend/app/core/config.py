@@ -41,6 +41,26 @@ class Settings(BaseSettings):
         default=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:19006"],
         description="Allowed CORS origins",
     )
+    TRUSTED_PROXIES: list[str] = Field(
+        default=["127.0.0.1", "::1"],
+        description="List of trusted reverse proxy IP addresses for rate limiting",
+    )
+
+    @field_validator("TRUSTED_PROXIES", mode="before")
+    @classmethod
+    def assemble_trusted_proxies(cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            if v.startswith("[") and v.endswith("]"):
+                import json
+
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [i.strip() for i in v.split(",") if i.strip()]
+        elif isinstance(v, (list, tuple, set)):
+            return list(v)
+        return ["127.0.0.1", "::1"]
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
@@ -97,9 +117,19 @@ class Settings(BaseSettings):
     POSTGRES_HOST: str = Field(default="localhost", description="PostgreSQL host")
     POSTGRES_PORT: int = Field(default=5432, description="PostgreSQL port")
     POSTGRES_DB: str = Field(default="wealthos", description="PostgreSQL database name")
-    POSTGRES_USER: str = Field(default="wealthos_admin", description="PostgreSQL user")
+    POSTGRES_USER: str = Field(
+        default="wealthos_app", description="PostgreSQL application runtime user"
+    )
     POSTGRES_PASSWORD: str = Field(
-        default="wealthos_local_dev_password_change_in_prod", description="PostgreSQL password"
+        default="wealthos_app_dev_password_change_in_prod",
+        description="PostgreSQL application runtime password",
+    )
+    POSTGRES_ADMIN_USER: str = Field(
+        default="wealthos_admin", description="PostgreSQL admin user for migrations"
+    )
+    POSTGRES_ADMIN_PASSWORD: str = Field(
+        default="wealthos_local_dev_password_change_in_prod",
+        description="PostgreSQL admin password for migrations",
     )
 
     DATABASE_URL: str | None = Field(
@@ -261,11 +291,18 @@ class Settings(BaseSettings):
         return self
 
     def get_database_url(self) -> str:
-        """Return the async database URL, building it if not explicitly provided."""
+        """Return the async database URL for application runtime, using restricted app role."""
         if self.DATABASE_URL:
             return self.DATABASE_URL
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
+            f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        )
+
+    def get_database_admin_url(self) -> str:
+        """Return the async database URL with admin credentials for migrations."""
+        return (
+            f"postgresql+asyncpg://{self.POSTGRES_ADMIN_USER}:{self.POSTGRES_ADMIN_PASSWORD}@"
             f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 

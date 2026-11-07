@@ -51,21 +51,35 @@ def get_current_roles() -> set[str]:
     return current_roles_ctx.get()
 
 
-async def set_db_tenant_context(session: AsyncSession, tenant_id: uuid.UUID) -> None:
-    """Apply PostgreSQL session-level tenant context for RLS / auditing.
+async def set_db_tenant_context(
+    session: AsyncSession,
+    tenant_id: uuid.UUID | None,
+    user_id: uuid.UUID | None = None,
+) -> None:
+    """Apply PostgreSQL transaction-local tenant and user context for RLS enforcement.
 
-    Uses `set_config` with is_local=true so the setting automatically expires at the end of the transaction.
+    Uses `set_config` with is_local=true so settings automatically expire at the end of the transaction.
     """
+    tid_str = str(tenant_id) if tenant_id is not None else ""
+    uid_str = str(user_id) if user_id is not None else ""
     await session.execute(
-        text("SELECT set_config('app.current_tenant_id', :tid, true)"),
-        {"tid": str(tenant_id)},
+        text(
+            "SELECT set_config('app.current_tenant_id', :tid, true), "
+            "set_config('app.current_user_id', :uid, true)"
+        ),
+        {"tid": tid_str, "uid": uid_str},
     )
 
 
 async def reset_db_session_state(session: AsyncSession) -> None:
     """Sanitize database connection state before returning to pool."""
     try:
-        await session.execute(text("DISCARD TEMP;"))
+        await session.execute(
+            text(
+                "SELECT set_config('app.current_tenant_id', '', false), "
+                "set_config('app.current_user_id', '', false);"
+            )
+        )
     except Exception as exc:
         logger.debug(f"Connection pool sanitization note: {exc}")
 
