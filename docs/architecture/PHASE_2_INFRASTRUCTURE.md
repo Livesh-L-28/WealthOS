@@ -156,3 +156,4 @@ wealthos/
 | `redis` | 6379 | 6379 | TCP | Redis Cache & Message Broker |
 | `minio` | 9000 | 9000 | HTTP / S3 | MinIO S3 API Endpoint |
 | `minio` (Console) | 9001 | 9001 | HTTP | MinIO Web Management Console |
+

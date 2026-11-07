@@ -73,3 +73,4 @@ tests/test_storage.py::test_init_storage_buckets PASSED                  [100%]
 ```
 docker compose config --quiet -> Clean and valid (0 warnings, 0 errors)
 ```
+

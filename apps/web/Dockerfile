@@ -53,3 +53,4 @@ USER nextjs
 EXPOSE 3000
 
 CMD ["npx", "next", "start", "apps/web", "-p", "3000"]
+

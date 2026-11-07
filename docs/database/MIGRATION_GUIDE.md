@@ -57,3 +57,4 @@ alembic history --verbose
 - Never run migrations inside horizontally scaled API server startup hooks.
 - Execute migrations in CI/CD pipeline or via a dedicated Kubernetes migration Job / Docker Compose one-shot container before routing traffic to new application instances.
 - For zero-downtime deployments, write backward-compatible migrations (expand-and-contract pattern).
+

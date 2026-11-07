@@ -50,3 +50,4 @@ export interface MoneyAmount {
   amount: string; // Stored as Decimal string to eliminate floating-point drift
   currency: string;
 }
+

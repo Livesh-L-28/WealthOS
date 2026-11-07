@@ -68,3 +68,4 @@ def check_celery_health() -> dict:
     except Exception as exc:
         logger.warning(f"Celery health check failed: {exc}")
         return {"status": "unhealthy", "error": str(exc)}
+

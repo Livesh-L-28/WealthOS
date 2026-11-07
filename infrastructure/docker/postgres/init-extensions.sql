@@ -7,3 +7,4 @@ CREATE EXTENSION IF NOT EXISTS "btree_gist";
 
 -- Set client encoding and timezone to UTC
 ALTER SYSTEM SET timezone TO 'UTC';
+

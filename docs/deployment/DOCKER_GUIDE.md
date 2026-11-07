@@ -73,3 +73,4 @@ minio-init (done)  ──┘                            ├──> celery-worker
 - Redis: `redis-cli ping`
 - MinIO: `curl -f http://localhost:9000/minio/health/live`
 - Backend API: `curl -f http://localhost:8000/healthz`
+

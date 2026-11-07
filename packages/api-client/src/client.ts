@@ -97,3 +97,4 @@ export class WealthOSClient {
     return this.request<HealthCheckResponse>('/readyz');
   }
 }
+

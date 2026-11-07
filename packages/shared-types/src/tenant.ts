@@ -23,3 +23,4 @@ export interface TenantSummary {
   base_currency: string;
   role: WorkspaceRole;
 }
+

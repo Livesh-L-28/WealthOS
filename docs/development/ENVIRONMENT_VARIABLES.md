@@ -81,3 +81,4 @@ This document provides a comprehensive dictionary of all configuration parameter
 | :--- | :--- | :--- | :--- |
 | `NEXT_PUBLIC_API_URL` | string | `http://localhost:8000` | Public API endpoint reachable from browser |
 | `BACKEND_API_INTERNAL_URL` | string | `http://localhost:8000` | Internal server-side API proxy destination |
+
