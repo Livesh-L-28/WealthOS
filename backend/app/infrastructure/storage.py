@@ -1,14 +1,17 @@
 """WealthOS S3 / MinIO Object Storage Service.
 
 Provides secure document storage, statement ingestion, encrypted vault access,
-strict MIME signature and file size validation, bucket allowlisting,
-object key sanitization, and short-lived presigned download/upload URL generation.
+storage quarantine lifecycle, strict MIME signature and file size validation,
+bucket allowlisting, object key sanitization, and short-lived presigned download/upload URL generation.
 Zero sensitive document content is ever logged.
 """
 
+import hashlib
 import io
 import re
-from typing import BinaryIO
+import uuid
+from datetime import UTC, datetime
+from typing import Any, BinaryIO
 
 import boto3
 from botocore.client import Config
@@ -74,10 +77,16 @@ class InvalidObjectKeyError(StorageError):
     pass
 
 
-_s3_client = None
+class DocumentQuarantineError(StorageError):
+    """Raised when quarantine verification or promotion fails."""
+
+    pass
 
 
-def get_s3_client():
+_s3_client: Any = None
+
+
+def get_s3_client() -> Any:
     """Create or return existing S3/MinIO client."""
     global _s3_client
     if _s3_client is None:
@@ -96,7 +105,11 @@ def get_s3_client():
 
 def get_allowed_buckets() -> set[str]:
     """Retrieve allowlist of authorized storage buckets."""
-    return {settings.STORAGE_DOCUMENTS_BUCKET, settings.STORAGE_VAULT_BUCKET}
+    return {
+        settings.STORAGE_DOCUMENTS_BUCKET,
+        settings.STORAGE_VAULT_BUCKET,
+        settings.STORAGE_QUARANTINE_BUCKET,
+    }
 
 
 def validate_bucket(bucket: str) -> None:
@@ -132,6 +145,30 @@ def validate_object_key(object_name: str) -> None:
         raise InvalidObjectKeyError(f"Object key '{object_name}' contains illegal characters.")
 
 
+def detect_file_signature(header: bytes) -> str | None:
+    """Inspect magic bytes and return the detected MIME type, or None if unrecognized."""
+    if header.startswith(b"%PDF-"):
+        return "application/pdf"
+    if header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png"
+    if header.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg"
+    if header.startswith(b"PK\x03\x04"):
+        return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    if header.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"):
+        return "application/vnd.ms-excel"
+
+    # For text/csv: check printable ASCII/UTF-8 and lack of null bytes
+    if b"\x00" not in header[:512]:
+        try:
+            header[:512].decode("utf-8")
+            return "text/csv"
+        except UnicodeDecodeError:
+            pass
+
+    return None
+
+
 def validate_file_magic_bytes(header: bytes, content_type: str) -> None:
     """Verify file magic byte signatures to prevent MIME spoofing attacks."""
     ct = content_type.lower()
@@ -139,135 +176,102 @@ def validate_file_magic_bytes(header: bytes, content_type: str) -> None:
     if ct == "application/pdf":
         if not header.startswith(b"%PDF-"):
             raise InvalidSignatureError(
-                "File signature mismatch: claimed application/pdf but lacks %PDF- header."
+                "File signature mismatch: expected PDF magic bytes ('%PDF-')."
             )
-
     elif ct == "image/png":
         if not header.startswith(b"\x89PNG\r\n\x1a\n"):
-            raise InvalidSignatureError(
-                "File signature mismatch: claimed image/png but lacks PNG magic bytes."
-            )
-
+            raise InvalidSignatureError("File signature mismatch: expected PNG magic bytes.")
     elif ct == "image/jpeg":
         if not header.startswith(b"\xff\xd8\xff"):
-            raise InvalidSignatureError(
-                "File signature mismatch: claimed image/jpeg but lacks JPEG magic bytes."
-            )
-
+            raise InvalidSignatureError("File signature mismatch: expected JPEG magic bytes.")
     elif ct == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
         if not header.startswith(b"PK\x03\x04"):
             raise InvalidSignatureError(
-                "File signature mismatch: claimed XLSX spreadsheet but lacks ZIP container header."
+                "File signature mismatch: expected OpenXML ZIP magic bytes ('PK\\x03\\x04')."
             )
-
     elif ct == "application/vnd.ms-excel":
         if not (
             header.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1")
             or header.startswith(b"PK\x03\x04")
         ):
             raise InvalidSignatureError(
-                "File signature mismatch: claimed legacy Excel XLS format but lacks valid signature."
+                "File signature mismatch: expected MS Excel compound binary magic bytes."
             )
-
     elif ct == "text/csv":
-        if b"\x00" in header:
-            raise InvalidSignatureError(
-                "File signature mismatch: binary null bytes detected in text/csv stream."
-            )
+        if b"\x00" in header[:512]:
+            raise InvalidSignatureError("File signature mismatch: CSV file contains binary nulls.")
         try:
-            header.decode("utf-8")
-        except UnicodeDecodeError:
-            try:
-                header.decode("latin-1")
-            except Exception as exc:
-                raise InvalidSignatureError(
-                    f"File signature mismatch: text/csv is not valid text: {exc}"
-                ) from exc
-
+            header[:512].decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise InvalidSignatureError("CSV content cannot be decoded as valid text.") from exc
     elif ct == "application/octet-stream":
-        # Permitted for encrypted vault envelopes without strict magic byte requirement
-        pass
+        pass  # Encrypted blobs have arbitrary binary payload
+    else:
+        raise InvalidContentTypeError(f"Unsupported content type: '{content_type}'")
 
 
 def validate_file_metadata(content_type: str, file_size: int | None = None) -> None:
-    """Validate file content type and size limits before storage."""
-    if content_type.lower() not in ALLOWED_CONTENT_TYPES:
+    """Validate declared MIME type and size boundaries."""
+    if not content_type or content_type.lower() not in ALLOWED_CONTENT_TYPES:
         raise InvalidContentTypeError(
-            f"Content-Type '{content_type}' is not permitted. "
+            f"Content type '{content_type}' is not permitted. "
             f"Allowed types: {', '.join(sorted(ALLOWED_CONTENT_TYPES))}"
         )
-    if file_size is not None and file_size > MAX_DOCUMENT_SIZE_BYTES:
-        raise FileTooLargeError(
-            f"File size {file_size} bytes exceeds maximum allowed limit of {MAX_DOCUMENT_SIZE_BYTES} bytes (50MB)"
-        )
 
-
-def init_storage() -> None:
-    """Ensure required buckets exist upon infrastructure startup with private access."""
-    client = get_s3_client()
-    for bucket in get_allowed_buckets():
-        try:
-            client.head_bucket(Bucket=bucket)
-            logger.info(f"Storage bucket verified: {bucket}")
-        except ClientError as err:
-            error_code = err.response.get("Error", {}).get("Code")
-            if error_code in ("404", "NoSuchBucket"):
-                logger.info(f"Creating storage bucket: {bucket}")
-                try:
-                    client.create_bucket(Bucket=bucket)
-                    logger.info(f"Successfully created bucket: {bucket}")
-                except Exception as create_err:
-                    logger.warning(f"Could not create bucket '{bucket}': {create_err}")
-            else:
-                logger.warning(f"Bucket check for '{bucket}' returned: {err}")
-        except Exception as exc:
-            logger.warning(f"Storage initialization warning for '{bucket}': {exc}")
+    if file_size is not None:
+        if file_size <= 0:
+            raise StorageError("File size must be greater than zero bytes.")
+        if file_size > MAX_DOCUMENT_SIZE_BYTES:
+            raise FileTooLargeError(
+                f"File size {file_size} bytes exceeds maximum allowed limit of {MAX_DOCUMENT_SIZE_BYTES} bytes (50 MB)."
+            )
 
 
 def upload_file(
-    file_obj: BinaryIO,
+    file_data: bytes | BinaryIO,
     bucket: str,
     object_name: str,
     content_type: str = "application/octet-stream",
     metadata: dict[str, str] | None = None,
     validate: bool = True,
 ) -> bool:
-    """Upload a stream to the specified bucket and object name with end-to-end security checks."""
+    """Upload a file or stream securely to S3/MinIO with strict size and MIME verification."""
     validate_bucket(bucket)
     validate_object_key(object_name)
 
-    # 1. Content-Type check
-    if validate:
-        validate_file_metadata(content_type, None)
+    file_obj: BinaryIO
+    total_size: int = 0
+    header_bytes: bytes = b""
 
-    # 2. Read initial header for magic byte verification and handle seekable/non-seekable streams
-    is_seekable = hasattr(file_obj, "seek") and hasattr(file_obj, "tell")
-    header_bytes = b""
-    total_size = 0
+    if isinstance(file_data, bytes):
+        total_size = len(file_data)
+        if validate:
+            validate_file_metadata(content_type, total_size)
+            header_bytes = file_data[:512]
+            validate_file_magic_bytes(header_bytes, content_type)
+        file_obj = io.BytesIO(file_data)
+    else:
+        file_obj = file_data
+        if hasattr(file_obj, "seek") and hasattr(file_obj, "tell"):
+            try:
+                curr = file_obj.tell()
+                file_obj.seek(0, io.SEEK_END)
+                stream_len = file_obj.tell()
+                file_obj.seek(curr)
+                if stream_len > MAX_DOCUMENT_SIZE_BYTES:
+                    raise FileTooLargeError(
+                        f"File size {stream_len} bytes exceeds maximum allowed limit of {MAX_DOCUMENT_SIZE_BYTES} bytes."
+                    )
+            except (AttributeError, io.UnsupportedOperation):
+                pass
 
-    if is_seekable:
-        try:
-            current_pos = file_obj.tell()
-            header_bytes = file_obj.read(512)
-            file_obj.seek(0, io.SEEK_END)
-            total_size = file_obj.tell() - current_pos
-            file_obj.seek(current_pos)
-
-            if validate:
-                validate_file_metadata(content_type, total_size)
-                validate_file_magic_bytes(header_bytes, content_type)
-        except (AttributeError, io.UnsupportedOperation):
-            is_seekable = False
-
-    if not is_seekable:
-        # For non-seekable streams, buffer chunks up to MAX_DOCUMENT_SIZE_BYTES
         buf = io.BytesIO()
         chunk = file_obj.read(65536)
         while chunk:
             total_size += len(chunk)
             if total_size > MAX_DOCUMENT_SIZE_BYTES:
                 raise FileTooLargeError(
-                    f"Non-seekable stream exceeded maximum limit of {MAX_DOCUMENT_SIZE_BYTES} bytes."
+                    f"Stream exceeded maximum limit of {MAX_DOCUMENT_SIZE_BYTES} bytes."
                 )
             buf.write(chunk)
             if not header_bytes and total_size >= 512:
@@ -287,7 +291,7 @@ def upload_file(
         file_obj = buf
 
     client = get_s3_client()
-    extra_args = {"ContentType": content_type}
+    extra_args: dict[str, Any] = {"ContentType": content_type}
     if metadata:
         extra_args["Metadata"] = metadata
 
@@ -325,7 +329,6 @@ def generate_presigned_download_url(
     validate_bucket(bucket)
     validate_object_key(object_name)
 
-    # Expiration bounded between 60 seconds and 3600 seconds
     expiration = max(60, min(expiration_seconds, 3600))
     client = get_s3_client()
     try:
@@ -383,6 +386,199 @@ def delete_file(bucket: str, object_name: str) -> bool:
     except ClientError as e:
         logger.error(f"Failed to delete object {bucket}/{object_name}: {e}")
         raise StorageError(f"S3 delete error: {e}") from e
+
+
+# ------------------------------------------------------------------------------
+# Storage Quarantine Lifecycle (Section E)
+# ------------------------------------------------------------------------------
+def upload_to_quarantine(
+    file_data: bytes | BinaryIO,
+    filename: str,
+    declared_content_type: str,
+    tenant_id: str,
+) -> dict[str, Any]:
+    """Upload unvalidated incoming document into isolated quarantine bucket.
+
+    Files in quarantine are never automatically trusted or accessible by users.
+    """
+    clean_filename = re.sub(r"[^a-zA-Z0-9_\-\.]", "_", filename)
+    quarantine_id = str(uuid.uuid4())
+    quarantine_key = f"quarantine/{tenant_id}/{quarantine_id}-{clean_filename}"
+
+    # Enforce basic metadata validation and upload without trusting magic bytes yet
+    validate_file_metadata(declared_content_type, None)
+    upload_file(
+        bucket=settings.STORAGE_QUARANTINE_BUCKET,
+        object_name=quarantine_key,
+        file_data=file_data,
+        content_type=declared_content_type,
+        metadata={
+            "tenant_id": tenant_id,
+            "original_filename": clean_filename,
+            "declared_content_type": declared_content_type,
+            "quarantine_id": quarantine_id,
+            "status": "quarantined",
+        },
+        validate=False,  # Unvalidated on ingress; must pass server-side inspection before promotion
+    )
+
+    return {
+        "quarantine_id": quarantine_id,
+        "quarantine_key": quarantine_key,
+        "bucket": settings.STORAGE_QUARANTINE_BUCKET,
+        "filename": clean_filename,
+        "declared_content_type": declared_content_type,
+        "tenant_id": tenant_id,
+        "status": "quarantined",
+        "created_at": datetime.now(UTC).isoformat(),
+    }
+
+
+def generate_presigned_quarantine_upload_url(
+    tenant_id: str,
+    filename: str,
+    content_type: str = "application/pdf",
+    expiration_seconds: int = 900,
+) -> dict:
+    """Generate a presigned post upload URL targeted exclusively at the quarantine bucket.
+
+    Presigned uploads never upload directly to verified document storage.
+    """
+    clean_filename = re.sub(r"[^a-zA-Z0-9_\-\.]", "_", filename)
+    quarantine_id = str(uuid.uuid4())
+    quarantine_key = f"quarantine/{tenant_id}/{quarantine_id}-{clean_filename}"
+
+    return generate_presigned_upload_url(
+        bucket=settings.STORAGE_QUARANTINE_BUCKET,
+        object_name=quarantine_key,
+        content_type=content_type,
+        expiration_seconds=expiration_seconds,
+    )
+
+
+def validate_and_promote_quarantine_document(
+    quarantine_key: str,
+    target_bucket: str = settings.STORAGE_DOCUMENTS_BUCKET,
+    target_key: str | None = None,
+) -> dict[str, Any]:
+    """Execute server-side inspection on quarantined document and promote if valid.
+
+    1. Download from quarantine storage.
+    2. Enforce file size limit (<= 50MB).
+    3. Inspect magic bytes server-side and verify declared MIME type.
+    4. Detect and reject MIME spoofing, malformed bytes, and unsupported formats.
+    5. On validation success: promote to target_bucket and delete from quarantine.
+    6. On validation failure: reject, cleanup, and raise DocumentQuarantineError.
+    """
+    validate_bucket(target_bucket)
+    validate_object_key(quarantine_key)
+
+    client = get_s3_client()
+    try:
+        head = client.head_object(Bucket=settings.STORAGE_QUARANTINE_BUCKET, Key=quarantine_key)
+    except ClientError as e:
+        raise DocumentQuarantineError(f"Quarantined document '{quarantine_key}' not found: {e}")
+
+    content_type = head.get("ContentType", "application/octet-stream")
+    file_bytes = download_file_bytes(settings.STORAGE_QUARANTINE_BUCKET, quarantine_key)
+    total_size = len(file_bytes)
+
+    # 1. Size enforcement
+    if total_size <= 0:
+        delete_file(settings.STORAGE_QUARANTINE_BUCKET, quarantine_key)
+        raise DocumentQuarantineError("Quarantined document is empty (0 bytes).")
+    if total_size > MAX_DOCUMENT_SIZE_BYTES:
+        delete_file(settings.STORAGE_QUARANTINE_BUCKET, quarantine_key)
+        raise FileTooLargeError(
+            f"Quarantined document size {total_size} exceeds {MAX_DOCUMENT_SIZE_BYTES} bytes."
+        )
+
+    # 2. Magic byte inspection & MIME spoofing validation
+    header_bytes = file_bytes[:512]
+    try:
+        validate_file_metadata(content_type, total_size)
+        validate_file_magic_bytes(header_bytes, content_type)
+    except (InvalidSignatureError, InvalidContentTypeError, FileTooLargeError) as err:
+        logger.warning(
+            f"Quarantine verification failed for {quarantine_key}: {err}. Rejecting document."
+        )
+        delete_file(settings.STORAGE_QUARANTINE_BUCKET, quarantine_key)
+        raise DocumentQuarantineError(f"Quarantine verification failed: {err}") from err
+
+    detected_type = detect_file_signature(header_bytes) or content_type
+    sha256_hash = hashlib.sha256(file_bytes).hexdigest()
+
+    # 3. Safe destination key
+    if not target_key:
+        filename_part = quarantine_key.split("/")[-1]
+        target_key = f"verified/{filename_part}"
+    validate_object_key(target_key)
+
+    # 4. Promote object to verified bucket
+    upload_file(
+        bucket=target_bucket,
+        object_name=target_key,
+        file_data=file_bytes,
+        content_type=detected_type,
+        metadata={
+            "quarantine_key": quarantine_key,
+            "sha256": sha256_hash,
+            "validated_at": datetime.now(UTC).isoformat(),
+            "status": "promoted",
+        },
+        validate=True,
+    )
+
+    # 5. Clean up from quarantine
+    delete_file(settings.STORAGE_QUARANTINE_BUCKET, quarantine_key)
+
+    logger.info(
+        f"Document {quarantine_key} successfully validated and promoted to s3://{target_bucket}/{target_key}"
+    )
+
+    return {
+        "status": "promoted",
+        "quarantine_key": quarantine_key,
+        "target_bucket": target_bucket,
+        "target_key": target_key,
+        "content_type": detected_type,
+        "size_bytes": total_size,
+        "sha256": sha256_hash,
+        "promoted_at": datetime.now(UTC).isoformat(),
+    }
+
+
+def init_storage_buckets() -> None:
+    """Ensure all required buckets (documents, vault, quarantine) exist with private policies."""
+    client = get_s3_client()
+    for bucket in [
+        settings.STORAGE_DOCUMENTS_BUCKET,
+        settings.STORAGE_VAULT_BUCKET,
+        settings.STORAGE_QUARANTINE_BUCKET,
+    ]:
+        try:
+            client.head_bucket(Bucket=bucket)
+            logger.info(f"Storage bucket '{bucket}' exists and is accessible.")
+        except ClientError:
+            logger.info(f"Creating storage bucket '{bucket}'...")
+            client.create_bucket(Bucket=bucket)
+
+        try:
+            client.put_public_access_block(
+                Bucket=bucket,
+                PublicAccessBlockConfiguration={
+                    "BlockPublicAcls": True,
+                    "IgnorePublicAcls": True,
+                    "BlockPublicPolicy": True,
+                    "RestrictPublicBuckets": True,
+                },
+            )
+        except ClientError as e:
+            logger.debug(f"Public access block on bucket {bucket} note: {e}")
+
+
+# Alias for lifecycle initialization
+init_storage = init_storage_buckets
 
 
 def check_storage_health() -> dict:

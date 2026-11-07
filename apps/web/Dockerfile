@@ -12,13 +12,14 @@ COPY packages/design-tokens/package.json ./packages/design-tokens/
 COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/api-client/package.json ./packages/api-client/
 COPY apps/web/package.json ./apps/web/
+COPY apps/mobile/package.json ./apps/mobile/
 
 RUN npm ci
 
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app ./
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -55,5 +56,4 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["node", "./apps/web/node_modules/next/dist/bin/next", "start", "apps/web", "-p", "3000"]
-
+CMD ["sh", "-c", "if [ -f ./node_modules/.bin/next ]; then ./node_modules/.bin/next start apps/web -p 3000; elif [ -f ./apps/web/node_modules/.bin/next ]; then ./apps/web/node_modules/.bin/next start apps/web -p 3000; else node ./node_modules/next/dist/bin/next start apps/web -p 3000; fi"]

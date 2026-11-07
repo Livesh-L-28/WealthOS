@@ -10,10 +10,10 @@ The local development cluster defined in `docker-compose.yml` includes 9 isolate
 
 | Service Name | Base Image / Context | Internal Port | Host Port (Localhost Only) | Purpose | Health Check |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `postgres` | `postgres:16-alpine` | `5432` | `127.0.0.1:5432` | Primary transactional relational database | `pg_isready -U wealthos_admin -d wealthos` |
-| `redis` | `redis:7.2-alpine` | `6379` | `127.0.0.1:6379` | In-memory cache and task queue broker | `redis-cli ping` |
-| `minio` | `ghcr.io/coollabsio/minio:latest` | `9000`, `9001` | `127.0.0.1:9000`, `127.0.0.1:9001` | S3-compatible financial statement and document storage | TCP socket probe on port 9000 |
-| `minio-init` | `ghcr.io/coollabsio/minio:latest` | N/A | None (Internal) | One-shot bucket provisioner (`wealthos-documents`, `wealthos-vault`) | Exits `0` upon bucket creation |
+| `postgres` | `postgres:16.8-alpine` | `5432` | `127.0.0.1:5432` | Primary transactional relational database | `pg_isready -U wealthos_admin -d wealthos` |
+| `redis` | `redis:7.2.7-alpine` | `6379` | `127.0.0.1:6379` | Authenticated in-memory cache and task queue broker | `redis-cli -a "$$REDIS_PASSWORD" ping` |
+| `minio` | `ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z` | `9000`, `9001` | `127.0.0.1:9000`, `127.0.0.1:9001` | S3-compatible financial statement and document storage | TCP socket probe on port 9000 |
+| `minio-init` | `ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z` | N/A | None (Internal) | One-shot bucket provisioner (`wealthos-documents`, `wealthos-vault`, `wealthos-quarantine`) | Exits `0` upon bucket creation |
 | `backend-api` | Multi-stage `backend/Dockerfile` | `8000` | `127.0.0.1:8000` | FastAPI REST API service | `curl -f http://localhost:8000/healthz` |
 | `celery-worker-default` | Multi-stage `backend/Dockerfile` | N/A | None (Internal) | Celery daemon for default transactional queue | `celery inspect ping` |
 | `celery-worker-ocr` | Multi-stage `backend/Dockerfile` | N/A | None (Internal) | Celery daemon for isolated, memory-intensive OCR extraction | `celery inspect ping` |

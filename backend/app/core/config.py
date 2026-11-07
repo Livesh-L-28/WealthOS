@@ -2,7 +2,11 @@
 
 Loads settings from environment variables using Pydantic Settings v2.
 Rejects known default development credentials in production mode.
+Zero sensitive credentials or tokens are ever printed in exception messages or logs.
 """
+
+from typing import Any
+from urllib.parse import urlparse
 
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -29,9 +33,9 @@ class Settings(BaseSettings):
     )
     APP_VERSION: str = Field(default="0.2.0", description="Semantic version of the application")
 
-    # Backend Server
-    API_HOST: str = Field(default="0.0.0.0", description="Bind host")
-    API_PORT: int = Field(default=8000, description="Bind port")
+    # API Configuration
+    API_HOST: str = Field(default="0.0.0.0", description="API server host")
+    API_PORT: int = Field(default=8000, description="API server port")
     API_V1_PREFIX: str = Field(default="/api/v1", description="Prefix for API v1 routes")
     CORS_ORIGINS: list[str] = Field(
         default=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:19006"],
@@ -40,7 +44,7 @@ class Settings(BaseSettings):
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
-    def assemble_cors_origins(cls, v: any) -> list[str]:
+    def assemble_cors_origins(cls, v: Any) -> list[str]:
         if isinstance(v, str):
             if v.startswith("[") and v.endswith("]"):
                 import json
@@ -56,7 +60,7 @@ class Settings(BaseSettings):
 
     # Security & Secrets
     SECRET_KEY: str = Field(
-        default="wealthos_local_insecure_development_secret_key_change_in_prod_12345",
+        default="insecure_dev_secret_key_change_in_production_min_32_bytes_long_12345",
         description="Secret key for signing tokens and sessions",
     )
     ENCRYPTION_MASTER_KEY: str = Field(
@@ -96,10 +100,13 @@ class Settings(BaseSettings):
         default=True, description="Verify connection validity on checkout"
     )
 
-    # Redis Cache & State
+    # Redis Cache & State (Authenticated by default)
     REDIS_HOST: str = Field(default="localhost", description="Redis host")
     REDIS_PORT: int = Field(default=6379, description="Redis port")
-    REDIS_PASSWORD: str | None = Field(default=None, description="Redis password")
+    REDIS_PASSWORD: str = Field(
+        default="wealthos_local_dev_redis_change_in_prod",
+        description="Redis password for authenticated access",
+    )
     REDIS_DB: int = Field(default=0, description="Redis database index")
     REDIS_URL: str | None = Field(default=None, description="Redis connection URL")
 
@@ -113,30 +120,125 @@ class Settings(BaseSettings):
     )
     MINIO_ACCESS_KEY: str = Field(default="minioadmin", description="MinIO access key")
     MINIO_SECRET_KEY: str = Field(default="minioadminpassword", description="MinIO secret key")
-    MINIO_SECURE: bool = Field(default=False, description="Use SSL/TLS for MinIO")
-    MINIO_REGION: str = Field(default="us-east-1", description="MinIO/S3 region")
+    MINIO_REGION: str = Field(default="us-east-1", description="MinIO region")
+    MINIO_SECURE: bool = Field(default=False, description="Use TLS/HTTPS for MinIO")
     STORAGE_DOCUMENTS_BUCKET: str = Field(
-        default="wealthos-documents", description="Primary document storage bucket"
+        default="wealthos-documents", description="Bucket for verified financial documents"
     )
     STORAGE_VAULT_BUCKET: str = Field(
-        default="wealthos-vault", description="Encrypted statements and tax vault bucket"
+        default="wealthos-vault", description="Bucket for encrypted sensitive vault data"
+    )
+    STORAGE_QUARANTINE_BUCKET: str = Field(
+        default="wealthos-quarantine",
+        description="Isolated bucket for unvalidated incoming documents",
     )
 
     @model_validator(mode="after")
     def validate_production_secrets(self) -> "Settings":
-        """Strictly reject known local development credentials when running in production."""
-        if self.ENVIRONMENT.lower() in ("production", "prod"):
-            insecure_markers = ("insecure", "change_in_prod", "dev_password", "12345")
+        """Strictly validate that no default or development credentials are used in production.
+
+        Never prints credentials in exceptions or logs.
+        """
+        if self.ENVIRONMENT.lower() == "production":
+            insecure_markers = (
+                "insecure",
+                "change_in_prod",
+                "dev_password",
+                "dev_redis",
+                "wealthos_local",
+                "12345",
+                "minioadmin",
+                "minioadminpassword",
+                "default",
+            )
+
+            # 1. SECRET_KEY
+            if not self.SECRET_KEY or len(self.SECRET_KEY) < 32:
+                raise ValueError(
+                    "Production mode security violation: SECRET_KEY must be at least 32 characters."
+                )
             if any(marker in self.SECRET_KEY.lower() for marker in insecure_markers):
-                raise ValueError("Insecure default SECRET_KEY detected in production environment!")
+                raise ValueError(
+                    "Production mode security violation: SECRET_KEY is using an insecure or default development value."
+                )
+
+            # 2. ENCRYPTION_MASTER_KEY
+            if not self.ENCRYPTION_MASTER_KEY or len(self.ENCRYPTION_MASTER_KEY) < 32:
+                raise ValueError(
+                    "Production mode security violation: ENCRYPTION_MASTER_KEY must be at least 32 characters."
+                )
             if any(marker in self.ENCRYPTION_MASTER_KEY.lower() for marker in insecure_markers):
                 raise ValueError(
-                    "Insecure default ENCRYPTION_MASTER_KEY detected in production environment!"
+                    "Production mode security violation: ENCRYPTION_MASTER_KEY is using an insecure or default development value."
+                )
+
+            # 3. POSTGRES_PASSWORD
+            if not self.POSTGRES_PASSWORD or len(self.POSTGRES_PASSWORD) < 12:
+                raise ValueError(
+                    "Production mode security violation: POSTGRES_PASSWORD must be at least 12 characters."
                 )
             if any(marker in self.POSTGRES_PASSWORD.lower() for marker in insecure_markers):
                 raise ValueError(
-                    "Insecure default POSTGRES_PASSWORD detected in production environment!"
+                    "Production mode security violation: POSTGRES_PASSWORD is using an insecure or default development value."
                 )
+
+            # 4. REDIS_PASSWORD
+            if not self.REDIS_PASSWORD or len(self.REDIS_PASSWORD) < 12:
+                raise ValueError(
+                    "Production mode security violation: REDIS_PASSWORD must be at least 12 characters."
+                )
+            if any(marker in self.REDIS_PASSWORD.lower() for marker in insecure_markers):
+                raise ValueError(
+                    "Production mode security violation: REDIS_PASSWORD is using an insecure or default development value."
+                )
+
+            # 5. MINIO_ACCESS_KEY & MINIO_SECRET_KEY
+            if not self.MINIO_ACCESS_KEY or self.MINIO_ACCESS_KEY == "minioadmin":
+                raise ValueError(
+                    "Production mode security violation: MINIO_ACCESS_KEY is using an insecure or default development value."
+                )
+            if any(marker in self.MINIO_ACCESS_KEY.lower() for marker in insecure_markers):
+                raise ValueError(
+                    "Production mode security violation: MINIO_ACCESS_KEY is using an insecure or default development value."
+                )
+
+            if not self.MINIO_SECRET_KEY or len(self.MINIO_SECRET_KEY) < 12:
+                raise ValueError(
+                    "Production mode security violation: MINIO_SECRET_KEY must be at least 12 characters."
+                )
+            if any(marker in self.MINIO_SECRET_KEY.lower() for marker in insecure_markers):
+                raise ValueError(
+                    "Production mode security violation: MINIO_SECRET_KEY is using an insecure or default development value."
+                )
+
+            # 6. Explicit DATABASE_URL check
+            for url_field, url_val in [
+                ("DATABASE_URL", self.DATABASE_URL),
+                ("DATABASE_SYNC_URL", self.DATABASE_SYNC_URL),
+            ]:
+                if url_val:
+                    parsed = urlparse(url_val)
+                    if parsed.password and any(
+                        marker in parsed.password.lower() for marker in insecure_markers
+                    ):
+                        raise ValueError(
+                            f"Production mode security violation: {url_field} credentials contain an insecure default value."
+                        )
+
+            # 7. Explicit Celery broker and result backend checks
+            for celery_field, celery_val in [
+                ("CELERY_BROKER_URL", self.CELERY_BROKER_URL),
+                ("CELERY_RESULT_BACKEND", self.CELERY_RESULT_BACKEND),
+            ]:
+                if celery_val:
+                    parsed = urlparse(celery_val)
+                    if parsed.password and any(
+                        marker in parsed.password.lower() for marker in insecure_markers
+                    ):
+                        raise ValueError(
+                            f"Production mode security violation: {celery_field} credentials contain an insecure default value."
+                        )
+
         return self
 
     def get_database_url(self) -> str:

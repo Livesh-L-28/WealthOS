@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError
 from app.infrastructure.storage import (
     MAX_DOCUMENT_SIZE_BYTES,
     BucketNotAllowedError,
+    DocumentQuarantineError,
     FileTooLargeError,
     InvalidContentTypeError,
     InvalidObjectKeyError,
@@ -17,9 +18,12 @@ from app.infrastructure.storage import (
     delete_file,
     download_file_bytes,
     generate_presigned_download_url,
+    generate_presigned_quarantine_upload_url,
     generate_presigned_upload_url,
     init_storage,
     upload_file,
+    upload_to_quarantine,
+    validate_and_promote_quarantine_document,
     validate_bucket,
     validate_file_metadata,
     validate_object_key,
@@ -142,7 +146,7 @@ def test_upload_file_invalid_content_type():
 def test_upload_file_mime_spoofing():
     # Claims application/pdf, but magic bytes are ASCII text
     fake_pdf = io.BytesIO(b"NOT_A_REAL_PDF_FILE")
-    with pytest.raises(InvalidSignatureError, match="lacks %PDF- header"):
+    with pytest.raises(InvalidSignatureError, match="expected PDF magic bytes"):
         upload_file(fake_pdf, "wealthos-documents", "fake.pdf", "application/pdf")
 
     # Claims image/png, but lacks PNG signature
@@ -152,7 +156,7 @@ def test_upload_file_mime_spoofing():
 
     # Claims text/csv, but contains binary null byte
     fake_csv = io.BytesIO(b"col1,col2\x00corrupt")
-    with pytest.raises(InvalidSignatureError, match="binary null byte"):
+    with pytest.raises(InvalidSignatureError, match="binary null"):
         upload_file(fake_csv, "wealthos-documents", "fake.csv", "text/csv")
 
 
@@ -302,3 +306,108 @@ def test_check_storage_health():
         health = check_storage_health()
         assert health["status"] == "unhealthy"
         assert "Access Denied" in health["error"]
+
+
+def test_upload_to_quarantine():
+    """Verify document is deposited in quarantine bucket with proper key and metadata."""
+    mock_s3 = MagicMock()
+    with patch("app.infrastructure.storage.get_s3_client", return_value=mock_s3):
+        record = upload_to_quarantine(
+            file_data=b"%PDF-1.7 bank statement bytes",
+            filename="hdfc_statement.pdf",
+            declared_content_type="application/pdf",
+            tenant_id="tenant-123",
+        )
+        assert record["status"] == "quarantined"
+        assert record["bucket"] == "wealthos-quarantine"
+        assert "quarantine/tenant-123/" in record["quarantine_key"]
+        assert mock_s3.upload_fileobj.call_count == 1
+
+
+def test_generate_presigned_quarantine_upload_url():
+    """Verify presigned upload URL targets exclusively the quarantine bucket."""
+    mock_s3 = MagicMock()
+    mock_s3.generate_presigned_post.return_value = {
+        "url": "http://localhost:9000/wealthos-quarantine",
+        "fields": {"key": "quarantine/tenant-123/uuid-test.pdf"},
+    }
+    with patch("app.infrastructure.storage.get_s3_client", return_value=mock_s3):
+        res = generate_presigned_quarantine_upload_url(
+            tenant_id="tenant-123",
+            filename="test.pdf",
+            content_type="application/pdf",
+        )
+        assert "wealthos-quarantine" in res["url"]
+
+
+def test_validate_and_promote_quarantine_document_success():
+    """Verify safe document in quarantine passes server-side verification and is promoted."""
+    mock_s3 = MagicMock()
+    mock_s3.head_object.return_value = {"ContentType": "application/pdf"}
+
+    pdf_bytes = b"%PDF-1.7 Valid statement content"
+
+    def mock_download(bucket, key, buf):
+        buf.write(pdf_bytes)
+
+    mock_s3.download_fileobj.side_effect = mock_download
+
+    with patch("app.infrastructure.storage.get_s3_client", return_value=mock_s3):
+        outcome = validate_and_promote_quarantine_document(
+            quarantine_key="quarantine/tenant-123/uuid-statement.pdf",
+            target_bucket="wealthos-documents",
+            target_key="verified/tenant-123/statement.pdf",
+        )
+        assert outcome["status"] == "promoted"
+        assert outcome["content_type"] == "application/pdf"
+        assert outcome["target_bucket"] == "wealthos-documents"
+        # Verify quarantine object was deleted after promotion
+        mock_s3.delete_object.assert_called_with(
+            Bucket="wealthos-quarantine", Key="quarantine/tenant-123/uuid-statement.pdf"
+        )
+
+
+def test_validate_and_promote_quarantine_document_mime_spoofing_rejected():
+    """Verify MIME spoofing in quarantine triggers DocumentQuarantineError and document cleanup."""
+    mock_s3 = MagicMock()
+    mock_s3.head_object.return_value = {"ContentType": "application/pdf"}
+
+    # Malicious payload: text claiming to be PDF
+    fake_pdf = b"MALICIOUS_SHELL_SCRIPT_DO_NOT_RUN"
+
+    def mock_download(bucket, key, buf):
+        buf.write(fake_pdf)
+
+    mock_s3.download_fileobj.side_effect = mock_download
+
+    with patch("app.infrastructure.storage.get_s3_client", return_value=mock_s3):
+        with pytest.raises(DocumentQuarantineError, match="Quarantine verification failed"):
+            validate_and_promote_quarantine_document(
+                quarantine_key="quarantine/tenant-123/uuid-fake.pdf",
+                target_bucket="wealthos-documents",
+            )
+        # Verify malicious object was deleted from quarantine
+        mock_s3.delete_object.assert_called_with(
+            Bucket="wealthos-quarantine", Key="quarantine/tenant-123/uuid-fake.pdf"
+        )
+
+
+def test_validate_and_promote_quarantine_document_empty_rejected():
+    """Verify empty document in quarantine is rejected and deleted."""
+    mock_s3 = MagicMock()
+    mock_s3.head_object.return_value = {"ContentType": "application/pdf"}
+
+    def mock_download(bucket, key, buf):
+        buf.write(b"")
+
+    mock_s3.download_fileobj.side_effect = mock_download
+
+    with patch("app.infrastructure.storage.get_s3_client", return_value=mock_s3):
+        with pytest.raises(DocumentQuarantineError, match="empty"):
+            validate_and_promote_quarantine_document(
+                quarantine_key="quarantine/tenant-123/uuid-empty.pdf",
+                target_bucket="wealthos-documents",
+            )
+        mock_s3.delete_object.assert_called_with(
+            Bucket="wealthos-quarantine", Key="quarantine/tenant-123/uuid-empty.pdf"
+        )

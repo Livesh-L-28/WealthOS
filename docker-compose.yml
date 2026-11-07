@@ -21,7 +21,7 @@ services:
   # PostgreSQL 16 Database
   # ----------------------------------------------------------------------------
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.8-alpine
     container_name: wealthos_postgres
     restart: unless-stopped
     ports:
@@ -43,19 +43,21 @@ services:
       - wealthos_network
 
   # ----------------------------------------------------------------------------
-  # Redis 7 Cache & Task Broker
+  # Redis 7 Cache & Task Broker (Authenticated)
   # ----------------------------------------------------------------------------
   redis:
-    image: redis:7.2-alpine
+    image: redis:7.2.7-alpine
     container_name: wealthos_redis
     restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}"
     ports:
       - "127.0.0.1:6379:6379"
-    command: redis-server --appendonly yes --requirepass ""
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}\" ping | grep PONG"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -64,10 +66,10 @@ services:
       - wealthos_network
 
   # ----------------------------------------------------------------------------
-  # MinIO S3-Compatible Object Storage
+  # MinIO S3-Compatible Object Storage (Pinned Immutable Release)
   # ----------------------------------------------------------------------------
   minio:
-    image: ghcr.io/coollabsio/minio:latest
+    image: ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
     container_name: wealthos_minio
     restart: unless-stopped
     ports:
@@ -92,7 +94,7 @@ services:
   # MinIO Bucket Provisioner
   # ----------------------------------------------------------------------------
   minio-init:
-    image: ghcr.io/coollabsio/minio:latest
+    image: ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
     container_name: wealthos_minio_init
     depends_on:
       minio:
@@ -103,6 +105,7 @@ services:
       /usr/bin/mc alias set localminio http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadminpassword};
       /usr/bin/mc mb --ignore-existing localminio/wealthos-documents;
       /usr/bin/mc mb --ignore-existing localminio/wealthos-vault;
+      /usr/bin/mc mb --ignore-existing localminio/wealthos-quarantine;
       echo 'MinIO storage buckets verified';
       exit 0;
       "
@@ -134,13 +137,17 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-wealthos_admin}:${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}@postgres:5432/${POSTGRES_DB:-wealthos}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_URL: redis://redis:6379/0
-      CELERY_BROKER_URL: redis://redis:6379/1
-      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/2
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadminpassword}
       MINIO_SECURE: "false"
+      STORAGE_DOCUMENTS_BUCKET: wealthos-documents
+      STORAGE_VAULT_BUCKET: wealthos-vault
+      STORAGE_QUARANTINE_BUCKET: wealthos-quarantine
     depends_on:
       postgres:
         condition: service_healthy
@@ -177,11 +184,15 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CELERY_BROKER_URL: redis://redis:6379/1
-      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/2
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadminpassword}
+      STORAGE_DOCUMENTS_BUCKET: wealthos-documents
+      STORAGE_VAULT_BUCKET: wealthos-vault
+      STORAGE_QUARANTINE_BUCKET: wealthos-quarantine
     depends_on:
       backend-api:
         condition: service_healthy
@@ -214,11 +225,15 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CELERY_BROKER_URL: redis://redis:6379/1
-      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/2
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadminpassword}
+      STORAGE_DOCUMENTS_BUCKET: wealthos-documents
+      STORAGE_VAULT_BUCKET: wealthos-vault
+      STORAGE_QUARANTINE_BUCKET: wealthos-quarantine
     depends_on:
       backend-api:
         condition: service_healthy
@@ -253,8 +268,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CELERY_BROKER_URL: redis://redis:6379/1
-      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}@redis:6379/2
     depends_on:
       backend-api:
         condition: service_healthy

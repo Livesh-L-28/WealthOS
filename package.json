@@ -14,6 +14,12 @@
     "test": "npm run --workspaces --if-present test",
     "clean": "npm run --workspaces --if-present clean"
   },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.24",
+    "next": "14.2.24",
+    "vitest": "^1.6.0"
+  },
   "keywords": [
     "wealthos",
     "fintech",

@@ -16,13 +16,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  backend-checks:
-    name: Backend Lint, Migrations & Pytest
+  backend-quality-and-tests:
+    name: Backend Quality, Lint, Mypy, Migrations & Tests
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:16.8-alpine
         env:
           POSTGRES_USER: wealthos_admin
           POSTGRES_PASSWORD: wealthos_local_dev_password_change_in_prod
@@ -31,16 +31,6 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:7.2-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -55,16 +45,37 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
+      - name: Start Authenticated Redis
+        run: |
+          docker run -d --name redis_ci -p 6379:6379 redis:7.2.7-alpine redis-server --requirepass wealthos_local_dev_redis_change_in_prod
+          for i in {1..15}; do
+            if docker exec redis_ci redis-cli -a wealthos_local_dev_redis_change_in_prod ping | grep PONG; then
+              echo "Authenticated Redis is ready"
+              break
+            fi
+            sleep 1
+          done
+
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e "./backend[dev]"
+          pip install pip-audit
 
-      - name: Run Ruff Linting & Formatting Check
+      - name: Run Ruff Linting
         run: |
           cd backend
           ruff check .
+
+      - name: Run Ruff Format Check
+        run: |
+          cd backend
           ruff format --check .
+
+      - name: Run Mypy Type Checking
+        run: |
+          cd backend
+          mypy app
 
       - name: Verify Alembic Migration Lifecycle
         env:
@@ -79,7 +90,7 @@ jobs:
           alembic downgrade -1
           alembic upgrade head
 
-      - name: Run Pytest Test Suite
+      - name: Run Pytest Test Suite with Coverage
         env:
           ENVIRONMENT: testing
           DEBUG: "true"
@@ -90,12 +101,18 @@ jobs:
           POSTGRES_PASSWORD: wealthos_local_dev_password_change_in_prod
           REDIS_HOST: localhost
           REDIS_PORT: 6379
+          REDIS_PASSWORD: wealthos_local_dev_redis_change_in_prod
         run: |
           cd backend
           pytest -v --cov=app --cov-report=term-missing
 
-  frontend-packages-checks:
-    name: Monorepo Typecheck & Build
+      - name: Dependency Security Scanning (pip-audit)
+        run: |
+          cd backend
+          pip-audit --desc || true
+
+  frontend-quality-and-build:
+    name: Frontend Quality, Lint, Typecheck, Tests & Build
     runs-on: ubuntu-latest
 
     steps:
@@ -111,36 +128,40 @@ jobs:
       - name: Install Monorepo Dependencies
         run: npm ci
 
-      - name: Build Design Tokens Package
-        run: npm run --workspace=@wealthos/design-tokens build
+      - name: Frontend ESLint
+        run: npm run --workspace=@wealthos/web lint
 
-      - name: Build Shared Types Package
-        run: npm run --workspace=@wealthos/shared-types build
+      - name: Build Monorepo Shared Packages & Web Application
+        run: npm run build
 
-      - name: Build API Client Package
-        run: npm run --workspace=@wealthos/api-client build
+      - name: Run Vitest Unit Tests
+        run: npm test
 
-      - name: Typecheck Shared Packages
-        run: |
-          npm run --workspace=@wealthos/shared-types typecheck
-          npm run --workspace=@wealthos/api-client typecheck
+      - name: Monorepo TypeScript Type Checking
+        run: npm run typecheck
 
-      - name: Build Next.js Web Application
-        run: npm run --workspace=@wealthos/web build
+      - name: Mobile TypeScript Validation
+        run: npm run --workspace=@wealthos/mobile typecheck
 
-      - name: Typecheck Next.js Web Application
-        run: npm run --workspace=@wealthos/web typecheck
+      - name: Expo Configuration & Compatibility Validation
+        run: npm run --workspace=@wealthos/mobile validate
 
-  docker-compose-validate:
-    name: Docker Compose Validation & Build
+      - name: Dependency Security Scanning (npm audit)
+        run: npm audit --audit-level=critical || true
+
+  docker-compose-validate-and-build:
+    name: Docker Compose Validation & Image Builds
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate Docker Compose Configuration
-        run: docker compose config
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker Compose Images
+      - name: Validate Docker Compose Configuration
+        run: docker compose config --quiet
+
+      - name: Build All Docker Compose Images
         run: docker compose build
