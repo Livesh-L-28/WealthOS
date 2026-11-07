@@ -181,12 +181,14 @@ def create_app() -> FastAPI:
         )
 
     # 4. Top-level Probe Endpoints
-    @app.get("/healthz", tags=["Probes"], summary="Liveness Probe")
-    async def healthz():
+    @app.get("/health/live", tags=["Probes"], summary="Liveness Probe (/health/live)")
+    @app.get("/healthz", tags=["Probes"], summary="Liveness Probe (/healthz)")
+    async def health_live():
         return await liveness_probe()
 
-    @app.get("/readyz", tags=["Probes"], summary="Readiness Probe")
-    async def readyz(response: Response):
+    @app.get("/health/ready", tags=["Probes"], summary="Readiness Probe (/health/ready)")
+    @app.get("/readyz", tags=["Probes"], summary="Readiness Probe (/readyz)")
+    async def health_ready(response: Response):
         return await readiness_probe(response)
 
     @app.get("/metrics", tags=["Probes"], summary="System Metrics")
@@ -203,8 +205,15 @@ def create_app() -> FastAPI:
         return {
             "service": settings.APP_NAME,
             "version": settings.APP_VERSION,
+            "environment": settings.ENVIRONMENT,
             "documentation": "/docs" if settings.ENVIRONMENT != "production" else None,
             "api_v1": settings.API_V1_PREFIX,
+            "probes": {
+                "liveness": "/health/live",
+                "readiness": "/health/ready",
+                "detailed_health": f"{settings.API_V1_PREFIX}/health",
+                "metrics": "/metrics",
+            },
         }
 
     # 5. Include API v1 Routes

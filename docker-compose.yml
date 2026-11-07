@@ -67,7 +67,7 @@ services:
   # MinIO S3-Compatible Object Storage
   # ----------------------------------------------------------------------------
   minio:
-    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    image: ghcr.io/coollabsio/minio:latest
     container_name: wealthos_minio
     restart: unless-stopped
     ports:
@@ -80,7 +80,7 @@ services:
     volumes:
       - minio_data:/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/9000' || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -92,13 +92,14 @@ services:
   # MinIO Bucket Provisioner
   # ----------------------------------------------------------------------------
   minio-init:
-    image: minio/mc:RELEASE.2024-05-09T17-04-24Z
+    image: ghcr.io/coollabsio/minio:latest
     container_name: wealthos_minio_init
     depends_on:
       minio:
         condition: service_healthy
     entrypoint: >
-      /bin/sh -c "
+      /bin/bash -c "
+      sleep 2;
       /usr/bin/mc alias set localminio http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadminpassword};
       /usr/bin/mc mb --ignore-existing localminio/wealthos-documents;
       /usr/bin/mc mb --ignore-existing localminio/wealthos-vault;

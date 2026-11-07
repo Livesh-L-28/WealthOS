@@ -70,15 +70,25 @@ async def get_health_report(response: Response):
     )
 
 
+@router.get("/live", summary="Liveness Probe (/health/live)")
 @router.get("/liveness", summary="Lightweight Liveness Probe")
 async def liveness_probe():
-    """Kubernetes/Container liveness probe to verify process is alive."""
-    return {"status": "alive", "timestamp": datetime.now(UTC).isoformat()}
+    """Kubernetes/Container liveness probe to verify process is alive.
+
+    Does not fail merely because external dependencies (DB/Redis) are booting or unavailable.
+    """
+    return {
+        "status": "alive",
+        "timestamp": datetime.now(UTC).isoformat(),
+        "app": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+    }
 
 
+@router.get("/ready", summary="Readiness Probe (/health/ready)")
 @router.get("/readiness", summary="Readiness Probe")
 async def readiness_probe(response: Response):
-    """Kubernetes/Container readiness probe verifying operational availability."""
+    """Kubernetes/Container readiness probe verifying operational availability of backing dependencies."""
     db = await check_database_health()
     redis = await check_redis_health()
 
@@ -90,6 +100,7 @@ async def readiness_probe(response: Response):
             "status": "not_ready",
             "database": db.get("status"),
             "redis": redis.get("status"),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     return {

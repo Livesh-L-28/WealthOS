@@ -1,2 +1,1 @@
 """WealthOS Application Core Package."""
-

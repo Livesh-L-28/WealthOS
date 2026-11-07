@@ -39,25 +39,52 @@
 
 ### 3.1 Backend Test Results
 ```
-tests/test_celery.py::test_celery_configuration PASSED                   [  5%]
-tests/test_celery.py::test_health_ping_task PASSED                       [ 11%]
-tests/test_celery.py::test_market_feed_heartbeat_task PASSED             [ 17%]
-tests/test_celery.py::test_ocr_preflight_check_task PASSED               [ 23%]
-tests/test_config.py::test_settings_defaults PASSED                      [ 29%]
-tests/test_config.py::test_database_url_generation PASSED                [ 35%]
-tests/test_config.py::test_redis_url_generation PASSED                   [ 41%]
-tests/test_health.py::test_root_endpoint PASSED                          [ 47%]
-tests/test_health.py::test_healthz_liveness PASSED                       [ 52%]
-tests/test_health.py::test_readyz_readiness_healthy PASSED               [ 58%]
-tests/test_health.py::test_readyz_readiness_degraded PASSED              [ 64%]
-tests/test_health.py::test_detailed_health_report PASSED                 [ 70%]
-tests/test_health.py::test_correlation_id_injection PASSED               [ 76%]
-tests/test_health.py::test_metrics_endpoint PASSED                       [ 82%]
-tests/test_storage.py::test_upload_file PASSED                           [ 88%]
-tests/test_storage.py::test_generate_presigned_download_url PASSED       [ 94%]
+tests/test_celery.py::test_celery_configuration PASSED                   [  4%]
+tests/test_celery.py::test_create_celery_app_factory PASSED              [  8%]
+tests/test_celery.py::test_health_ping_task PASSED                       [ 12%]
+tests/test_celery.py::test_market_feed_heartbeat_task PASSED             [ 16%]
+tests/test_celery.py::test_ocr_preflight_check_task PASSED               [ 20%]
+tests/test_celery.py::test_task_idempotency_locking PASSED               [ 24%]
+tests/test_celery.py::test_check_celery_health PASSED                    [ 28%]
+tests/test_config.py::test_settings_defaults PASSED                      [ 32%]
+tests/test_config.py::test_database_url_generation PASSED                [ 36%]
+tests/test_config.py::test_redis_url_generation PASSED                   [ 40%]
+tests/test_health.py::test_root_endpoint PASSED                          [ 44%]
+tests/test_health.py::test_health_live_probe PASSED                      [ 48%]
+tests/test_health.py::test_health_ready_probe_healthy PASSED             [ 52%]
+tests/test_health.py::test_health_ready_probe_degraded PASSED            [ 56%]
+tests/test_health.py::test_detailed_health_report PASSED                 [ 60%]
+tests/test_health.py::test_correlation_id_injection PASSED               [ 64%]
+tests/test_health.py::test_metrics_endpoint PASSED                       [ 68%]
+tests/test_storage.py::test_upload_file PASSED                           [ 72%]
+tests/test_storage.py::test_upload_file_invalid_content_type PASSED      [ 76%]
+tests/test_storage.py::test_validate_file_metadata PASSED                [ 80%]
+tests/test_storage.py::test_download_file_bytes PASSED                   [ 84%]
+tests/test_storage.py::test_generate_presigned_download_url PASSED       [ 88%]
+tests/test_storage.py::test_generate_presigned_upload_url PASSED         [ 92%]
+tests/test_storage.py::test_delete_file PASSED                           [ 96%]
 tests/test_storage.py::test_init_storage_buckets PASSED                  [100%]
 
-============================== 17 passed in 0.05s ==============================
+============================== 25 passed in 0.05s ==============================
+```
+
+### 3.2 Real Infrastructure End-to-End Verification
+```
+Testing live database...
+DB Health: {'status': 'healthy', 'latency_ms': None}
+Testing live Redis...
+Redis Health: {'status': 'healthy'}
+Redis set/get verified!
+Testing live MinIO storage...
+Storage Health: {'status': 'healthy', 'endpoint': 'localhost:9000'}
+Uploaded test-statement.pdf
+Downloaded and verified test-statement.pdf!
+Generated presigned URL: http://localhost:9000/wealthos-documents/test-statement.pdf?...
+Deleted test-statement.pdf!
+Testing Celery broker connectivity...
+Celery Broker Health: {'status': 'healthy', 'broker': 'connected'}
+
+ALL LIVE INFRASTRUCTURE TESTS PASSED 100%!
 ```
 
 ### 3.2 Monorepo TypeScript & Build Results
