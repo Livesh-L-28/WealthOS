@@ -7,7 +7,8 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import ExpiredSignatureError, PyJWTError
 
 from app.core.config import settings
 
@@ -97,11 +98,12 @@ def decode_and_validate_token(
                 "verify_exp": True,
                 "verify_nbf": True,
                 "verify_iss": True,
+                "require": ["exp", "iat", "nbf", "iss", "aud"],
             },
         )
-    except jwt.ExpiredSignatureError as e:
+    except ExpiredSignatureError as e:
         raise TokenSecurityError("Token has expired.") from e
-    except JWTError as e:
+    except PyJWTError as e:
         raise TokenSecurityError(f"Token validation failed: {e}") from e
 
     token_type = payload.get("token_type")
