@@ -71,9 +71,9 @@ wealthos/
 
 ## 🗺️ PHASE-WISE ROADMAP
 
-- [x] **PHASE 0: Product Specification & Architecture Baseline** (PRD, SRS, System Architecture, Database Design, Security Architecture, ADRs, ERD, Threat Model, RTM)
-- [ ] **PHASE 1: Human-Designed UI/UX Specifications** (User journeys, wireframes, design tokens, component specifications)
-- [ ] **PHASE 2: Repository & Infrastructure Foundation** (Monorepo, Next.js, FastAPI, PostgreSQL 16, Redis, Celery, MinIO, Docker Compose, CI/CD)
+- [x] **PHASE 0: Product Specification & Architecture Baseline** (PRD, SRS, System Architecture, Database Design, Security Architecture, ADRs, ERD, Threat Model, RTM) — Tag: `v0.1.0-phase0`
+- [x] **PHASE 1: Human-Designed UI/UX Specifications** (20 Domains IA, 16 User Journeys, 65 Reconciled Screens, WCAG AA Design Tokens, Usability Plan) — Tag: `v0.2.0-phase1`
+- [x] **PHASE 2: Repository & Infrastructure Foundation** (FastAPI async runtime, PostgreSQL 16, Redis 7, Celery queues, MinIO, Next.js 14 App Router, Expo mobile, Docker Compose, CI/CD)
 - [ ] **PHASE 3: Authentication & Security Foundation** (Argon2id, TOTP MFA, session cookies, RBAC, tenant context)
 - [ ] **PHASE 4: Financial Accounting Engine** (Double-entry general ledger, journal entries, balance invariants, reversals)
 - [ ] **PHASE 5: Income & Expenses** (Accounts, transactions, splits, categories, recurring bills)
@@ -88,6 +88,33 @@ wealthos/
 - [ ] **PHASE 14: Mobile Application** (Expo React Native client for iOS & Android)
 - [ ] **PHASE 15: Reports & Provider Integrations** (PDF/Excel exports, notifications, Account Aggregator hooks)
 - [ ] **PHASE 16: Production Hardening** (Penetration testing, performance benchmarks, deployment)
+
+---
+
+## 🚀 QUICKSTART: LOCAL DEVELOPMENT
+
+### Option A: Complete Docker Compose Cluster
+```bash
+# Start all services (Database, Redis, MinIO, API, Celery Workers, Next.js Web)
+docker compose up -d
+
+# Verify system health
+curl http://localhost:8000/api/v1/health
+```
+
+### Option B: Local Hybrid Development
+```bash
+# 1. Start backing services in Docker
+docker compose up -d postgres redis minio minio-init
+
+# 2. Run backend API
+cd backend
+python3 -m pip install -e ".[dev]"
+uvicorn app.main:app --reload --port 8000
+
+# 3. Run Next.js web application
+npm run --workspace=@wealthos/web dev
+```
 
 ---
 

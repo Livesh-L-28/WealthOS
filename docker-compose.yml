@@ -1,0 +1,273 @@
+# ==============================================================================
+# WealthOS Enterprise Local Development Infrastructure
+# PostgreSQL 16 + Redis 7 + MinIO + FastAPI + Celery Workers + Next.js Web
+# ==============================================================================
+
+networks:
+  wealthos_network:
+    driver: bridge
+    name: wealthos_network
+
+volumes:
+  postgres_data:
+    name: wealthos_postgres_data
+  redis_data:
+    name: wealthos_redis_data
+  minio_data:
+    name: wealthos_minio_data
+
+services:
+  # ----------------------------------------------------------------------------
+  # PostgreSQL 16 Database
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: wealthos_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wealthos_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
+      POSTGRES_DB: ${POSTGRES_DB:-wealthos}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/init-extensions.sql:/docker-entrypoint-initdb.d/01-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wealthos_admin} -d ${POSTGRES_DB:-wealthos}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - wealthos_network
+
+  # ----------------------------------------------------------------------------
+  # Redis 7 Cache & Task Broker
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: wealthos_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass ""
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 3s
+    networks:
+      - wealthos_network
+
+  # ----------------------------------------------------------------------------
+  # MinIO S3-Compatible Object Storage
+  # ----------------------------------------------------------------------------
+  minio:
+    image: minio/minio:RELEASE.2024-05-10T01-41-38Z
+    container_name: wealthos_minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadminpassword}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - wealthos_network
+
+  # ----------------------------------------------------------------------------
+  # MinIO Bucket Provisioner
+  # ----------------------------------------------------------------------------
+  minio-init:
+    image: minio/mc:RELEASE.2024-05-09T17-04-24Z
+    container_name: wealthos_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set localminio http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadminpassword};
+      /usr/bin/mc mb --ignore-existing localminio/wealthos-documents;
+      /usr/bin/mc mb --ignore-existing localminio/wealthos-vault;
+      echo 'MinIO storage buckets verified';
+      exit 0;
+      "
+    networks:
+      - wealthos_network
+
+  # ----------------------------------------------------------------------------
+  # WealthOS Backend FastAPI Service
+  # ----------------------------------------------------------------------------
+  backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wealthos_backend_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: development
+      DEBUG: "true"
+      LOG_LEVEL: INFO
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-wealthos}
+      POSTGRES_USER: ${POSTGRES_USER:-wealthos_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-wealthos_admin}:${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}@postgres:5432/${POSTGRES_DB:-wealthos}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadminpassword}
+      MINIO_SECURE: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - wealthos_network
+
+  # ----------------------------------------------------------------------------
+  # Celery Worker: Default Queue
+  # ----------------------------------------------------------------------------
+  celery-worker-default:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wealthos_worker_default
+    restart: unless-stopped
+    command: ["celery", "-A", "app.infrastructure.celery_app.celery_app", "worker", "-Q", "default", "-l", "info", "-n", "default_worker@%h"]
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-wealthos}
+      POSTGRES_USER: ${POSTGRES_USER:-wealthos_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadminpassword}
+    depends_on:
+      backend-api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - wealthos_network
+
+  # ----------------------------------------------------------------------------
+  # Celery Worker: OCR Heavy Queue
+  # ----------------------------------------------------------------------------
+  celery-worker-ocr:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wealthos_worker_ocr
+    restart: unless-stopped
+    command: ["celery", "-A", "app.infrastructure.celery_app.celery_app", "worker", "-Q", "ocr_heavy", "-l", "info", "-c", "2", "-n", "ocr_worker@%h"]
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-wealthos}
+      POSTGRES_USER: ${POSTGRES_USER:-wealthos_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadminpassword}
+    depends_on:
+      backend-api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - wealthos_network
+
+  # ----------------------------------------------------------------------------
+  # Celery Worker: Market Data Feed Queue
+  # ----------------------------------------------------------------------------
+  celery-worker-market:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wealthos_worker_market
+    restart: unless-stopped
+    command: ["celery", "-A", "app.infrastructure.celery_app.celery_app", "worker", "-Q", "market_data", "-l", "info", "-c", "2", "-n", "market_worker@%h"]
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-wealthos}
+      POSTGRES_USER: ${POSTGRES_USER:-wealthos_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      backend-api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - wealthos_network
+
+  # ----------------------------------------------------------------------------
+  # Next.js Web Client
+  # ----------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: wealthos_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      BACKEND_API_INTERNAL_URL: http://backend-api:8000
+    depends_on:
+      backend-api:
+        condition: service_healthy
+    networks:
+      - wealthos_network

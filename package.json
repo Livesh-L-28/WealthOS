@@ -1,0 +1,25 @@
+{
+  "name": "wealthos",
+  "version": "0.2.0",
+  "private": true,
+  "description": "WealthOS — Enterprise-Grade Personal Wealth Intelligence Platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run --workspaces --if-present build",
+    "lint": "npm run --workspaces --if-present lint",
+    "typecheck": "npm run --workspaces --if-present typecheck",
+    "test": "npm run --workspaces --if-present test",
+    "clean": "npm run --workspaces --if-present clean"
+  },
+  "keywords": [
+    "wealthos",
+    "fintech",
+    "wealth-management",
+    "monorepo"
+  ],
+  "author": "WealthOS Engineering Team",
+  "license": "UNLICENSED"
+}

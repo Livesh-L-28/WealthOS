@@ -1,0 +1,29 @@
+{
+  "name": "@wealthos/api-client",
+  "version": "1.0.0",
+  "description": "Type-safe HTTP API client for WealthOS backend services",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@wealthos/shared-types": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "author": "WealthOS Engineering Team",
+  "license": "UNLICENSED"
+}
