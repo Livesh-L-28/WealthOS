@@ -1,0 +1,14 @@
+{
+  "name": "@wealthos/design-tokens",
+  "version": "1.0.0",
+  "description": "Framework-independent design tokens and Tailwind CSS preset for WealthOS",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": ["wealthos", "design-tokens", "fintech", "tailwind"],
+  "author": "WealthOS Design Engineering Team",
+  "license": "UNLICENSED"
+}
