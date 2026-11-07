@@ -32,6 +32,7 @@ RUN npm run --workspace=@wealthos/design-tokens build && \
 
 FROM node:20-alpine AS runner
 WORKDIR /app
+RUN apk add --no-cache curl
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -41,10 +42,12 @@ ENV HOSTNAME="0.0.0.0"
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built artifacts and standalone bundle
+# Copy built artifacts and dependencies
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
 COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next ./apps/web/.next
-COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/web/package.json ./apps/web/package.json
 COPY --from=builder /app/packages ./packages
 
@@ -52,5 +55,5 @@ USER nextjs
 
 EXPOSE 3000
 
-CMD ["npx", "next", "start", "apps/web", "-p", "3000"]
+CMD ["node", "./apps/web/node_modules/next/dist/bin/next", "start", "apps/web", "-p", "3000"]
 

@@ -26,6 +26,30 @@ def health_ping(self, payload: str = "ping") -> dict[str, Any]:
     }
 
 
+@celery_app.task(
+    name="app.workers.health_tasks.transient_retry_task",
+    bind=True,
+    autoretry_for=(ValueError,),
+    retry_kwargs={"max_retries": 3},
+    default_retry_delay=1,
+)
+def transient_retry_task(self, fail_until_attempt: int = 2) -> dict[str, Any]:
+    """Diagnostic task demonstrating automated retry backoff and redelivery."""
+    current_attempt = getattr(self.request, "retries", 0) + 1
+    logger.info(
+        f"Executing transient_retry_task: attempt {current_attempt} of target {fail_until_attempt}"
+    )
+    if current_attempt < fail_until_attempt:
+        raise ValueError(f"Simulated transient error on attempt {current_attempt}")
+    return {
+        "status": "recovered",
+        "attempts_made": current_attempt,
+        "queue": "default",
+        "task_id": self.request.id,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+
+
 @celery_app.task(name="app.workers.health_tasks.ocr_preflight_check", bind=True)
 def ocr_preflight_check(self) -> dict[str, Any]:
     """Preflight diagnostic executed on the OCR-heavy worker queue.

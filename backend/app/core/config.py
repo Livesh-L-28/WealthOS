@@ -1,9 +1,10 @@
 """WealthOS Configuration Management.
 
 Loads settings from environment variables using Pydantic Settings v2.
+Rejects known default development credentials in production mode.
 """
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -120,6 +121,23 @@ class Settings(BaseSettings):
     STORAGE_VAULT_BUCKET: str = Field(
         default="wealthos-vault", description="Encrypted statements and tax vault bucket"
     )
+
+    @model_validator(mode="after")
+    def validate_production_secrets(self) -> "Settings":
+        """Strictly reject known local development credentials when running in production."""
+        if self.ENVIRONMENT.lower() in ("production", "prod"):
+            insecure_markers = ("insecure", "change_in_prod", "dev_password", "12345")
+            if any(marker in self.SECRET_KEY.lower() for marker in insecure_markers):
+                raise ValueError("Insecure default SECRET_KEY detected in production environment!")
+            if any(marker in self.ENCRYPTION_MASTER_KEY.lower() for marker in insecure_markers):
+                raise ValueError(
+                    "Insecure default ENCRYPTION_MASTER_KEY detected in production environment!"
+                )
+            if any(marker in self.POSTGRES_PASSWORD.lower() for marker in insecure_markers):
+                raise ValueError(
+                    "Insecure default POSTGRES_PASSWORD detected in production environment!"
+                )
+        return self
 
     def get_database_url(self) -> str:
         """Return the async database URL, building it if not explicitly provided."""

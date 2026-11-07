@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   backend-checks:
-    name: Backend Lint, Typecheck & Pytest
+    name: Backend Lint, Migrations & Pytest
     runs-on: ubuntu-latest
 
     services:
@@ -60,10 +60,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e "./backend[dev]"
 
-      - name: Run Ruff Linting
+      - name: Run Ruff Linting & Formatting Check
         run: |
           cd backend
           ruff check .
+          ruff format --check .
+
+      - name: Verify Alembic Migration Lifecycle
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: wealthos_test
+          POSTGRES_USER: wealthos_admin
+          POSTGRES_PASSWORD: wealthos_local_dev_password_change_in_prod
+        run: |
+          cd backend
+          alembic upgrade head
+          alembic downgrade -1
+          alembic upgrade head
 
       - name: Run Pytest Test Suite
         env:
@@ -111,8 +125,14 @@ jobs:
           npm run --workspace=@wealthos/shared-types typecheck
           npm run --workspace=@wealthos/api-client typecheck
 
+      - name: Build Next.js Web Application
+        run: npm run --workspace=@wealthos/web build
+
+      - name: Typecheck Next.js Web Application
+        run: npm run --workspace=@wealthos/web typecheck
+
   docker-compose-validate:
-    name: Docker Compose Configuration Validation
+    name: Docker Compose Validation & Build
     runs-on: ubuntu-latest
 
     steps:
@@ -122,3 +142,5 @@ jobs:
       - name: Validate Docker Compose Configuration
         run: docker compose config
 
+      - name: Build Docker Compose Images
+        run: docker compose build

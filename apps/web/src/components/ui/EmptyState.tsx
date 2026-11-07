@@ -8,6 +8,7 @@ export interface EmptyStateProps {
   description: string;
   actionLabel?: string;
   onAction?: () => void;
+  actionDisabled?: boolean;
   className?: string;
 }
 
@@ -17,6 +18,7 @@ export function EmptyState({
   description,
   actionLabel,
   onAction,
+  actionDisabled = false,
   className = '',
 }: EmptyStateProps) {
   return (
@@ -29,7 +31,12 @@ export function EmptyState({
       <h4 className="text-sm font-semibold text-slate-200">{title}</h4>
       <p className="text-xs text-slate-400 max-w-sm mt-1 mb-5">{description}</p>
       {actionLabel && (
-        <Button variant="secondary" size="sm" onClick={onAction}>
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onAction}
+          disabled={actionDisabled}
+        >
           {actionLabel}
         </Button>
       )}

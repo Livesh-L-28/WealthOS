@@ -2,7 +2,8 @@
 
 Configures distributed task processing with isolated queues for OCR processing,
 market data feeds, and transactional notifications.
-Includes worker retry policies, task failure handling, and idempotency foundations.
+Includes worker retry policies, fail-closed idempotency locking, atomic compare-and-delete,
+and structured failure handling.
 """
 
 from celery import Celery
@@ -15,12 +16,30 @@ from app.core.logging import get_logger
 logger = get_logger("wealthos.celery")
 
 
+class CeleryLockError(Exception):
+    """Raised when distributed idempotency lock cannot be verified (fail-closed)."""
+
+    pass
+
+
+# Atomic compare-and-delete Lua script:
+# Deletes the key ONLY if the stored value matches the caller's owner_token
+RELEASE_LOCK_LUA_SCRIPT = """
+if redis.call("get", KEYS[1]) == ARGV[1] then
+    return redis.call("del", KEYS[1])
+else
+    return 0
+end
+"""
+
+
 def create_celery_app() -> Celery:
     """Application factory for configuring Celery worker instances."""
     app = Celery(
         "wealthos_tasks",
         broker=settings.get_celery_broker_url(),
         backend=settings.get_celery_result_backend(),
+        include=["app.workers.health_tasks"],
     )
 
     # Queue definitions
@@ -40,6 +59,7 @@ def create_celery_app() -> Celery:
         # Task routing configuration
         task_routes={
             "app.workers.health_tasks.health_ping": {"queue": "default"},
+            "app.workers.health_tasks.transient_retry_task": {"queue": "default"},
             "app.workers.health_tasks.ocr_preflight_check": {"queue": "ocr_heavy"},
             "app.workers.health_tasks.market_feed_heartbeat": {"queue": "market_data"},
         },
@@ -47,9 +67,9 @@ def create_celery_app() -> Celery:
         task_annotations={
             "*": {
                 "max_retries": 3,
-                "default_retry_delay": 5,
+                "default_retry_delay": 2,
                 "retry_backoff": True,
-                "retry_backoff_max": 60,
+                "retry_backoff_max": 30,
                 "retry_jitter": True,
             }
         },
@@ -95,28 +115,47 @@ def handle_worker_shutdown(sig, how, exitcode, **extra):
     )
 
 
-async def acquire_task_lock(redis_client, lock_key: str, timeout_seconds: int = 300) -> bool:
-    """Idempotency foundation: acquire a distributed lock to prevent duplicate task execution.
+async def acquire_task_lock(
+    redis_client, lock_key: str, owner_token: str, timeout_seconds: int = 300
+) -> bool:
+    """Acquire an atomic distributed lock with a unique ownership token.
 
-    Returns True if the lock was acquired, False if the task is already being processed.
+    Fail-Closed Policy: If Redis connectivity fails, raises CeleryLockError
+    to prevent unverified duplicate execution of financial ledger tasks.
     """
     try:
-        # SET NX EX pattern for distributed locking
+        # SET NX EX pattern: sets key only if not exists, with TTL
         acquired = await redis_client.set(
-            f"task_lock:{lock_key}", "locked", nx=True, ex=timeout_seconds
+            f"task_lock:{lock_key}", owner_token, nx=True, ex=timeout_seconds
         )
         return bool(acquired)
     except Exception as exc:
-        logger.warning(f"Failed to acquire task lock for {lock_key}: {exc}")
-        return True  # Fail open to allow task to execute if lock check is down
+        logger.error(
+            f"Fail-closed idempotency lock failure for {lock_key}: {exc}",
+            extra={"lock_key": lock_key, "error": str(exc)},
+        )
+        raise CeleryLockError(
+            f"Cannot guarantee task idempotency: Redis lock verification failed for '{lock_key}': {exc}"
+        ) from exc
 
 
-async def release_task_lock(redis_client, lock_key: str) -> None:
-    """Release a previously acquired task lock."""
+async def release_task_lock(redis_client, lock_key: str, owner_token: str) -> bool:
+    """Atomically release lock using Lua script only if owner_token matches.
+
+    Prevents releasing a lock owned by another worker or an expired/re-acquired lock.
+    Fail-closed policy: raises CeleryLockError if Redis communication fails.
+    """
     try:
-        await redis_client.delete(f"task_lock:{lock_key}")
+        # Run Lua compare-and-delete
+        result = await redis_client.eval(
+            RELEASE_LOCK_LUA_SCRIPT, 1, f"task_lock:{lock_key}", owner_token
+        )
+        return result == 1
     except Exception as exc:
-        logger.warning(f"Failed to release task lock for {lock_key}: {exc}")
+        logger.error(f"Failed to release task lock for {lock_key} due to Redis error: {exc}")
+        raise CeleryLockError(
+            f"Cannot guarantee safe lock release for '{lock_key}': {exc}"
+        ) from exc
 
 
 def check_celery_health() -> dict:

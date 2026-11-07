@@ -30,13 +30,25 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            disabled
+            title="Automated statement OCR extraction activates in Phase 3"
+          >
             <UploadCloud className="w-3.5 h-3.5" />
-            <span>Import Statement</span>
+            <span>Import Statement (Phase 3)</span>
           </Button>
-          <Button variant="primary" size="sm" className="gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            className="gap-2"
+            disabled
+            title="Account linking and aggregator activation arrives in Phase 4"
+          >
             <PlusCircle className="w-3.5 h-3.5" />
-            <span>Add Account</span>
+            <span>Add Account (Phase 4)</span>
           </Button>
         </div>
       </div>
@@ -177,8 +189,14 @@ export default function DashboardPage() {
               title="Recent Transactions"
               subtitle="Double-entry verified journal entries from linked institutions"
               action={
-                <Button variant="ghost" size="sm" className="text-xs text-indigo-400">
-                  View Full Ledger
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-indigo-400"
+                  disabled
+                  title="Full double-entry ledger activates in Phase 4"
+                >
+                  View Full Ledger (Phase 4)
                 </Button>
               }
             />
@@ -186,7 +204,8 @@ export default function DashboardPage() {
               icon={FileText}
               title="No transactions recorded yet"
               description="Import an official bank e-statement (PDF/CSV) or connect your account to begin building your auditable financial ledger."
-              actionLabel="Import Bank Statement"
+              actionLabel="Import Bank Statement (Phase 3)"
+              actionDisabled
             />
           </Card>
         </div>
@@ -198,8 +217,14 @@ export default function DashboardPage() {
               title="Linked Accounts"
               subtitle="0 accounts configured"
               action={
-                <Button variant="outline" size="sm" className="text-xs">
-                  Connect
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  disabled
+                  title="Account aggregator integration activates in Phase 4"
+                >
+                  Connect (Phase 4)
                 </Button>
               }
             />
@@ -207,7 +232,8 @@ export default function DashboardPage() {
               icon={Landmark}
               title="No accounts linked"
               description="Connect savings, current, demat or credit accounts to establish real-time balance tracking."
-              actionLabel="Add First Account"
+              actionLabel="Add First Account (Phase 4)"
+              actionDisabled
             />
           </Card>
         </div>
