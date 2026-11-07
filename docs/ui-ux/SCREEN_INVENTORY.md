@@ -9,7 +9,7 @@
 
 ## 1. INVENTORY SUMMARY
 
-WealthOS defines **68 discrete human-designed application screens, modals, and slide-over drawers** across 9 operational functional clusters. Every entry specifies:
+WealthOS defines **65 discrete human-designed application screens, modals, and slide-over drawers** across 9 operational functional clusters. Every entry specifies:
 - **Screen ID & Title**
 - **Type:** Full Page, Modal Dialog, Slide-over Drawer, or Tab View
 - **URL Route**
@@ -17,6 +17,18 @@ WealthOS defines **68 discrete human-designed application screens, modals, and s
 - **Core Data Elements & Visual Displays**
 - **Key Actions & Interactive Controls**
 - **Supported State Variations:** Loading, Empty, Populated, Error, Stale
+
+### Cluster Summary (Audited Count: 65 Screens)
+- **Cluster 1: Authentication & Onboarding:** 6 screens
+- **Cluster 2: Main Dashboard & Executive Command:** 10 views / widgets
+- **Cluster 3: Accounts & Cash Flow:** 8 screens
+- **Cluster 4: Investments & Capital Markets:** 8 screens
+- **Cluster 5: Dividends & Passive Income:** 6 screens
+- **Cluster 6: Assets & Liabilities:** 6 screens
+- **Cluster 7: Universal Document Intelligence:** 7 screens
+- **Cluster 8: Financial Intelligence, Goals & Reports:** 6 screens
+- **Cluster 9: Workspace, Security & Administration:** 8 screens
+- **TOTAL AUDITED SCREENS:** **65 screens**
 
 ---
 

@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Builds
+dist/
+.next/
+out/
+build/
+
+# Cache & Environment
+.env
+.env*.local
+.cache
+.pytest_cache
+__pycache__/
+*.pyc
+
+# System
+.DS_Store
+Thumbs.db
