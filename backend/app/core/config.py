@@ -73,6 +73,25 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(
         default=7, description="JWT refresh token expiry in days"
     )
+    JWT_ALGORITHM: str = Field(default="HS256", description="JWT signing algorithm")
+    JWT_ISSUER: str = Field(default="wealthos:auth", description="JWT token issuer")
+    JWT_AUDIENCE: str = Field(default="wealthos:api", description="JWT token audience")
+    MFA_TOTP_ISSUER: str = Field(default="WealthOS", description="MFA TOTP issuer label")
+    EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = Field(
+        default=24, description="Email verification token validity in hours"
+    )
+    PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = Field(
+        default=30, description="Password reset token validity in minutes"
+    )
+    INVITATION_TOKEN_EXPIRE_DAYS: int = Field(
+        default=7, description="Tenant invitation token validity in days"
+    )
+    LOGIN_MAX_FAILED_ATTEMPTS: int = Field(
+        default=5, description="Maximum failed login attempts before lockout"
+    )
+    LOGIN_LOCKOUT_MINUTES: int = Field(
+        default=15, description="Account lockout duration in minutes"
+    )
 
     # PostgreSQL Database
     POSTGRES_HOST: str = Field(default="localhost", description="PostgreSQL host")
@@ -279,6 +298,21 @@ class Settings(BaseSettings):
             return self.CELERY_RESULT_BACKEND
         auth_part = f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else ""
         return f"redis://{auth_part}{self.REDIS_HOST}:{self.REDIS_PORT}/2"
+
+    @property
+    def is_production(self) -> bool:
+        """Check if environment is production."""
+        return self.ENVIRONMENT.lower() == "production"
+
+    @property
+    def is_development(self) -> bool:
+        """Check if environment is development."""
+        return self.ENVIRONMENT.lower() == "development"
+
+    @property
+    def is_testing(self) -> bool:
+        """Check if environment is testing."""
+        return self.ENVIRONMENT.lower() == "testing"
 
 
 # Singleton instance
