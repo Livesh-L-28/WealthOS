@@ -78,8 +78,8 @@ const NAVIGATION_CLUSTERS: NavCluster[] = [
     title: 'Reports & Settings',
     items: [
       { label: 'Tax & Compliance', href: '/reports/tax', icon: FileSpreadsheet },
-      { label: 'Audit Trail & Export', href: '/reports/audit', icon: FileCheck2 },
-      { label: 'System Settings', href: '/settings', icon: Settings },
+      { label: 'Audit Trail & Export', href: '/settings/audit', icon: FileCheck2 },
+      { label: 'System Settings', href: '/settings/security', icon: Settings },
     ],
   },
 ];

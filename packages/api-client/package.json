@@ -16,7 +16,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@wealthos/shared-types": "^1.0.0"

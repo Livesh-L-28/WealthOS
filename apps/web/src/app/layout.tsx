@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import '../styles/globals.css';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { Header } from '@/components/layout/Header';
+import { AuthProvider } from '@/lib/auth-context';
+import { AppShell } from '@/components/layout/AppShell';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -28,16 +28,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-[#0B0F17] text-slate-100 flex min-h-screen">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <Header />
-          <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
+      <body className="bg-[#0B0F17] text-slate-100 min-h-screen">
+        <AuthProvider>
+          <AppShell>
             {children}
-          </main>
-        </div>
+          </AppShell>
+        </AuthProvider>
       </body>
     </html>
   );
 }
-
