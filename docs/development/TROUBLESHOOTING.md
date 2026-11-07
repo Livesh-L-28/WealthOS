@@ -79,3 +79,4 @@ Common diagnostic procedures, error resolutions, and operational runbooks for lo
   ```bash
   npm install --workspace=@wealthos/web <package>
   ```
+

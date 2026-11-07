@@ -42,3 +42,4 @@ class TenantScopedMixin:
 1. **Non-Root Execution**: Dockerfiles run as dedicated system users (`wealthos` UID 1001, `nextjs` UID 1001).
 2. **Isolated Networks**: Internal bridge network (`wealthos_network`) prevents external inspection of internal database and broker traffic.
 3. **Healthcheck Boundaries**: Readiness probes verify backing services without exposing sensitive credentials or stack traces.
+

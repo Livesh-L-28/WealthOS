@@ -105,3 +105,4 @@ ruff check .
 # Run typechecking
 mypy app
 ```
+

@@ -50,3 +50,4 @@ docker compose down
 # Destroy all containers and volumes (clean reset)
 docker compose down -v
 ```
+
