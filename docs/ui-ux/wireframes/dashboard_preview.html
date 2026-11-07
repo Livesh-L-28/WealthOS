@@ -3,32 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WealthOS — Executive Wealth Intelligence Dashboard Wireframe</title>
+  <title>WealthOS — Executive Wealth Intelligence Dashboard (Visual Design Prototype)</title>
   <style>
     :root {
       --bg-canvas: #0B0F17;
       --bg-surface: #111827;
       --bg-card: #1E293B;
-      --bg-card-hover: #2D3B4E;
-      --border-default: #374151;
+      --bg-card-hover: #243042;
+      --border-default: #6B7280;
       --border-subtle: #1F2937;
-      --border-focus: #6366F1;
+      --border-focus: #818CF8;
       --text-primary: #F8FAFC;
-      --text-secondary: #94A3B8;
-      --text-muted: #64748B;
-      --pos-fg: #10B981;
-      --pos-bg: rgba(16, 185, 129, 0.12);
-      --neg-fg: #F43F5E;
-      --neg-bg: rgba(244, 63, 94, 0.12);
-      --warn-fg: #F59E0B;
-      --warn-bg: rgba(245, 158, 11, 0.12);
-      --brand: #6366F1;
-      --brand-hover: #4F46E5;
+      --text-secondary: #CBD5E1;
+      --text-muted: #94A3B8;
+      --text-disabled: #64748B;
+      --pos-fg: #34D399;
+      --pos-bg: rgba(52, 211, 153, 0.12);
+      --neg-fg: #FB7185;
+      --neg-bg: rgba(251, 113, 133, 0.12);
+      --warn-fg: #FBBF24;
+      --warn-bg: rgba(251, 191, 36, 0.12);
+      --brand: #4F46E5;
+      --brand-hover: #4338CA;
+      --brand-link: #A5B4FC;
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background-color: var(--bg-canvas);
       color: var(--text-primary);
@@ -36,14 +39,50 @@
       font-size: 14px;
       line-height: 1.5;
       display: flex;
+      flex-direction: column;
       min-height: 100vh;
       overflow-x: hidden;
+      width: 100%;
     }
 
-    /* Tabular numbers */
-    .tabular-nums { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+    /* Accessible focus state */
+    :focus-visible {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 2px;
+    }
 
-    /* Layout Shell */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-family: var(--font-mono);
+    }
+
+    /* Visual Prototype Banner */
+    .prototype-disclaimer-banner {
+      background: #312E81;
+      border-bottom: 1px solid #4338CA;
+      color: #E0E7FF;
+      padding: 8px 16px;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+    .prototype-disclaimer-banner strong {
+      color: #FFFFFF;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Layout Container */
+    .app-shell {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Left Sidebar */
     aside.sidebar {
       width: 260px;
       background: var(--bg-surface);
@@ -53,7 +92,7 @@
       flex-shrink: 0;
     }
     .brand-header {
-      padding: 20px;
+      padding: 18px 20px;
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
@@ -98,20 +137,25 @@
       color: inherit;
     }
 
+    /* Main Viewport */
     main.main-viewport {
       flex: 1;
       display: flex;
       flex-direction: column;
       min-width: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
     header.top-header {
-      height: 64px;
+      min-height: 64px;
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
+      padding: 10px 24px;
+      gap: 16px;
+      flex-wrap: wrap;
     }
     .workspace-pill {
       background: var(--bg-card);
@@ -122,10 +166,10 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      cursor: pointer;
     }
     .search-box {
-      width: 380px;
+      width: 340px;
+      max-width: 100%;
       background: var(--bg-canvas);
       border: 1px solid var(--border-default);
       border-radius: 6px;
@@ -148,10 +192,25 @@
     .content-area {
       padding: 24px;
       flex: 1;
-      overflow-y: auto;
       max-width: 1440px;
       margin: 0 auto;
       width: 100%;
+      overflow-x: hidden;
+    }
+
+    /* Illustrative Tag */
+    .illustrative-badge {
+      display: inline-block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
     }
 
     /* KPI Grid */
@@ -194,14 +253,7 @@
     .pill-pos {
       background: var(--pos-bg);
       color: var(--pos-fg);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 11px;
-    }
-    .pill-neg {
-      background: var(--neg-bg);
-      color: var(--neg-fg);
+      border: 1px solid var(--pos-fg);
       padding: 2px 6px;
       border-radius: 4px;
       font-weight: 600;
@@ -220,6 +272,7 @@
       border: 1px solid var(--border-default);
       border-radius: 8px;
       padding: 20px;
+      overflow: hidden;
     }
     .panel-title {
       font-size: 15px;
@@ -228,13 +281,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
-    /* Table styles */
+    /* Table styles & responsive wrapper */
+    .table-responsive-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
     table.fin-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
+      min-width: 600px;
     }
     table.fin-table th {
       text-align: left;
@@ -260,260 +321,325 @@
       font-size: 11px;
       font-weight: 500;
     }
-    .badge-posted { background: rgba(99, 102, 241, 0.15); color: #818CF8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-posted { background: rgba(99, 102, 241, 0.15); color: #A5B4FC; border: 1px solid #818CF8; }
     .badge-reconciled { background: var(--pos-bg); color: var(--pos-fg); border: 1px solid var(--pos-fg); }
+
+    /* ==========================================================================
+       RESPONSIVE CSS (DESKTOP, TABLET, MOBILE)
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      aside.sidebar {
+        width: 72px;
+      }
+      .brand-title, .badge-sub, .nav-label, .nav-item span:first-child, .nav-count {
+        display: none;
+      }
+      .brand-header {
+        justify-content: center;
+        padding: 16px 0;
+      }
+      .nav-item {
+        justify-content: center;
+        padding: 12px 0;
+      }
+      .nav-item::before {
+        content: "●";
+        font-size: 14px;
+      }
+      .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .charts-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      aside.sidebar {
+        display: none;
+      }
+      header.top-header {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-box {
+        width: 100%;
+      }
+      .kpi-grid {
+        grid-template-columns: 1fr;
+      }
+      .content-area {
+        padding: 16px 12px;
+      }
+      .kpi-value {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Left Sidebar -->
-  <aside class="sidebar">
-    <div class="brand-header">
-      <div class="brand-logo">W</div>
-      <div>
-        <div class="brand-title">WealthOS</div>
-        <div class="badge-sub">FINANCIAL INTELLIGENCE</div>
-      </div>
-    </div>
-    <nav class="nav-group">
-      <div class="nav-label">Core Wealth</div>
-      <a href="#" class="nav-item active">
-        <span>Overview</span>
-      </a>
-      <a href="#" class="nav-item">
-        <span>Net Worth</span>
-      </a>
-      <a href="#" class="nav-item">
-        <span>Financial Copilot</span>
-        <span class="nav-count">AI</span>
-      </a>
+  <!-- Top Prototype Disclaimer Banner -->
+  <div class="prototype-disclaimer-banner" role="region" aria-label="Visual Prototype Notice">
+    <strong>Visual Design Prototype:</strong> This interface is a static wireframe preview. All metrics, balances, and transaction records are <strong>synthetic & illustrative</strong>. Interactive buttons, live exchange rates, and ledger operations are non-functional mockups for design review.
+  </div>
 
-      <div class="nav-label">Cash Flow</div>
-      <a href="#" class="nav-item">
-        <span>Accounts & Balances</span>
-      </a>
-      <a href="#" class="nav-item">
-        <span>Transactions</span>
-        <span class="nav-count">384</span>
-      </a>
-      <a href="#" class="nav-item">
-        <span>Income</span>
-      </a>
-      <a href="#" class="nav-item">
-        <span>Expenses</span>
-      </a>
-
-      <div class="nav-label">Investments</div>
-      <a href="#" class="nav-item">
-        <span>Portfolio Holdings</span>
-      </a>
-      <a href="#" class="nav-item">
-        <span>FIFO Tax Lots</span>
-      </a>
-      <a href="#" class="nav-item">
-        <span>Dividends & TDS</span>
-      </a>
-
-      <div class="nav-label">Vault & Integrity</div>
-      <a href="#" class="nav-item">
-        <span>Document Vault</span>
-        <span class="nav-count" style="background:var(--warn-fg); color:#000;">2</span>
-      </a>
-      <a href="#" class="nav-item">
-        <span>Reconciliation</span>
-      </a>
-    </nav>
-  </aside>
-
-  <!-- Main Viewport -->
-  <main class="main-viewport">
-    <header class="top-header">
-      <div class="workspace-pill">
-        <span>🏢 <strong>Sharma Family Office</strong> (Owner)</span>
-        <span style="color:var(--text-muted)">▾</span>
-      </div>
-      <div class="search-box">
-        <span style="color:var(--text-muted)">Search accounts, trades, documents...</span>
-        <span class="kbd-shortcut">⌘K</span>
-      </div>
-      <div style="display:flex; align-items:center; gap:16px;">
-        <span style="color:var(--pos-fg); font-size:12px; font-weight:600;">● Live (NSE/BSE)</span>
-        <button style="background:var(--brand); border:none; color:#fff; padding:6px 14px; border-radius:6px; font-weight:500; cursor:pointer;">+ Record</button>
-        <div style="width:32px; height:32px; border-radius:50%; background:#374151; display:flex; align-items:center; justify-content:center; font-weight:600;">AS</div>
-      </div>
-    </header>
-
-    <div class="content-area">
-      <!-- KPI Top Row -->
-      <section class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <span>TOTAL NET WORTH</span>
-            <span>ℹ️</span>
-          </div>
-          <div class="kpi-value tabular-nums">₹1,42,85,920.00</div>
-          <div class="kpi-footer">
-            <span class="pill-pos tabular-nums">▲ +₹4,20,500 (+3.03%)</span>
-            <span style="color:var(--text-muted)">vs last month</span>
-          </div>
+  <div class="app-shell">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar" role="navigation" aria-label="Main Application Navigation">
+      <div class="brand-header">
+        <div class="brand-logo" aria-hidden="true">W</div>
+        <div>
+          <div class="brand-title">WealthOS</div>
+          <div class="badge-sub">FINTECH WIREFRAME</div>
         </div>
+      </div>
+      <nav class="nav-group">
+        <div class="nav-label">Core Wealth</div>
+        <a href="#overview" class="nav-item active" aria-current="page">
+          <span>Overview</span>
+        </a>
+        <a href="#net-worth" class="nav-item">
+          <span>Net Worth</span>
+        </a>
+        <a href="#copilot" class="nav-item">
+          <span>Financial Copilot</span>
+          <span class="nav-count">AI</span>
+        </a>
 
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <span>LIQUID CASH & BANK</span>
-            <span>🏦</span>
-          </div>
-          <div class="kpi-value tabular-nums">₹14,50,000.00</div>
-          <div class="kpi-footer">
-            <span style="color:var(--text-secondary)">3 Active Accounts</span>
-            <span style="color:var(--text-muted)">• 10.1% of NW</span>
-          </div>
+        <div class="nav-label">Cash Flow</div>
+        <a href="#accounts" class="nav-item">
+          <span>Accounts & Balances</span>
+        </a>
+        <a href="#transactions" class="nav-item">
+          <span>Transactions</span>
+          <span class="nav-count">384</span>
+        </a>
+        <a href="#income" class="nav-item">
+          <span>Income</span>
+        </a>
+        <a href="#expenses" class="nav-item">
+          <span>Expenses</span>
+        </a>
+
+        <div class="nav-label">Investments</div>
+        <a href="#holdings" class="nav-item">
+          <span>Portfolio Holdings</span>
+        </a>
+        <a href="#fifo-lots" class="nav-item">
+          <span>FIFO Tax Lots</span>
+        </a>
+        <a href="#dividends" class="nav-item">
+          <span>Dividends & TDS</span>
+        </a>
+
+        <div class="nav-label">Vault & Integrity</div>
+        <a href="#documents" class="nav-item">
+          <span>Document Vault</span>
+          <span class="nav-count" style="background:var(--warn-fg); color:#000;">2</span>
+        </a>
+        <a href="#reconciliation" class="nav-item">
+          <span>Reconciliation</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport" id="main-content" role="main">
+      <header class="top-header" role="banner">
+        <div class="workspace-pill" aria-label="Current Workspace">
+          <span>🏢 <strong>Sharma Family Office</strong> (Owner)</span>
+          <span style="color:var(--text-muted)" aria-hidden="true">▾</span>
         </div>
-
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <span>INVESTED CAPITAL</span>
-            <span>📈</span>
-          </div>
-          <div class="kpi-value tabular-nums">₹1,84,35,920.00</div>
-          <div class="kpi-footer">
-            <span class="pill-pos tabular-nums">XIRR: 16.82%</span>
-            <span style="color:var(--text-muted)">• Alpha: +3.4%</span>
-          </div>
+        <div class="search-box" role="search">
+          <label for="global-search" class="sr-only" style="display:none;">Search accounts, trades, documents</label>
+          <input type="text" id="global-search" placeholder="Search accounts, trades, documents... (Prototype)" style="background:transparent; border:none; color:var(--text-primary); font-size:13px; width:100%; outline:none;" aria-label="Global Search">
+          <span class="kbd-shortcut" aria-hidden="true">⌘K</span>
         </div>
-
-        <div class="kpi-card">
-          <div class="kpi-header">
-            <span>TOTAL LIABILITIES</span>
-            <span>💳</span>
-          </div>
-          <div class="kpi-value tabular-nums" style="color:var(--neg-fg)">-₹56,00,000.00</div>
-          <div class="kpi-footer">
-            <span style="color:var(--text-muted)">Debt-to-Asset: 28.1%</span>
-          </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="color:var(--pos-fg); font-size:12px; font-weight:600;" aria-label="Market Data Status: Simulated EOD">● Simulated (EOD)</span>
+          <button style="background:var(--brand); border:none; color:#fff; padding:6px 14px; border-radius:6px; font-weight:500; cursor:pointer;" aria-label="Record New Entry (Mockup Button)">+ Record</button>
+          <div style="width:32px; height:32px; border-radius:50%; background:#374151; display:flex; align-items:center; justify-content:center; font-weight:600;" aria-label="User Avatar: AS">AS</div>
         </div>
-      </section>
+      </header>
 
-      <!-- Charts Row -->
-      <section class="charts-row">
-        <div class="card-panel">
+      <div class="content-area">
+        <!-- KPI Top Row -->
+        <section class="kpi-grid" aria-label="Key Wealth Metrics (Illustrative)">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span>TOTAL NET WORTH <span class="illustrative-badge">Illustrative</span></span>
+              <span aria-hidden="true">ℹ️</span>
+            </div>
+            <div class="kpi-value tabular-nums" aria-label="One Crore Forty-Two Lakhs Eighty-Five Thousand Nine Hundred Twenty Rupees">₹1,42,85,920.00</div>
+            <div class="kpi-footer">
+              <span class="pill-pos tabular-nums">▲ +₹4,20,500 (+3.03%)</span>
+              <span style="color:var(--text-muted)">vs last month</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span>LIQUID CASH & BANK <span class="illustrative-badge">Illustrative</span></span>
+              <span aria-hidden="true">🏦</span>
+            </div>
+            <div class="kpi-value tabular-nums" aria-label="Fourteen Lakhs Fifty Thousand Rupees">₹14,50,000.00</div>
+            <div class="kpi-footer">
+              <span style="color:var(--text-secondary)">3 Active Accounts</span>
+              <span style="color:var(--text-muted)">• 10.1% of NW</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span>INVESTED CAPITAL <span class="illustrative-badge">Illustrative</span></span>
+              <span aria-hidden="true">📈</span>
+            </div>
+            <div class="kpi-value tabular-nums" aria-label="One Crore Eighty-Four Lakhs Thirty-Five Thousand Nine Hundred Twenty Rupees">₹1,84,35,920.00</div>
+            <div class="kpi-footer">
+              <span class="pill-pos tabular-nums">XIRR: 16.82%</span>
+              <span style="color:var(--text-muted)">• Alpha: +3.4%</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span>TOTAL LIABILITIES <span class="illustrative-badge">Illustrative</span></span>
+              <span aria-hidden="true">💳</span>
+            </div>
+            <div class="kpi-value tabular-nums" style="color:var(--neg-fg)" aria-label="Minus Fifty-Six Lakhs Rupees">-₹56,00,000.00</div>
+            <div class="kpi-footer">
+              <span style="color:var(--text-muted)">Debt-to-Asset: 28.1%</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Charts Row -->
+        <section class="charts-row" aria-label="Financial Charts Section">
+          <div class="card-panel">
+            <div class="panel-title">
+              <span>Historical Net Worth Trajectory <span class="illustrative-badge">Illustrative Model</span></span>
+              <div style="font-size:12px; color:var(--text-muted);" role="group" aria-label="Time Horizon Selector">
+                <span style="padding:4px 8px; border-radius:4px; background:var(--bg-canvas);">1M</span>
+                <span style="padding:4px 8px; border-radius:4px; background:var(--brand); color:#fff;">1Y</span>
+                <span style="padding:4px 8px; border-radius:4px; background:var(--bg-canvas);">3Y</span>
+                <span style="padding:4px 8px; border-radius:4px; background:var(--bg-canvas);">ALL</span>
+              </div>
+            </div>
+            <!-- Clean Responsive SVG Area Chart Wireframe -->
+            <svg viewBox="0 0 700 200" style="width:100%; height:auto; max-height:200px;" aria-label="Net worth area chart wireframe showing growth trajectory from 90 Lakhs to 1.42 Crores">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#818CF8" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#818CF8" stop-opacity="0.0"/>
+                </linearGradient>
+              </defs>
+              <line x1="50" y1="20" x2="680" y2="20" stroke="#1F2937" stroke-dasharray="3 3"/>
+              <line x1="50" y1="70" x2="680" y2="70" stroke="#1F2937" stroke-dasharray="3 3"/>
+              <line x1="50" y1="120" x2="680" y2="120" stroke="#1F2937" stroke-dasharray="3 3"/>
+              <line x1="50" y1="170" x2="680" y2="170" stroke="#1F2937"/>
+              <text x="10" y="24" fill="#94A3B8" font-size="10">₹1.5 Cr</text>
+              <text x="10" y="74" fill="#94A3B8" font-size="10">₹1.2 Cr</text>
+              <text x="10" y="124" fill="#94A3B8" font-size="10">₹90 L</text>
+              <path d="M 50 160 Q 150 140 250 110 T 450 70 T 680 30 L 680 170 L 50 170 Z" fill="url(#areaGrad)"/>
+              <path d="M 50 160 Q 150 140 250 110 T 450 70 T 680 30" fill="none" stroke="#818CF8" stroke-width="2.5"/>
+              <circle cx="680" cy="30" r="4" fill="#818CF8" stroke="#F8FAFC" stroke-width="2"/>
+            </svg>
+          </div>
+
+          <div class="card-panel">
+            <div class="panel-title">
+              <span>Asset Allocation <span class="illustrative-badge">Illustrative</span></span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px; font-size:12px; margin-top:14px;">
+              <div style="display:flex; justify-content:space-between;">
+                <span>● Listed Equities</span>
+                <strong class="tabular-nums">48.2% (₹88.8L)</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>● Real Estate</span>
+                <strong class="tabular-nums">30.4% (₹56.0L)</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>● Cash & FDs</span>
+                <strong class="tabular-nums">12.2% (₹22.5L)</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>● Gold & SGBs</span>
+                <strong class="tabular-nums">6.8% (₹12.5L)</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between;">
+                <span>● Alternatives</span>
+                <strong class="tabular-nums">2.4% (₹4.5L)</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Table Panel -->
+        <section class="card-panel" aria-label="Recent Transactions Register (Illustrative)">
           <div class="panel-title">
-            <span>Historical Net Worth Trajectory</span>
-            <div style="font-size:12px; color:var(--text-muted);">
-              <span style="padding:4px 8px; border-radius:4px; background:var(--bg-canvas);">1M</span>
-              <span style="padding:4px 8px; border-radius:4px; background:var(--brand); color:#fff;">1Y</span>
-              <span style="padding:4px 8px; border-radius:4px; background:var(--bg-canvas);">3Y</span>
-              <span style="padding:4px 8px; border-radius:4px; background:var(--bg-canvas);">ALL</span>
-            </div>
+            <span>Recent Double-Entry Transactions <span class="illustrative-badge">Illustrative Data</span></span>
+            <a href="#complete-ledger" style="color:var(--brand-link); text-decoration:none; font-size:12px; font-weight:500;">View Complete Ledger →</a>
           </div>
-          <!-- Clean SVG Area Chart Wireframe -->
-          <svg viewBox="0 0 700 200" style="width:100%; height:200px;">
-            <defs>
-              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#6366F1" stop-opacity="0.3"/>
-                <stop offset="100%" stop-color="#6366F1" stop-opacity="0.0"/>
-              </linearGradient>
-            </defs>
-            <line x1="50" y1="20" x2="680" y2="20" stroke="#1F2937" stroke-dasharray="3 3"/>
-            <line x1="50" y1="70" x2="680" y2="70" stroke="#1F2937" stroke-dasharray="3 3"/>
-            <line x1="50" y1="120" x2="680" y2="120" stroke="#1F2937" stroke-dasharray="3 3"/>
-            <line x1="50" y1="170" x2="680" y2="170" stroke="#1F2937"/>
-            <text x="10" y="24" fill="#64748B" font-size="10">₹1.5 Cr</text>
-            <text x="10" y="74" fill="#64748B" font-size="10">₹1.2 Cr</text>
-            <text x="10" y="124" fill="#64748B" font-size="10">₹90 L</text>
-            <path d="M 50 160 Q 150 140 250 110 T 450 70 T 680 30 L 680 170 L 50 170 Z" fill="url(#areaGrad)"/>
-            <path d="M 50 160 Q 150 140 250 110 T 450 70 T 680 30" fill="none" stroke="#6366F1" stroke-width="2.5"/>
-            <circle cx="680" cy="30" r="4" fill="#6366F1" stroke="#F8FAFC" stroke-width="2"/>
-          </svg>
-        </div>
-
-        <div class="card-panel">
-          <div class="panel-title">Asset Allocation</div>
-          <div style="display:flex; flex-direction:column; gap:10px; font-size:12px; margin-top:14px;">
-            <div style="display:flex; justify-content:space-between;">
-              <span>● Listed Equities</span>
-              <strong class="tabular-nums">48.2% (₹88.8L)</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-              <span>● Real Estate</span>
-              <strong class="tabular-nums">30.4% (₹56.0L)</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-              <span>● Cash & FDs</span>
-              <strong class="tabular-nums">12.2% (₹22.5L)</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-              <span>● Gold & SGBs</span>
-              <strong class="tabular-nums">6.8% (₹12.5L)</strong>
-            </div>
-            <div style="display:flex; justify-content:space-between;">
-              <span>● Alternatives</span>
-              <strong class="tabular-nums">2.4% (₹4.5L)</strong>
-            </div>
+          <div class="table-responsive-wrapper">
+            <table class="fin-table" aria-label="Illustrative Transaction Records">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Account</th>
+                  <th scope="col">Payee / Description</th>
+                  <th scope="col">Category</th>
+                  <th scope="col">Status</th>
+                  <th scope="col" class="col-right">Debit</th>
+                  <th scope="col" class="col-right">Credit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="tabular-nums">06 Nov 2026</td>
+                  <td>HDFC Salary (4892)</td>
+                  <td>TechCorp India Pvt Ltd</td>
+                  <td>Income:Salary:Base Pay</td>
+                  <td><span class="status-badge badge-posted">POSTED</span></td>
+                  <td class="col-right tabular-nums">—</td>
+                  <td class="col-right tabular-nums" style="color:var(--pos-fg); font-weight:600;">₹2,69,800.00</td>
+                </tr>
+                <tr>
+                  <td class="tabular-nums">05 Nov 2026</td>
+                  <td>ICICI Emeralde (8821)</td>
+                  <td>Star Health Insurance Premium</td>
+                  <td>Expense:Health:Insurance</td>
+                  <td><span class="status-badge badge-posted">POSTED</span></td>
+                  <td class="col-right tabular-nums" style="color:var(--neg-fg); font-weight:600;">₹24,500.00</td>
+                  <td class="col-right tabular-nums">—</td>
+                </tr>
+                <tr>
+                  <td class="tabular-nums">04 Nov 2026</td>
+                  <td>Zerodha Demat (8160)</td>
+                  <td>Infosys Ltd (Gross Dividend)</td>
+                  <td>Income:Dividends:Equities</td>
+                  <td><span class="status-badge badge-reconciled">RECONCILED</span></td>
+                  <td class="col-right tabular-nums">—</td>
+                  <td class="col-right tabular-nums" style="color:var(--pos-fg); font-weight:600;">₹7,560.00</td>
+                </tr>
+                <tr>
+                  <td class="tabular-nums">04 Nov 2026</td>
+                  <td>ICICI Emeralde (8821)</td>
+                  <td>Reliance Retail Superstore [SPLIT]</td>
+                  <td>Expense:Split (2 Categories)</td>
+                  <td><span class="status-badge badge-posted">POSTED</span></td>
+                  <td class="col-right tabular-nums" style="color:var(--neg-fg); font-weight:600;">₹12,800.00</td>
+                  <td class="col-right tabular-nums">—</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-        </div>
-      </section>
-
-      <!-- Table Panel -->
-      <section class="card-panel">
-        <div class="panel-title">
-          <span>Recent Double-Entry Transactions</span>
-          <a href="#" style="color:var(--brand); text-decoration:none; font-size:12px; font-weight:500;">View Complete Ledger →</a>
-        </div>
-        <table class="fin-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Account</th>
-              <th>Payee / Description</th>
-              <th>Category</th>
-              <th>Status</th>
-              <th class="col-right">Debit</th>
-              <th class="col-right">Credit</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="tabular-nums">06 Nov 2026</td>
-              <td>HDFC Salary (4892)</td>
-              <td>TechCorp India Pvt Ltd</td>
-              <td>Income:Salary:Base Pay</td>
-              <td><span class="status-badge badge-posted">POSTED</span></td>
-              <td class="col-right tabular-nums">—</td>
-              <td class="col-right tabular-nums" style="color:var(--pos-fg); font-weight:600;">₹2,69,800.00</td>
-            </tr>
-            <tr>
-              <td class="tabular-nums">05 Nov 2026</td>
-              <td>ICICI Emeralde (8821)</td>
-              <td>Star Health Insurance Premium</td>
-              <td>Expense:Health:Insurance</td>
-              <td><span class="status-badge badge-posted">POSTED</span></td>
-              <td class="col-right tabular-nums" style="color:var(--neg-fg); font-weight:600;">₹24,500.00</td>
-              <td class="col-right tabular-nums">—</td>
-            </tr>
-            <tr>
-              <td class="tabular-nums">04 Nov 2026</td>
-              <td>Zerodha Demat (8160)</td>
-              <td>Infosys Ltd (Gross Dividend)</td>
-              <td>Income:Dividends:Equities</td>
-              <td><span class="status-badge badge-reconciled">RECONCILED</span></td>
-              <td class="col-right tabular-nums">—</td>
-              <td class="col-right tabular-nums" style="color:var(--pos-fg); font-weight:600;">₹7,560.00</td>
-            </tr>
-            <tr>
-              <td class="tabular-nums">04 Nov 2026</td>
-              <td>ICICI Emeralde (8821)</td>
-              <td>Reliance Retail Superstore [SPLIT]</td>
-              <td>Expense:Split (2 Categories)</td>
-              <td><span class="status-badge badge-posted">POSTED</span></td>
-              <td class="col-right tabular-nums" style="color:var(--neg-fg); font-weight:600;">₹12,800.00</td>
-              <td class="col-right tabular-nums">—</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-    </div>
-  </main>
+        </section>
+      </div>
+    </main>
+  </div>
 
 </body>
 </html>

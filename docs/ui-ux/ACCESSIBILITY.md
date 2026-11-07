@@ -3,7 +3,7 @@
 **Document Reference:** WOS-UX-ACC-001  
 **Standard Compliance:** WCAG 2.1 Level AA / Section 508 / WAI-ARIA 1.2  
 **Version:** 1.0.0-RELEASE-CANDIDATE  
-**Status:** APPROVED / FROZEN BASELINE  
+**Status:** AUDITED & WCAG 2.1 AA COMPLIANT  
 **Classification:** Product Design Specification  
 
 ---
@@ -12,24 +12,42 @@
 
 WealthOS enforces **WCAG 2.1 Level AA** compliance across all web and mobile interfaces. Financial intelligence must be universally accessible to power users navigating via screen readers, keyboard-only operators, and users with visual or motor impairments.
 
+All foreground and background token pairings are verified via the reproducible verification script: [`scripts/verify_contrast.py`](file:///Users/livesh/WEALTHOS/scripts/verify_contrast.py).
+
 ---
 
-## 2. COLOR CONTRAST RATIO AUDIT
+## 2. COLOR CONTRAST RATIO AUDIT (W3C RELATIVE LUMINANCE ALGORITHM)
 
-Every text and interactive foreground token is rigorously measured against its underlying background token using the WCAG relative luminance formula:
+Every text and interactive foreground token is measured against all dark application backgrounds using the official W3C relative luminance formula:
 
 $$\text{Contrast Ratio} = \frac{L_1 + 0.05}{L_2 + 0.05}$$
 
-| Foreground Token | Underlying Background | Calculated Ratio | WCAG 2.1 AA Standard | Compliance Status |
+### 2.1 Contrast Audit Matrix
+
+| Foreground Token | Tested Background | Calculated Ratio | WCAG 2.1 AA Requirement | Compliance Status |
 |---|---|---|---|---|
-| `text-primary` (`#F8FAFC`) | `bg-canvas` (`#0B0F17`) | **16.5 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
-| `text-primary` (`#F8FAFC`) | `bg-card` (`#1E293B`) | **11.4 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
-| `text-secondary` (`#94A3B8`) | `bg-canvas` (`#0B0F17`) | **7.8 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
-| `text-muted` (`#64748B`) | `bg-canvas` (`#0B0F17`) | **4.6 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Meets AA)** |
-| `finance-positive` (`#10B981`)| `bg-canvas` (`#0B0F17`) | **8.2 : 1** | $\ge 3.0 : 1$ (UI & Graphical) | **PASS (Exceeds AA)** |
-| `finance-negative` (`#F43F5E`)| `bg-canvas` (`#0B0F17`) | **5.6 : 1** | $\ge 3.0 : 1$ (UI & Graphical) | **PASS (Exceeds AA)** |
-| `finance-warning` (`#F59E0B`) | `bg-canvas` (`#0B0F17`) | **9.4 : 1** | $\ge 3.0 : 1$ (UI & Graphical) | **PASS (Exceeds AA)** |
-| `brand-primary` (`#6366F1`) | `bg-canvas` (`#0B0F17`) | **5.1 : 1** | $\ge 3.0 : 1$ (Interactive UI) | **PASS (Meets AA)** |
+| `text_primary` (`#F8FAFC`) | `canvas` (`#0B0F17`) | **18.33 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
+| `text_primary` (`#F8FAFC`) | `surface` (`#111827`) | **16.96 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
+| `text_primary` (`#F8FAFC`) | `card` (`#1E293B`) | **13.98 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
+| `text_primary` (`#F8FAFC`) | `card_hover` (`#243042`) | **12.73 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
+| `text_secondary` (`#CBD5E1`)| `canvas` (`#0B0F17`) | **12.92 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
+| `text_secondary` (`#CBD5E1`)| `card` (`#1E293B`) | **9.85 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
+| `text_secondary` (`#CBD5E1`)| `card_hover` (`#243042`) | **8.97 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
+| `text_muted` (`#94A3B8`) | `canvas` (`#0B0F17`) | **7.48 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
+| `text_muted` (`#94A3B8`) | `card` (`#1E293B`) | **5.71 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Meets AA)** |
+| `text_muted` (`#94A3B8`) | `card_hover` (`#243042`) | **5.20 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Meets AA)** |
+| `positive_fg` (`#34D399`) | `canvas` (`#0B0F17`) | **9.98 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
+| `positive_fg` (`#34D399`) | `card` (`#1E293B`) | **7.61 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
+| `negative_fg` (`#FB7185`) | `canvas` (`#0B0F17`) | **7.13 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
+| `negative_fg` (`#FB7185`) | `card` (`#1E293B`) | **5.44 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Meets AA)** |
+| `negative_fg` (`#FB7185`) | `card_hover` (`#243042`) | **4.95 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Meets AA)** |
+| `warning_fg` (`#FBBF24`) | `canvas` (`#0B0F17`) | **11.49 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AAA)** |
+| `warning_fg` (`#FBBF24`) | `card` (`#1E293B`) | **8.76 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
+| `brand_link` (`#A5B4FC`) | `canvas` (`#0B0F17`) | **9.62 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
+| `brand_link` (`#A5B4FC`) | `card` (`#1E293B`) | **7.34 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
+| `brand_button_text` (`#FFF`)| `brand_btn` (`#4F46E5`)| **6.29 : 1** | $\ge 4.5 : 1$ (Normal Text) | **PASS (Exceeds AA)** |
+| `border_default` (`#6B7280`)| `card` (`#1E293B`) | **3.03 : 1** | $\ge 3.0 : 1$ (UI Controls SC 1.4.11) | **PASS (Meets AA)** |
+| `border_focus` (`#818CF8`) | `card` (`#1E293B`) | **4.90 : 1** | $\ge 3.0 : 1$ (UI Focus SC 1.4.11) | **PASS (Exceeds AA)** |
 
 ---
 
@@ -39,7 +57,7 @@ $$\text{Contrast Ratio} = \frac{L_1 + 0.05}{L_2 + 0.05}$$
    - Default browser outlines are removed and replaced with a high-contrast focus ring:
      ```css
      :focus-visible {
-       outline: 2px solid var(--wos-color-border-focus); /* #6366F1 */
+       outline: 2px solid var(--wos-color-border-focus); /* #818CF8 */
        outline-offset: 2px;
        border-radius: var(--wos-radius-sm);
      }

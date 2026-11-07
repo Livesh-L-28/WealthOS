@@ -1,14 +1,37 @@
 {
   "name": "@wealthos/design-tokens",
   "version": "1.0.0",
-  "description": "Framework-independent design tokens and Tailwind CSS preset for WealthOS",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc"
+  "description": "Framework-independent WCAG 2.1 AA audited design tokens and Tailwind CSS preset for WealthOS",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "tailwind-preset.js",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./tailwind-preset": "./tailwind-preset.js"
   },
-  "keywords": ["wealthos", "design-tokens", "fintech", "tailwind"],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "keywords": [
+    "wealthos",
+    "design-tokens",
+    "fintech",
+    "wcag-aa",
+    "tailwind"
+  ],
   "author": "WealthOS Design Engineering Team",
   "license": "UNLICENSED"
 }

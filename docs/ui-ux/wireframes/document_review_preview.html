@@ -3,50 +3,79 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WealthOS — Document Intelligence Side-by-Side Review Wireframe</title>
+  <title>WealthOS — Document Intelligence Side-by-Side Review (Visual Design Prototype)</title>
   <style>
     :root {
       --bg-canvas: #0B0F17;
       --bg-surface: #111827;
       --bg-card: #1E293B;
-      --bg-card-hover: #2D3B4E;
-      --border-default: #374151;
+      --bg-card-hover: #243042;
+      --border-default: #6B7280;
       --border-subtle: #1F2937;
-      --border-focus: #6366F1;
+      --border-focus: #818CF8;
       --text-primary: #F8FAFC;
-      --text-secondary: #94A3B8;
-      --text-muted: #64748B;
-      --pos-fg: #10B981;
-      --pos-bg: rgba(16, 185, 129, 0.12);
-      --neg-fg: #F43F5E;
-      --neg-bg: rgba(244, 63, 94, 0.12);
-      --warn-fg: #F59E0B;
-      --warn-bg: rgba(245, 158, 11, 0.12);
-      --brand: #6366F1;
+      --text-secondary: #CBD5E1;
+      --text-muted: #94A3B8;
+      --pos-fg: #34D399;
+      --pos-bg: rgba(52, 211, 153, 0.12);
+      --neg-fg: #FB7185;
+      --neg-bg: rgba(251, 113, 133, 0.12);
+      --warn-fg: #FBBF24;
+      --warn-bg: rgba(251, 191, 36, 0.12);
+      --brand: #4F46E5;
+      --brand-hover: #4338CA;
+      --brand-link: #A5B4FC;
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    
     body {
       background: var(--bg-canvas);
       color: var(--text-primary);
       font-family: var(--font-sans);
       font-size: 13px;
-      height: 100vh;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-x: hidden;
+      width: 100%;
     }
+
+    :focus-visible {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 2px;
+    }
+
     .tabular-nums { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
 
+    /* Top Prototype Disclaimer Banner */
+    .prototype-disclaimer-banner {
+      background: #312E81;
+      border-bottom: 1px solid #4338CA;
+      color: #E0E7FF;
+      padding: 8px 16px;
+      font-size: 12px;
+      text-align: center;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+    .prototype-disclaimer-banner strong {
+      color: #FFFFFF;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
     header.review-bar {
-      height: 56px;
+      min-height: 56px;
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border-default);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 10px 20px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
     .review-title {
       display: flex;
@@ -54,8 +83,9 @@
       gap: 12px;
       font-size: 14px;
       font-weight: 600;
+      flex-wrap: wrap;
     }
-    .btn-group { display: flex; align-items: center; gap: 10px; }
+    .btn-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .btn-secondary {
       background: var(--bg-card);
       border: 1px solid var(--border-default);
@@ -84,6 +114,8 @@
       align-items: center;
       justify-content: space-between;
       font-size: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
     .integrity-badge {
       background: var(--pos-bg);
@@ -97,8 +129,9 @@
     .math-formula {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
       color: var(--text-secondary);
+      flex-wrap: wrap;
     }
     .math-formula strong { color: var(--text-primary); }
 
@@ -106,10 +139,11 @@
     .split-workspace {
       flex: 1;
       display: flex;
-      overflow: hidden;
+      min-height: 0;
+      width: 100%;
     }
 
-    /* Left: PDF Viewer */
+    /* Left: PDF Viewer Simulation */
     .pane-left {
       flex: 1;
       background: #000;
@@ -117,19 +151,20 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       position: relative;
       padding: 20px;
       overflow-y: auto;
+      min-width: 0;
     }
     .pdf-page-sim {
-      width: 520px;
-      min-height: 700px;
+      width: 100%;
+      max-width: 520px;
       background: #FFFFFF;
       color: #111;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
       border-radius: 4px;
-      padding: 30px;
+      padding: 24px;
       font-family: Arial, sans-serif;
       font-size: 11px;
       line-height: 1.4;
@@ -141,10 +176,12 @@
       margin-bottom: 15px;
       display: flex;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .bbox-highlight {
       position: absolute;
-      border: 2px solid var(--brand);
+      border: 2px solid var(--brand-focus, #818CF8);
       background: rgba(99, 102, 241, 0.15);
       border-radius: 2px;
       pointer-events: none;
@@ -157,6 +194,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      min-width: 0;
     }
     .pane-header {
       padding: 12px 16px;
@@ -166,15 +204,20 @@
       align-items: center;
       font-size: 13px;
       font-weight: 600;
+      flex-wrap: wrap;
+      gap: 6px;
     }
     .table-container {
       flex: 1;
       overflow-y: auto;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     table.extract-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 12px;
+      min-width: 550px;
     }
     table.extract-table th {
       position: sticky;
@@ -202,27 +245,50 @@
       font-size: 11px;
       width: 140px;
     }
+
+    /* ==========================================================================
+       RESPONSIVE CSS (STACK ON TABLET & MOBILE)
+       ========================================================================== */
+    @media (max-width: 900px) {
+      .split-workspace {
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      .pane-left {
+        border-right: none;
+        border-bottom: 1px solid var(--border-default);
+        min-height: 380px;
+      }
+      .pane-right {
+        min-height: 400px;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Top Bar -->
-  <header class="review-bar">
+  <!-- Top Prototype Disclaimer Banner -->
+  <div class="prototype-disclaimer-banner" role="region" aria-label="Visual Prototype Notice">
+    <strong>Visual Design Prototype:</strong> This interface is an illustrative UI mockup demonstrating proposed side-by-side statement review. Document text, bounding boxes, and extracted line items are <strong>synthetic & illustrative</strong>. OCR parsing and ledger commit buttons are non-functional for design evaluation.
+  </div>
+
+  <!-- Review Top Bar -->
+  <header class="review-bar" role="banner">
     <div class="review-title">
       <span style="color:var(--text-muted)">Documents /</span>
-      <span>HDFC_Bank_Oct_2026.pdf</span>
-      <span style="font-size:11px; background:var(--bg-card); padding:2px 8px; border-radius:10px; border:1px solid var(--border-default); color:var(--text-secondary);">42 Lines Parsed</span>
+      <span>HDFC_Bank_Oct_2026.pdf (Sample)</span>
+      <span style="font-size:11px; background:var(--bg-card); padding:2px 8px; border-radius:10px; border:1px solid var(--border-default); color:var(--text-secondary);">42 Lines Parsed (Illustrative)</span>
     </div>
     <div class="btn-group">
-      <button class="btn-secondary">Discard & Reject</button>
-      <button class="btn-primary">Confirm & Post 42 Transactions to Ledger →</button>
+      <button class="btn-secondary" aria-label="Discard & Reject (Mockup Button)">Discard & Reject</button>
+      <button class="btn-primary" aria-label="Confirm & Post 42 Transactions to Ledger (Mockup Button)">Confirm & Post 42 Transactions to Ledger →</button>
     </div>
   </header>
 
   <!-- Arithmetic Integrity Banner -->
-  <div class="integrity-banner">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <span class="integrity-badge">✓ ARITHMETIC VERIFIED</span>
+  <section class="integrity-banner" aria-label="Arithmetic Balance Verification (Illustrative)">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+      <span class="integrity-badge">✓ ARITHMETIC VERIFIED (ILLUSTRATIVE)</span>
       <div class="math-formula tabular-nums">
         <span>Opening: <strong>₹1,50,000.00</strong></span>
         <span>+</span>
@@ -233,18 +299,18 @@
         <span>Closing: <strong>₹2,90,000.00</strong></span>
       </div>
     </div>
-    <div style="color:var(--text-muted); font-size:11px;">Confidence: 100% | Zero Discrepancy</div>
-  </div>
+    <div style="color:var(--text-muted); font-size:11px;">Confidence: 100% | Zero Discrepancy (Sample Verification)</div>
+  </section>
 
   <!-- Split Workspace -->
-  <div class="split-workspace">
-    <!-- Left: PDF Viewer -->
-    <div class="pane-left">
+  <main class="split-workspace" id="main-content" role="main">
+    <!-- Left: PDF Viewer Simulation -->
+    <section class="pane-left" aria-label="Original Document Page Viewer (Sample Simulation)">
       <div class="pdf-page-sim">
         <div class="pdf-header">
           <div>
             <strong style="color:#004C8F; font-size:14px;">HDFC BANK LIMITED</strong><br>
-            <span style="color:#666;">Account Statement: 501004892100</span>
+            <span style="color:#666;">Account Statement: 501004892100 (Illustrative)</span>
           </div>
           <div style="text-align:right; color:#666;">
             <span>Period: 01/10/2026 - 31/10/2026</span><br>
@@ -252,13 +318,13 @@
           </div>
         </div>
 
-        <table style="width:100%; border-collapse:collapse; margin-top:20px; font-size:10px;">
+        <table style="width:100%; border-collapse:collapse; margin-top:20px; font-size:10px;" aria-label="Simulated Bank Statement Document Rows">
           <tr style="background:#F0F4F8; border-bottom:1px solid #CCC; font-weight:bold;">
-            <th style="text-align:left; padding:4px;">Date</th>
-            <th style="text-align:left; padding:4px;">Narration</th>
-            <th style="text-align:right; padding:4px;">Withdrawal</th>
-            <th style="text-align:right; padding:4px;">Deposit</th>
-            <th style="text-align:right; padding:4px;">Closing Balance</th>
+            <th scope="col" style="text-align:left; padding:4px;">Date</th>
+            <th scope="col" style="text-align:left; padding:4px;">Narration</th>
+            <th scope="col" style="text-align:right; padding:4px;">Withdrawal</th>
+            <th scope="col" style="text-align:right; padding:4px;">Deposit</th>
+            <th scope="col" style="text-align:right; padding:4px;">Closing Balance</th>
           </tr>
           <tr>
             <td style="padding:4px;">01/10/26</td>
@@ -284,27 +350,27 @@
         </table>
 
         <!-- Visual Bounding Box Indicator -->
-        <div class="bbox-highlight" style="top:100px; left:25px; width:470px; height:24px;"></div>
+        <div class="bbox-highlight" style="top:100px; left:20px; width:480px; height:24px;" aria-hidden="true"></div>
       </div>
-    </div>
+    </section>
 
     <!-- Right: Extracted Table -->
-    <div class="pane-right">
+    <section class="pane-right" aria-label="Extracted Structured Line Items Table">
       <div class="pane-header">
-        <span>Extracted Structured Records (Editable)</span>
-        <span style="font-size:11px; color:var(--text-muted);">Click row to cross-examine source page</span>
+        <span>Extracted Structured Records (Illustrative Sample)</span>
+        <span style="font-size:11px; color:var(--text-muted);">Interactive OCR mapping preview</span>
       </div>
       <div class="table-container">
-        <table class="extract-table">
+        <table class="extract-table" aria-label="Parsed Line Items">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Category</th>
-              <th style="text-align:right;">Debit</th>
-              <th style="text-align:right;">Credit</th>
-              <th>Action</th>
+              <th scope="col">#</th>
+              <th scope="col">Date</th>
+              <th scope="col">Description</th>
+              <th scope="col">Category</th>
+              <th scope="col" style="text-align:right;">Debit</th>
+              <th scope="col" style="text-align:right;">Credit</th>
+              <th scope="col">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -313,7 +379,7 @@
               <td class="tabular-nums">01 Oct 2026</td>
               <td>SALARY TechCorp India Pvt</td>
               <td>
-                <select class="category-select">
+                <select class="category-select" aria-label="Category for Line 1">
                   <option selected>Income:Salary:Base</option>
                   <option>Income:Bonus</option>
                 </select>
@@ -327,7 +393,7 @@
               <td class="tabular-nums">04 Oct 2026</td>
               <td>POS SWIGGY BANGALORE</td>
               <td>
-                <select class="category-select">
+                <select class="category-select" aria-label="Category for Line 2">
                   <option selected>Food & Dining</option>
                   <option>Groceries</option>
                 </select>
@@ -341,7 +407,7 @@
               <td class="tabular-nums">08 Oct 2026</td>
               <td>UPI UBER INDIA BLR</td>
               <td>
-                <select class="category-select">
+                <select class="category-select" aria-label="Category for Line 3">
                   <option selected>Transportation</option>
                 </select>
               </td>
@@ -352,8 +418,8 @@
           </tbody>
         </table>
       </div>
-    </div>
-  </div>
+    </section>
+  </main>
 
 </body>
 </html>
