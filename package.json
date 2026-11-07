@@ -8,9 +8,10 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run --workspaces --if-present build",
+    "build:packages": "npm run --workspace=@wealthos/shared-types build && npm run --workspace=@wealthos/design-tokens build && npm run --workspace=@wealthos/api-client build",
+    "build": "npm run build:packages && npm run --workspace=@wealthos/web build",
     "lint": "npm run --workspaces --if-present lint",
-    "typecheck": "npm run --workspaces --if-present typecheck",
+    "typecheck": "npm run build:packages && npm run --workspaces --if-present typecheck",
     "test": "npm run --workspaces --if-present test",
     "clean": "npm run --workspaces --if-present clean"
   },
