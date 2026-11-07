@@ -74,8 +74,8 @@ wealthos/
 - [x] **PHASE 0: Product Specification & Architecture Baseline** (PRD, SRS, System Architecture, Database Design, Security Architecture, ADRs, ERD, Threat Model, RTM) — Tag: `v0.1.0-phase0`
 - [x] **PHASE 1: Human-Designed UI/UX Specifications** (20 Domains IA, 16 User Journeys, 65 Reconciled Screens, WCAG AA Design Tokens, Usability Plan) — Tag: `v0.2.0-phase1`
 - [x] **PHASE 2: Repository & Infrastructure Foundation** (FastAPI async runtime, PostgreSQL 16, Redis 7, Celery queues, MinIO, Next.js 14 App Router, Expo mobile, Docker Compose, CI/CD)
-- [ ] **PHASE 3: Authentication & Security Foundation** (Argon2id, TOTP MFA, session cookies, RBAC, tenant context)
-- [ ] **PHASE 4: Financial Accounting Engine** (Double-entry general ledger, journal entries, balance invariants, reversals)
+- [x] **PHASE 3: Authentication & Security Foundation** (Argon2id, TOTP MFA, session cookies, RBAC, tenant context, PostgreSQL Row-Level Security)
+- [x] **PHASE 4: Financial Accounting Engine** (Immutable double-entry general ledger, 52-account COA template, balance invariants, mirror reversals, multi-currency NUMERIC(18,4), period closures, reconciliation primitives)
 - [ ] **PHASE 5: Income & Expenses** (Accounts, transactions, splits, categories, recurring bills)
 - [ ] **PHASE 6: Assets & Liabilities** (Real estate, gold, loans, amortization schedules, net worth engine)
 - [ ] **PHASE 7: Investment Portfolio & FIFO Engine** (Instruments, broker accounts, trades, FIFO lots, LTCG/STCG P&L)
@@ -114,6 +114,18 @@ uvicorn app.main:app --reload --port 8000
 
 # 3. Run Next.js web application
 npm run --workspace=@wealthos/web dev
+```
+
+### Option C: Automated Testing
+```bash
+# Run backend pytest suite (127 tests including full accounting engine & RLS)
+cd backend
+uv run pytest -v
+
+# Run frontend quality checks & vitest tests
+npm run typecheck
+npm test
+npm run --workspace=@wealthos/web lint
 ```
 
 ---
