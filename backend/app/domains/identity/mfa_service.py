@@ -83,8 +83,8 @@ async def verify_totp_code(
         try:
             redis_client = await get_redis()
             lock_key = f"totp:used:{user_id}:{clean_code}"
-            # NX=True sets key only if not present; ex=60 expires after 1 minute
-            acquired = await redis_client.set(lock_key, "1", ex=60, nx=True)
+            # NX=True sets key only if not present; ex=90 spans the 30s drift window
+            acquired = await redis_client.set(lock_key, "1", ex=90, nx=True)
             if not acquired:
                 logger.warning(f"TOTP replay attempt detected for user {user_id}, code rejected")
                 raise MFASecurityError(
@@ -93,8 +93,11 @@ async def verify_totp_code(
         except MFASecurityError:
             raise
         except Exception as exc:
-            logger.warning(f"Redis replay check unavailable: {exc}")
-            # Fail safe: proceed if Redis is temporarily unreachable
+            logger.error(f"Redis replay verification service unavailable for user {user_id}: {exc}")
+            # Fail closed: reject authentication if replay prevention cannot be guaranteed
+            raise MFASecurityError(
+                "MFA security verification service is temporarily unavailable. Please retry."
+            ) from exc
 
     return True
 

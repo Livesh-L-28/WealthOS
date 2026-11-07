@@ -210,6 +210,12 @@ async def login(
     dependencies=[Depends(auth_limiter)],
     summary="Complete MFA challenge during sign in",
 )
+@router.post(
+    "/mfa/verify",
+    response_model=dict[str, Any],
+    dependencies=[Depends(auth_limiter)],
+    summary="Verify MFA code during sign in",
+)
 async def mfa_challenge(
     payload: MFAChallengeRequest,
     request: Request,
@@ -235,6 +241,11 @@ async def mfa_challenge(
             "data": result,
         }
     except (AuthenticationServiceError, MFASecurityError) as exc:
+        if "temporarily unavailable" in str(exc).lower():
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(exc),
+            ) from exc
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(exc),

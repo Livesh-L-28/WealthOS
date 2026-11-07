@@ -7,7 +7,7 @@ session management, refresh-token rotation, multi-factor authentication, and pas
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import delete, desc, select, update
+from sqlalchemy import delete, desc, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -52,6 +52,7 @@ from app.domains.tenants.service import (
     create_personal_tenant,
     list_user_tenants,
 )
+from app.infrastructure.redis import get_redis
 
 logger = get_logger("wealthos.identity")
 
@@ -293,6 +294,12 @@ async def _create_authenticated_session(
     session.add(user_session)
     await session.flush()
 
+    # Apply transaction-local user context for RLS
+    await session.execute(
+        text("SELECT set_config('app.current_user_id', :uid, true)"),
+        {"uid": str(user.id)},
+    )
+
     # Determine active tenant
     tenants = await list_user_tenants(session, user.id)
     active_tenant_data = None
@@ -374,6 +381,31 @@ async def complete_mfa_challenge(
     except TokenSecurityError as e:
         raise AuthenticationServiceError("MFA challenge token has expired or is invalid.") from e
 
+    # Atomically enforce single-use consumption of MFA challenge token via Redis
+    jti = payload.get("jti")
+    if not jti:
+        raise AuthenticationServiceError("MFA challenge token missing unique identifier claim.")
+
+    try:
+        redis_client = await get_redis()
+        challenge_key = f"mfa:challenge:consumed:{jti}"
+        # Set with 5 min TTL matching challenge window, NX=True for atomic single-use
+        consumed = await redis_client.set(challenge_key, "1", ex=300, nx=True)
+        if not consumed:
+            logger.warning(
+                f"Replay attempt of MFA challenge token jti={jti} for user {payload.get('sub')}"
+            )
+            raise AuthenticationServiceError(
+                "This MFA challenge token has already been consumed. Please sign in again."
+            )
+    except AuthenticationServiceError:
+        raise
+    except Exception as exc:
+        logger.error(f"Redis challenge verification failure: {exc}")
+        raise AuthenticationServiceError(
+            "MFA verification service is temporarily unavailable. Please retry."
+        ) from exc
+
     user_id = uuid.UUID(payload["sub"])
     user = await session.get(
         User,
@@ -419,15 +451,22 @@ async def complete_mfa_challenge(
         mfa_cred.last_used_at = datetime.now(UTC)
 
     elif recovery_code:
-        # Validate and redeem backup recovery code
+        # Atomically validate and redeem backup recovery code using conditional UPDATE RETURNING
         code_digest = hash_recovery_code(recovery_code)
-        rec_stmt = select(MFARecoveryCode).where(
-            MFARecoveryCode.user_id == user_id,
-            MFARecoveryCode.code_hash == code_digest,
-            MFARecoveryCode.is_used == False,  # noqa: E712
+        now = datetime.now(UTC)
+        consume_rec_stmt = (
+            update(MFARecoveryCode)
+            .where(
+                MFARecoveryCode.user_id == user_id,
+                MFARecoveryCode.code_hash == code_digest,
+                MFARecoveryCode.is_used == False,  # noqa: E712
+            )
+            .values(is_used=True, used_at=now)
+            .returning(MFARecoveryCode.id)
         )
-        rec_code_entry = (await session.execute(rec_stmt)).scalar_one_or_none()
-        if not rec_code_entry:
+        rec_res = await session.execute(consume_rec_stmt)
+        redeemed_id = rec_res.scalar_one_or_none()
+        if not redeemed_id:
             await record_security_event(
                 session,
                 event_type="mfa_recovery_code_failed",
@@ -439,10 +478,7 @@ async def complete_mfa_challenge(
             )
             raise AuthenticationServiceError("Invalid or already-used recovery code.")
 
-        # Consume the code permanently
-        rec_code_entry.is_used = True
-        rec_code_entry.used_at = datetime.now(UTC)
-        logger.info(f"User {user.id} used emergency recovery code")
+        logger.info(f"User {user.id} atomically redeemed emergency recovery code {redeemed_id}")
     else:
         raise AuthenticationServiceError("Must provide either a 6-digit code or recovery code.")
 
@@ -522,10 +558,21 @@ async def rotate_refresh_token(
         token_entry.revoked_reason = "expired"
         raise AuthenticationServiceError("Refresh token has expired. Please log in again.")
 
-    # Check session active status
+    # Check session active status and session expiration
     user_session = token_entry.session
-    if not user_session or not user_session.is_active:
-        raise AuthenticationServiceError("Session is no longer active.")
+    if (
+        not user_session
+        or not user_session.is_active
+        or user_session.revoked_at is not None
+        or user_session.expires_at <= now
+    ):
+        if user_session and user_session.is_active:
+            user_session.is_active = False
+            user_session.revoked_at = now
+        token_entry.is_revoked = True
+        token_entry.revoked_at = now
+        token_entry.revoked_reason = "session_expired"
+        raise AuthenticationServiceError("Session is no longer active or has expired.")
 
     # Revoke current token
     token_entry.is_revoked = True
