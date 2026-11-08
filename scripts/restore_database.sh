@@ -38,6 +38,12 @@ if [ -z "${TARGET_DB}" ]; then
   exit 1
 fi
 
+# Reject system catalog databases
+if [[ "${TARGET_DB}" =~ ^(postgres|template[01]|rdsadmin|azure_sys)$ ]]; then
+  echo "[CRITICAL REJECTION] Target database '${TARGET_DB}' is a system catalog and cannot be overwritten!" >&2
+  exit 1
+fi
+
 # Reject production targets without explicit override
 if [[ "${TARGET_DB}" =~ (prod|production|wealthos_prod) ]] && [ "${ALLOW_PRODUCTION_RESTORE:-false}" != "true" ]; then
   echo "[CRITICAL REJECTION] Restoration into production database '${TARGET_DB}' blocked!" >&2
@@ -69,12 +75,29 @@ if [ -z "${PGPASSWORD:-}" ] && [ -z "${POSTGRES_ADMIN_PASSWORD:-}" ]; then
 fi
 export PGPASSWORD="${PGPASSWORD:-${POSTGRES_ADMIN_PASSWORD}}"
 
+# Verify target database existence and reachability before any operation
+if ! psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -c "SELECT 1;" >/dev/null 2>&1; then
+  echo "[CRITICAL REJECTION] Target database '${TARGET_DB}' does not exist or is not reachable at ${POSTGRES_HOST}:${POSTGRES_PORT}!" >&2
+  exit 1
+fi
+
 PYTHON_BIN="${REPO_ROOT}/backend/.venv/bin/python3"
 if [ ! -f "${PYTHON_BIN}" ]; then
   PYTHON_BIN="python3"
 fi
 
 DECRYPTED_FILE="${ENC_FILE%.enc}.tmp_restore.dump"
+RESTORE_LOG=""
+
+cleanup() {
+  if [ -n "${DECRYPTED_FILE:-}" ] && [ -f "${DECRYPTED_FILE}" ]; then
+    rm -f "${DECRYPTED_FILE}"
+  fi
+  if [ -n "${RESTORE_LOG:-}" ] && [ -f "${RESTORE_LOG}" ]; then
+    rm -f "${RESTORE_LOG}"
+  fi
+}
+trap cleanup EXIT INT TERM
 
 echo "[INFO] Commencing authenticated decryption and restore verification for target '${TARGET_DB}'..."
 
@@ -84,21 +107,22 @@ if ! "${PYTHON_BIN}" "${SCRIPT_DIR}/backup_crypto.py" decrypt \
   --output "${DECRYPTED_FILE}" \
   --manifest "${MANIFEST_FILE}"; then
   echo "[CRITICAL ALERT] Authenticated decryption failed! Aborting restore." >&2
-  rm -f "${DECRYPTED_FILE}"
   exit 1
 fi
 
 # 4. Verify custom dump structure prior to database execution
 if ! pg_restore --list "${DECRYPTED_FILE}" > /dev/null 2>&1; then
   echo "[CRITICAL ALERT] Decrypted archive corrupted or invalid PostgreSQL dump!" >&2
-  rm -f "${DECRYPTED_FILE}"
   exit 1
 fi
 echo "[INFO] Decrypted archive verified clean via pg_restore --list."
 
-# 5. Restore into controlled target database
+# 5. Restore into controlled target database with strict exit-code verification
 echo "[INFO] Executing pg_restore into ${TARGET_DB} at ${POSTGRES_HOST}:${POSTGRES_PORT}..."
-RESTORE_OUTPUT=$(pg_restore \
+RESTORE_LOG=$(mktemp "/tmp/wealthos_restore_${TARGET_DB}_XXXXXX.log")
+
+set +e
+pg_restore \
   -h "${POSTGRES_HOST}" \
   -p "${POSTGRES_PORT}" \
   -U "${POSTGRES_USER}" \
@@ -107,19 +131,28 @@ RESTORE_OUTPUT=$(pg_restore \
   --if-exists \
   --no-owner \
   --no-privileges \
-  "${DECRYPTED_FILE}" 2>&1 || true)
+  "${DECRYPTED_FILE}" > "${RESTORE_LOG}" 2>&1
+RESTORE_EXIT_CODE=$?
+set -e
 
-# Clean up decrypted file immediately
+# Decrypted archive removed immediately
 rm -f "${DECRYPTED_FILE}"
 
-# Check for fatal errors in restore output
-if echo "${RESTORE_OUTPUT}" | grep -Ei "FATAL:|could not connect|server closed the connection" >/dev/null; then
-  echo "[CRITICAL ALERT] pg_restore encountered fatal error:" >&2
-  echo "${RESTORE_OUTPUT}" >&2
+if [ "${RESTORE_EXIT_CODE}" -ne 0 ]; then
+  echo "[CRITICAL ALERT] pg_restore failed with non-zero exit code: ${RESTORE_EXIT_CODE}" >&2
+  echo "[DIAGNOSTICS] pg_restore execution log:" >&2
+  cat "${RESTORE_LOG}" >&2
+  exit "${RESTORE_EXIT_CODE}"
+fi
+
+# Verify no fatal errors hidden in output log
+if grep -Ei "FATAL:|could not connect|server closed the connection" "${RESTORE_LOG}" >/dev/null 2>&1; then
+  echo "[CRITICAL ALERT] pg_restore encountered fatal connection error in output log:" >&2
+  cat "${RESTORE_LOG}" >&2
   exit 1
 fi
 
-echo "[INFO] Archive contents loaded. Starting post-restore verification..."
+echo "[INFO] Archive contents loaded successfully. Starting post-restore verification..."
 
 # 6. Post-Restore Verification Gate 1: Schema Version Validation
 ALEMBIC_VERSION=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "SELECT version_num FROM alembic_version LIMIT 1;" 2>/dev/null || echo "MISSING")
