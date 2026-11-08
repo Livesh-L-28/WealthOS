@@ -28,9 +28,9 @@ export const CopilotScreen: React.FC<CopilotScreenProps> = ({
   const scrollViewRef = useRef<ScrollView>(null);
 
   const suggestedQueries = [
-    { label: '🛡️ Check Emergency Runway', prompt: 'What is my current emergency fund runway?' },
-    { label: '✈️ Afford ₹1.5L Vacation?', prompt: 'Can I afford a ₹1,50,000 vacation?' },
-    { label: '📈 Optimal Monthly SIP?', prompt: 'How much surplus can I deploy into SIPs?' },
+    { label: '🛡️ Emergency Runway', prompt: 'What is my current emergency fund runway?' },
+    { label: '✈️ Afford ₹1.5L Trip?', prompt: 'Can I afford a ₹1,50,000 vacation?' },
+    { label: '📈 Optimal Monthly SIP', prompt: 'How much surplus can I deploy into SIPs?' },
     { label: '⚖️ Verify Ledger Sigma', prompt: 'Verify ledger reconciliation balance' },
   ];
 
@@ -49,13 +49,13 @@ export const CopilotScreen: React.FC<CopilotScreenProps> = ({
 
         <Text style={styles.headerTitle}>WealthOS Autonomous Copilot</Text>
         <Text style={styles.headerSubtitle}>
-          Mathematically verified responses powered directly by your double-entry transactions, FIFO lots, and cash flow history.
+          Mathematically verified responses grounded directly in your double-entry accounts, FIFO lots, and cash flow history.
         </Text>
       </View>
 
       {/* Suggested Chips Carousel */}
       <View style={styles.suggestionsContainer}>
-        <Text style={styles.suggestionsTitle}>SUGGESTED FINANCIAL QUERIES</Text>
+        <Text style={styles.suggestionsTitle}>SUGGESTED INQUIRIES</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -172,9 +172,9 @@ const styles = StyleSheet.create({
   },
   headerCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
-    marginHorizontal: 16,
+    marginHorizontal: 20,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: 'rgba(22, 163, 106, 0.3)',
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryLightSolid,
     paddingHorizontal: 8,
     paddingVertical: 2.5,
-    borderRadius: 6,
+    borderRadius: 5,
   },
   aiBadgeText: {
     fontSize: 9,
@@ -203,10 +203,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   verifiedBadge: {
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#F0F4F1',
     paddingHorizontal: 8,
     paddingVertical: 2.5,
-    borderRadius: 6,
+    borderRadius: 5,
   },
   verifiedBadgeText: {
     fontSize: 9,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 15.5,
     fontWeight: '800',
     color: theme.colors.textPrimary,
     letterSpacing: -0.3,
@@ -233,11 +233,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.textSecondary,
     letterSpacing: 0.5,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     marginBottom: 6,
   },
   suggestionsScroll: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     gap: 6,
   },
   suggestionChip: {
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   messagesContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 10,
     gap: 12,
   },
@@ -273,8 +273,8 @@ const styles = StyleSheet.create({
   },
   chatBubble: {
     maxWidth: '86%',
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: 18,
+    padding: 14,
     borderWidth: 1,
   },
   bubbleUser: {
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   messageText: {
-    fontSize: 13,
+    fontSize: 12.5,
     lineHeight: 18,
   },
   messageTextUser: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     borderTopColor: theme.colors.borderLight,
   },
   metricPill: {
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#FAFCFA',
     borderRadius: 8,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -351,13 +351,14 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: theme.colors.primaryDark,
     marginTop: 1,
+    fontVariant: ['tabular-nums'],
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     gap: 8,
@@ -369,14 +370,14 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 10,
     fontSize: 13,
     color: theme.colors.textPrimary,
   },
   sendBtn: {
     backgroundColor: theme.colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -386,8 +387,7 @@ const styles = StyleSheet.create({
   },
   sendBtnText: {
     color: theme.colors.textWhite,
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
   },
 });
-

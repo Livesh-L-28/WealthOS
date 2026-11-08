@@ -14,72 +14,76 @@ export const CashFlowCard: React.FC<CashFlowCardProps> = ({
 }) => {
   const surplus = monthlyInflows - monthlyOutflows;
   const outflowRatio = monthlyInflows > 0 ? (monthlyOutflows / monthlyInflows) * 100 : 0;
-  const savingsRate = monthlyInflows > 0 ? ((surplus / monthlyInflows) * 100).toFixed(1) : '0';
+  const savingsRate = monthlyInflows > 0 ? ((surplus / monthlyInflows) * 100).toFixed(0) : '0';
 
   return (
-    <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.title}>MONTHLY CASH FLOW</Text>
-          <Text style={styles.subtitle}>Consolidated Double-Entry Ledger Inflows & Outflows</Text>
+    <View style={styles.container}>
+      <View style={styles.card}>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>MONTHLY CASH FLOW</Text>
+            <Text style={styles.subtitle}>Double-Entry Verified Ledger Postings</Text>
+          </View>
+          <View style={styles.surplusBadge}>
+            <Text style={styles.surplusText}>
+              Surplus: {surplus >= 0 ? '+' : ''}
+              {formatINR(surplus)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.surplusBadge}>
-          <Text style={styles.surplusText}>
-            Surplus: {surplus >= 0 ? '+' : ''}
-            {formatINR(surplus)}
+
+        <View style={styles.statsRow}>
+          <View style={styles.statBox}>
+            <Text style={styles.inflowLabel}>Total Inflows (+)</Text>
+            <Text style={styles.inflowValue}>{formatINR(monthlyInflows)}</Text>
+            <Text style={styles.statHelp}>Salary & Dividends</Text>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.statBox}>
+            <Text style={styles.outflowLabel}>Total Outflows (-)</Text>
+            <Text style={styles.outflowValue}>{formatINR(monthlyOutflows)}</Text>
+            <Text style={styles.statHelp}>Rent, EMIs & Bills</Text>
+          </View>
+        </View>
+
+        {/* Visual Proportion Bar */}
+        <View style={styles.progressTrack}>
+          <View
+            style={[
+              styles.progressFillInflow,
+              { width: `${Math.min(100, Math.max(10, 100 - outflowRatio))}%` },
+            ]}
+          />
+          <View
+            style={[
+              styles.progressFillOutflow,
+              { width: `${Math.min(100, Math.max(10, outflowRatio))}%` },
+            ]}
+          />
+        </View>
+
+        <View style={styles.footerRow}>
+          <Text style={styles.footerText}>
+            Retaining <Text style={styles.boldText}>{savingsRate}%</Text> of cash income as surplus
           </Text>
+          <Text style={styles.ratioText}>{outflowRatio.toFixed(0)}% Spent</Text>
         </View>
-      </View>
-
-      <View style={styles.statsRow}>
-        <View style={styles.statBox}>
-          <Text style={styles.inflowLabel}>Total Inflows (+)</Text>
-          <Text style={styles.inflowValue}>{formatINR(monthlyInflows)}</Text>
-          <Text style={styles.statHelp}>Salary & Investment Yields</Text>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.statBox}>
-          <Text style={styles.outflowLabel}>Total Outflows (-)</Text>
-          <Text style={styles.outflowValue}>{formatINR(monthlyOutflows)}</Text>
-          <Text style={styles.statHelp}>Rent, EMIs, Dining & Cards</Text>
-        </View>
-      </View>
-
-      {/* Visual Proportion Bar */}
-      <View style={styles.progressTrack}>
-        <View
-          style={[
-            styles.progressFillInflow,
-            { width: `${Math.min(100, Math.max(10, 100 - outflowRatio))}%` },
-          ]}
-        />
-        <View
-          style={[
-            styles.progressFillOutflow,
-            { width: `${Math.min(100, Math.max(10, outflowRatio))}%` },
-          ]}
-        />
-      </View>
-
-      <View style={styles.footerRow}>
-        <Text style={styles.footerText}>
-          Retaining <Text style={styles.boldText}>{savingsRate}%</Text> of income as retained wealth
-        </Text>
-        <Text style={styles.ratioText}>{outflowRatio.toFixed(0)}% Spent</Text>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 20,
+    marginTop: 14,
+  },
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 6,
     borderWidth: 1,
     borderColor: theme.colors.border,
     shadowColor: theme.colors.textPrimary,
@@ -95,7 +99,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
     color: theme.colors.textSecondary,
     letterSpacing: 0.5,
@@ -115,6 +119,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: theme.colors.primaryDark,
+    fontVariant: ['tabular-nums'],
   },
   statsRow: {
     flexDirection: 'row',
@@ -134,37 +139,41 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
   },
   inflowLabel: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 9.5,
+    fontWeight: '700',
     color: theme.colors.positiveDark,
+    letterSpacing: 0.3,
   },
   inflowValue: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
     color: theme.colors.positive,
     fontVariant: ['tabular-nums'],
+    letterSpacing: -0.4,
     marginVertical: 2,
   },
   outflowLabel: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 9.5,
+    fontWeight: '700',
     color: theme.colors.negative,
+    letterSpacing: 0.3,
   },
   outflowValue: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '800',
     color: theme.colors.negative,
     fontVariant: ['tabular-nums'],
+    letterSpacing: -0.4,
     marginVertical: 2,
   },
   statHelp: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: theme.colors.textSecondary,
   },
   progressTrack: {
-    height: 8,
+    height: 6,
     backgroundColor: theme.colors.borderLight,
-    borderRadius: 4,
+    borderRadius: 3,
     marginTop: 12,
     flexDirection: 'row',
     overflow: 'hidden',
@@ -184,7 +193,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   footerText: {
-    fontSize: 10,
+    fontSize: 10.5,
     color: theme.colors.textSecondary,
   },
   boldText: {
@@ -192,7 +201,7 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryDark,
   },
   ratioText: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '600',
     color: theme.colors.textSecondary,
   },

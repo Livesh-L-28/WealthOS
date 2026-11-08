@@ -17,31 +17,27 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
 }) => {
   const actions = [
     {
-      id: 'connect',
-      title: 'Connect Bank',
-      subtitle: 'Account Aggregator',
-      icon: '🏛️',
-      onPress: onConnectBank,
+      id: 'add',
+      label: 'Add Entry',
+      icon: '➕',
+      onPress: onAddTransaction,
       isPrimary: true,
     },
     {
+      id: 'connect',
+      label: 'Link Bank',
+      icon: '🏛️',
+      onPress: onConnectBank,
+    },
+    {
       id: 'import',
-      title: 'Import CAS/PDF',
-      subtitle: 'OCR Statement Parser',
+      label: 'Import CAS',
       icon: '📄',
       onPress: onImportStatement,
     },
     {
-      id: 'add',
-      title: 'Add Entry',
-      subtitle: 'Double-Entry Ledger',
-      icon: '➕',
-      onPress: onAddTransaction,
-    },
-    {
       id: 'copilot',
-      title: 'Ask Copilot',
-      subtitle: 'AI Financial Twin',
+      label: 'Copilot',
       icon: '✨',
       onPress: onAskCopilot,
     },
@@ -49,24 +45,32 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionHeaderTitle}>QUICK ACTIONS</Text>
-      <View style={styles.actionGrid}>
+      <View style={styles.dock}>
         {actions.map((act) => (
           <TouchableOpacity
             key={act.id}
-            style={[styles.actionCard, act.isPrimary && styles.actionCardPrimary]}
+            style={styles.actionItem}
             onPress={act.onPress}
             activeOpacity={0.7}
           >
-            <View style={[styles.iconWrapper, act.isPrimary && styles.iconWrapperPrimary]}>
-              <Text style={styles.iconText}>{act.icon}</Text>
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={[styles.actionTitle, act.isPrimary && styles.actionTitlePrimary]}>
-                {act.title}
+            <View
+              style={[
+                styles.iconBox,
+                act.isPrimary ? styles.iconBoxPrimary : styles.iconBoxSecondary,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.iconText,
+                  act.isPrimary && styles.iconTextPrimary,
+                ]}
+              >
+                {act.icon}
               </Text>
-              <Text style={styles.actionSubtitle}>{act.subtitle}</Text>
             </View>
+            <Text style={[styles.actionLabel, act.isPrimary && styles.actionLabelPrimary]}>
+              {act.label}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -76,71 +80,64 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    marginVertical: 6,
+    paddingHorizontal: 20,
+    marginTop: 14,
   },
-  sectionHeaderTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    color: theme.colors.textSecondary,
-    marginBottom: 8,
-  },
-  actionGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  actionCard: {
-    width: '48.6%',
+  dock: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     borderWidth: 1,
     borderColor: theme.colors.border,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    minHeight: 56,
+    justifyContent: 'space-around',
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  actionCardPrimary: {
-    borderColor: 'rgba(22, 163, 106, 0.4)',
-    backgroundColor: '#FAFCFA',
-  },
-  iconWrapper: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: theme.colors.cardSubtle,
+  actionItem: {
     alignItems: 'center',
     justifyContent: 'center',
+    minWidth: 64,
   },
-  iconWrapperPrimary: {
-    backgroundColor: theme.colors.primaryLightSolid,
+  iconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  iconBoxPrimary: {
+    backgroundColor: theme.colors.primary,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  iconBoxSecondary: {
+    backgroundColor: '#F0F4F1',
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
   },
   iconText: {
-    fontSize: 16,
+    fontSize: 18,
   },
-  textContainer: {
-    flex: 1,
+  iconTextPrimary: {
+    color: theme.colors.textWhite,
   },
-  actionTitle: {
-    fontSize: 12,
+  actionLabel: {
+    fontSize: 11,
     fontWeight: '700',
     color: theme.colors.textPrimary,
+    letterSpacing: -0.2,
   },
-  actionTitlePrimary: {
+  actionLabelPrimary: {
     color: theme.colors.primaryDark,
   },
-  actionSubtitle: {
-    fontSize: 9,
-    color: theme.colors.textSecondary,
-    marginTop: 1,
-  },
 });
-

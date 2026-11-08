@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { DashboardPeriod, BankAccount, Transaction, InvestmentHolding, BudgetEnvelope, FinancialGoal } from '../types';
+import { DashboardPeriod, Transaction, BudgetEnvelope, FinancialGoal } from '../types';
 import { ExecutiveClarityBar } from './ExecutiveClarityBar';
 import { FinancialSummaryCards } from './FinancialSummaryCards';
 import { QuickActionsSection } from './QuickActionsSection';
@@ -8,7 +8,6 @@ import { CashFlowCard } from './CashFlowCard';
 import { PortfolioAllocationCard } from './PortfolioAllocationCard';
 import { FinancialHealthCard } from './FinancialHealthCard';
 import { RecentTransactionsCard } from './RecentTransactionsCard';
-import { OnboardingChecklistCard } from './OnboardingChecklistCard';
 
 interface OverviewScreenProps {
   period: DashboardPeriod;
@@ -56,7 +55,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* 5-Question Executive Clarity Bar */}
+      {/* 1. Hero Net Worth & Accounting Clarity */}
       <ExecutiveClarityBar
         period={period}
         onPeriodChange={onPeriodChange}
@@ -68,7 +67,15 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         goalsFundedPct={goalsFundedPct}
       />
 
-      {/* Financial Summary KPI Cards (Assets, Liabilities, Inflow, Outflow) */}
+      {/* 2. Quick Actions Dock */}
+      <QuickActionsSection
+        onConnectBank={onConnectBank}
+        onImportStatement={onImportStatement}
+        onAddTransaction={onAddTransaction}
+        onAskCopilot={onAskCopilot}
+      />
+
+      {/* 3. Inflow vs Outflow KPI Cards */}
       <FinancialSummaryCards
         totalAssets={totalAssets}
         totalLiabilities={totalLiabilities}
@@ -77,33 +84,22 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         budgetAllocated={totalBudgeted}
       />
 
-      {/* Quick Action Shortcuts */}
-      <QuickActionsSection
-        onConnectBank={onConnectBank}
-        onImportStatement={onImportStatement}
-        onAddTransaction={onAddTransaction}
-        onAskCopilot={onAskCopilot}
-      />
-
-      {/* Monthly Cash Flow Inflow vs Outflow */}
+      {/* 4. Cash Flow & Surplus Pulse */}
       <CashFlowCard
         monthlyInflows={monthlyInflows}
         monthlyOutflows={monthlyOutflows}
       />
 
-      {/* Multi-Asset Portfolio Allocation */}
+      {/* 5. Multi-Asset Portfolio Distribution */}
       <PortfolioAllocationCard
         totalValue={totalPortfolioValue}
         totalInvested={totalInvestedValue}
       />
 
-      {/* Solvency & Financial Health */}
+      {/* 6. Solvency & Financial Health */}
       <FinancialHealthCard />
 
-      {/* Ledger Setup Checklist */}
-      <OnboardingChecklistCard />
-
-      {/* Recent Transactions Journal */}
+      {/* 7. Recent Transactions General Journal */}
       <RecentTransactionsCard
         transactions={transactions}
         onViewAll={onViewAllTransactions}
@@ -117,4 +113,3 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
 });
-

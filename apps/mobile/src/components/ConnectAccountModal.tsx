@@ -78,7 +78,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
 
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.modalTitle}>Connect Financial Institution</Text>
+              <Text style={styles.modalTitle}>Connect Institution</Text>
               <Text style={styles.modalSubtitle}>Link via Account Aggregator or Direct API</Text>
             </View>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
@@ -87,7 +87,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
           </View>
 
           <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
-            {/* Institution Grid */}
+            {/* Institution Grid (Clean 2-Column Responsive) */}
             <Text style={styles.label}>SELECT FINANCIAL INSTITUTION</Text>
             <View style={styles.bankGrid}>
               {BANKS.map((b) => {
@@ -99,7 +99,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
                     onPress={() => setBank(b)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.bankIcon}>🏦</Text>
+                    <Text style={styles.bankIcon}>🏛️</Text>
                     <Text style={[styles.bankName, isActive && styles.bankNameActive]}>
                       {b}
                     </Text>
@@ -133,7 +133,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
               <Text style={styles.currencyPrefix}>₹</Text>
               <TextInput
                 style={styles.textInput}
-                placeholder="e.g. 75000"
+                placeholder="50,000"
                 placeholderTextColor={theme.colors.textMuted}
                 keyboardType="numeric"
                 value={balance}
@@ -157,7 +157,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
               <Text style={styles.cancelBtnText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.submitBtn} onPress={handleConnect} activeOpacity={0.8}>
-              <Text style={styles.submitBtnText}>Connect & Sync Ledger</Text>
+              <Text style={styles.submitBtnText}>Connect & Sync</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#F0F4F1',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   bankCard: {
-    width: '48.6%',
+    width: '48.5%',
     backgroundColor: '#FAFCFA',
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   typePill: {
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#F0F4F1',
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flex: 1,
     paddingVertical: 12,
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#F0F4F1',
     borderRadius: 12,
     alignItems: 'center',
   },
@@ -358,4 +358,3 @@ const styles = StyleSheet.create({
     color: theme.colors.textWhite,
   },
 });
-

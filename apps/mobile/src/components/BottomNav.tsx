@@ -25,21 +25,21 @@ const NAV_ITEMS: NavItemConfig[] = [
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
   return (
-    <View style={styles.navContainer}>
-      <View style={styles.navRow}>
+    <View style={styles.navBar}>
+      <View style={styles.navInner}>
         {NAV_ITEMS.map((item) => {
           const isActive = activeTab === item.key;
           return (
             <TouchableOpacity
               key={item.key}
-              style={[styles.navItem, isActive && styles.navItemActive]}
+              style={styles.navItem}
               onPress={() => onTabChange(item.key)}
               activeOpacity={0.7}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
             >
-              <View style={styles.iconContainer}>
-                <Text style={[styles.navIcon, isActive && styles.navIconActive]}>{item.icon}</Text>
+              <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
+                <Text style={styles.navIcon}>{item.icon}</Text>
                 {item.badge && (
                   <View style={styles.badgePill}>
                     <Text style={styles.badgeText}>{item.badge}</Text>
@@ -58,19 +58,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
 };
 
 const styles = StyleSheet.create({
-  navContainer: {
+  navBar: {
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
+    paddingTop: 6,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 10,
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.03,
-    shadowRadius: 6,
+    shadowRadius: 4,
     elevation: 8,
   },
-  navRow: {
+  navInner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
@@ -80,31 +80,28 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 2,
     minHeight: 48,
   },
-  navItemActive: {
-    backgroundColor: theme.colors.primaryLightSolid,
-  },
-  iconContainer: {
-    position: 'relative',
+  iconWrap: {
+    width: 44,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
+    marginBottom: 2,
+  },
+  iconWrapActive: {
+    backgroundColor: theme.colors.primaryLightSolid,
   },
   navIcon: {
-    fontSize: 18,
-    marginBottom: 2,
-    opacity: 0.7,
-  },
-  navIconActive: {
-    opacity: 1,
-    transform: [{ scale: 1.08 }],
+    fontSize: 17,
   },
   badgePill: {
     position: 'absolute',
-    top: -4,
-    right: -12,
+    top: -3,
+    right: 2,
     backgroundColor: theme.colors.primary,
     paddingHorizontal: 4,
     paddingVertical: 1,
@@ -112,11 +109,11 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: theme.colors.textWhite,
-    fontSize: 8,
+    fontSize: 7.5,
     fontWeight: '800',
   },
   navLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '600',
     color: theme.colors.textSecondary,
     letterSpacing: -0.2,
@@ -126,4 +123,3 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
-

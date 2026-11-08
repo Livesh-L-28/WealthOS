@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '../theme';
 import { DashboardPeriod } from '../types';
 import { formatINR } from '../formatters';
@@ -32,145 +32,108 @@ export const ExecutiveClarityBar: React.FC<ExecutiveClarityBarProps> = ({
   const periods: { id: DashboardPeriod; label: string }[] = [
     { id: '1M', label: 'This Month' },
     { id: '3M', label: 'Last 3M' },
-    { id: 'YTD', label: 'Year-to-Date' },
+    { id: 'YTD', label: 'YTD' },
     { id: 'ALL', label: 'All Time' },
   ];
 
   return (
     <View style={styles.container}>
-      {/* Period Selector Bar */}
-      <View style={styles.periodRow}>
-        <View style={styles.periodPillContainer}>
-          {periods.map((p) => {
-            const isSelected = period === p.id;
-            return (
-              <TouchableOpacity
-                key={p.id}
-                style={[styles.periodPill, isSelected && styles.periodPillActive]}
-                onPress={() => onPeriodChange(p.id)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.periodText, isSelected && styles.periodTextActive]}>
-                  {p.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+      {/* Period Segmented Control */}
+      <View style={styles.segmentedControl}>
+        {periods.map((p) => {
+          const isSelected = period === p.id;
+          return (
+            <TouchableOpacity
+              key={p.id}
+              style={[styles.segmentBtn, isSelected && styles.segmentBtnActive]}
+              onPress={() => onPeriodChange(p.id)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.segmentText, isSelected && styles.segmentTextActive]}>
+                {p.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
-      {/* 5-Question Clarity Carousel / Cards */}
-      <Text style={styles.sectionHeaderTitle}>5-QUESTION EXECUTIVE CLARITY</Text>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.cardsScrollContent}
-      >
-        {/* Card 1: Net Worth */}
-        <View style={[styles.clarityCard, styles.cardBorderGreen]}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.questionNumber}>1. TOTAL NET WORTH</Text>
-            <View style={styles.tagActual}>
-              <Text style={styles.tagActualText}>ACTUAL</Text>
+      {/* Hero Net Worth Card */}
+      <View style={styles.heroCard}>
+        <View style={styles.heroHeader}>
+          <View style={styles.labelGroup}>
+            <Text style={styles.heroLabel}>TOTAL NET WORTH</Text>
+            <View style={styles.actualBadge}>
+              <Text style={styles.actualBadgeText}>ACTUAL</Text>
             </View>
           </View>
-          <Text style={styles.cardPrimaryVal}>{formatINR(netWorth)}</Text>
-          <Text style={styles.cardChangeTextPositive}>+₹3,72,400 (+5.2%) MoM</Text>
-          <Text style={styles.cardHelperText}>Consolidated Double-Entry Ledger</Text>
+          <View style={styles.changeBadge}>
+            <Text style={styles.changeBadgeText}>+5.2% MoM</Text>
+          </View>
         </View>
 
-        {/* Card 2: What I Own (Assets) */}
-        <View style={styles.clarityCard}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.questionNumber}>2. WHAT I OWN (ASSETS)</Text>
-            <View style={styles.tagActual}>
-              <Text style={styles.tagActualText}>ACTUAL</Text>
-            </View>
+        <Text style={styles.heroAmount}>{formatINR(netWorth)}</Text>
+        <Text style={styles.heroSubtitle}>
+          +₹3,72,400 surplus growth across 6 connected institutions
+        </Text>
+
+        {/* Balance Sheet Split Row */}
+        <View style={styles.splitRow}>
+          <View style={styles.splitCol}>
+            <Text style={styles.splitLabel}>TOTAL ASSETS</Text>
+            <Text style={styles.assetVal}>{formatINR(totalAssets)}</Text>
+            <Text style={styles.splitSub}>Cash, Demat & SGBs</Text>
           </View>
-          <Text style={styles.cardPrimaryVal}>{formatINR(totalAssets)}</Text>
-          <Text style={styles.cardSubHighlight}>₹13.3L Liquid · ₹76.9L Invested</Text>
-          <Text style={styles.cardHelperText}>6 Institutions Synced</Text>
+
+          <View style={styles.splitDivider} />
+
+          <View style={styles.splitCol}>
+            <Text style={styles.splitLabel}>TOTAL LIABILITIES</Text>
+            <Text style={styles.debtVal}>{formatINR(totalLiabilities)}</Text>
+            <Text style={styles.splitSub}>Home Loan & Card</Text>
+          </View>
         </View>
 
-        {/* Card 3: What I Owe (Debts) */}
-        <View style={[styles.clarityCard, styles.cardBorderRed]}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.questionNumber}>3. WHAT I OWE (DEBTS)</Text>
-            <View style={styles.tagActual}>
-              <Text style={styles.tagActualText}>ACTUAL</Text>
-            </View>
+        {/* 3-Pill Clarity Bar */}
+        <View style={styles.clarityPillRow}>
+          <View style={styles.clarityPill}>
+            <Text style={styles.clarityPillLabel}>Solvency</Text>
+            <Text style={styles.clarityPillValue}>{solvencyRatio}x</Text>
           </View>
-          <Text style={[styles.cardPrimaryVal, styles.debtVal]}>{formatINR(totalLiabilities)}</Text>
-          <Text style={styles.cardSubHighlight}>Solvency Ratio: {solvencyRatio}x</Text>
-          <Text style={styles.cardHelperText}>Low risk: 5x asset buffer</Text>
+          <View style={styles.clarityPill}>
+            <Text style={styles.clarityPillLabel}>Savings</Text>
+            <Text style={styles.clarityPillValue}>{savingsRate}%</Text>
+          </View>
+          <View style={styles.clarityPill}>
+            <Text style={styles.clarityPillLabel}>Goals</Text>
+            <Text style={styles.clarityPillValue}>{goalsFundedPct.toFixed(0)}%</Text>
+          </View>
         </View>
-
-        {/* Card 4: Net Cash Flow */}
-        <View style={styles.clarityCard}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.questionNumber}>4. NET CASH FLOW</Text>
-            <View style={styles.tagActual}>
-              <Text style={styles.tagActualText}>ACTUAL</Text>
-            </View>
-          </View>
-          <Text style={[styles.cardPrimaryVal, styles.cashFlowVal]}>
-            {netCashFlow >= 0 ? '+' : ''}
-            {formatINR(netCashFlow)}
-          </Text>
-          <Text style={styles.cardSubHighlight}>{savingsRate}% Savings Rate</Text>
-          <Text style={styles.cardHelperText}>
-            In {formatINR(monthlyInflows)} · Out {formatINR(monthlyOutflows)}
-          </Text>
-        </View>
-
-        {/* Card 5: Goals Progress */}
-        <View style={styles.clarityCard}>
-          <View style={styles.cardHeaderRow}>
-            <Text style={styles.questionNumber}>5. GOALS PROGRESS</Text>
-            <View style={styles.tagProjected}>
-              <Text style={styles.tagProjectedText}>PROJECTED</Text>
-            </View>
-          </View>
-          <Text style={styles.cardPrimaryVal}>{goalsFundedPct.toFixed(1)}%</Text>
-          <View style={styles.miniProgressBar}>
-            <View
-              style={[
-                styles.miniProgressBarFill,
-                { width: `${Math.min(100, goalsFundedPct)}%` },
-              ]}
-            />
-          </View>
-          <Text style={styles.cardHelperText}>₹40.3L saved of ₹99.0L milestone targets</Text>
-        </View>
-      </ScrollView>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 4,
+    paddingHorizontal: 20,
+    paddingTop: 14,
   },
-  periodRow: {
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  periodPillContainer: {
+  segmentedControl: {
     flexDirection: 'row',
     backgroundColor: '#EEF2EF',
     borderRadius: 12,
     padding: 3,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    marginBottom: 14,
   },
-  periodPill: {
+  segmentBtn: {
     flex: 1,
-    paddingVertical: 6,
+    paddingVertical: 7,
     alignItems: 'center',
     borderRadius: 9,
   },
-  periodPillActive: {
+  segmentBtnActive: {
     backgroundColor: theme.colors.surface,
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: 1 },
@@ -178,123 +141,147 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  periodText: {
+  segmentText: {
     fontSize: 11,
     fontWeight: '600',
     color: theme.colors.textSecondary,
   },
-  periodTextActive: {
+  segmentTextActive: {
     color: theme.colors.textPrimary,
     fontWeight: '700',
   },
-  sectionHeaderTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    color: theme.colors.textSecondary,
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  cardsScrollContent: {
-    paddingHorizontal: 16,
-    gap: 10,
-    paddingBottom: 6,
-  },
-  clarityCard: {
-    width: 230,
+  heroCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    padding: 14,
+    borderRadius: 20,
+    padding: 18,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: 'rgba(22, 163, 106, 0.35)',
     shadowColor: theme.colors.textPrimary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  cardBorderGreen: {
-    borderColor: 'rgba(22, 163, 106, 0.4)',
-  },
-  cardBorderRed: {
-    borderColor: 'rgba(220, 91, 91, 0.3)',
-  },
-  cardHeaderRow: {
+  heroHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 8,
   },
-  questionNumber: {
-    fontSize: 10,
+  labelGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  heroLabel: {
+    fontSize: 11,
     fontWeight: '700',
     color: theme.colors.textSecondary,
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
   },
-  tagActual: {
+  actualBadge: {
     backgroundColor: theme.colors.primaryLightSolid,
-    paddingHorizontal: 5,
+    paddingHorizontal: 6,
     paddingVertical: 1.5,
-    borderRadius: 4,
+    borderRadius: 5,
   },
-  tagActualText: {
+  actualBadgeText: {
     fontSize: 8,
     fontWeight: '800',
     color: theme.colors.primaryDark,
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
-  tagProjected: {
-    backgroundColor: theme.colors.blueLight,
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
-    borderRadius: 4,
+  changeBadge: {
+    backgroundColor: theme.colors.primaryLightSolid,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 6,
   },
-  tagProjectedText: {
-    fontSize: 8,
+  changeBadgeText: {
+    fontSize: 10,
     fontWeight: '800',
-    color: theme.colors.blue,
-    letterSpacing: 0.5,
+    color: theme.colors.primaryDark,
   },
-  cardPrimaryVal: {
-    fontSize: 18,
+  heroAmount: {
+    fontSize: 28,
     fontWeight: '800',
     color: theme.colors.textPrimary,
     fontVariant: ['tabular-nums'],
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
   },
-  debtVal: {
-    color: theme.colors.negative,
-  },
-  cashFlowVal: {
-    color: theme.colors.positive,
-  },
-  cardChangeTextPositive: {
+  heroSubtitle: {
     fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.positiveDark,
-    marginTop: 2,
-  },
-  cardSubHighlight: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-    marginTop: 2,
-  },
-  cardHelperText: {
-    fontSize: 10,
     color: theme.colors.textSecondary,
     marginTop: 4,
+    marginBottom: 16,
   },
-  miniProgressBar: {
-    height: 4,
-    backgroundColor: theme.colors.borderLight,
-    borderRadius: 2,
-    marginVertical: 4,
-    overflow: 'hidden',
+  splitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FAFCFA',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
   },
-  miniProgressBarFill: {
-    height: 4,
-    backgroundColor: theme.colors.primary,
-    borderRadius: 2,
+  splitCol: {
+    flex: 1,
+  },
+  splitLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+    letterSpacing: 0.4,
+  },
+  assetVal: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    fontVariant: ['tabular-nums'],
+    marginTop: 2,
+  },
+  debtVal: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: theme.colors.negative,
+    fontVariant: ['tabular-nums'],
+    marginTop: 2,
+  },
+  splitSub: {
+    fontSize: 9.5,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  splitDivider: {
+    width: 1,
+    height: 38,
+    backgroundColor: theme.colors.border,
+    marginHorizontal: 12,
+  },
+  clarityPillRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  clarityPill: {
+    flex: 1,
+    backgroundColor: '#F0F4F1',
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  clarityPillLabel: {
+    fontSize: 9.5,
+    color: theme.colors.textSecondary,
+    fontWeight: '600',
+  },
+  clarityPillValue: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: theme.colors.primaryDark,
+    fontVariant: ['tabular-nums'],
   },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '../theme';
 import { InvestmentHolding } from '../types';
 import { formatINR } from '../formatters';
@@ -22,10 +22,10 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings }) =>
 
   return (
     <View style={styles.container}>
-      {/* Portfolio Value Hero Card */}
+      {/* Portfolio Hero Card */}
       <View style={styles.heroCard}>
         <View style={styles.heroTopRow}>
-          <Text style={styles.heroLabel}>INVESTMENT PORTFOLIO VALUE</Text>
+          <Text style={styles.heroLabel}>INVESTMENT PORTFOLIO</Text>
           <View style={styles.realtimePill}>
             <Text style={styles.realtimeText}>● Live Market Quotes</Text>
           </View>
@@ -51,25 +51,25 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings }) =>
         </View>
       </View>
 
-      {/* Filter Chips */}
-      <View style={styles.filterRow}>
+      {/* Segmented Filter Control */}
+      <View style={styles.segmentedControl}>
         {(
           [
             { id: 'ALL', label: `All (${holdings.length})` },
             { id: 'EQUITY', label: 'Equities' },
-            { id: 'MUTUAL_FUND', label: 'Mutual Funds' },
-            { id: 'GOLD', label: 'Gold (SGB)' },
+            { id: 'MUTUAL_FUND', label: 'Funds' },
+            { id: 'GOLD', label: 'Gold' },
           ] as const
         ).map((f) => {
           const isActive = filter === f.id;
           return (
             <TouchableOpacity
               key={f.id}
-              style={[styles.filterChip, isActive && styles.filterChipActive]}
+              style={[styles.segmentBtn, isActive && styles.segmentBtnActive]}
               onPress={() => setFilter(f.id)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.filterChipText, isActive && styles.filterChipTextActive]}>
+              <Text style={[styles.segmentText, isActive && styles.segmentTextActive]}>
                 {f.label}
               </Text>
             </TouchableOpacity>
@@ -123,13 +123,13 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings }) =>
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingTop: 14,
     paddingBottom: 24,
   },
   heroCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     borderWidth: 1,
     borderColor: 'rgba(22, 163, 106, 0.3)',
@@ -138,7 +138,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 6,
     elevation: 3,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   heroTopRow: {
     flexDirection: 'row',
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryLightSolid,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 5,
   },
   realtimeText: {
     fontSize: 9,
@@ -206,45 +206,50 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.borderLight,
     marginHorizontal: 12,
   },
-  filterRow: {
+  segmentedControl: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 14,
-  },
-  filterChip: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#EEF2EF',
+    borderRadius: 12,
+    padding: 3,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    marginBottom: 14,
   },
-  filterChipActive: {
-    backgroundColor: theme.colors.primaryLightSolid,
-    borderColor: theme.colors.primary,
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    borderRadius: 9,
   },
-  filterChipText: {
+  segmentBtnActive: {
+    backgroundColor: theme.colors.surface,
+    shadowColor: theme.colors.textPrimary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  segmentText: {
     fontSize: 11,
     fontWeight: '600',
     color: theme.colors.textSecondary,
   },
-  filterChipTextActive: {
-    color: theme.colors.primaryDark,
+  segmentTextActive: {
+    color: theme.colors.textPrimary,
     fontWeight: '700',
   },
   holdingsList: {
-    gap: 10,
+    gap: 12,
   },
   holdingCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    padding: 14,
+    borderRadius: 18,
+    padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.03,
     shadowRadius: 3,
     elevation: 2,
   },
@@ -264,7 +269,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   holdingName: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
@@ -304,12 +309,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   taxLotPill: {
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#F0F4F1',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-    borderWidth: 0.5,
-    borderColor: theme.colors.border,
   },
   taxLotText: {
     fontSize: 9,

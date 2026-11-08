@@ -16,75 +16,79 @@ export const PortfolioAllocationCard: React.FC<PortfolioAllocationCardProps> = (
   const pnlPct = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
 
   const allocations = [
-    { label: 'Equities', pct: 42, color: theme.colors.charts.equity, amount: totalValue * 0.42 },
-    { label: 'Mutual Funds', pct: 36, color: theme.colors.charts.mutualFund, amount: totalValue * 0.36 },
-    { label: 'Gold (SGB)', pct: 12, color: theme.colors.charts.gold, amount: totalValue * 0.12 },
-    { label: 'Fixed Income', pct: 10, color: theme.colors.charts.fixedIncome, amount: totalValue * 0.10 },
+    { label: 'Equities', pct: 42, color: theme.colors.charts.equity },
+    { label: 'Mutual Funds', pct: 36, color: theme.colors.charts.mutualFund },
+    { label: 'Gold (SGB)', pct: 12, color: theme.colors.charts.gold },
+    { label: 'Fixed Income', pct: 10, color: theme.colors.charts.fixedIncome },
   ];
 
   return (
-    <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <View>
-          <Text style={styles.title}>PORTFOLIO ALLOCATION</Text>
-          <Text style={styles.subtitle}>Multi-Asset Distribution & Unrealized Gains</Text>
-        </View>
-        <View style={styles.pnlBadge}>
-          <Text style={styles.pnlBadgeText}>
-            {totalPnl >= 0 ? '+' : ''}
-            {pnlPct.toFixed(1)}% All-Time
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.valueRow}>
-        <View>
-          <Text style={styles.valueLabel}>Current Portfolio Value</Text>
-          <Text style={styles.valueText}>{formatINR(totalValue)}</Text>
-        </View>
-        <View style={styles.pnlBox}>
-          <Text style={styles.pnlLabel}>Unrealized Gain</Text>
-          <Text style={styles.pnlText}>
-            {totalPnl >= 0 ? '+' : ''}
-            {formatINR(totalPnl)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Segmented Color Allocation Bar */}
-      <View style={styles.stackedBar}>
-        {allocations.map((a) => (
-          <View
-            key={a.label}
-            style={[
-              styles.barSegment,
-              { width: `${a.pct}%`, backgroundColor: a.color },
-            ]}
-          />
-        ))}
-      </View>
-
-      {/* Allocation Legend */}
-      <View style={styles.legendGrid}>
-        {allocations.map((a) => (
-          <View key={a.label} style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: a.color }]} />
-            <Text style={styles.legendLabel}>{a.label}</Text>
-            <Text style={styles.legendPct}>{a.pct}%</Text>
+    <View style={styles.container}>
+      <View style={styles.card}>
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>PORTFOLIO ALLOCATION</Text>
+            <Text style={styles.subtitle}>Multi-Asset Distribution & Returns</Text>
           </View>
-        ))}
+          <View style={styles.pnlBadge}>
+            <Text style={styles.pnlBadgeText}>
+              {totalPnl >= 0 ? '+' : ''}
+              {pnlPct.toFixed(1)}% All-Time
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.valueRow}>
+          <View>
+            <Text style={styles.valueLabel}>Current Valuation</Text>
+            <Text style={styles.valueText}>{formatINR(totalValue)}</Text>
+          </View>
+          <View style={styles.pnlBox}>
+            <Text style={styles.pnlLabel}>Unrealized Gain</Text>
+            <Text style={styles.pnlText}>
+              {totalPnl >= 0 ? '+' : ''}
+              {formatINR(totalPnl)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Segmented Color Allocation Bar */}
+        <View style={styles.stackedBar}>
+          {allocations.map((a) => (
+            <View
+              key={a.label}
+              style={[
+                styles.barSegment,
+                { width: `${a.pct}%`, backgroundColor: a.color },
+              ]}
+            />
+          ))}
+        </View>
+
+        {/* Allocation Legend */}
+        <View style={styles.legendGrid}>
+          {allocations.map((a) => (
+            <View key={a.label} style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: a.color }]} />
+              <Text style={styles.legendLabel}>{a.label}</Text>
+              <Text style={styles.legendPct}>{a.pct}%</Text>
+            </View>
+          ))}
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 20,
+    marginTop: 14,
+  },
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
-    marginHorizontal: 16,
-    marginVertical: 6,
     borderWidth: 1,
     borderColor: theme.colors.border,
     shadowColor: theme.colors.textPrimary,
@@ -100,7 +104,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
     color: theme.colors.textSecondary,
     letterSpacing: 0.5,
@@ -123,12 +127,12 @@ const styles = StyleSheet.create({
   },
   valueRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between',
     marginBottom: 12,
   },
   valueLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: theme.colors.textSecondary,
     fontWeight: '600',
   },
@@ -144,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   pnlLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: theme.colors.textSecondary,
     fontWeight: '600',
   },
@@ -156,12 +160,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   stackedBar: {
-    height: 10,
-    borderRadius: 5,
+    height: 8,
+    borderRadius: 4,
     flexDirection: 'row',
     overflow: 'hidden',
     backgroundColor: theme.colors.borderLight,
-    marginVertical: 8,
+    marginVertical: 6,
   },
   barSegment: {
     height: '100%',
@@ -181,17 +185,17 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
   legendLabel: {
-    fontSize: 11,
+    fontSize: 10.5,
     color: theme.colors.textSecondary,
     fontWeight: '600',
   },
   legendPct: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
     color: theme.colors.textPrimary,
   },

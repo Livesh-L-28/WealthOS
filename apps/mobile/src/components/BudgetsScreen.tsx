@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { theme } from '../theme';
 import { BudgetEnvelope, FinancialGoal } from '../types';
 import { formatINR } from '../formatters';
@@ -22,7 +22,7 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({ budgets, goals }) 
         <View style={styles.cardHeaderRow}>
           <Text style={styles.cardLabel}>MONTHLY BUDGET UTILIZATION</Text>
           <View style={styles.pctBadge}>
-            <Text style={styles.pctBadgeText}>{utilizationPct.toFixed(1)}% USED</Text>
+            <Text style={styles.pctBadgeText}>{utilizationPct.toFixed(0)}% USED</Text>
           </View>
         </View>
 
@@ -118,7 +118,7 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({ budgets, goals }) 
                 <Text style={styles.goalCurrentVal}>{formatINR(goal.currentAmount)}</Text>
                 <Text style={styles.goalTargetVal}>of {formatINR(goal.targetAmount)}</Text>
                 <View style={styles.goalPctPill}>
-                  <Text style={styles.goalPctPillText}>{goalPct.toFixed(1)}%</Text>
+                  <Text style={styles.goalPctPillText}>{goalPct.toFixed(0)}%</Text>
                 </View>
               </View>
 
@@ -140,13 +140,13 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({ budgets, goals }) 
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingTop: 14,
     paddingBottom: 24,
   },
   utilizationCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -173,11 +173,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryLightSolid,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 5,
   },
   pctBadgeText: {
     fontSize: 9,
-    fontWeight: '700',
+    fontWeight: '800',
     color: theme.colors.primaryDark,
   },
   bigSpentVal: {
@@ -193,36 +193,36 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   mainProgressTrack: {
-    height: 8,
+    height: 7,
     backgroundColor: theme.colors.borderLight,
-    borderRadius: 4,
+    borderRadius: 3.5,
     marginVertical: 10,
     overflow: 'hidden',
   },
   mainProgressFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3.5,
   },
   bufferHelpText: {
     fontSize: 11,
     color: theme.colors.textSecondary,
   },
   sectionHeaderTitle: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '700',
     color: theme.colors.textSecondary,
     letterSpacing: 0.5,
-    marginBottom: 8,
+    marginBottom: 10,
     marginTop: 4,
   },
   envelopesList: {
-    gap: 8,
+    gap: 10,
     marginBottom: 16,
   },
   envelopeCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: 16,
+    padding: 14,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   envelopeRatio: {
-    fontSize: 11,
+    fontSize: 11.5,
     fontWeight: '700',
     color: theme.colors.textPrimary,
     fontVariant: ['tabular-nums'],
@@ -258,15 +258,15 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   envelopeProgressTrack: {
-    height: 6,
+    height: 5,
     backgroundColor: theme.colors.borderLight,
-    borderRadius: 3,
+    borderRadius: 2.5,
     overflow: 'hidden',
-    marginVertical: 4,
+    marginVertical: 5,
   },
   envelopeProgressFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2.5,
   },
   envelopeFooter: {
     flexDirection: 'row',
@@ -275,22 +275,22 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   envelopePctText: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: theme.colors.textSecondary,
     fontWeight: '600',
   },
   envelopeRemText: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: theme.colors.primaryDark,
     fontWeight: '600',
   },
   goalsList: {
-    gap: 8,
+    gap: 10,
   },
   goalCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: 16,
+    padding: 14,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
@@ -301,13 +301,13 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   goalTitle: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
     color: theme.colors.textPrimary,
     flex: 1,
   },
   targetYearBadge: {
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#F0F4F1',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -346,13 +346,13 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryDark,
   },
   goalProgressTrack: {
-    height: 6,
+    height: 5,
     backgroundColor: theme.colors.borderLight,
-    borderRadius: 3,
+    borderRadius: 2.5,
     overflow: 'hidden',
   },
   goalProgressFill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2.5,
   },
 });

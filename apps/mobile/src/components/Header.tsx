@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
 import { theme } from '../theme';
 
 interface HeaderProps {
@@ -14,49 +14,50 @@ export const Header: React.FC<HeaderProps> = ({
   isSyncing = false,
 }) => {
   return (
-    <View style={styles.headerContainer}>
-      <View style={styles.leftSection}>
+    <View style={styles.header}>
+      {/* Left: Brand Identity */}
+      <View style={styles.brandRow}>
         <View style={styles.logoBadge}>
           <Text style={styles.logoText}>W</Text>
         </View>
-
-        <View style={styles.brandInfo}>
-          <View style={styles.brandTitleRow}>
+        <View style={styles.brandTextCol}>
+          <View style={styles.titleWithPill}>
             <Text style={styles.brandTitle}>
               Wealth<Text style={styles.brandAccent}>OS</Text>
             </Text>
             <View style={styles.workspacePill}>
-              <Text style={styles.workspacePillText}>PERSONAL · INR</Text>
+              <Text style={styles.workspacePillText}>PERSONAL</Text>
             </View>
           </View>
-          <View style={styles.subtitleRow}>
-            <Text style={styles.brandSubtitle}>DOUBLE-ENTRY LEDGER</Text>
-            <View style={styles.dotSeparator} />
-            <View style={styles.syncIndicator}>
-              <View style={[styles.syncDot, isSyncing && styles.syncDotPulse]} />
-              <Text style={styles.syncText}>{isSyncing ? 'SYNCING...' : 'SYNCED'}</Text>
-            </View>
+          <View style={styles.syncRow}>
+            <View style={[styles.syncDot, isSyncing && styles.syncDotPulse]} />
+            <Text style={styles.syncText}>
+              {isSyncing ? 'Synchronizing...' : 'Ledger Synced'}
+            </Text>
           </View>
         </View>
       </View>
 
-      <View style={styles.rightSection}>
+      {/* Right: Actions */}
+      <View style={styles.actionsRow}>
         <TouchableOpacity
-          style={styles.reconButton}
+          style={styles.iconButton}
           onPress={onOpenReconciliation}
           activeOpacity={0.7}
-          accessibilityLabel="Open Ledger Reconciliation and Control Centre"
+          accessibilityLabel="Open Ledger Control Centre"
         >
-          <Text style={styles.reconButtonIcon}>🛡️</Text>
+          <Text style={styles.iconButtonText}>🛡️</Text>
+          <View style={styles.shieldActiveDot} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.addButton}
+          style={styles.primaryActionButton}
           onPress={onAddTransaction}
           activeOpacity={0.8}
           accessibilityLabel="Add New Transaction"
         >
-          <Text style={styles.addButtonText}>+ Entry</Text>
+          <Text style={styles.primaryActionPlus}>+</Text>
+          <Text style={styles.primaryActionText}>Entry</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -64,56 +65,54 @@ export const Header: React.FC<HeaderProps> = ({
 };
 
 const styles = StyleSheet.create({
-  headerContainer: {
+  header: {
     backgroundColor: theme.colors.surface,
-    paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 6 : 10,
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 10,
   },
-  leftSection: {
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
   logoBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 11,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
   logoText: {
     color: theme.colors.textWhite,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
     letterSpacing: -0.5,
   },
-  brandInfo: {
-    flexDirection: 'column',
-    gap: 2,
+  brandTextCol: {
+    justifyContent: 'center',
   },
-  brandTitleRow: {
+  titleWithPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
   brandTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: theme.colors.textPrimary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
   },
   brandAccent: {
     color: theme.colors.primary,
@@ -121,38 +120,20 @@ const styles = StyleSheet.create({
   workspacePill: {
     backgroundColor: theme.colors.primaryLightSolid,
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 0.5,
-    borderColor: 'rgba(22, 163, 106, 0.2)',
+    paddingVertical: 1.5,
+    borderRadius: 5,
   },
   workspacePillText: {
     color: theme.colors.primaryDark,
     fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontWeight: '800',
+    letterSpacing: 0.4,
   },
-  subtitleRow: {
+  syncRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-  },
-  brandSubtitle: {
-    color: theme.colors.textSecondary,
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
-  dotSeparator: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: theme.colors.borderStrong,
-  },
-  syncIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    gap: 5,
+    marginTop: 2,
   },
   syncDot: {
     width: 6,
@@ -164,17 +145,16 @@ const styles = StyleSheet.create({
     opacity: 0.4,
   },
   syncText: {
-    color: theme.colors.positiveDark,
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    color: theme.colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '600',
   },
-  rightSection: {
+  actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  reconButton: {
+  iconButton: {
     width: 36,
     height: 36,
     borderRadius: 10,
@@ -183,28 +163,44 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
-  reconButtonIcon: {
+  iconButtonText: {
     fontSize: 15,
   },
-  addButton: {
+  shieldActiveDot: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: theme.colors.positive,
+  },
+  primaryActionButton: {
     backgroundColor: theme.colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: 4,
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 2,
   },
-  addButtonText: {
+  primaryActionPlus: {
+    color: theme.colors.textWhite,
+    fontSize: 14,
+    fontWeight: '800',
+    marginTop: -1,
+  },
+  primaryActionText: {
     color: theme.colors.textWhite,
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
 });
-

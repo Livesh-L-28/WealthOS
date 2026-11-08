@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '../theme';
 import { BankAccount } from '../types';
 import { formatINR } from '../formatters';
@@ -29,7 +29,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* Top Header Summary */}
+      {/* Summary Card */}
       <View style={styles.summaryCard}>
         <View style={styles.summaryTop}>
           <Text style={styles.summaryLabel}>CONNECTED INSTITUTION ACCOUNTS</Text>
@@ -51,24 +51,24 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
         </View>
       </View>
 
-      {/* Filter Segmented Pills */}
-      <View style={styles.filterRow}>
+      {/* Segmented Filter Control */}
+      <View style={styles.segmentedControl}>
         {(
           [
             { id: 'ALL', label: `All (${accounts.length})` },
-            { id: 'ASSET', label: 'Assets & Banks' },
-            { id: 'LIABILITY', label: 'Liabilities & Debt' },
+            { id: 'ASSET', label: 'Assets' },
+            { id: 'LIABILITY', label: 'Debts' },
           ] as const
         ).map((f) => {
           const isActive = filter === f.id;
           return (
             <TouchableOpacity
               key={f.id}
-              style={[styles.filterPill, isActive && styles.filterPillActive]}
+              style={[styles.segmentBtn, isActive && styles.segmentBtnActive]}
               onPress={() => setFilter(f.id)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.filterPillText, isActive && styles.filterPillTextActive]}>
+              <Text style={[styles.segmentText, isActive && styles.segmentTextActive]}>
                 {f.label}
               </Text>
             </TouchableOpacity>
@@ -76,25 +76,24 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
         })}
       </View>
 
-      {/* Account Cards */}
+      {/* Accounts List */}
       <View style={styles.accountList}>
         {filteredAccounts.map((acc) => {
           const isAsset = acc.category === 'ASSET';
           return (
             <View key={acc.id} style={styles.accountCard}>
-              <View style={styles.accountHeader}>
-                <View style={styles.accountHeaderLeft}>
-                  <View style={styles.bankIconCircle}>
-                    <Text style={styles.bankIcon}>
-                      {acc.type === 'CREDIT_CARD' ? '💳' : acc.type === 'DEMAT' ? '📈' : '🏛️'}
-                    </Text>
-                  </View>
-                  <View>
-                    <Text style={styles.accountName}>{acc.name}</Text>
-                    <Text style={styles.accountInstitution}>
-                      {acc.institution} · {acc.accountNumberMask}
-                    </Text>
-                  </View>
+              <View style={styles.cardTopRow}>
+                <View style={styles.bankAvatar}>
+                  <Text style={styles.bankEmoji}>
+                    {acc.type === 'CREDIT_CARD' ? '💳' : acc.type === 'DEMAT' ? '📈' : '🏛️'}
+                  </Text>
+                </View>
+
+                <View style={styles.accountMeta}>
+                  <Text style={styles.accountName}>{acc.name}</Text>
+                  <Text style={styles.accountInstitution}>
+                    {acc.institution} · {acc.accountNumberMask}
+                  </Text>
                 </View>
 
                 <View
@@ -114,7 +113,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                 </View>
               </View>
 
-              <View style={styles.accountBody}>
+              <View style={styles.cardMidRow}>
                 <View>
                   <Text style={styles.balanceLabel}>LEDGER BALANCE</Text>
                   <Text
@@ -133,7 +132,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                 )}
               </View>
 
-              <View style={styles.accountFooter}>
+              <View style={styles.cardFooter}>
                 <Text style={styles.syncStatusText}>Synced: {acc.lastSynced}</Text>
                 <View style={styles.verifiedRow}>
                   <Text style={styles.verifiedDot}>●</Text>
@@ -159,13 +158,13 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingHorizontal: 20,
+    paddingTop: 14,
     paddingBottom: 24,
   },
   summaryCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
@@ -174,7 +173,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 2,
-    marginBottom: 12,
+    marginBottom: 14,
   },
   summaryTop: {
     flexDirection: 'row',
@@ -192,7 +191,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryLightSolid,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: 5,
   },
   syncBadgeText: {
     fontSize: 9,
@@ -208,7 +207,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   summaryBoxLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
     color: theme.colors.textSecondary,
     fontWeight: '600',
   },
@@ -232,70 +231,73 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.borderLight,
     marginHorizontal: 12,
   },
-  filterRow: {
+  segmentedControl: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
-  },
-  filterPill: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: '#EEF2EF',
+    borderRadius: 12,
+    padding: 3,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    marginBottom: 14,
   },
-  filterPillActive: {
-    backgroundColor: theme.colors.primaryLightSolid,
-    borderColor: theme.colors.primary,
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    borderRadius: 9,
   },
-  filterPillText: {
+  segmentBtnActive: {
+    backgroundColor: theme.colors.surface,
+    shadowColor: theme.colors.textPrimary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  segmentText: {
     fontSize: 11,
     fontWeight: '600',
     color: theme.colors.textSecondary,
   },
-  filterPillTextActive: {
-    color: theme.colors.primaryDark,
+  segmentTextActive: {
+    color: theme.colors.textPrimary,
     fontWeight: '700',
   },
   accountList: {
-    gap: 10,
+    gap: 12,
   },
   accountCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    padding: 14,
+    borderRadius: 18,
+    padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.03,
     shadowRadius: 3,
     elevation: 2,
   },
-  accountHeader: {
+  cardTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  accountHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  bankIconCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: theme.colors.cardSubtle,
+  bankAvatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#F0F4F1',
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 12,
   },
-  bankIcon: {
-    fontSize: 16,
+  bankEmoji: {
+    fontSize: 17,
+  },
+  accountMeta: {
+    flex: 1,
   },
   accountName: {
     fontSize: 13,
@@ -303,13 +305,13 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
   },
   accountInstitution: {
-    fontSize: 10,
+    fontSize: 10.5,
     color: theme.colors.textSecondary,
-    marginTop: 1,
+    marginTop: 2,
   },
   typeBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
     borderRadius: 6,
   },
   typeBadgeAsset: {
@@ -320,7 +322,7 @@ const styles = StyleSheet.create({
   },
   typeBadgeText: {
     fontSize: 9,
-    fontWeight: '700',
+    fontWeight: '800',
     letterSpacing: 0.3,
   },
   typeTextAsset: {
@@ -329,23 +331,23 @@ const styles = StyleSheet.create({
   typeTextLiability: {
     color: theme.colors.negativeDark,
   },
-  accountBody: {
+  cardMidRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: 4,
   },
   balanceLabel: {
     fontSize: 9,
     fontWeight: '700',
     color: theme.colors.textSecondary,
-    letterSpacing: 0.3,
+    letterSpacing: 0.4,
   },
   accountBalance: {
     fontSize: 18,
     fontWeight: '800',
     fontVariant: ['tabular-nums'],
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
     marginTop: 2,
   },
   balanceAsset: {
@@ -355,8 +357,8 @@ const styles = StyleSheet.create({
     color: theme.colors.negative,
   },
   rateBadge: {
-    backgroundColor: theme.colors.cardSubtle,
-    paddingHorizontal: 6,
+    backgroundColor: '#F0F4F1',
+    paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 6,
   },
@@ -365,14 +367,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.textSecondary,
   },
-  accountFooter: {
+  cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 8,
+    paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: theme.colors.borderLight,
-    marginTop: 4,
+    marginTop: 8,
   },
   syncStatusText: {
     fontSize: 10,
@@ -400,11 +402,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
-    marginTop: 14,
+    marginTop: 16,
   },
   connectBtnText: {
     color: theme.colors.primaryDark,
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '700',
   },
 });
