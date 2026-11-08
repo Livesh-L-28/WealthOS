@@ -19,6 +19,7 @@
       },
       "package": "com.wealthos.app",
       "versionCode": 1,
+      "usesCleartextTraffic": false,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"

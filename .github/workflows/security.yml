@@ -1,0 +1,149 @@
+name: WealthOS Enterprise Security Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  schedule:
+    # Automated daily security audit at 02:00 UTC
+    - cron: '0 2 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets-and-static-analysis:
+    name: Secrets & Static Application Security Testing (SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Secret Pattern Audit
+        run: |
+          echo "Scanning for accidental hardcoded credentials or private keys..."
+          SUSPICIOUS=$(git grep -EI '(BEGIN (RSA|EC|DSA|OPENSSH) PRIVATE KEY|password\s*=\s*["'\''"][A-Za-z0-9_!@#$%^&*]{16,}["'\''"])' -- ':!*.pyc' ':!*.pack' ':!tests/*' ':!scripts/security_exceptions.json' || true)
+          if [ -n "$SUSPICIOUS" ]; then
+            echo "[CRITICAL ALERT] Potential secret detected in tracked code:"
+            echo "$SUSPICIOUS"
+            exit 1
+          fi
+          echo "[PASS] No tracked private keys or hardcoded production secrets detected."
+
+  supply-chain-and-dependencies:
+    name: Supply Chain & Dependency Vulnerability Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Policy-Governed npm Supply Chain Audit
+        run: python3 scripts/audit_dependencies.py --npm-only
+
+  backend-security-verification:
+    name: Backend Security, RLS & Tenant Isolation Test Suite
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16.8-alpine
+        env:
+          POSTGRES_USER: wealthos_admin
+          POSTGRES_PASSWORD: wealthos_local_dev_password_change_in_prod
+          POSTGRES_DB: wealthos_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Start Authenticated Redis
+        run: |
+          docker run -d --name redis_sec -p 6379:6379 redis:7.2.7-alpine redis-server --requirepass wealthos_local_dev_redis_change_in_prod
+          for i in {1..15}; do
+            if docker exec redis_sec redis-cli -a wealthos_local_dev_redis_change_in_prod ping | grep PONG; then
+              echo "Authenticated Redis is ready"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "./backend[dev]"
+
+      - name: Execute Security & RLS Isolation Tests
+        env:
+          ENVIRONMENT: testing
+          DEBUG: "true"
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DB: wealthos_test
+          POSTGRES_USER: wealthos_app
+          POSTGRES_PASSWORD: wealthos_app_dev_password_change_in_prod
+          POSTGRES_ADMIN_USER: wealthos_admin
+          POSTGRES_ADMIN_PASSWORD: wealthos_local_dev_password_change_in_prod
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: wealthos_local_dev_redis_change_in_prod
+        run: |
+          cd backend
+          pytest -v tests/test_security_hardening_acceptance.py tests/test_runtime_role_tenant_isolation.py tests/test_phase19_app_security.py tests/test_phase19_identity_security.py
+
+  frontend-and-mobile-security:
+    name: Web Edge & Mobile App Security Suite
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install Monorepo Dependencies
+        run: npm ci
+
+      - name: Run Web Security Suite
+        run: npm run --workspace=@wealthos/web test -- src/webSecurity.test.ts
+
+      - name: Run Mobile Security Suite
+        run: npm run --workspace=@wealthos/mobile test -- src/mobileSecurity.test.ts
+

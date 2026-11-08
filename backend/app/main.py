@@ -157,6 +157,58 @@ def create_app() -> FastAPI:
             correlation_id_ctx.reset(token_cid)
             tenant_id_ctx.reset(token_tid)
 
+    # 2b. CSRF & Origin Validation Middleware for Cookie-Authenticated Requests (OWASP ASVS 5.0)
+    @app.middleware("http")
+    async def csrf_origin_validation_middleware(request: Request, call_next):
+        if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+            # Check if request relies on ambient browser credentials (cookies) without explicit Bearer token
+            has_auth_cookie = bool(
+                request.cookies.get("wealthos_access_token")
+                or request.cookies.get("access_token")
+                or request.cookies.get("refresh_token")
+            )
+            has_bearer = bool(request.headers.get("Authorization"))
+
+            # Exclude unauthenticated auth entrypoints (e.g. login, register)
+            path = request.url.path
+            is_unauthenticated_entry = path in (
+                f"{settings.API_V1_PREFIX}/auth/login",
+                f"{settings.API_V1_PREFIX}/auth/register",
+                f"{settings.API_V1_PREFIX}/auth/forgot-password",
+                f"{settings.API_V1_PREFIX}/auth/reset-password",
+                f"{settings.API_V1_PREFIX}/auth/mfa/challenge",
+                f"{settings.API_V1_PREFIX}/auth/mfa/verify",
+                f"{settings.API_V1_PREFIX}/auth/verify-email",
+            )
+
+            if has_auth_cookie and not has_bearer and not is_unauthenticated_entry:
+                origin = request.headers.get("Origin") or request.headers.get("Referer")
+                if origin:
+                    from urllib.parse import urlparse
+
+                    parsed = urlparse(origin)
+                    origin_base = f"{parsed.scheme}://{parsed.netloc}"
+                    allowed_origins = set(settings.CORS_ORIGINS)
+
+                    if "*" not in allowed_origins and origin_base not in allowed_origins and origin not in allowed_origins:
+                        cid = correlation_id_ctx.get()
+                        logger.warning(
+                            f"CSRF Origin violation: request={request.method} {path}, origin={origin}, allowed={allowed_origins}"
+                        )
+                        return JSONResponse(
+                            status_code=status.HTTP_403_FORBIDDEN,
+                            content={
+                                "success": False,
+                                "error": {
+                                    "code": "CSRF_ORIGIN_DENIED",
+                                    "message": "Cross-Site Request Forgery protection: Origin/Referer header does not match authorized origins.",
+                                },
+                                "correlation_id": cid,
+                            },
+                        )
+
+        return await call_next(request)
+
     # 3. Centralized Exception Handlers
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException):

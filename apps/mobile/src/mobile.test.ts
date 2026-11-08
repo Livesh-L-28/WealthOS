@@ -83,15 +83,16 @@ describe('WealthOS Mobile Application (Gate 9 & Round 2 Acceptance)', () => {
       expect(await driver.getItemAsync(SECURE_STORE_KEYS.ACTIVE_TENANT)).toBeNull();
     });
 
-    it('instantiates ExpoSecureStoreDriver and conforms to SecureStorageDriver interface', async () => {
+    it('instantiates ExpoSecureStoreDriver and fails closed when native module is unavailable', async () => {
       const nativeDriver = new ExpoSecureStoreDriver();
       expect(typeof nativeDriver.setItemAsync).toBe('function');
       expect(typeof nativeDriver.getItemAsync).toBe('function');
       expect(typeof nativeDriver.deleteItemAsync).toBe('function');
 
-      // In Node environment where native keychain is unavailable, fallback safely returns null
-      const val = await nativeDriver.getItemAsync('dummy_key');
-      expect(val).toBeNull();
+      // Fail-closed enforcement: In headless/Node environment without native keychain bridge, driver must throw
+      await expect(nativeDriver.getItemAsync('dummy_key')).rejects.toThrow(/SecureStore native module not found/);
+      await expect(nativeDriver.setItemAsync('dummy_key', 'val')).rejects.toThrow(/SecureStore native module not found/);
+      await expect(nativeDriver.deleteItemAsync('dummy_key')).rejects.toThrow(/SecureStore native module not found/);
     });
 
     it('returns isolated MemorySecureStoreDriver in test runtime via driver factory', () => {

@@ -49,6 +49,26 @@ def quantize(val: Decimal) -> Decimal:
     return val.quantize(FOUR_PLACES, rounding=ROUND_HALF_UP)
 
 
+def verify_file_magic_bytes(content: bytes, declared_mime: str) -> bool:
+    """Inspect binary header to prevent executable disguise and verify declared MIME signature."""
+    if not content:
+        return False
+    mime = declared_mime.lower().strip()
+    if mime == "application/pdf":
+        return content.startswith(b"%PDF-")
+    elif mime == "image/png":
+        return content.startswith(b"\x89PNG\r\n\x1a\n")
+    elif mime in ("image/jpeg", "image/jpg"):
+        return content.startswith(b"\xff\xd8\xff")
+    elif mime == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        return content.startswith(b"PK\x03\x04")
+    elif mime == "application/vnd.ms-excel":
+        return content.startswith(b"\xd0\xcf\x11\xe0") or not any(b < 9 or (13 < b < 32) for b in content[:256])
+    elif mime == "text/csv":
+        return not any(b < 9 or (13 < b < 32) for b in content[:256])
+    return True
+
+
 class DocumentIntelligenceService:
     """Core domain service for document ingestion, arithmetic validation, and approval workflows."""
 

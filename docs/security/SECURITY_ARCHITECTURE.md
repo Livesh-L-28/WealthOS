@@ -1,67 +1,32 @@
-# WealthOS — Security Architecture & Threat Defense Model
+# WealthOS — Security Architecture Specification
 
-**Programme:** WealthOS Enterprise Architecture & Production Readiness  
-**Document:** Security Architecture  
-**Date:** 2026-11-08  
-**Status:** Approved Security Standard  
-**Standards:** NIST SP 800-63B, OWASP ASVS v4.0.3 Level 3, ISO 27001, RBI Cybersecurity Framework  
-**Author:** Application Security Lead & Principal Software Architect  
+## 1. Architectural Philosophy: Security by Design & Defense in Depth
 
----
-
-## 1. Zero-Trust Security Architecture
-
-WealthOS enforces a **Zero-Trust Security Architecture** across every interaction, request, and storage boundary. In WealthOS, no network zone, internal microservice, or authenticated user session is inherently trusted.
-
-```mermaid
-flowchart TD
-    subgraph Perimeter["1. Perimeter & Ingress Tier"]
-        TLS["TLS 1.3 Strict Ciphers<br/>HSTS (max-age=63072000; includeSubDomains; preload)"]
-        WAF["WAF & Anti-DDoS<br/>Rate Limiting (5/min auth, 300/min general)"]
-        Headers["HTTP Security Headers<br/>CSP, X-Frame-Options: DENY, Permissions-Policy"]
-    end
-
-    subgraph Identity["2. Identity & Authentication Tier"]
-        Argon2id["Argon2id Password Hashing<br/>(m=65536, t=3, p=4)"]
-        JWTCookies["HttpOnly SameSite=Lax Secure Cookies<br/>+ Bearer Header Authentication"]
-        TOTP["RFC 6238 TOTP Multi-Factor Auth<br/>+ Single-Use SHA-256 Recovery Codes"]
-        Blacklist["Redis Server-Side Token Revocation"]
-    end
-
-    subgraph Authorization["3. Context & Authorization Tier"]
-        RBAC["Household 4-Tier RBAC<br/>(OWNER, ADMIN, MEMBER, VIEWER)"]
-        RLS["PostgreSQL Kernel Row-Level Security<br/>(65 Tables with FORCE ROW LEVEL SECURITY)"]
-        InjectionDefense["Copilot Prompt Injection Defense<br/>15 Allowlisted Read-Only Tools"]
-    end
-
-    subgraph DataProtection["4. Data Protection & Cryptography Tier"]
-        Envelope["AES-256-GCM Envelope Encryption<br/>(Master Key + HKDF Salt + Nonce)"]
-        HMAC["HMAC-SHA256 Webhook Signatures<br/>(300s Timestamp Replay Prevention)"]
-        LedgerAudit["Immutable Double-Entry Ledger<br/>Zero Float Drift (NUMERIC 20,4 / Decimal)"]
-    end
-
-    TLS --> WAF
-    WAF --> Headers
-    Headers --> Argon2id
-    Argon2id --> JWTCookies
-    JWTCookies --> Blacklist
-    Blacklist --> RBAC
-    RBAC --> RLS
-    RLS --> Envelope
-    RLS --> HMAC
-    RLS --> LedgerAudit
-```
+WealthOS implements a defense-in-depth model across 5 concentric security rings:
+1. **Perimeter & Transport**: TLS 1.3, strict HSTS, reverse proxy IP validation, rate limiters.
+2. **Edge & Presentation**: Next.js Edge Middleware, CSP with zero unsafe-eval, CSRF Origin protection, WCAG 2.1 AA accessible fallbacks.
+3. **Application & Identity**: Shared authoritative identity engine, Argon2id passwords, TOTP MFA, step-up verification, RBAC deny-by-default.
+4. **Data Isolation**: PostgreSQL Row-Level Security (`FORCE ROW LEVEL SECURITY`), transaction-local context, pooled connection sanitization.
+5. **Storage & Infrastructure**: Private S3 buckets, non-root containers (UID 1001), authenticated Redis, encrypted offsite backups.
 
 ---
 
-## 2. Threat Modeling Matrix (STRIDE)
+## 2. Core Security Subsystems
 
-| Threat Category (STRIDE) | Attack Vector / Scenario | WealthOS Architectural Mitigation |
-|---|---|---|
-| **Spoofing** | Attacker attempts to forge user identity or session tokens. | Argon2id credential hashing; HMAC-SHA256 signed JWTs with expiration, issuer, audience, and unique `jti`. Multi-Factor Authentication (TOTP). |
-| **Tampering** | Attacker alters integration credentials, bank sync payloads, or accounting journals. | AES-256-GCM envelope encryption with 16-byte authentication tags. Immutable journal tables preventing in-place updates. Webhook HMAC-SHA256 verification. |
-| **Repudiation** | User claims they did not initiate a fund transfer or delete their account. | Cryptographically linked, immutable `security_audit_logs` capturing user ID, IP address, user-agent, correlation ID, timestamp, and action metadata. |
-| **Information Disclosure** | Cross-tenant data leakage via missing query filters or SQL injection. | PostgreSQL kernel `ROW LEVEL SECURITY` enforced across 65 tables using restricted runtime role `wealthos_app`. Parameterized SQLAlchemy queries. |
-| **Denial of Service** | Credential stuffing, brute-force password guessing, or heavy query flooding. | Redis-backed distributed rate limiters (5 requests/min on login/register in production); PgBouncer connection pooling preventing pool starvation. |
-| **Elevation of Privilege** | Household member attempts to view private wealth of owner or execute wire settlements. | 3-tier visibility scopes (`PERSONAL_ONLY`, `HOUSEHOLD_SHARED`, `LIMITED_SHARED`) enforced at the service and query planner level. |
+### 2.1 Identity & Session Subsystem
+- **Password Hasher**: Argon2id ($m=65536, t=3, p=4$) with per-user cryptographic salts.
+- **Token Format**: EdDSA / RS256 asymmetric signed JWTs with short-lived access tokens (15m) and sliding-window refresh tokens (7d).
+- **Session Revocation**: Database-backed `user_sessions` tracking active device sessions, remote revocation, and automatic invalidation on password change.
 
+### 2.2 Tenant Isolation Subsystem
+- **Principle**: Client-supplied `X-Tenant-ID` is treated as an unverified suggestion. The backend validates user membership before granting access.
+- **Database Context**:
+  `SELECT set_config('app.current_tenant_id', :tid, true)`
+  Ensures isolation even if application-level SQL filtering is omitted.
+- **Connection Pool Hygiene**:
+  `reset_db_session_state` resets session variables to empty strings prior to returning connections to the pool.
+
+### 2.3 Financial Transaction Safety
+- Double-entry balance invariant ($\sum \text{Debits} == \sum \text{Credits}$).
+- Transactional outbox engine with idempotency keys.
+- Posted journal records are immutable; corrections require signed reversal entries.

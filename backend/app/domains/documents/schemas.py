@@ -5,7 +5,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class FinancialDocumentCreate(BaseModel):
@@ -20,6 +20,29 @@ class FinancialDocumentCreate(BaseModel):
         default="STATEMENT",
         description="STATEMENT, CREDIT_CARD, CAS, INVOICE, PAYSLIP, OTHER",
     )
+
+    @field_validator("mime_type")
+    @classmethod
+    def validate_mime_type(cls, v: str) -> str:
+        allowed = {
+            "application/pdf",
+            "image/png",
+            "image/jpeg",
+            "text/csv",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel",
+        }
+        if v.lower() not in allowed:
+            raise ValueError(f"Unsupported MIME type '{v}'. Allowed types: {', '.join(sorted(allowed))}")
+        return v.lower()
+
+    @field_validator("file_size_bytes")
+    @classmethod
+    def validate_file_size(cls, v: int) -> int:
+        max_bytes = 25 * 1024 * 1024  # 25 MB max limit
+        if v > max_bytes:
+            raise ValueError(f"File size exceeds 25 MB limit ({v} bytes)")
+        return v
 
 
 class FinancialDocumentResponse(BaseModel):

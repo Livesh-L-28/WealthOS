@@ -56,7 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const refreshRes = await apiClient.refreshToken();
         if (refreshRes.success && refreshRes.data) {
           apiClient.setAuthToken(refreshRes.data.access_token);
-          localStorage.setItem('wealthos_access_token', refreshRes.data.access_token);
+          // Purge persistent unencrypted credential from localStorage (in-memory & HttpOnly cookie only)
+          localStorage.removeItem('wealthos_access_token');
           setUser(refreshRes.data.user);
         } else {
           setUser(null);
@@ -81,8 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser, refreshWorkspaces]);
 
   const login = async (accessToken: string, userProfile: UserProfile) => {
+    // Keep access token in memory only; backend attaches HttpOnly session cookie
     apiClient.setAuthToken(accessToken);
-    localStorage.setItem('wealthos_access_token', accessToken);
+    localStorage.removeItem('wealthos_access_token');
     setUser(userProfile);
     await refreshWorkspaces();
   };
@@ -109,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await apiClient.switchWorkspace(tenantId);
       if (res.success && res.data) {
         apiClient.setAuthToken(res.data.access_token);
-        localStorage.setItem('wealthos_access_token', res.data.access_token);
+        localStorage.removeItem('wealthos_access_token');
         apiClient.setTenantId(tenantId);
         localStorage.setItem('wealthos_current_tenant_id', tenantId);
 
