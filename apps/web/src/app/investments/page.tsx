@@ -64,6 +64,106 @@ interface MutualFundScheme {
   lockInMaturityDate?: string;
 }
 
+interface FifoLotItem {
+  id: string;
+  symbol: string;
+  name: string;
+  purchaseDate: string;
+  originalQty: number;
+  remainingQty: number;
+  purchasePrice: number;
+  costBasis: number;
+  currentPrice: number;
+  currentValue: number;
+  unrealizedPl: number;
+  unrealizedPlPct: number;
+  status: 'OPEN' | 'PARTIALLY_DISPOSED' | 'CLOSED';
+  taxTerm: 'LTCG (>365d)' | 'STCG (<=365d)';
+}
+
+const FIFO_LOTS: FifoLotItem[] = [
+  {
+    id: 'LOT-TCS-01',
+    symbol: 'TCS',
+    name: 'Tata Consultancy Services Ltd',
+    purchaseDate: '2025-04-12',
+    originalQty: 150,
+    remainingQty: 150,
+    purchasePrice: 3350.0,
+    costBasis: 502500.0,
+    currentPrice: 4120.0,
+    currentValue: 618000.0,
+    unrealizedPl: 115500.0,
+    unrealizedPlPct: 22.98,
+    status: 'OPEN',
+    taxTerm: 'LTCG (>365d)',
+  },
+  {
+    id: 'LOT-TCS-02',
+    symbol: 'TCS',
+    name: 'Tata Consultancy Services Ltd',
+    purchaseDate: '2026-01-18',
+    originalQty: 100,
+    remainingQty: 100,
+    purchasePrice: 3600.0,
+    costBasis: 360000.0,
+    currentPrice: 4120.0,
+    currentValue: 412000.0,
+    unrealizedPl: 52000.0,
+    unrealizedPlPct: 14.44,
+    status: 'OPEN',
+    taxTerm: 'STCG (<=365d)',
+  },
+  {
+    id: 'LOT-REL-01',
+    symbol: 'RELIANCE',
+    name: 'Reliance Industries Ltd',
+    purchaseDate: '2025-02-10',
+    originalQty: 250,
+    remainingQty: 250,
+    purchasePrice: 2550.0,
+    costBasis: 637500.0,
+    currentPrice: 2950.0,
+    currentValue: 737500.0,
+    unrealizedPl: 100000.0,
+    unrealizedPlPct: 15.69,
+    status: 'OPEN',
+    taxTerm: 'LTCG (>365d)',
+  },
+  {
+    id: 'LOT-REL-02',
+    symbol: 'RELIANCE',
+    name: 'Reliance Industries Ltd',
+    purchaseDate: '2025-11-05',
+    originalQty: 200,
+    remainingQty: 150,
+    purchasePrice: 2895.0,
+    costBasis: 434250.0,
+    currentPrice: 2950.0,
+    currentValue: 442500.0,
+    unrealizedPl: 8250.0,
+    unrealizedPlPct: 1.90,
+    status: 'PARTIALLY_DISPOSED',
+    taxTerm: 'LTCG (>365d)',
+  },
+  {
+    id: 'LOT-HDFC-01',
+    symbol: 'HDFCBANK',
+    name: 'HDFC Bank Ltd',
+    purchaseDate: '2025-08-20',
+    originalQty: 600,
+    remainingQty: 600,
+    purchasePrice: 1540.0,
+    costBasis: 924000.0,
+    currentPrice: 1720.0,
+    currentValue: 1032000.0,
+    unrealizedPl: 108000.0,
+    unrealizedPlPct: 11.69,
+    status: 'OPEN',
+    taxTerm: 'LTCG (>365d)',
+  },
+];
+
 const HOLDINGS: HoldingItem[] = [
   {
     symbol: 'TCS',
@@ -326,6 +426,14 @@ export default function InvestmentsPage() {
             >
               Direct Equities
             </button>
+            <button
+              onClick={() => setActiveTab('FIFO_LOTS')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                activeTab === 'FIFO_LOTS' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+              }`}
+            >
+              FIFO Lots & Tax Basis
+            </button>
           </div>
 
           <Button
@@ -526,6 +634,106 @@ export default function InvestmentsPage() {
                         ) : (
                           <span className="text-[#9BA39D] font-mono text-xs">—</span>
                         )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </div>
+      ) : activeTab === 'FIFO_LOTS' ? (
+        <div className="space-y-6">
+          <div className="bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-[#17231D]">Strict FIFO Lot Accounting & Tax Basis Engine</h3>
+                <p className="text-xs text-[#758078]">
+                  Disposals strictly consume oldest open lots first. Gains held &gt;365 days qualify for preferential LTCG treatment.
+                </p>
+              </div>
+            </div>
+            <Badge variant="positive" className="font-mono text-xs">
+              Sigma Balancing: Active
+            </Badge>
+          </div>
+
+          <Card>
+            <CardHeader
+              title="Discrete Acquisition & Disposal Lots"
+              subtitle="Audited lot tranches, remaining inventory, and capital gains classification"
+            />
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#F7F9F7] text-[#717D74] border-b border-[#E7ECE8] uppercase tracking-wider font-semibold">
+                  <tr>
+                    <th className="py-3 px-4">Lot ID & Purchase Date</th>
+                    <th className="py-3 px-4">Security</th>
+                    <th className="py-3 px-4 text-right">Orig / Remaining Qty</th>
+                    <th className="py-3 px-4 text-right">Purchase Price</th>
+                    <th className="py-3 px-4 text-right">Cost Basis</th>
+                    <th className="py-3 px-4 text-right">Current Value</th>
+                    <th className="py-3 px-4 text-right">Unrealized P&L</th>
+                    <th className="py-3 px-4 text-center">Holding Term</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#E7ECE8]">
+                  {FIFO_LOTS.map((lot) => (
+                    <tr key={lot.id} className="hover:bg-[#F0F4F1] transition-colors">
+                      <td className="py-3 px-4 font-mono">
+                        <div className="font-semibold text-[#17231D]">{lot.id}</div>
+                        <div className="text-[11px] text-[#758078] flex items-center gap-1 mt-0.5">
+                          <Calendar className="w-3 h-3 text-[#9BA39D]" />
+                          <span>{lot.purchaseDate}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-mono font-bold text-[#17231D]">{lot.symbol}</div>
+                        <div className="text-[11px] text-[#758078]">{lot.name}</div>
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono">
+                        <span className="font-semibold text-[#17231D]">{lot.remainingQty}</span>
+                        <span className="text-[#9BA39D]"> / {lot.originalQty}</span>
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono text-[#4A554E]">
+                        ₹{lot.purchasePrice.toFixed(2)}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-medium text-[#17231D]">
+                        ₹{lot.costBasis.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono font-semibold text-[#17231D]">
+                        ₹{lot.currentValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-3 px-4 text-right font-mono">
+                        <div className="text-emerald-500 font-semibold">
+                          +₹{lot.unrealizedPl.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-[11px] text-emerald-500 font-medium">
+                          +{lot.unrealizedPlPct.toFixed(2)}%
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                            lot.taxTerm.startsWith('LTCG')
+                              ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                              : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                          }`}
+                        >
+                          {lot.taxTerm}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <Badge
+                          variant={lot.status === 'OPEN' ? 'positive' : lot.status === 'PARTIALLY_DISPOSED' ? 'warning' : 'neutral'}
+                          size="sm"
+                        >
+                          {lot.status}
+                        </Badge>
                       </td>
                     </tr>
                   ))}

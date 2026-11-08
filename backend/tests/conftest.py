@@ -158,6 +158,8 @@ async def clean_database():
     """Clean test tables before each test execution, preserving system RBAC."""
     admin_engine = get_test_admin_engine()
     tables = [
+        "reconciliation_audit_events",
+        "data_quality_metrics",
         "provider_sync_cursors",
         "provider_connections",
         "provider_credentials",
@@ -172,13 +174,19 @@ async def clean_database():
         "budgets",
         "goal_contributions",
         "financial_goals",
+        "financial_scenarios",
         "forecast_runs",
         "passive_income_records",
+        "investment_transactions",
+        "corporate_actions",
         "investment_holding_lots",
+        "financial_instruments",
         "reconciliation_sessions",
         "financial_documents",
         "assets",
         "liabilities",
+        "recurring_transaction_rules",
+        "account_transfers",
         "financial_accounts",
         "reconciliation_records",
         "accounting_idempotency_records",

@@ -95,7 +95,7 @@ def test_disposable_migration_lifecycle(disposable_database):
         cur.execute("SELECT version_num FROM alembic_version LIMIT 1;")
         row = cur.fetchone()
         assert row is not None
-        assert row[0] == "0005_financial_foundation"
+        assert row[0] == "0007_investment_accounting"
 
     # 2. Downgrade -1
     res_down = subprocess.run(
@@ -111,7 +111,7 @@ def test_disposable_migration_lifecycle(disposable_database):
         cur.execute("SELECT version_num FROM alembic_version LIMIT 1;")
         row = cur.fetchone()
         assert row is not None
-        assert row[0] == "0004_accounting_engine"
+        assert row[0] == "0006_financial_control_centre"
 
     # 3. Re-upgrade to Head
     res_reup = subprocess.run(
@@ -127,7 +127,7 @@ def test_disposable_migration_lifecycle(disposable_database):
         cur.execute("SELECT version_num FROM alembic_version LIMIT 1;")
         row = cur.fetchone()
         assert row is not None
-        assert row[0] == "0005_financial_foundation"
+        assert row[0] == "0007_investment_accounting"
     conn.close()
 
 

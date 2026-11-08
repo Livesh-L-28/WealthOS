@@ -86,3 +86,37 @@ class ReconciliationRecord(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         nullable=True,
         doc="Explanatory note if discrepancy is flagged",
     )
+    severity: Mapped[str] = mapped_column(
+        String(20),
+        default="MEDIUM",
+        nullable=False,
+        doc="LOW, MEDIUM, HIGH, or CRITICAL",
+    )
+    difference: Mapped[Decimal | None] = mapped_column(
+        Numeric(18, 4),
+        nullable=True,
+        doc="Variance between expected and posted amounts",
+    )
+    resolution_status: Mapped[str] = mapped_column(
+        String(30),
+        default="OPEN",
+        nullable=False,
+        doc="OPEN, UNDER_REVIEW, RESOLVED, ACCEPTED_WITH_EXPLANATION, REJECTED, ESCALATED, or MARKED_DUPLICATE",
+    )
+    resolution_notes: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        doc="Audit notes detailing the resolution action",
+    )
+    discrepancy_category: Mapped[str] = mapped_column(
+        String(50),
+        default="AMOUNT_MISMATCH",
+        nullable=False,
+        doc="AMOUNT_MISMATCH, DATE_OUT_OF_BOUNDS, UNMATCHED_EXTERNAL, UNCLASSIFIED, DUPLICATE_CANDIDATE, etc.",
+    )
+    session_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("reconciliation_sessions.id", ondelete="SET NULL"),
+        nullable=True,
+        doc="Owning reconciliation session identifier",
+    )

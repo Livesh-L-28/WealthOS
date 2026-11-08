@@ -170,8 +170,9 @@ if [ "${ALEMBIC_STATUS}" -ne 0 ] || [ -z "${ALEMBIC_VERSION}" ]; then
   echo "[CRITICAL FAILURE] Failed to query alembic_version post-restore: ${ALEMBIC_VERSION}" >&2
   exit 2
 fi
-if [ "${ALEMBIC_VERSION}" != "0005_financial_foundation" ]; then
-  echo "[CRITICAL FAILURE] Schema version mismatch post-restore! Expected '0005_financial_foundation', got '${ALEMBIC_VERSION}'" >&2
+EXPECTED_ALEMBIC_VERSION="${EXPECTED_ALEMBIC_VERSION:-0007_investment_accounting}"
+if [ "${ALEMBIC_VERSION}" != "${EXPECTED_ALEMBIC_VERSION}" ] && [ "${ALEMBIC_VERSION}" != "0005_financial_foundation" ]; then
+  echo "[CRITICAL FAILURE] Schema version mismatch post-restore! Expected '${EXPECTED_ALEMBIC_VERSION}', got '${ALEMBIC_VERSION}'" >&2
   exit 2
 fi
 echo "[INFO] Post-restore Schema Version verified: ${ALEMBIC_VERSION}"

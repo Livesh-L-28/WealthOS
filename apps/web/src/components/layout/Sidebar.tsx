@@ -34,6 +34,7 @@ interface NavItem {
 const PRIMARY_NAV_ITEMS: NavItem[] = [
   { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Accounts', href: '/accounts', icon: Landmark },
+  { label: 'Control Centre', href: '/reconciliation', icon: ShieldCheck, badge: 'Recon' },
   { label: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
   { label: 'Investments', href: '/investments', icon: TrendingUp },
   { label: 'Cash Flow', href: '/analytics', icon: Wallet },

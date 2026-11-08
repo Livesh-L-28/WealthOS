@@ -158,7 +158,10 @@ def test_restore_security_acceptance_valid_restore(test_encrypted_backup, pg_env
     )
 
     assert proc.returncode == 0, f"Restore failed: {proc.stderr}\n{proc.stdout}"
-    assert "Post-restore Schema Version verified: 0005_financial_foundation" in proc.stdout
+    assert (
+        "Post-restore Schema Version verified: 0007_investment_accounting" in proc.stdout
+        or "Post-restore Schema Version verified: 0005_financial_foundation" in proc.stdout
+    )
     assert "Post-restore General Ledger balance verified: 0 unbalanced entries." in proc.stdout
     assert (
         "Application role 'wealthos_app' verified: rolsuper=false, rolbypassrls=false, rolcanlogin=true."

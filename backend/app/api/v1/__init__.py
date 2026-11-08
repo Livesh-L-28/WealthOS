@@ -6,7 +6,10 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.health import router as health_router
 from app.api.v1.tenants import router as tenants_router
 from app.domains.accounting.router import router as accounting_router
+from app.domains.cash.router import router as cash_router
 from app.domains.copilot.router import router as copilot_router
+from app.domains.investments.router import router as investments_router
+from app.domains.reconciliation.router import router as reconciliation_router
 
 api_v1_router = APIRouter()
 api_v1_router.include_router(health_router, prefix="/health", tags=["Health & Diagnostics"])
@@ -14,5 +17,14 @@ api_v1_router.include_router(auth_router, prefix="/auth", tags=["Authentication 
 api_v1_router.include_router(tenants_router, prefix="/tenants", tags=["Tenants & Workspaces"])
 api_v1_router.include_router(
     accounting_router, prefix="/accounting", tags=["Accounting & Double-Entry Ledger"]
+)
+api_v1_router.include_router(
+    cash_router, prefix="/cash-management", tags=["Cash Management & Liquidity"]
+)
+api_v1_router.include_router(
+    reconciliation_router, prefix="/reconciliation", tags=["Financial Control & Reconciliation"]
+)
+api_v1_router.include_router(
+    investments_router, prefix="/investments", tags=["Investment Accounting & FIFO Engine"]
 )
 api_v1_router.include_router(copilot_router, prefix="/copilot", tags=["AI Financial Copilot"])
