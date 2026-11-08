@@ -90,6 +90,27 @@ def pg_env():
     return env
 
 
+@pytest.fixture(scope="module", autouse=True)
+def ensure_restore_test_db(pg_env):
+    """Ensure disposable test database exists for restore testing."""
+    conn = psycopg.connect(
+        host=pg_env["POSTGRES_HOST"],
+        port=pg_env["POSTGRES_PORT"],
+        user=pg_env["POSTGRES_ADMIN_USER"],
+        password=pg_env["POSTGRES_ADMIN_PASSWORD"],
+        dbname="postgres",
+        autocommit=True,
+    )
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT 1 FROM pg_database WHERE datname = 'wealthos_restore_test';")
+            if not cur.fetchone():
+                cur.execute("CREATE DATABASE wealthos_restore_test OWNER wealthos_admin;")
+                cur.execute("GRANT CONNECT ON DATABASE wealthos_restore_test TO wealthos_app;")
+    finally:
+        conn.close()
+
+
 @pytest.fixture(scope="module")
 def test_encrypted_backup(tmp_path_factory, pg_env):
     """Generate an authentic encrypted backup from wealthos_test database."""
