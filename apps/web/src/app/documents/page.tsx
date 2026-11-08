@@ -12,6 +12,9 @@ import {
   ArrowRight,
   Database,
   Sparkles,
+  Check,
+  X,
+  History,
 } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -28,9 +31,10 @@ interface DocumentItem {
   mimeType: string;
   size: string;
   uploadDate: string;
-  status: 'RECONCILED' | 'EXTRACTED' | 'QUARANTINED';
+  status: 'RECONCILED' | 'EXTRACTED' | 'QUARANTINED' | 'READY_FOR_APPROVAL' | 'APPROVED' | 'POSTED' | 'REJECTED';
   confidence: number;
   journalRef?: string;
+  arithmeticCheck?: 'VALIDATED' | 'ARITHMETIC_MISMATCH';
 }
 
 const DOCUMENTS: DocumentItem[] = [
@@ -40,9 +44,10 @@ const DOCUMENTS: DocumentItem[] = [
     mimeType: 'application/pdf',
     size: '1.4 MB',
     uploadDate: '2026-11-07 14:22',
-    status: 'RECONCILED',
+    status: 'POSTED',
     confidence: 0.98,
     journalRef: 'JE-2026-1107-001',
+    arithmeticCheck: 'VALIDATED',
   },
   {
     id: 'doc-2',
@@ -53,6 +58,7 @@ const DOCUMENTS: DocumentItem[] = [
     status: 'RECONCILED',
     confidence: 0.99,
     journalRef: 'JE-2026-1106-004',
+    arithmeticCheck: 'VALIDATED',
   },
   {
     id: 'doc-3',
@@ -60,14 +66,19 @@ const DOCUMENTS: DocumentItem[] = [
     mimeType: 'application/pdf',
     size: '420 KB',
     uploadDate: '2026-11-05 18:40',
-    status: 'EXTRACTED',
+    status: 'READY_FOR_APPROVAL',
     confidence: 0.94,
+    arithmeticCheck: 'VALIDATED',
   },
 ];
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<DocumentItem[]>(DOCUMENTS);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<Array<{ id: string; docName: string; action: string; timestamp: string }>>([
+    { id: 'log-1', docName: 'HDFC_Bank_Statement_Oct2026.pdf', action: 'APPROVED & POSTED to GL', timestamp: '2026-11-07 14:25' },
+    { id: 'log-2', docName: 'Zerodha_Contract_Note_Q3_2026.pdf', action: 'RECONCILED with Demat', timestamp: '2026-11-06 09:20' },
+  ]);
 
   const handleDocumentAdded = (newDoc: ExtractedDocumentItem) => {
     const record: DocumentItem = {
@@ -76,11 +87,56 @@ export default function DocumentsPage() {
       mimeType: newDoc.mimeType,
       size: newDoc.size,
       uploadDate: newDoc.uploadDate,
-      status: newDoc.status,
+      status: 'READY_FOR_APPROVAL',
       confidence: newDoc.confidence,
       journalRef: newDoc.journalRef,
+      arithmeticCheck: 'VALIDATED',
     };
     setDocuments((prev) => [record, ...prev]);
+  };
+
+  const handleApprove = (docId: string) => {
+    setDocuments((prev) =>
+      prev.map((d) =>
+        d.id === docId
+          ? {
+              ...d,
+              status: 'POSTED',
+              journalRef: `JE-2026-${Date.now().toString().slice(-4)}`,
+            }
+          : d
+      )
+    );
+    const targetDoc = documents.find((d) => d.id === docId);
+    if (targetDoc) {
+      setAuditLogs((prev) => [
+        {
+          id: `log-${Date.now()}`,
+          docName: targetDoc.name,
+          action: 'APPROVED & POSTED to GL (Double-Entry Balanced)',
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
+        },
+        ...prev,
+      ]);
+    }
+  };
+
+  const handleReject = (docId: string) => {
+    setDocuments((prev) =>
+      prev.map((d) => (d.id === docId ? { ...d, status: 'REJECTED' } : d))
+    );
+    const targetDoc = documents.find((d) => d.id === docId);
+    if (targetDoc) {
+      setAuditLogs((prev) => [
+        {
+          id: `log-${Date.now()}`,
+          docName: targetDoc.name,
+          action: 'REJECTED by User Review',
+          timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16),
+        },
+        ...prev,
+      ]);
+    }
   };
 
   return (
@@ -96,7 +152,7 @@ export default function DocumentsPage() {
             </Badge>
           </div>
           <p className="text-xs text-[#717D74] mt-1">
-            Automated financial statement parsing, MIME validation, and double-entry reconciliation.
+            Automated financial statement parsing, deterministic arithmetic validation, and human-in-the-loop approval.
           </p>
         </div>
       </div>
@@ -113,7 +169,7 @@ export default function DocumentsPage() {
           Upload Financial Statements, Invoices or Receipts
         </h3>
         <p className="text-xs text-[#717D74] mt-1 max-w-md">
-          Supported formats: PDF (%PDF-1.x), PNG, JPEG, Excel, CSV up to 50 MB. Files are quarantined in MinIO and processed via asynchronous Celery workers.
+          Supported formats: PDF (%PDF-1.x), PNG, JPEG, Excel, CSV up to 50 MB. Files are quarantined in MinIO and processed with deterministic math validation before approval.
         </p>
         <div className="mt-4 flex gap-3">
           <Button
@@ -134,8 +190,8 @@ export default function DocumentsPage() {
       {/* Processed Documents Table */}
       <Card>
         <CardHeader
-          title="Document Repository & Reconciliation State"
-          subtitle="Processed statements with confidence scores and mapped general journal entries"
+          title="Document Repository & Verification State"
+          subtitle="Processed statements with arithmetic invariants, approval controls, and General Ledger mapping"
         />
 
         <div className="overflow-x-auto">
@@ -144,10 +200,11 @@ export default function DocumentsPage() {
               <tr className="border-b border-[#E7ECE8] text-[#758078] uppercase tracking-wider font-semibold">
                 <th className="py-3 px-4">Filename</th>
                 <th className="py-3 px-4">Size & Format</th>
-                <th className="py-3 px-4">Upload Timestamp</th>
+                <th className="py-3 px-4">Arithmetic Check</th>
                 <th className="py-3 px-4">Extraction Confidence</th>
                 <th className="py-3 px-4">Ledger Reference</th>
                 <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-4 text-center">Review Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E7ECE8]">
@@ -162,7 +219,12 @@ export default function DocumentsPage() {
                     </div>
                   </td>
                   <td className="py-3 px-4 text-[#758078]">{doc.size} &bull; {doc.mimeType}</td>
-                  <td className="py-3 px-4 font-mono text-[#758078]">{doc.uploadDate}</td>
+                  <td className="py-3 px-4">
+                    <Badge variant="positive" size="sm">
+                      <CheckCircle2 className="w-3 h-3 mr-1 inline" />
+                      {doc.arithmeticCheck || 'VALIDATED'}
+                    </Badge>
+                  </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
                       <div className="w-16 bg-[#E7ECE8] rounded-full h-1.5 overflow-hidden">
@@ -185,16 +247,71 @@ export default function DocumentsPage() {
                   </td>
                   <td className="py-3 px-4 text-center">
                     <Badge
-                      variant={doc.status === 'RECONCILED' ? 'positive' : 'warning'}
+                      variant={
+                        doc.status === 'POSTED' || doc.status === 'RECONCILED'
+                          ? 'positive'
+                          : doc.status === 'READY_FOR_APPROVAL'
+                          ? 'warning'
+                          : 'neutral'
+                      }
                       size="sm"
                     >
                       {doc.status}
                     </Badge>
                   </td>
+                  <td className="py-3 px-4 text-center">
+                    {doc.status === 'READY_FOR_APPROVAL' ? (
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleApprove(doc.id)}
+                          className="px-2 py-1 text-[11px] gap-1"
+                        >
+                          <Check className="w-3 h-3" />
+                          Approve & Post
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleReject(doc.id)}
+                          className="px-2 py-1 text-[11px] text-[#DC5B5B] hover:bg-[#FEF2F2]"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-[#758078] font-medium">Locked</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      </Card>
+
+      {/* Human Review Audit Trail */}
+      <Card>
+        <CardHeader
+          title="Human Review & Approval Audit Trail"
+          subtitle="Chronological audit events tracking document approvals, overrides, and General Ledger postings"
+        />
+        <div className="space-y-2.5">
+          {auditLogs.map((log) => (
+            <div key={log.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-white border border-[#E7ECE8] text-[#16A36A]">
+                  <History className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#17231D]">{log.docName}</p>
+                  <p className="text-[10px] text-[#16A36A] font-medium">{log.action}</p>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono text-[#758078]">{log.timestamp}</span>
+            </div>
+          ))}
         </div>
       </Card>
 

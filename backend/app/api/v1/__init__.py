@@ -6,9 +6,12 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.health import router as health_router
 from app.api.v1.tenants import router as tenants_router
 from app.domains.accounting.router import router as accounting_router
+from app.domains.budget.router import router as budget_router
 from app.domains.cash.router import router as cash_router
 from app.domains.copilot.router import router as copilot_router
+from app.domains.documents.router import router as documents_router
 from app.domains.investments.router import router as investments_router
+from app.domains.liabilities.router import router as liabilities_router
 from app.domains.reconciliation.router import router as reconciliation_router
 
 api_v1_router = APIRouter()
@@ -19,6 +22,9 @@ api_v1_router.include_router(
     accounting_router, prefix="/accounting", tags=["Accounting & Double-Entry Ledger"]
 )
 api_v1_router.include_router(
+    budget_router, prefix="/budgets", tags=["Budget & Expense Intelligence"]
+)
+api_v1_router.include_router(
     cash_router, prefix="/cash-management", tags=["Cash Management & Liquidity"]
 )
 api_v1_router.include_router(
@@ -26,5 +32,11 @@ api_v1_router.include_router(
 )
 api_v1_router.include_router(
     investments_router, prefix="/investments", tags=["Investment Accounting & FIFO Engine"]
+)
+api_v1_router.include_router(
+    liabilities_router, prefix="/liabilities", tags=["Liability & Debt Management"]
+)
+api_v1_router.include_router(
+    documents_router, prefix="/documents", tags=["Universal Financial Document Intelligence"]
 )
 api_v1_router.include_router(copilot_router, prefix="/copilot", tags=["AI Financial Copilot"])

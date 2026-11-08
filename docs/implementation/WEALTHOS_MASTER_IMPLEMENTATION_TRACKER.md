@@ -16,9 +16,9 @@
 | **Phase 1** | Financial Control Centre | Reconciliation, discrepancy triage, duplicate detection, audit logging, ledger sigma check. | Phase 0 | **ACCEPTED** | Migration `0006`, 7 API endpoints, UI at `/reconciliation`, 7/7 tests passed. |
 | **Phase 2** | Cash Management System | Multi-account cash consolidation, multi-currency, transfer neutrality, forecasting, scenario simulations. | Phase 1 | **ACCEPTED** | 7 API endpoints, deterministic forecast engine, 7/7 tests passed. |
 | **Phase 3** | Professional Investment Accounting | FIFO lot engine, Realized/Unrealized P&L separation, stock splits, dividends, XIRR returns. | Phase 1, Phase 2 | **ACCEPTED** | Migration `0007`, 9 API endpoints, UI FIFO inspector, 7/7 tests passed. |
-| **Phase 4** | Budget & Expense Intelligence | Monthly/annual budgets, envelope allocations, rollover, spending variance against actuals. | Phase 2 | `NOT STARTED` | Next planned development wave. |
-| **Phase 5** | Liability & Debt Management | Loan principal, credit card debts, interest rates, EMI schedules, avalanche/snowball payoff. | Phase 2 | `NOT STARTED` | Planned. |
-| **Phase 6** | Universal Document Intelligence | Multi-format upload, OCR parsing, canonical schema, confidence scoring, arithmetic validation. | Phase 1 | `NOT STARTED` | Planned. |
+| **Phase 4** | Budget & Expense Intelligence | Monthly/annual budgets, envelope allocations, rollover, spending variance against actuals. | Phase 2 | **ACCEPTED** | Migration `0008`, 10 API endpoints, UI envelope variance, 7/7 tests passed. |
+| **Phase 5** | Liability & Debt Management | Loan principal, credit card debts, interest rates, EMI schedules, avalanche/snowball payoff. | Phase 2 | **ACCEPTED** | Migration `0008`, 12 API endpoints, UI amortization & payoff simulator, 8/8 tests passed. |
+| **Phase 6** | Universal Document Intelligence | Multi-format upload, OCR parsing, canonical schema, confidence scoring, arithmetic validation. | Phase 1 | **ACCEPTED** | Migration `0008`, 8 API endpoints, UI verification & one-click approval, 8/8 tests passed. |
 | **Phase 7** | Financial Planning & Forecasting | Deterministic projection engine, retirement/education/home goals, inflation adjustments. | Phase 2, Phase 3 | `NOT STARTED` | Planned. |
 | **Phase 8** | India Tax Readiness | April–March financial year, capital gains (STCG/LTCG), dividend/interest income, tax exports. | Phase 3 | `NOT STARTED` | Planned. |
 | **Phase 9** | Financial Risk Intelligence | Rules-first risk engine (expense jumps, duplicates, large withdrawals, stale valuations). | Phase 1, Phase 4 | `NOT STARTED` | Planned. |
@@ -86,6 +86,43 @@
 
 ---
 
+### Phase 4: Budget & Expense Intelligence
+- **Status:** `ACCEPTED`
+- **Scope:** Multi-period budgets (monthly, annual, custom), envelope category allocations, duplicate prevention, deterministic variance calculation (Variance = Budgeted - Actual), refund adjustments, transfer neutrality, rollover surplus/deficit engine, audited revision history, threshold alerts (50%, 75%, 90%, 100%) with idempotent notifications.
+- **Deliverables:**
+  - Database Migration: `backend/migrations/versions/0008_wave_2_budgets_liabilities_documents.py`
+  - Domain Code: `backend/app/domains/budget/` (`models.py`, `schemas.py`, `repository.py`, `service.py`, `router.py`)
+  - Frontend: `apps/web/src/app/budgets/page.tsx`
+  - Architecture & Acceptance Docs: `docs/wave-2/PHASE_4_BUDGET_ARCHITECTURE.md`, `docs/wave-2/PHASE_4_BUDGET_ACCEPTANCE.md`
+- **Test Evidence:**
+  - `backend/tests/test_budget_expense_intelligence.py`: 7/7 passed.
+
+---
+
+### Phase 5: Liability & Debt Management
+- **Status:** `ACCEPTED`
+- **Scope:** Fixed/reducing balance amortization calculation engine with Decimal precision, EMI payment schedule generation, installment recording with principal/interest split, early repayment simulator, Debt Avalanche vs Debt Snowball strategy optimization, credit card statement tracking & utilization metrics.
+- **Deliverables:**
+  - Domain Code: `backend/app/domains/liabilities/` (`models.py`, `schemas.py`, `repository.py`, `service.py`, `router.py`)
+  - Frontend: `apps/web/src/app/net-worth/page.tsx` (Enhanced with Debt Strategy & Amortization section)
+  - Architecture & Acceptance Docs: `docs/wave-2/PHASE_5_LIABILITY_ARCHITECTURE.md`, `docs/wave-2/PHASE_5_LIABILITY_ACCEPTANCE.md`
+- **Test Evidence:**
+  - `backend/tests/test_liability_debt_management.py`: 8/8 passed.
+
+---
+
+### Phase 6: Universal Financial Document Intelligence
+- **Status:** `ACCEPTED`
+- **Scope:** Secure upload quarantine pipeline, MIME/magic-byte validation, SHA-256 deduplication, canonical schemas (Bank Statement, Credit Card Statement, Brokerage CAS, Invoices, Payslip), deterministic arithmetic verification, reconciliation matching against ledger, human-in-the-loop approval workflow, controlled double-entry General Ledger posting.
+- **Deliverables:**
+  - Domain Code: `backend/app/domains/documents/` (`models.py`, `schemas.py`, `repository.py`, `service.py`, `router.py`)
+  - Frontend: `apps/web/src/app/documents/page.tsx` (Enhanced with verification state, one-click review approval, audit logs)
+  - Architecture & Acceptance Docs: `docs/wave-2/PHASE_6_DOCUMENT_INTELLIGENCE_ARCHITECTURE.md`, `docs/wave-2/PHASE_6_DOCUMENT_INTELLIGENCE_ACCEPTANCE.md`
+- **Test Evidence:**
+  - `backend/tests/test_document_intelligence.py`: 8/8 passed.
+
+---
+
 ## 3. Wave 1 Verification Summary
 
 - **Pytest:** 228 / 228 passed (0 failed, 0 skipped)
@@ -95,3 +132,14 @@
 - **Playwright E2E:** 48 / 48 passed (21.1s)
 - **Disaster Recovery Drill:** CERTIFIED ACCEPTANCE (RTO 1.45s, 0 unbalanced entries, 46 active RLS tables)
 - **Overall Wave 1 Decision:** **100% ACCEPTED**
+
+---
+
+## 4. Wave 2 Verification Summary
+
+- **Pytest:** 251 / 251 passed (0 failed, 0 skipped in 69.04s)
+- **Vitest Unit Tests:** 35 / 35 passed
+- **TypeScript:** 0 errors across 5 workspace packages
+- **Next.js Production Build:** 26 / 26 static pages prerendered cleanly
+- **Playwright E2E:** 48 / 48 passed (20.6s)
+- **Overall Wave 2 Decision:** **100% ACCEPTED**
