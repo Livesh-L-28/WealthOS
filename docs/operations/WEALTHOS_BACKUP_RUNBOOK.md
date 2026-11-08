@@ -1,76 +1,81 @@
-# WealthOS — Production Database Backup Runbook
-## Automated PostgreSQL Custom-Format Archiving & AES-256-CBC Encryption
+# WealthOS Authenticated Database Backup Runbook
 
-**Document Version:** 1.0.0  
+**Stage:** Release Gate Remediation & Hardened Production Operations  
+**Architecture:** PostgreSQL 16+ Custom Archive with AES-256-GCM Authenticated Encryption  
+**Primary Script:** [`scripts/backup_database.sh`](file:///Users/livesh/WEALTHOS/scripts/backup_database.sh)  
+**Cryptographic Engine:** [`scripts/backup_crypto.py`](file:///Users/livesh/WEALTHOS/scripts/backup_crypto.py)  
 **Date:** 2026-11-08  
-**Repository:** `Livesh-L-28/WealthOS`  
-**Active Branch:** `feature/final-financial-intelligence-production`  
-**Executable Script:** `scripts/backup_database.sh`  
+**Author:** Staff SRE & Security Engineering Team  
 
 ---
 
-## 1. Backup Strategy Overview
+## 1. Overview & Security Architecture
 
-WealthOS employs PostgreSQL's native custom-format archive (`pg_dump --format=custom --compress=9`) to produce compact, high-performance database snapshots. Each archive is verified before encryption, encrypted at rest using OpenSSL AES-256-CBC with PBKDF2, and cataloged with a cryptographic SHA-256 manifest.
-
-```mermaid
-flowchart LR
-    PostgresDB[("PostgreSQL 16 DB\n(wealthos)")] --> Dump["pg_dump -Fc -Z 9\n(wealthos_db_TIMESTAMP.dump)"]
-    Dump --> IntegrityCheck{"pg_restore --list\nIntegrity Check"}
-    IntegrityCheck -->|Pass| OpenSSL["OpenSSL AES-256-CBC\n(PBKDF2 Salted Encryption)"]
-    IntegrityCheck -->|Fail| Abort["Halt & Alert\n(Remove Damaged Dump)"]
-    OpenSSL --> EncDump[("wealthos_db_TIMESTAMP.dump.enc")]
-    OpenSSL --> Manifest[("wealthos_db_TIMESTAMP.json\n(SHA-256 Manifest)")]
-```
+The WealthOS production backup system employs a two-tier authenticated backup pipeline:
+1. **Archive Generation:** Generates a compressed, custom-format PostgreSQL archive (`pg_dump --format=custom --compress=9`).
+2. **Pre-Encryption Validation:** Verifies table catalog and TOC readability with `pg_restore --list` before applying encryption.
+3. **Authenticated AEAD Encryption:** Encrypts the archive using **AES-256-GCM** (Galois/Counter Mode) with unique 96-bit (12-byte) initialization vectors (IV/nonce) per backup, generating a 128-bit (16-byte) GCM authentication tag.
+4. **Manifest Creation:** Generates a SHA-256 cryptographic manifest JSON recording archive format, compression, key identifier hash, plaintext SHA-256, and ciphertext SHA-256.
+5. **Configurable Retention:** Automated pruning of archives older than `RETENTION_DAYS` (default 14 days).
 
 ---
 
-## 2. Backup Execution Procedures
+## 2. Secrets Management & Fail-Closed Enforcement
 
-### 2.1 Automated Nightly Cron Job
-Configure the root or backup service crontab to execute daily at 01:00 UTC:
-```cron
-0 1 * * * /Users/livesh/WEALTHOS/scripts/backup_database.sh >> /var/log/wealthos_backup.log 2>&1
-```
+> [!CAUTION]
+> Hardcoded development keys or fallback passwords in production are strictly forbidden. The backup script fails closed immediately if required keys are missing.
 
-### 2.2 Manual Execution via CLI
-To trigger an on-demand snapshot prior to maintenance or schema updates:
+### Environment Configuration
 ```bash
-# Environment variables override defaults as required
+# Master Encryption Key (Retrieve from AWS KMS / HashiCorp Vault / Secret Manager)
+export WEALTHOS_BACKUP_ENCRYPTION_KEY="<32-byte-or-greater-master-secret>"
+
+# Database Administrator Credentials (Role with read access to all schemas)
 export POSTGRES_HOST="localhost"
 export POSTGRES_PORT="5432"
 export POSTGRES_ADMIN_USER="wealthos_admin"
-export POSTGRES_ADMIN_PASSWORD="<vaulted_admin_password>"
+export POSTGRES_ADMIN_PASSWORD="<vault-injected-db-admin-password>"
 export POSTGRES_DB="wealthos"
-export BACKUP_DIR="/tmp/wealthos_backups"
-export BACKUP_ENCRYPTION_KEY="<air_gapped_backup_key>"
 
-./scripts/backup_database.sh
+# Storage Destination & Retention Policy
+export BACKUP_DIR="/var/backups/wealthos"
+export RETENTION_DAYS="14"
 ```
 
 ---
 
-## 3. Manifest Verification & Offsite Replication
+## 3. Manual Backup Execution
 
-Each backup execution produces a paired `.json` manifest:
-```json
-{
-  "backup_id": "wealthos_db_20261108_023553Z",
-  "timestamp": "20261108_023553Z",
-  "database": "wealthos",
-  "format": "custom",
-  "compression": "zlib-9",
-  "encryption": "aes-256-cbc-pbkdf2",
-  "raw_file_sha256": "4a7b3...e21",
-  "encrypted_file": "/tmp/wealthos_backups/wealthos_db_20261108_023553Z.dump.enc",
-  "encrypted_file_sha256": "8f1c2...90a",
-  "file_size_bytes": 142058,
-  "status": "VERIFIED_VALID"
-}
+To execute an immediate, verified, encrypted backup:
+
+```bash
+./scripts/backup_database.sh
 ```
 
-Offsite replication synchronizes the encrypted archive to an immutable AWS S3 Glacier or cold-storage bucket:
+### Execution Output & Verification
+```
+[INFO] Starting WealthOS database backup at 20261108_032130Z (Target DB: wealthos)...
+[INFO] Custom dump created: /tmp/wealthos_backups/wealthos_db_20261108_032130Z.dump (104K)
+[INFO] Plaintext archive structure verified successfully via pg_restore --list.
+[SUCCESS] Encrypted archive created with AES-256-GCM: /tmp/wealthos_backups/wealthos_db_20261108_032130Z.dump.enc
+[INFO] Manifest generated: /tmp/wealthos_backups/wealthos_db_20261108_032130Z.json (Plain SHA: 06920cc1daeb..., Enc SHA: 47115870e755...)
+[SUCCESS] Backup ciphertext, manifest, and authentication tag are valid.
+[SUCCESS] WealthOS database backup completed and verified: /tmp/wealthos_backups/wealthos_db_20261108_032130Z.dump.enc
+[INFO] Manifest written to /tmp/wealthos_backups/wealthos_db_20261108_032130Z.json
+```
+
+---
+
+## 4. Offsite Replication & Disaster Recovery
+
+Synchronize the encrypted container (`.dump.enc`) and manifest (`.json`) to an immutable AWS S3 Glacier or Cloud Storage bucket:
+
 ```bash
-aws s3 cp /tmp/wealthos_backups/wealthos_db_*.dump.enc s3://wealthos-offsite-backups/database/
-aws s3 cp /tmp/wealthos_backups/wealthos_db_*.json s3://wealthos-offsite-backups/metadata/
+aws s3 cp "${BACKUP_DIR}/" s3://wealthos-offsite-backups/database/ \
+  --recursive \
+  --exclude "*" \
+  --include "*.dump.enc" \
+  --include "*.json" \
+  --sse aws:kms \
+  --sse-kms-key-id "arn:aws:kms:us-east-1:123456789012:key/wealthos-backup-key"
 ```

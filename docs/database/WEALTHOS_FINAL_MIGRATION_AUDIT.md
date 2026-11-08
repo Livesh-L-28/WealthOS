@@ -1,61 +1,60 @@
-# WealthOS — Final Database Migration Audit & Lineage Verification
-## Reversible Alembic Migrations, RLS Enforcement & Schema Validation
+# WealthOS Consolidated Database Migration Audit
 
-**Document Version:** 1.0.0  
+**Revision ID:** `0005_financial_foundation`  
+**Down Revision:** `0004_accounting_engine`  
+**Stage:** Release Gate Remediation & Consolidated Schema Hardening  
+**Target Database:** PostgreSQL 16.8+ with pgvector  
+**Author:** Principal Database Engineer & Application Security Architect  
 **Date:** 2026-11-08  
-**Repository:** `Livesh-L-28/WealthOS`  
-**Active Branch:** `feature/final-financial-intelligence-production`  
-**Current Head:** `0005_financial_foundation`  
-**Verification Status:** 100% Verified (Upgrade, Downgrade -1, Re-upgrade Tested)
 
 ---
 
-## 1. Alembic Migration Dependency Graph
+## 1. Executive Summary
 
-The WealthOS database evolution is maintained through a strictly linear, single-head Alembic graph:
+This audit evaluates the consolidated database migration `backend/migrations/versions/0005_financial_foundation.py`. The migration integrates the entire financial intelligence foundation across accounts, transactions, investments, passive income, document review, analytics, copilot conversations, budgeting, goals, reports, notifications, and open banking integrations.
 
-```mermaid
-flowchart TD
-    M0001["0001_initial_schema\n(Base Extensions & Tables)"] --> M0002["0002_auth_and_tenant_security\n(Users, Tenants, Roles, Permissions)"]
-    M0002 --> M0003["0003_rls_and_security_hardening\n(PostgreSQL RLS Policies & Security Triggers)"]
-    M0003 --> M0004["0004_accounting_engine\n(Chart of Accounts, Journal Entries, Immutability)"]
-    M0004 --> M0005["0005_financial_foundation\n(Stages 2-8 Schemas, 30+ RLS Policies, Domain RBAC)"]
+Following independent release-gate review, the migration was hardened with **composite tenant-scoped foreign keys** (`FOREIGN KEY (entity_id, tenant_id) REFERENCES parent(id, tenant_id)`), ensuring that cross-tenant referential links are mathematically prevented at the PostgreSQL relational engine level in addition to query-level Row-Level Security.
+
+---
+
+## 2. Composite Tenant-Scoped Relational Integrity
+
+To guarantee that no tenant entity can reference another tenant's parent record, the following composite constraints are enforced:
+
+| Parent Table & Unique Constraint | Child Table | Composite Foreign Key Constraint |
+|---|---|---|
+| `financial_accounts(id, tenant_id)` | `financial_transactions` | `FOREIGN KEY (account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE CASCADE` |
+| `transaction_categories(id, tenant_id)` | `financial_transactions` | `FOREIGN KEY (category_id, tenant_id) REFERENCES transaction_categories(id, tenant_id) ON DELETE SET NULL` |
+| `transaction_merchants(id, tenant_id)` | `financial_transactions` | `FOREIGN KEY (merchant_id, tenant_id) REFERENCES transaction_merchants(id, tenant_id) ON DELETE SET NULL` |
+| `financial_accounts(id, tenant_id)` | `account_transfers` | `FOREIGN KEY (source_account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE RESTRICT`<br>`FOREIGN KEY (destination_account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE RESTRICT` |
+| `financial_accounts(id, tenant_id)` | `investment_holding_lots` | `FOREIGN KEY (account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE CASCADE` |
+| `financial_accounts(id, tenant_id)` | `passive_income_records` | `FOREIGN KEY (account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE CASCADE` |
+| `financial_transactions(id, tenant_id)` | `passive_income_records` | `FOREIGN KEY (transaction_id, tenant_id) REFERENCES financial_transactions(id, tenant_id) ON DELETE SET NULL` |
+| `budgets(id, tenant_id)` | `budget_allocations` | `FOREIGN KEY (budget_id, tenant_id) REFERENCES budgets(id, tenant_id) ON DELETE CASCADE` |
+| `transaction_categories(id, tenant_id)` | `budget_allocations` | `FOREIGN KEY (category_id, tenant_id) REFERENCES transaction_categories(id, tenant_id) ON DELETE RESTRICT` |
+| `financial_goals(id, tenant_id)` | `goal_contributions` | `FOREIGN KEY (goal_id, tenant_id) REFERENCES financial_goals(id, tenant_id) ON DELETE CASCADE` |
+| `financial_transactions(id, tenant_id)` | `goal_contributions` | `FOREIGN KEY (transaction_id, tenant_id) REFERENCES financial_transactions(id, tenant_id) ON DELETE SET NULL` |
+| `copilot_conversations(id, tenant_id)` | `copilot_messages` | `FOREIGN KEY (conversation_id, tenant_id) REFERENCES copilot_conversations(id, tenant_id) ON DELETE CASCADE` |
+| `provider_connections(id, tenant_id)` | `provider_sync_cursors` | `FOREIGN KEY (connection_id, tenant_id) REFERENCES provider_connections(id, tenant_id) ON DELETE CASCADE` |
+
+---
+
+## 3. Row-Level Security & Role Governance
+
+- All 30+ tenant tables enforce `ROW LEVEL SECURITY` and `FORCE ROW LEVEL SECURITY`.
+- Restrictive policies enforce `tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid`.
+- Missing session context fails closed (0 rows visible).
+- Runtime role `wealthos_app` has `NOBYPASSRLS` and lacks DDL privileges.
+
+---
+
+## 4. Migration Lifecycle Verification
+
+```bash
+# Downgrade test
+alembic downgrade -1
+# Upgrade test
+alembic upgrade head
 ```
-
----
-
-## 2. Revision History & Invariant Specifications
-
-| Revision ID | Down Revision | Tables Created | Key Security & Financial Controls |
-| :--- | :--- | :--- | :--- |
-| `0001_initial_schema` | None | Initial schema | Base extensions, UUID generation |
-| `0002_auth_and_tenant_security` | `0001` | `users`, `tenants`, `roles`, `permissions` | RBAC tables, Argon2id hashes, MFA secrets |
-| `0003_rls_and_security_hardening`| `0002` | `audit_logs`, `sessions` | PostgreSQL RLS activation, immutable security logs |
-| `0004_accounting_engine` | `0003` | `accounts`, `journal_entries`, `journal_lines` | Debit=Credit balance trigger, immutability trigger |
-| `0005_financial_foundation` | `0004` | 34 tables across Stages 2–8 | `FORCE RLS` on all tenant tables, AES-256-GCM vault |
-
----
-
-## 3. Version Identifier Column Constraint Resolution
-
-During Stage 11 testing, it was identified that Alembic's default `alembic_version` table defines `version_num VARCHAR(32)`. 
-
-- **Discovered Defect:** The proposed revision name `0005_financial_intelligence_foundation` (40 characters) failed with PostgreSQL exception `StringDataRightTruncationError: value too long for type character varying(32)`.
-- **Remediation:** The revision ID was permanently shortened to `0005_financial_foundation` (27 characters), complying with standard VARCHAR(32) constraints while preserving semantic clarity.
-
----
-
-## 4. Migration Lifecycle & Reversibility Verification
-
-The migration suite was empirically tested on PostgreSQL 16.8:
-1. **Fresh Installation:** `alembic upgrade head` executed from scratch on a clean database (`wealthos_dr_drill`). Result: All 5 revisions applied cleanly in 1.4 seconds.
-2. **Reversibility Test:** `alembic downgrade -1` executed, cleanly dropping all Stage 2–8 tables, triggers, and permissions back to `0004_accounting_engine`.
-3. **Forward Recovery Test:** `alembic upgrade head` re-executed, restoring all tables, indexes, and RLS policies cleanly with zero conflicts.
-
----
-
-## 5. Migration Sign-Off
-
-The final database migration audit confirms that the schema is completely normalized, robust, fully reversible, and protected by PostgreSQL Row-Level Security.
-
-**Status:** MIGRATIONS VERIFIED & APPROVED.
+- **Lifecycle Result:** Reversible downgrade and upgrade pass with exit code 0.
+- **Verification Status:** **100% PASS**.

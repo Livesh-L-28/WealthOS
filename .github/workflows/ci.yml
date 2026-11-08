@@ -113,6 +113,23 @@ jobs:
           cd backend
           pip-audit --desc
 
+      - name: Ensure PostgreSQL Client Utilities
+        run: |
+          if ! command -v pg_dump >/dev/null 2>&1 || ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update && sudo apt-get install -y postgresql-client
+          fi
+
+      - name: Disaster Recovery Simulation & Cryptographic Rejection Drill
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_USER: wealthos_admin
+          POSTGRES_ADMIN_PASSWORD: wealthos_local_dev_password_change_in_prod
+          CONFIRM_DISASTER_RECOVERY_DRILL: "true"
+          WEALTHOS_BACKUP_ENCRYPTION_KEY: "wealthos_ci_aes256_master_key_for_dr_drill"
+        run: |
+          python3 scripts/disaster_recovery_exercise.py --force-drill
+
   frontend-quality-and-build:
     name: Frontend Quality, Lint, Typecheck, Tests & Build
     runs-on: ubuntu-latest
@@ -148,8 +165,8 @@ jobs:
       - name: Expo Configuration & Compatibility Validation
         run: npm run --workspace=@wealthos/mobile validate
 
-      - name: Dependency Security Scanning (npm audit)
-        run: npm audit --audit-level=critical || true
+      - name: Supply-Chain Dependency Security Audit (Audited Gate)
+        run: python3 scripts/audit_dependencies.py --npm-only
 
   docker-compose-validate-and-build:
     name: Docker Compose Validation & Image Builds

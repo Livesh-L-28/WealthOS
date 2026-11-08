@@ -55,6 +55,7 @@ def upgrade() -> None:
             is_active BOOLEAN NOT NULL DEFAULT TRUE,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT uq_tx_categories_id_tenant UNIQUE (id, tenant_id),
             CONSTRAINT uq_tenant_category_code UNIQUE (tenant_id, code),
             CONSTRAINT chk_category_type CHECK (category_type IN ('INCOME', 'EXPENSE', 'TRANSFER', 'INVESTMENT'))
         );
@@ -76,6 +77,7 @@ def upgrade() -> None:
             is_active BOOLEAN NOT NULL DEFAULT TRUE,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT uq_tx_merchants_id_tenant UNIQUE (id, tenant_id),
             CONSTRAINT uq_tenant_merchant_name UNIQUE (tenant_id, clean_name)
         );
         """
@@ -99,6 +101,7 @@ def upgrade() -> None:
             is_active BOOLEAN NOT NULL DEFAULT TRUE,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT uq_financial_accounts_id_tenant UNIQUE (id, tenant_id),
             CONSTRAINT chk_fin_account_type CHECK (account_type IN ('SAVINGS', 'CURRENT', 'CREDIT_CARD', 'CASH', 'DEMAT', 'LOAN'))
         );
         """
@@ -127,6 +130,10 @@ def upgrade() -> None:
             external_id VARCHAR(255) NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT uq_financial_transactions_id_tenant UNIQUE (id, tenant_id),
+            CONSTRAINT fk_tx_account_tenant FOREIGN KEY (account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE CASCADE,
+            CONSTRAINT fk_tx_category_tenant FOREIGN KEY (category_id, tenant_id) REFERENCES transaction_categories(id, tenant_id) ON DELETE SET NULL,
+            CONSTRAINT fk_tx_merchant_tenant FOREIGN KEY (merchant_id, tenant_id) REFERENCES transaction_merchants(id, tenant_id) ON DELETE SET NULL,
             CONSTRAINT chk_tx_direction CHECK (direction IN ('DEBIT', 'CREDIT')),
             CONSTRAINT chk_tx_status CHECK (status IN ('PENDING', 'POSTED', 'CANCELLED', 'REVERSED')),
             CONSTRAINT chk_tx_recon CHECK (reconciliation_status IN ('UNRECONCILED', 'MATCHED', 'MANUALLY_VERIFIED', 'DISCREPANCY'))
@@ -156,6 +163,8 @@ def upgrade() -> None:
             status VARCHAR(20) NOT NULL DEFAULT 'COMPLETED',
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT fk_transfers_source_account_tenant FOREIGN KEY (source_account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE RESTRICT,
+            CONSTRAINT fk_transfers_dest_account_tenant FOREIGN KEY (destination_account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE RESTRICT,
             CONSTRAINT chk_diff_accounts CHECK (source_account_id <> destination_account_id)
         );
         """
@@ -279,6 +288,7 @@ def upgrade() -> None:
             lot_status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT fk_lots_account_tenant FOREIGN KEY (account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE CASCADE,
             CONSTRAINT chk_lot_quantity CHECK (remaining_quantity >= 0.0000),
             CONSTRAINT chk_lot_status CHECK (lot_status IN ('OPEN', 'PARTIALLY_DISPOSED', 'CLOSED'))
         );
@@ -308,6 +318,8 @@ def upgrade() -> None:
             transaction_id UUID NULL REFERENCES financial_transactions(id) ON DELETE SET NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT fk_passive_account_tenant FOREIGN KEY (account_id, tenant_id) REFERENCES financial_accounts(id, tenant_id) ON DELETE CASCADE,
+            CONSTRAINT fk_passive_tx_tenant FOREIGN KEY (transaction_id, tenant_id) REFERENCES financial_transactions(id, tenant_id) ON DELETE SET NULL,
             CONSTRAINT chk_passive_type CHECK (income_type IN ('DIVIDEND', 'INTEREST', 'RENTAL', 'ROYALTY', 'DISTRIBUTION', 'OTHER')),
             CONSTRAINT chk_passive_status CHECK (status IN ('EXPECTED', 'RECEIVED', 'RECONCILED', 'CANCELLED'))
         );
@@ -407,7 +419,8 @@ def upgrade() -> None:
             title VARCHAR(255) NOT NULL DEFAULT 'Financial Inquiry',
             is_archived BOOLEAN NOT NULL DEFAULT FALSE,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT uq_copilot_conversations_id_tenant UNIQUE (id, tenant_id)
         );
         """
     )
@@ -426,6 +439,7 @@ def upgrade() -> None:
             citations JSONB NULL,
             feedback VARCHAR(20) NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT fk_copilot_msg_conv_tenant FOREIGN KEY (conversation_id, tenant_id) REFERENCES copilot_conversations(id, tenant_id) ON DELETE CASCADE,
             CONSTRAINT chk_copilot_role CHECK (role IN ('user', 'assistant', 'system', 'tool'))
         );
         """
@@ -453,6 +467,7 @@ def upgrade() -> None:
             is_active BOOLEAN NOT NULL DEFAULT TRUE,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT uq_budgets_id_tenant UNIQUE (id, tenant_id),
             CONSTRAINT chk_budget_period CHECK (period_type IN ('MONTHLY', 'QUARTERLY', 'ANNUAL', 'CUSTOM'))
         );
         """
@@ -473,6 +488,8 @@ def upgrade() -> None:
             currency VARCHAR(3) NOT NULL DEFAULT 'INR',
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT fk_alloc_budget_tenant FOREIGN KEY (budget_id, tenant_id) REFERENCES budgets(id, tenant_id) ON DELETE CASCADE,
+            CONSTRAINT fk_alloc_category_tenant FOREIGN KEY (category_id, tenant_id) REFERENCES transaction_categories(id, tenant_id) ON DELETE RESTRICT,
             CONSTRAINT uq_budget_category UNIQUE (budget_id, category_id)
         );
         """
@@ -494,6 +511,7 @@ def upgrade() -> None:
             status VARCHAR(20) NOT NULL DEFAULT 'IN_PROGRESS',
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT uq_financial_goals_id_tenant UNIQUE (id, tenant_id),
             CONSTRAINT chk_goal_status CHECK (status IN ('IN_PROGRESS', 'ACHIEVED', 'AT_RISK', 'PAUSED', 'CANCELLED'))
         );
         """
@@ -511,7 +529,9 @@ def upgrade() -> None:
             contribution_date DATE NOT NULL,
             amount NUMERIC(18, 4) NOT NULL,
             currency VARCHAR(3) NOT NULL DEFAULT 'INR',
-            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT fk_contrib_goal_tenant FOREIGN KEY (goal_id, tenant_id) REFERENCES financial_goals(id, tenant_id) ON DELETE CASCADE,
+            CONSTRAINT fk_contrib_tx_tenant FOREIGN KEY (transaction_id, tenant_id) REFERENCES financial_transactions(id, tenant_id) ON DELETE SET NULL
         );
         """
     )
@@ -744,6 +764,7 @@ def upgrade() -> None:
             error_summary TEXT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT uq_provider_connections_id_tenant UNIQUE (id, tenant_id),
             CONSTRAINT chk_conn_status CHECK (status IN ('PENDING_AUTHORIZATION', 'CONNECTED', 'SYNCING', 'FAILED', 'EXPIRED', 'REVOKED'))
         );
         """
@@ -761,6 +782,7 @@ def upgrade() -> None:
             last_sync_timestamp TIMESTAMPTZ NOT NULL,
             created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
             updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT fk_sync_cursor_conn_tenant FOREIGN KEY (connection_id, tenant_id) REFERENCES provider_connections(id, tenant_id) ON DELETE CASCADE,
             CONSTRAINT uq_connection_cursor UNIQUE (connection_id)
         );
         """
@@ -810,9 +832,15 @@ def upgrade() -> None:
         op.execute(
             f"""
             CREATE POLICY {tbl}_tenant_isolation ON {tbl}
-                AS RESTRICTIVE
-                USING (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)
-                WITH CHECK (tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid);
+                FOR ALL
+                USING (
+                    NULLIF(current_setting('app.current_tenant_id', true), '') IS NOT NULL
+                    AND tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid
+                )
+                WITH CHECK (
+                    NULLIF(current_setting('app.current_tenant_id', true), '') IS NOT NULL
+                    AND tenant_id = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid
+                );
             """
         )
         op.execute(f"GRANT SELECT, INSERT, UPDATE, DELETE ON {tbl} TO wealthos_app;")
