@@ -1,5 +1,7 @@
 export type TabType = 'overview' | 'accounts' | 'investments' | 'budgets' | 'copilot';
 
+export type DashboardPeriod = '1M' | '3M' | 'YTD' | 'ALL';
+
 export interface BankAccount {
   id: string;
   name: string;
@@ -55,6 +57,7 @@ export interface FinancialGoal {
   currentAmount: number;
   targetYear: number;
   category: string;
+  monthlySavingsTarget?: number;
 }
 
 export interface CopilotMessage {
@@ -63,4 +66,15 @@ export interface CopilotMessage {
   text: string;
   timestamp: string;
   metrics?: { label: string; value: string }[];
+}
+
+export interface LedgerReconciliation {
+  isBalanced: boolean;
+  totalDebits: number;
+  totalCredits: number;
+  variance: number;
+  syncedInstitutionsCount: number;
+  totalInstitutionsCount: number;
+  auditHash: string;
+  lastChecked: string;
 }
