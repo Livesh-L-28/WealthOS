@@ -120,3 +120,4 @@ WHERE schemaname = 'public'
   AND rowsecurity = true;
 ```
 Result: **65 rows returned**, with `rowsecurity = true` and `forcerowsecurity = true` across all domain entities.
+

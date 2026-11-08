@@ -91,3 +91,4 @@ Zero financial discrepancies. Zero data loss. Zero security isolation leaks.
 | **Database Architect** | PostgreSQL Lead | 2026-11-08 | *Certified* |
 | **Site Reliability Engineer** | SRE Lead | 2026-11-08 | *Certified* |
 | **Application Security Lead** | AppSec Lead | 2026-11-08 | *Certified* |
+

@@ -65,3 +65,4 @@ flowchart TD
 - [ ] Production Next.js build succeeds with static prerendering.
 - [ ] Alembic migrations tested against clean and populated schemas using expand-and-contract.
 - [ ] Owner approval confirmed before production release or Google Play submission.
+

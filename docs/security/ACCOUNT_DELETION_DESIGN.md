@@ -82,3 +82,4 @@ To satisfy Google Play Store publishing guidelines, WealthOS provides an unauthe
   1. Explains what data is deleted (profile, credentials, documents, personal settings) and what data is anonymized for financial compliance.
   2. Provides an interactive self-service deletion portal for active users.
   3. Provides an alternative email verification request form for users who have uninstalled the app or lost access to their device.
+

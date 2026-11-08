@@ -70,3 +70,4 @@ All WealthOS relational entities conform to strict fintech schema design guideli
 - **Immutable Financial Records:** Financial transactions, posted journal entries, and investment trades **MUST NEVER** have cascading deletes (`ON DELETE CASCADE` is prohibited on financial core tables).
 - **Soft Deletion (`SoftDeleteMixin`):** Accounts, budgets, and user preferences implement `is_deleted: bool = False` with `deleted_at: datetime | None`.
 - **Right-to-be-Forgotten Compliance:** When a user requests account deletion, personal identifiers (name, email, phone) are pseudonymized and overwritten with random hashes, while immutable journal transaction figures are retained in anonymized format to satisfy statutory accounting audit obligations.
+

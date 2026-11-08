@@ -73,3 +73,4 @@ cd backend && alembic downgrade -1
 When an expand-and-contract migration has already begun writing data in the new format:
 - **Do NOT execute `alembic downgrade`**, as doing so drops the new column and destroys new financial transactions.
 - **Execute Forward-Recovery:** Deploy a hotfix migration that patches the issue forward or marks the deprecated column active again without dropping the newly committed data.
+

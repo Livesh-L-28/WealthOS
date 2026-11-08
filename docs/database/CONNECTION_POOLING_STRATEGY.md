@@ -119,3 +119,4 @@ When communicating through PgBouncer in transaction pooling mode:
    )
    ```
 2. **Explicit Connection Checkouts:** Always wrap transactions inside `async with session.begin():` to ensure atomic checkout and release.
+

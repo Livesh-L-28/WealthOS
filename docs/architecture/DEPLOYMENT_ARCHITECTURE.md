@@ -115,3 +115,4 @@ WealthOS enforces a three-tier network isolation topology adhering to the princi
    - Once all traffic is migrated, decommission old instances (`api-v1`).
 3. **Rollback Strategy:**
    - If error rate exceeds 0.5% or P95 latency spikes > 500ms post-deployment, NGINX immediately reverses upstream routing to `api-v1`.
+

@@ -107,3 +107,4 @@ groups:
           description: "Document ingestion worker backlog accumulating. Trigger horizontal worker autoscale."
           runbook: "docs/infrastructure/AUTOSCALING_POLICY.md"
 ```
+

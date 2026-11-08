@@ -109,3 +109,4 @@ Prometheus scrapes the `/metrics` endpoint across five monitoring dimensions:
 - `wealthos_accounting_imbalance_total`: **CRITICAL ALERT GAUGE** $\rightarrow$ Must remain `0.0000` at all times.
 - `wealthos_unreconciled_discrepancies_count`: Count of active bank statement discrepancies.
 - `wealthos_provider_sync_failures_total`: Counter of external provider API errors.
+

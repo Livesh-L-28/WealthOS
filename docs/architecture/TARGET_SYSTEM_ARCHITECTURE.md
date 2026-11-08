@@ -559,3 +559,4 @@ sequenceDiagram
         API-->>User: HTTP 200 OK {"status": "ACCOUNT_DELETED", "timestamp": "2026-11-08T..."}
     end
 ```
+

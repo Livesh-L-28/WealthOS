@@ -41,3 +41,4 @@ WealthOS load testing validates that the platform sustains enterprise concurrenc
 ### Profile 4: Soak & Longevity Test
 - **Virtual Users:** 250 steady concurrent users for 4 hours.
 - **Target:** Detect memory leaks in Uvicorn/FastAPI, unclosed SQLAlchemy database sessions, or Redis key accumulation.
+

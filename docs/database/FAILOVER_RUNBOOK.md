@@ -107,3 +107,4 @@ echo "primary_conninfo = 'host=wealthos_postgres_promoted port=5432 user=replica
 # 5. Start instance as new read replica
 docker start wealthos_postgres_old
 ```
+

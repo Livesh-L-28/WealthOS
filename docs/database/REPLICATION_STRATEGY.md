@@ -88,3 +88,4 @@ FROM pg_stat_replication;
 - **Replication Lag Warning:** `replay_lag_seconds > 5.0s` for 3 consecutive minutes.
 - **Replication Lag Critical:** `replay_lag_seconds > 30.0s` or `send_lag_bytes > 500MB`.
 - **Standby Down Alert:** Number of connected standby nodes drops below minimum required threshold.
+

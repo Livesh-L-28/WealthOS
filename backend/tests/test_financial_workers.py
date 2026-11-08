@@ -45,3 +45,4 @@ def test_generate_financial_report_async_task():
     assert res["tenant_id"] == "tenant-uuid-5678"
     assert res["queue"] == "default"
     assert "/api/v1/reports/download/" in res["download_url"]
+

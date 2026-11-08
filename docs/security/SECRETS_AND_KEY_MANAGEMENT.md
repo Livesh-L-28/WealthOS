@@ -80,3 +80,4 @@ python3 backend/scripts/rotate_encryption_keys.py \
 # 3. Update environment configuration with NEW_KEY
 # 4. Restart backend API instances with zero downtime
 ```
+

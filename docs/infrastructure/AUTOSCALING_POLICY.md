@@ -57,3 +57,4 @@ When an instance scales down or is replaced during rolling updates:
    - Celery workers finish their current active job (`task_acks_late=True` guarantees that unacknowledged tasks are re-queued).
    - Database connections in SQLAlchemy pool are disposed cleanly via `close_db()`.
 4. **Clean Exit:** Container terminates with exit code 0.
+

@@ -74,3 +74,4 @@ Direct database or MinIO API credentials are never exposed to mobile apps or web
 > **Financial Accounting Guardrail:**  
 > Document OCR statement extraction **MUST NEVER directly write journal entries or credit cash balances**.
 > All extracted figures are staged in `document_extractions` in `PENDING_REVIEW` state. Balances are posted to the General Ledger **only after arithmetic reconciliation matching and explicit user confirmation**.
+

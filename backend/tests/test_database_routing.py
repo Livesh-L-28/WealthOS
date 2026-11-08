@@ -60,3 +60,4 @@ async def test_read_db_session_yields_functional_session():
         val = result.scalar()
         assert val == 1
         break
+

@@ -49,3 +49,4 @@ SELECT sum(debit) - sum(credit) AS total_imbalance FROM journal_lines;
 - **Total Credits Posted:** ₹8,542,100,500.0000
 - **Mathematical Imbalance:** **0.0000000000000000**
 - **Conclusion:** Concurrency stress caused zero race conditions, zero lost updates, and zero fractional penny drift.
+

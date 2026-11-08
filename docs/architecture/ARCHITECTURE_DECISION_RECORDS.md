@@ -105,3 +105,4 @@ $$\sum \text{Debit} - \sum \text{Credit} = 0.0000$$
 1. **Irrefutable Audit Trail:** Direct balance mutation leaves no history of how a balance was reached and makes discrepancy reconciliation impossible. In WealthOS, account balances are the exact mathematical sum of posted journal lines.
 2. **Disaster Recovery & Financial Verification:** In the event of data corruption or auditing disputes, the complete state of any account can be recomputed from genesis by replaying immutable journal lines.
 3. **Zero Float Drift:** Every transaction is stored using PostgreSQL `NUMERIC(20, 4)` and Python `Decimal`, ensuring exact penny and fractional currency precision.
+

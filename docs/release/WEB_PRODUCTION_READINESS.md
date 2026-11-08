@@ -77,3 +77,4 @@ Configured via `apps/web/next.config.js`:
 | `/privacy-policy`| Static SSG | Public Unauthenticated | Google Play / Statutory privacy policy |
 | `/terms` | Static SSG | Public Unauthenticated | Terms of service & financial disclaimers |
 | `/delete-account`| Dynamic Client | Public Unauthenticated | Google Play mandatory account deletion |
+

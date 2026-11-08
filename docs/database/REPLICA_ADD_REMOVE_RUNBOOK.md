@@ -112,3 +112,4 @@ Verify disk space on Primary `pg_wal` is healthy:
 ```sql
 SELECT count(*) AS wal_file_count FROM pg_ls_waldir();
 ```
+

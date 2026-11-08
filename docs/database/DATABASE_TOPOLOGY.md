@@ -126,3 +126,4 @@ log_disconnections = off
 log_lock_waits = on                   # Log queries waiting on locks > 1s
 deadlock_timeout = 1s
 ```
+

@@ -54,3 +54,4 @@ To prevent automated credential stuffing and dictionary attacks:
 - **Failed Login Threshold:** 5 consecutive failed attempts on an account locks authentication for 15 minutes.
 - **Timing Attack Mitigation:** When an unrecognized email address is queried, the authentication engine executes a dummy Argon2id verification with equal computational latency, preventing user enumeration via timing discrepancies.
 - **Rate Limiting:** IP and endpoint rate limiters enforce a maximum of 5 sensitive auth attempts per minute in production.
+

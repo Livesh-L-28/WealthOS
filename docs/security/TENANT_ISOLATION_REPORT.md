@@ -84,3 +84,4 @@ The automated test suite `tests/test_rls_isolation.py` and `tests/test_tenant_is
 
 ### Certification
 **Zero cross-tenant vulnerabilities detected.** The WealthOS multi-tenant architecture is certified compliant with enterprise tenant segregation standards.
+

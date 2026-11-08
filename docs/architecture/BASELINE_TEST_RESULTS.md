@@ -106,3 +106,4 @@ The 48 browser E2E tests run against the production-compiled Next.js application
 1. **Mobile Native E2E:** Mobile tests currently validate unit storage and queue logic in Jest/Vitest; native on-device Detox/Appium automated UI tests do not yet exist.
 2. **Prometheus Scraping E2E:** The `/metrics` endpoint is tested for HTTP 200, but synthetic traffic load testing with end-to-end Prometheus scrapers and Grafana alerts is scheduled for Phase 12.
 3. **Multi-Instance Concurrency:** Current integration tests execute against a single backend process; distributed multi-instance race condition testing is scheduled for Phase 8.
+

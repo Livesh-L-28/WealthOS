@@ -84,3 +84,4 @@ A scheduled automated worker validates the backup chain weekly:
    ```
 5. Executes RLS tenant isolation checks.
 6. Emits a Prometheus metric `wealthos_backup_verify_success{database="wealthos"} 1`.
+

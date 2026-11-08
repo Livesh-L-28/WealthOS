@@ -56,3 +56,4 @@ Sharding will only be re-evaluated if all of the following conditions are met:
 1. Active registered user base exceeds **5,000,000 users**.
 2. Sustained write transactions exceed **10,000 writes/sec** on the largest available cloud instance class (e.g. 128 vCPUs, 512 GB RAM).
 3. Regulatory data sovereignty laws mandate physical storage of data in separate sovereign jurisdictions (e.g. Reserve Bank of India vs European Union GDPR physical residency mandates).
+

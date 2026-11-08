@@ -60,3 +60,4 @@ In the hardened production topology:
 | `wealthos_postgres_data` | Docker Named Volume | Docker engine storage root | Complete relational database: transactions, accounts, users, RLS configurations. | Daily pg_dump; target: continuous WAL archiving to MinIO/S3. |
 | `wealthos_redis_data` | Docker Named Volume | Docker engine storage root | Append-only file and RDB snapshots of revoked tokens and Celery queues. | Ephemeral persistence with fast startup recovery. |
 | `wealthos_minio_data` | Docker Named Volume | Docker engine storage root | Quarantined financial documents, CAS PDFs, bank statements. | Immutable object storage with versioning and cryptographic checksums. |
+

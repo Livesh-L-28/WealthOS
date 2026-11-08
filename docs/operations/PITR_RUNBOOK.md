@@ -108,3 +108,4 @@ Verify node is out of recovery:
 SELECT pg_is_in_recovery(); -- Returns 'f'
 ```
 Update PgBouncer to point application traffic to the newly restored database.
+

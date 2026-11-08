@@ -34,3 +34,4 @@ WealthOS capacity planning projects compute, storage, and networking requirement
    - Bank statement PDFs and quarantine uploads are transitioned from S3 Standard to S3 Infrequent Access (IA) after 30 days, and archived to Glacier after 365 days, reducing storage costs by over 70%.
 3. **Automated Autovacuum Tuning:**
    - Aggressive vacuum scale factors prevent table bloat, ensuring high index cache locality and avoiding premature NVMe block storage expansions.
+

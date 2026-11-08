@@ -64,3 +64,4 @@ flowchart TD
 | **Information Disclosure** | Cross-tenant data leakage via missing query filters or SQL injection. | PostgreSQL kernel `ROW LEVEL SECURITY` enforced across 65 tables using restricted runtime role `wealthos_app`. Parameterized SQLAlchemy queries. |
 | **Denial of Service** | Credential stuffing, brute-force password guessing, or heavy query flooding. | Redis-backed distributed rate limiters (5 requests/min on login/register in production); PgBouncer connection pooling preventing pool starvation. |
 | **Elevation of Privilege** | Household member attempts to view private wealth of owner or execute wire settlements. | 3-tier visibility scopes (`PERSONAL_ONLY`, `HOUSEHOLD_SHARED`, `LIMITED_SHARED`) enforced at the service and query planner level. |
+

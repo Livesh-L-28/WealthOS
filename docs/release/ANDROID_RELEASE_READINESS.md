@@ -65,3 +65,4 @@ To maintain high placement on Google Play and avoid Play Console negative rankin
 | **Cold Startup Time** | $< 5.0\text{ seconds}$ | **$< 1.8\text{ seconds}$** | Hermes JS bytecode engine enabled; minimal initial bundle size. |
 | **Warm Startup Time** | $< 2.0\text{ seconds}$ | **$< 0.8\text{ seconds}$** | Cached app shell with instant splash screen dismiss. |
 | **Slow Rendering Frames** | $< 50\%$ frames $> 16\text{ms}$ | **$< 10\%$** | FlatList virtualization on transaction lists and accounts. |
+

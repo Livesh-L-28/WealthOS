@@ -73,3 +73,4 @@ If the Redis cluster is unreachable or crashes:
 1. **Financial Ledger Unaffected:** All general ledger writes and PostgreSQL queries execute without Redis dependencies.
 2. **Read-Through Degradation:** If cache lookups fail (`ConnectionError`), the application catches the exception, logs a warning, falls back directly to PostgreSQL, and returns authoritative data.
 3. **Session Revocation Security Policy:** If Redis is down during a token revocation check, the token signature, issuer, audience, and expiration claims are validated cryptographically against `SECRET_KEY`, and database session status (`user_sessions.is_active`) is queried to ensure fail-closed security.
+

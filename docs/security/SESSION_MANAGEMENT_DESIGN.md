@@ -92,3 +92,4 @@ WealthOS implements Refresh Token Rotation (RTR) to prevent token theft and repl
    - Forces re-authentication across all mobile devices, tablets, and web browsers.
 3. **Password Change / Reset Revocation:**
    - Automatically triggers `logout_all_sessions`, immediately locking out compromised sessions upon credential updates.
+
