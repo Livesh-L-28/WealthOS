@@ -13,3 +13,4 @@ In multi-tenant financial architectures, high-volume ingestion or automated batc
    - `default`: Normal journal posting and standard queries.
    - `batch`: Long-running bulk document OCR and statement reconciliation.
 4. **Rate Limiting**: Distributed token bucket rate-limiting via Redis (`app/core/rate_limiter.py`).
+

@@ -8,3 +8,4 @@
 | `LIQUIDITY_DETERIORATION` | Emergency cash $< 1.5$ months burn rate | `CRITICAL` / `HIGH` | Replenish liquid cash buffer |
 | `UNUSUAL_SINGLE_OUTFLOW` | Single transfer $\ge 35\%$ of total depository cash | `HIGH` | Verify transaction legitimacy |
 | `DEBT_BURDEN_ACCELERATION`| Debt EMI $> 45\%$ of net monthly income | `CRITICAL` / `HIGH` | Plan debt restructuring / prepayments |
+

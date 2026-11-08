@@ -19,3 +19,4 @@ The rolling 30-day error budget governs release velocity and automated gates:
 
 ## 2. Invariant Violation Zero-Tolerance Exception
 If a financial invariant is violated (e.g., unbalanced journal voucher or negative inventory lot), the error budget is considered immediately 100% depleted regardless of availability metrics.
+

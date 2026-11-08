@@ -7,3 +7,4 @@ WealthOS enforces defense-in-depth across every platform layer:
 3. **Application Layer**: Deterministic input validation via Pydantic v2 schemas, parameter binding in SQL queries, CSRF token validation, Content-Security-Policy (CSP), and Strict-Transport-Security (HSTS).
 4. **Data Layer**: PostgreSQL Row-Level Security (`FORCE ROW LEVEL SECURITY`) with `app.current_tenant_id` session context isolation.
 5. **Storage Layer**: AES-256-GCM envelope encryption for database backups and MinIO S3 object storage with Object Lock.
+

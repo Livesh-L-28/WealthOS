@@ -28,3 +28,4 @@ WealthOS computes an objective Financial Health Score (0 to 100) combining four 
 - **65 – 79**: `GOOD`
 - **50 – 64**: `FAIR`
 - **0 – 49**: `VULNERABLE`
+

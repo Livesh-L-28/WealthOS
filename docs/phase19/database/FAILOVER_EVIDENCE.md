@@ -20,3 +20,4 @@ tests/test_phase19_database_resilience.py ....                           [100%]
 2. **Split-Brain Invariant**: Verified `SplitBrainProtectionError` raised when attempting to register a duplicate primary without demotion.
 3. **Lag Circuit Breaker**: Standby replica with lag $> 1000\text{ms}$ automatically excluded from read pool; query routing seamlessly fell back to the primary writer.
 4. **Fenced Standby Promotion**: Standby successfully promoted to primary; prior primary was fenced and drained, with subsequent writes safely directed to the new primary.
+

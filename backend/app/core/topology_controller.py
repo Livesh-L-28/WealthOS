@@ -287,3 +287,4 @@ class DatabaseTopologyController:
                 "fenced_nodes": list(self._fenced_nodes),
                 "nodes": nodes_data,
             }
+

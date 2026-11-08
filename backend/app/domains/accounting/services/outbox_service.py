@@ -141,3 +141,4 @@ class OutboxService:
         if deleted_count > 0:
             logger.info(f"Purged {deleted_count} published outbox events older than {retention_days} days")
         return deleted_count
+

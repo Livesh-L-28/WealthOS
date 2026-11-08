@@ -186,3 +186,4 @@ class PasskeyService:
         await self.session.flush()
         logger.info(f"Verified passkey assertion for credential {credential_id} (user {user_id})")
         return cred
+

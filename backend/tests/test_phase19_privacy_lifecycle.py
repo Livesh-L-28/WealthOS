@@ -111,3 +111,4 @@ def test_data_lifecycle_statutory_retention_holds():
     assert "journal_entries" in statutory_types
     assert "investment_holding_lots" in statutory_types
     assert "passive_income_records" in statutory_types
+

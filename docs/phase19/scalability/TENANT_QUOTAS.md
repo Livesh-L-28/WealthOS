@@ -24,3 +24,4 @@ CREATE TABLE tenant_resource_quotas (
 - **AI Copilot Queries**: 500 requests/day per tenant.
 - **Report PDF / XLSX Exports**: 50 exports/day per tenant.
 - **Broker Concurrent Syncs**: Max 5 active parallel synchronization jobs per tenant.
+

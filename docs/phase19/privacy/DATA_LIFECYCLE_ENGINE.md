@@ -7,3 +7,4 @@ Modern privacy regulations (DPDP Act 2023, GDPR Article 17) grant users the righ
 1. **Segregation over Deletion**: When an erasure request is executed for an account with posted financial journal entries, PII fields (`name`, `email`, `phone`) are cryptographically anonymized / pseudonymized.
 2. **Statutory Books Preserved**: The double-entry general ledger, FIFO acquisition lots, and tax audit records are preserved under statutory legal hold (8-year retention requirement under India Income Tax Act 1961 Section 149 and Companies Act 2013 Section 128).
 3. **Automated Purging**: Documents and AI conversational histories exceeding their non-statutory retention windows are purged via automated background worker tasks.
+

@@ -12,3 +12,4 @@ Every answer produced by the Copilot is accompanied by an immutable `AnswerProve
 
 ## 2. Interactive Front-End Citations
 Users can click on any citation pill in the Copilot UI to open a side drawer directly displaying the source voucher, statement transaction, or FIFO lot.
+

@@ -149,3 +149,4 @@ async def test_topology_controller_draining_and_fenced_promotion():
     # Write traffic safely routes to new primary
     write_node = await controller.get_write_node()
     assert write_node.node_id == "pg-standby"
+

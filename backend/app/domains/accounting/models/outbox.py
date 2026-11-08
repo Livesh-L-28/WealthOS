@@ -59,3 +59,4 @@ class OutboxEvent(Base, UUIDPrimaryKeyMixin):
         DateTime(timezone=True),
         nullable=True,
     )
+

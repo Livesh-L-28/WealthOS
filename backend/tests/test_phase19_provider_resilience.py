@@ -96,3 +96,4 @@ def test_holding_drift_reconciliation():
     types = {d["symbol"]: d["type"] for d in rec_drift["discrepancies"]}
     assert types["RELIANCE"] == "QUANTITY_MISMATCH"
     assert types["SBIN"] == "MISSING_IN_LEDGER"
+

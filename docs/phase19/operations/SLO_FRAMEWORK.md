@@ -15,3 +15,4 @@ WealthOS financial services demand strict availability and latency objectives. S
 | **API Latency (Write)** | $p95$ response time for journal entries | $< 500\text{ ms}$ | $5\%$ of requests $> 500\text{ ms}$ |
 | **AI Copilot Inferences**| $p95$ response time for conversational queries | $< 1,500\text{ ms}$ | $5\%$ of requests $> 1,500\text{ ms}$ |
 | **Database Replication Lag**| Maximum standby replication lag | $< 1,000\text{ ms}$ | $0.1\%$ window $> 1\text{s}$ before fallback |
+

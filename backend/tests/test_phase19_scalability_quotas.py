@@ -149,3 +149,4 @@ async def test_stateful_circuit_breaker_transitions():
     await cb.call(flaky_api, should_fail=False)
 
     assert cb.state == CircuitState.CLOSED
+

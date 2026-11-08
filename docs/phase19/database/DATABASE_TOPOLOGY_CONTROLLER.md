@@ -42,3 +42,4 @@ The `DatabaseTopologyController` (`backend/app/core/topology_controller.py`) act
 - `replication_lag_ms`: Measured replication latency in milliseconds.
 - `is_drained`: Maintenance draining flag.
 - `active_requests`: Concurrency load tracking.
+

@@ -224,3 +224,4 @@ async def test_financial_data_lineage_graph(
     )
     assert len(derived_entries) == 1
     assert derived_entries[0].entity_id == journal_entry_id
+

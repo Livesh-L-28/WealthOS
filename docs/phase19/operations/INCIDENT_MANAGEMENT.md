@@ -16,3 +16,4 @@
 2. **Halt Mutating Traffic**: If ledger corruption is suspected, activate `ContainmentAction.FREEZE_LEDGER`.
 3. **Fenced Failover**: If primary database fails, execute `DatabaseTopologyController.promote_standby(candidate_id, fence_old_primary=True)`.
 4. **Disaster Recovery**: If catastrophic corruption occurred, execute `./scripts/restore_database.sh` with latest verified AES-256-GCM container.
+

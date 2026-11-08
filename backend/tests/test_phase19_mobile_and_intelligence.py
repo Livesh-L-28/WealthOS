@@ -107,3 +107,4 @@ def test_mobile_offline_conflict_resolution():
         server_timestamp=now,
     )
     assert res_stale == "SERVER_AUTHORITATIVE"
+

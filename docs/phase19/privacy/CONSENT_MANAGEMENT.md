@@ -13,3 +13,4 @@ Consent must be freely given, specific, informed, and unambiguous. WealthOS neve
 - `ANALYTICS_TELEMETRY`: Opt-in permission for anonymized product usage metrics.
 
 Revoking any single consent takes effect immediately across all application background processes without disrupting unrelated core capabilities.
+

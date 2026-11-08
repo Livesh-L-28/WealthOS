@@ -28,3 +28,4 @@
 - `cursor_offset`: Pagination page index.
 - `items_processed`: Successfully ingested new financial records.
 - `duplicates_skipped`: Existing records skipped via cryptographic deduplication.
+

@@ -10,3 +10,4 @@
 | **Tier 4** | AI Conversations & Insights | PostgreSQL | `copilot_messages`, `copilot_conversations` | 1 Year (Opt-out Purgeable) |
 | **Tier 5** | Ephemeral Cache & State | Redis | API Idempotency Locks, Rate Limit Buckets, User Sessions | 24 Hours – 7 Days TTL |
 | **Tier 6** | Security & Forensics | PostgreSQL | `security_audit_logs`, `system_audit_logs` | 5 Years (Immutable) |
+

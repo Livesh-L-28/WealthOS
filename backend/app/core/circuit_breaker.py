@@ -124,3 +124,4 @@ class CircuitBreaker:
             "failure_threshold": self.failure_threshold,
             "recovery_timeout_seconds": self.recovery_timeout,
         }
+

@@ -29,3 +29,4 @@ Every disaster recovery drill or restoration operation must satisfy three automa
 
 ## 2. Fail-Closed Policy
 If any single check across the three gates fails, the restored database is quarantined, the restore script exits with code 2, and no read or write traffic is permitted to touch the target database.
+

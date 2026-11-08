@@ -120,3 +120,4 @@ class DeviceRegistryService:
         )
         res = await self.session.execute(stmt)
         return res.scalar_one_or_none() is not None
+

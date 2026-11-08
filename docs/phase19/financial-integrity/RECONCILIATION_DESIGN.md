@@ -36,3 +36,4 @@ WealthOS implements a multi-level automated reconciliation architecture that mat
 1. **Immutable Match Records**: Once a reconciliation record is marked `RECONCILED`, it links the external `source_reference` with internal `journal_entry_id`.
 2. **Discrepancy Segregation**: Unmatched or disputed entries are held in an isolated state until resolved by explicit user action or offsetting correction entries.
 3. **Audit Trail**: Every discrepancy resolution generates a structured audit log entry tracking user id, timestamp, prior state, new state, and reason code.
+

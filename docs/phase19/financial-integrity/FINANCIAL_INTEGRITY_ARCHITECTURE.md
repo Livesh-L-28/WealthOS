@@ -80,3 +80,4 @@ The `FinancialIntegrityService` runs continuous, automated invariant checks acro
 | `CHECK_13` | Household Ownership Split Integrity | `HIGH` | Shared ownership percentages do not exceed 100.00%. |
 | `CHECK_14` | Market Price Freshness | `LOW` | Active portfolio instruments priced within 7 days. |
 | `CHECK_15` | Transaction Categorization | `INFO` | Posted transactions assigned valid CoA accounts. |
+

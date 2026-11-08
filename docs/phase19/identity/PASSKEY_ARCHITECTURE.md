@@ -32,3 +32,4 @@ WealthOS enforces monotonic signature counter verification during authentication
 - When an authenticator signs an assertion, it returns a 32-bit counter (`sign_count`).
 - If a received `sign_count` is less than or equal to the recorded `sign_count`, the request is immediately rejected with `AuthenticatorCloneDetectedError`.
 - An alert is raised indicating potential hardware authenticator cloning or replay attack.
+

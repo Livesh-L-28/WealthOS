@@ -23,3 +23,4 @@ SELECT pg_is_in_recovery() AS in_recovery,
 - **SLA Threshold**: Standby replication lag must remain $\le 1000.0\text{ ms}$.
 - **Circuit Breaker Action**: If a standby's lag exceeds 1000ms, the node is immediately marked degraded and removed from the active read pool. Read traffic automatically falls back to the Primary writer to prevent stale reads.
 - **Auto-Recovery**: When lag recovers below 1000ms across 3 consecutive health intervals, the standby is returned to the active read pool.
+

@@ -21,3 +21,4 @@
 - **Fail Fast**: When `OPEN`, subsequent requests are rejected instantly with `CircuitBreakerOpenError` and a `Retry-After` estimate, avoiding hung threads or connection leaks.
 - **Probe Healing**: In `HALF-OPEN`, traffic is throttled to single probe requests until 2 successful responses confirm downstream recovery.
 - **Cascading Failure Prevention**: Applied across all outbound broker APIs (Zerodha Kite, Upstox, NSE India corporate actions feeds).
+

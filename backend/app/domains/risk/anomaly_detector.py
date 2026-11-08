@@ -218,3 +218,4 @@ class MobileOfflineConflictResolver:
             return "REJECT_STALE"
 
         return "ACCEPT_CLIENT"
+

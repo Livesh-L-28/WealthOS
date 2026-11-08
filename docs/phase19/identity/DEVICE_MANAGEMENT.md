@@ -26,3 +26,4 @@ CREATE TABLE device_registries (
 ## 2. User Device Controls
 - Users can view their active devices and session locations in Security Settings.
 - Users can revoke any device with a single click. Revoking a device sets `is_trusted = False`, `is_revoked = True`, and invalidates all associated JWT refresh tokens and active sessions.
+

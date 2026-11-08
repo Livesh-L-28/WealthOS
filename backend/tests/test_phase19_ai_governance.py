@@ -123,3 +123,4 @@ def test_user_feedback_and_token_spend_aggregation():
     assert usage["total_tokens"] == (100 + 50) + (200 + 80)
     assert usage["total_prompt_tokens"] == 300
     assert usage["total_completion_tokens"] == 130
+

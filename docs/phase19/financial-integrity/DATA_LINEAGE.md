@@ -48,3 +48,4 @@ User Net Worth Snapshot (NW: 900)
 ```
 
 Through this graph, any user or auditor inspecting their Net Worth or Tax Report can click to reveal the exact raw bank statement, extraction confidence score, and intermediate journal voucher that gave rise to the value.
+

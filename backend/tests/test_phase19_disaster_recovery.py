@@ -107,3 +107,4 @@ async def test_backup_verifier_post_restore_invariants(db_session: AsyncSession)
     assert invariants["schema_version"] is not None
     assert invariants["rls_protected_tables"] >= 30
     assert invariants["is_healthy"] is True
+

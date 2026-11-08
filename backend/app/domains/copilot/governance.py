@@ -178,3 +178,4 @@ class AIGovernanceService:
             "total_tokens": total_prompt + total_completion,
             "estimated_spend_inr": round(total_cost, 2),
         }
+

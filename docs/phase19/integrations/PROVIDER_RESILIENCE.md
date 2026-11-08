@@ -11,3 +11,4 @@ External broker APIs (Zerodha Kite Connect, Upstox, MFCentral / CAMS-KFintech) a
 3. **Full Jitter Exponential Backoff**: Failed requests back off exponentially with full random jitter:
    $$\text{sleep} = \text{Uniform}(0, \min(60.0, \text{base} \times 2^{\text{attempt}}))$$
    This prevents thundering herd contention on upstream broker API gateways.
+

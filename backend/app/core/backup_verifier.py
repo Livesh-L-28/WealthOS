@@ -199,3 +199,4 @@ class BackupVerifier:
             "rls_protected_tables": rls_table_count,
             "is_healthy": is_healthy,
         }
+

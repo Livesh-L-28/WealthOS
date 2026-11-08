@@ -12,3 +12,4 @@
 | `copilot_messages` | AI Context | 1 Year (365 days) | NO | Conversational Assistant Context | YES |
 | `api_idempotency_records`| Ephemeral Cache | 7 Days | NO | Network Deduplication | YES |
 | `security_audit_logs` | Audit Trail | 5 Years (1825 days) | **YES** | SOC2 / ISO 27001 Access & Forensics | **NO** |
+

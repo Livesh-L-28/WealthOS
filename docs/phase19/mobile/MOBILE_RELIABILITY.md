@@ -5,3 +5,4 @@
 2. **Crash-Free Sessions**: $\ge 99.9\%$ across all production releases.
 3. **Memory Footprint**: Peak memory consumption kept under $150\text{ MB}$ during dense chart rendering and portfolio lot scanning.
 4. **Offline Read Readiness**: Critical financial dashboards (Net Worth, Bank Balances, Recent Transactions) render instantly from local disk cache within $100\text{ ms}$ of app launch.
+

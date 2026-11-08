@@ -38,3 +38,4 @@ Every backup generates a sidecar JSON manifest:
 ## 2. Immutability & Object Locking
 - In production S3-compatible object storage, backups are deposited with **Object Lock (Compliance Mode)** and a 90-day retention period.
 - No user, IAM role, or administrative account can delete or overwrite an existing backup artifact during the lock period.
+

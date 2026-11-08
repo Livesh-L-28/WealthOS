@@ -22,3 +22,4 @@ Automated integrations utilize cryptographically hashed tokens (`wos_<prefix>_<s
 - The plaintext key is only returned at time of issuance.
 - The backend persists only `key_prefix` (for efficient B-tree index lookup) and `key_hash` (SHA-256).
 - Keys are restricted to granular read/write scopes (`accounting:read`, `analytics:read`, `sync:write`).
+

@@ -9,3 +9,4 @@ The WealthOS AI benchmark suite continuously measures four core model performanc
 4. **Latency SLAs**:
    - 95th Percentile: $< 1,500\text{ ms}$ for standard queries.
    - 99th Percentile: $< 3,000\text{ ms}$ for multi-turn planning simulations.
+

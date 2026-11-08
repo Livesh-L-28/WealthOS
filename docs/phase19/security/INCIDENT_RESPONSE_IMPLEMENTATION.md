@@ -28,3 +28,4 @@
 
 ## 2. Invariant Evidence Preservation
 All forensic telemetry (IPs, raw requests, user-agents, stacktraces) is serialized to canonical sorted JSON and cryptographically sealed with a SHA-256 hash. This guarantees non-repudiation during post-incident external security audits or regulatory disclosures.
+

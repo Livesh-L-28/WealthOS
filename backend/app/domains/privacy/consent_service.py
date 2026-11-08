@@ -164,3 +164,4 @@ class DataConsentService:
             }
             for r in records
         ]
+
