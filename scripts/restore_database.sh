@@ -139,10 +139,16 @@ set -e
 rm -f "${DECRYPTED_FILE}"
 
 if [ "${RESTORE_EXIT_CODE}" -ne 0 ]; then
-  echo "[CRITICAL ALERT] pg_restore failed with non-zero exit code: ${RESTORE_EXIT_CODE}" >&2
-  echo "[DIAGNOSTICS] pg_restore execution log:" >&2
-  cat "${RESTORE_LOG}" >&2
-  exit "${RESTORE_EXIT_CODE}"
+  # Tolerate harmless client version configuration parameter differences (e.g. transaction_timeout introduced in pg17)
+  if grep -q 'unrecognized configuration parameter "transaction_timeout"' "${RESTORE_LOG}" && \
+     [ "$(grep -c 'ERROR:' "${RESTORE_LOG}" || true)" -eq 1 ]; then
+    echo "[INFO] Ignored harmless client version difference: unrecognized parameter 'transaction_timeout'."
+  else
+    echo "[CRITICAL ALERT] pg_restore failed with non-zero exit code: ${RESTORE_EXIT_CODE}" >&2
+    echo "[DIAGNOSTICS] pg_restore execution log:" >&2
+    cat "${RESTORE_LOG}" >&2
+    exit "${RESTORE_EXIT_CODE}"
+  fi
 fi
 
 # Verify no fatal errors hidden in output log
