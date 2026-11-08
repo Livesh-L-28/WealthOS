@@ -176,3 +176,4 @@ async def list_approval_events(
     service = DocumentIntelligenceService(session)
     events = await service.list_approval_events(context.tenant.id, document_id)
     return [DocumentApprovalEventResponse.model_validate(ev) for ev in events]
+

@@ -112,3 +112,4 @@ classDiagram
 | `POST` | `/api/v1/budgets/{id}/rollover` | Execute surplus/deficit rollover to next period | Tenant Context (JWT) |
 | `GET` | `/api/v1/budgets/analytics/trends` | Monthly expense trends and category concentration | Tenant Context (JWT) |
 | `GET` | `/api/v1/budgets/alerts` | List triggered budget threshold alerts | Tenant Context (JWT) |
+

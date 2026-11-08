@@ -67,3 +67,4 @@ Before any data can be accepted into your records, WealthOS runs deterministic m
 - AI extractions **never post directly to your ledger**.
 - Extracted records appear in `READY_FOR_APPROVAL` or `NEEDS_REVIEW` status.
 - Inspect the figures, run the **Reconciliation Matcher** to link with existing bank transactions, and click **Approve & Post to GL** to create balanced double-entry vouchers with an immutable audit log.
+

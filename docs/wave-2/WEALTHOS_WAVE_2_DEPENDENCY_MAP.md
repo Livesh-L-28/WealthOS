@@ -53,3 +53,4 @@ graph TD
 - **No Direct Posting:** Documents flow: `Upload` $\to$ `Quarantine` $\to$ `OCR Extraction` $\to$ `Deterministic Validation` $\to$ `Reconciliation Matching` $\to$ `Human Review` $\to$ `Explicit Approval` $\to$ `Accounting Posting`.
 - **Reconciliation Reuse:** Document-extracted records are matched against internal ledger and cash transactions using existing `FinancialControlService` tolerance rules ($\pm 3$ days, exact amount).
 - **Audit & Provenance:** Every extracted line item retains source document ID, page number, bounding box, confidence score, and raw text.
+

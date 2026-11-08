@@ -49,3 +49,4 @@ All three domains are fully integrated with the General Ledger (`accounts`, `jou
    - Bank statement uploads are verified via arithmetic invariants ($\text{Opening} + \text{Credits} - \text{Debits} == \text{Closing}$).
    - OCR/AI extractions are segregated in `document_extractions` and cannot write directly to the ledger without human approval.
    - User approval triggers controlled creation of balanced journal vouchers with permanent audit logging in `document_approval_events`.
+

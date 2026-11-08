@@ -200,3 +200,4 @@ class ExpenseTrendsResponse(BaseModel):
     trends: list[ExpenseTrendItem]
     top_merchants: list[dict[str, Any]]
     unusual_expenses: list[dict[str, Any]]
+

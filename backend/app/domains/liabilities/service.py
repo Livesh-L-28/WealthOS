@@ -566,3 +566,4 @@ class LiabilityService:
                 LoanPaymentScheduleResponse.model_validate(s) for s in upcoming_schedules
             ],
         )
+

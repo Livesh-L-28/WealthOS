@@ -58,3 +58,4 @@ All 8 primary capability suites for Phase 5 (Liability & Debt Management) have b
 - `POST /api/v1/liabilities/{liability_id}/simulate-prepayment` — Prepayment calculator
 - `POST /api/v1/liabilities/credit-cards/statements` — Register card statement
 - `GET /api/v1/liabilities/{liability_id}/statements` — List card statements
+

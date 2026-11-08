@@ -66,3 +66,4 @@ Total tables in database: **60 tables**, all tenant-scoped tables protected by P
 3. **No Float Arithmetic:** All currency and monetary calculations strictly use Python `Decimal` and PostgreSQL `Numeric(18, 4)` or `Numeric(28, 4)`.
 4. **Transfer Neutrality:** Transfers between owned accounts must never inflate income or expense.
 5. **No Direct General Ledger Writes from AI/OCR:** Document extraction outputs are staged in review state; posting requires explicit approval via validated domain services.
+

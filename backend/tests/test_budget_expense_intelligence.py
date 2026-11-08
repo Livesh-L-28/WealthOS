@@ -426,3 +426,4 @@ async def test_budget_live_rest_api_endpoints(
     assert trends_res.status_code == 200, trends_res.text
     trends_data = trends_res.json()
     assert "top_merchants" in trends_data
+

@@ -15,3 +15,4 @@ __all__ = [
     "FinancialDocument",
     "documents_router",
 ]
+

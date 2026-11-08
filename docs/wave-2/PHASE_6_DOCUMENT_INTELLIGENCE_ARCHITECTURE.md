@@ -112,3 +112,4 @@ When a user approves an extraction via `POST /api/v1/documents/{document_id}/ext
    - Credit: Bank Settlement Account.
    - Invariant: $\sum\text{Dr} - \sum\text{Cr} = 0.0000$.
 3. Document status transitions to `APPROVED` and subsequently `POSTED`.
+

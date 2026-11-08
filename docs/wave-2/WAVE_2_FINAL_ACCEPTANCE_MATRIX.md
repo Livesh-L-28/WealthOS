@@ -65,3 +65,4 @@
 - **General Ledger Single Source of Truth:** 100% compliant. No parallel unverified ledgers.
 - **Tenant Isolation Invariant:** 100% compliant. `FORCE ROW LEVEL SECURITY` active on all tenant tables.
 - **Regression Invariant:** 100% compliant. 251/251 Pytest + 35/35 Vitest + 48/48 Playwright passed.
+

@@ -212,3 +212,4 @@ class BudgetRepository:
             stmt = stmt.where(BudgetAlert.allocation_id == allocation_id)
         result = await self.session.execute(stmt)
         return result.scalars().first()
+

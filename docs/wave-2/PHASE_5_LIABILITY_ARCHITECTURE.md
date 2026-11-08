@@ -143,3 +143,4 @@ Users with multiple debts can evaluate repayment acceleration options:
 Given an active liability:
 - **Scenario A (Tenure Reduction):** Keep monthly EMI identical; apply lump sum or recurring extra prepayment directly to principal. Calculate how many months earlier the loan closes and the exact cumulative interest saved.
 - **Scenario B (EMI Reduction):** Recalculate monthly EMI with the reduced principal over the original remaining tenure. Calculate monthly cash-flow relief.
+

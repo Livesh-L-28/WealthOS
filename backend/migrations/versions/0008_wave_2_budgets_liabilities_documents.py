@@ -308,3 +308,4 @@ def downgrade() -> None:
     op.execute("DROP TABLE IF EXISTS loan_payment_schedules CASCADE;")
     op.execute("DROP TABLE IF EXISTS budget_alerts CASCADE;")
     op.execute("DROP TABLE IF EXISTS budget_revisions CASCADE;")
+

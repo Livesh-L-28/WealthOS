@@ -133,3 +133,4 @@ class DocumentApprovalEvent(Base, UUIDPrimaryKeyMixin):
 
     document: Mapped["FinancialDocument"] = relationship("FinancialDocument", back_populates="approval_events")
     extraction: Mapped["DocumentExtraction"] = relationship("DocumentExtraction", back_populates="approval_events")
+

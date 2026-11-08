@@ -37,3 +37,4 @@ pie title Automated Test Baseline (312 Tests)
 ## 2. Zero-Regression Covenant
 
 Wave 2 implementation must strictly preserve all 312 passing test assertions. Any change that causes a regression in Wave 1 or earlier functionality must immediately fail closed.
+

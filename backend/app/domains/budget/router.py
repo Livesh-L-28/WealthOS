@@ -256,3 +256,4 @@ async def execute_rollover(
     except ValueError as e:
         await session.rollback()
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+

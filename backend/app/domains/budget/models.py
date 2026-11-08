@@ -189,3 +189,4 @@ class BudgetAlert(Base, UUIDPrimaryKeyMixin):
 
     budget: Mapped["Budget"] = relationship("Budget", back_populates="alerts")
     allocation: Mapped["BudgetAllocation | None"] = relationship("BudgetAllocation")
+

@@ -53,3 +53,4 @@ All 8 primary capability suites for Phase 6 (Universal Financial Document Intell
 - `GET /api/v1/documents/{document_id}/extractions/{extraction_id}/reconcile` — Match extraction against ledger
 - `POST /api/v1/documents/{document_id}/extractions/{extraction_id}/approve` — Human approval/rejection & controlled posting
 - `GET /api/v1/documents/{document_id}/approval-events` — Audit trail of review actions
+
