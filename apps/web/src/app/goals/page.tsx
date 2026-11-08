@@ -18,6 +18,8 @@ import {
   Layers,
   ChevronRight,
   TrendingDown,
+  Calculator,
+  Compass,
 } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -25,7 +27,7 @@ import { Badge } from '@/components/ui/Badge';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { CreateGoalModal, NewGoalData } from '@/components/modals/CreateGoalModal';
 
-type GoalsTab = 'MILESTONES' | 'EMERGENCY_RUNWAY' | 'DEBT_PAYOFF' | 'PASSIVE_INCOME';
+type GoalsTab = 'MILESTONES' | 'EMERGENCY_RUNWAY' | 'RETIREMENT' | 'DEBT_PAYOFF' | 'PASSIVE_INCOME';
 
 interface GoalItem {
   id: string;
@@ -35,6 +37,8 @@ interface GoalItem {
   targetDate: string;
   monthlyContribution: number;
   currency: string;
+  category?: string;
+  inflationRate?: number;
 }
 
 interface DebtItem {
@@ -55,6 +59,8 @@ const GOALS_DATA: GoalItem[] = [
     targetDate: '2027-03-31',
     monthlyContribution: 35000.0,
     currency: 'INR',
+    category: 'EMERGENCY',
+    inflationRate: 0.06,
   },
   {
     id: 'g-2',
@@ -64,6 +70,8 @@ const GOALS_DATA: GoalItem[] = [
     targetDate: '2028-12-31',
     monthlyContribution: 50000.0,
     currency: 'INR',
+    category: 'HOUSING',
+    inflationRate: 0.07,
   },
   {
     id: 'g-3',
@@ -73,6 +81,8 @@ const GOALS_DATA: GoalItem[] = [
     targetDate: '2029-06-30',
     monthlyContribution: 35000.0,
     currency: 'INR',
+    category: 'SAVINGS',
+    inflationRate: 0.06,
   },
   {
     id: 'g-4',
@@ -82,6 +92,8 @@ const GOALS_DATA: GoalItem[] = [
     targetDate: '2034-08-31',
     monthlyContribution: 40000.0,
     currency: 'INR',
+    category: 'EDUCATION',
+    inflationRate: 0.10,
   },
 ];
 
@@ -118,6 +130,7 @@ export default function GoalsPage() {
   const [debts] = useState<DebtItem[]>(DEBTS_DATA);
   const [debtStrategy, setDebtStrategy] = useState<'AVALANCHE' | 'SNOWBALL'>('AVALANCHE');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [adjustForInflation, setAdjustForInflation] = useState(true);
 
   const handleGoalCreated = (newG: NewGoalData) => {
     const record: GoalItem = {
@@ -128,6 +141,8 @@ export default function GoalsPage() {
       targetDate: newG.targetDate,
       monthlyContribution: newG.monthlyContribution,
       currency: 'INR',
+      category: 'SAVINGS',
+      inflationRate: 0.06,
     };
     setGoals((prev) => [record, ...prev]);
   };
@@ -168,7 +183,7 @@ export default function GoalsPage() {
             </Badge>
           </div>
           <p className="text-xs text-[#758078] mt-1">
-            Emergency runway gauges, goal milestone trajectories, debt acceleration engines, and passive yield streams.
+            Emergency runway gauges, goal milestone trajectories, retirement modeling, debt payoff engines, and passive yield streams.
           </p>
         </div>
 
@@ -189,6 +204,14 @@ export default function GoalsPage() {
             }`}
           >
             Emergency Runway
+          </button>
+          <button
+            onClick={() => setActiveTab('RETIREMENT')}
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition ${
+              activeTab === 'RETIREMENT' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+            }`}
+          >
+            Retirement Planning
           </button>
           <button
             onClick={() => setActiveTab('DEBT_PAYOFF')}
@@ -222,18 +245,55 @@ export default function GoalsPage() {
       {/* VIEW 1: MILESTONES */}
       {activeTab === 'MILESTONES' && (
         <div className="space-y-6">
+          {/* Inflation Toggle Control */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-white border border-[#E7ECE8] shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#16A36A]/10 flex items-center justify-center text-[#16A36A]">
+                <Calculator className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-[#17231D]">Inflation-Compounded Wealth Projections</h3>
+                <p className="text-xs text-[#758078]">
+                  Accounts for sector-specific price escalation (Education 10%, Housing 7%, General 6%) to calculate real purchasing power targets.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-[#758078]">Adjust for Inflation</span>
+              <button
+                type="button"
+                onClick={() => setAdjustForInflation(!adjustForInflation)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  adjustForInflation ? 'bg-[#16A36A]' : 'bg-[#D1D9D3]'
+                }`}
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    adjustForInflation ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
-                  Total Milestone Goal
+                  Total Milestone Goal {adjustForInflation && '(Inflation-Adjusted)'}
                 </span>
                 <Target className="w-4 h-4 text-[#16A36A]" />
               </div>
               <p className="text-2xl font-bold text-[#17231D] mt-2">
-                ₹{totalTarget.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                ₹{goals.reduce((sum, g) => {
+                  const years = Math.max(0.5, (new Date(g.targetDate).getTime() - new Date().getTime()) / (365.25 * 24 * 3600 * 1000));
+                  const adj = adjustForInflation ? g.targetAmount * Math.pow(1 + (g.inflationRate || 0.06), years) : g.targetAmount;
+                  return sum + adj;
+                }, 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
               </p>
-              <p className="text-[11px] text-[#758078] mt-1">Sum of 4 active wealth milestones</p>
+              <p className="text-[11px] text-[#758078] mt-1">
+                {adjustForInflation ? 'Real purchasing power required at maturity' : 'Nominal baseline target sum'}
+              </p>
             </Card>
 
             <Card>
@@ -247,7 +307,7 @@ export default function GoalsPage() {
                 ₹{totalSaved.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </p>
               <p className="text-[11px] text-emerald-400 mt-1">
-                {overallProgress.toFixed(1)}% of total targets achieved
+                {overallProgress.toFixed(1)}% of nominal targets accumulated
               </p>
             </Card>
 
@@ -258,51 +318,98 @@ export default function GoalsPage() {
                 </span>
                 <Sparkles className="w-4 h-4 text-amber-400" />
               </div>
-              <p className="text-2xl font-bold text-amber-300 mt-2">
+              <p className="text-2xl font-bold text-amber-500 mt-2">
                 ₹{goals.reduce((sum, g) => sum + g.monthlyContribution, 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}/mo
               </p>
-              <p className="text-[11px] text-[#758078] mt-1">Required systematic savings velocity</p>
+              <p className="text-[11px] text-[#758078] mt-1">Systematic monthly investment velocity</p>
             </Card>
           </div>
 
           <Card>
             <CardHeader
-              title="Active Goals & Milestone Progress"
-              subtitle="Projected date attainment based on current monthly contribution velocity"
+              title="Active Goals & Feasibility Assessment"
+              subtitle="Deterministic feasibility classification under inflation compounding and expected return modeling"
             />
-            <div className="space-y-6">
+            <div className="space-y-6 mt-4">
               {goals.map((g) => {
-                const pct = Math.min((g.currentAmount / g.targetAmount) * 100, 100);
+                const years = Math.max(0.5, (new Date(g.targetDate).getTime() - new Date().getTime()) / (365.25 * 24 * 3600 * 1000));
+                const infRate = g.inflationRate || 0.06;
+                const targetDisplay = adjustForInflation ? g.targetAmount * Math.pow(1 + infRate, years) : g.targetAmount;
+                const pct = Math.min((g.currentAmount / targetDisplay) * 100, 100);
+
+                // Projections
+                const rMonthly = 0.10 / 12;
+                const nMonths = years * 12;
+                const compoundM = Math.pow(1 + rMonthly, nMonths);
+                const projWealth = g.currentAmount * compoundM + g.monthlyContribution * ((compoundM - 1) / rMonthly);
+                const ratio = projWealth / targetDisplay;
+
+                let feasibility: 'ON_TRACK' | 'NEEDS_ADJUSTMENT' | 'AT_RISK' = 'ON_TRACK';
+                let feasBadgeVariant: 'positive' | 'warning' | 'negative' = 'positive';
+                let feasLabel = 'ON TRACK';
+
+                if (ratio >= 0.95) {
+                  feasibility = 'ON_TRACK';
+                  feasBadgeVariant = 'positive';
+                  feasLabel = 'ON TRACK';
+                } else if (ratio >= 0.75) {
+                  feasibility = 'NEEDS_ADJUSTMENT';
+                  feasBadgeVariant = 'warning';
+                  feasLabel = 'NEEDS ADJUSTMENT';
+                } else {
+                  feasibility = 'AT_RISK';
+                  feasBadgeVariant = 'negative';
+                  feasLabel = 'AT RISK';
+                }
+
+                // Required monthly savings
+                const remNeeded = Math.max(0, targetDisplay - g.currentAmount * compoundM);
+                const reqPmt = remNeeded > 0 ? remNeeded / ((compoundM - 1) / rMonthly) : 0;
 
                 return (
                   <div
                     key={g.id}
-                    className="space-y-3 p-4 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8]"
+                    className="space-y-3 p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                       <div>
-                        <h4 className="text-sm font-semibold text-[#17231D]">{g.name}</h4>
-                        <p className="text-xs text-[#758078] flex items-center gap-1 mt-0.5">
-                          <Calendar className="w-3.5 h-3.5" /> Target Date: {g.targetDate} &bull; Monthly: ₹{g.monthlyContribution.toLocaleString('en-IN')}
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-sm font-semibold text-[#17231D]">{g.name}</h4>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white text-[#758078] border border-[#E7ECE8] font-medium">
+                            {g.category || 'SAVINGS'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#758078] flex items-center gap-1 mt-1">
+                          <Calendar className="w-3.5 h-3.5" /> Target Date: {g.targetDate} &bull; Monthly: ₹{g.monthlyContribution.toLocaleString('en-IN')}/mo
+                          {adjustForInflation && ` • ${years.toFixed(1)}y horizon @ ${(infRate * 100).toFixed(0)}% inflation`}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant={pct >= 75 ? 'positive' : 'brand'} size="sm">
-                          {pct.toFixed(1)}% Completed
+                        <Badge variant={feasBadgeVariant} size="sm">
+                          {feasLabel}
+                        </Badge>
+                        <Badge variant="brand" size="sm">
+                          {pct.toFixed(1)}% Accumulated
                         </Badge>
                       </div>
                     </div>
 
-                    <div className="w-full bg-[#F0F4F1] rounded-full h-2.5 overflow-hidden">
+                    <div className="w-full bg-[#E7ECE8] rounded-full h-2.5 overflow-hidden">
                       <div
                         className="bg-[#16A36A] h-2.5 rounded-full transition-all duration-500"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
 
-                    <div className="flex justify-between text-xs font-mono text-[#758078]">
-                      <span>Accumulated: ₹{g.currentAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                      <span>Target: ₹{g.targetAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    <div className="flex flex-col sm:flex-row justify-between text-xs text-[#758078] gap-1">
+                      <span>Accumulated: <strong className="text-[#17231D]">₹{g.currentAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong></span>
+                      <span>
+                        Target: <strong className="text-[#17231D]">₹{targetDisplay.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</strong>
+                        {adjustForInflation && ` (Nominal: ₹${g.targetAmount.toLocaleString('en-IN')})`}
+                      </span>
+                      <span>
+                        Required Savings: <strong className={reqPmt > g.monthlyContribution ? 'text-amber-600' : 'text-[#16A36A]'}>₹{reqPmt.toLocaleString('en-IN', { maximumFractionDigits: 0 })}/mo</strong>
+                      </span>
                     </div>
                   </div>
                 );
@@ -339,7 +446,7 @@ export default function GoalsPage() {
               <p className="text-2xl font-bold text-rose-400 mt-2">
                 ₹{monthlyBurn.toLocaleString('en-IN', { minimumFractionDigits: 2 })}/mo
               </p>
-              <p className="text-[11px] text-[#758078] mt-1">Essential non-discretionary living costs</p>
+              <p className="text-[11px] text-[#758078] mt-1">Essential living costs + mandatory loan EMIs</p>
             </Card>
 
             <Card>
@@ -352,100 +459,192 @@ export default function GoalsPage() {
               <p className="text-2xl font-bold text-[#087A50] mt-2">
                 {runwayMonths.toFixed(1)} Months
               </p>
-              <p className="text-[11px] text-amber-400 mt-1">
-                Target: 6.0 Months (₹{(targetEmergencyFund - liquidCash).toLocaleString('en-IN')} gap)
-              </p>
+              <p className="text-[11px] text-amber-500 mt-1">Target benchmark: 6.0 months runway</p>
             </Card>
           </div>
 
           <Card>
             <CardHeader
-              title="Runway Health Gauge & Stress-Test"
-              subtitle="Simulation of unexpected income interruption without selling long-term equity or mutual funds"
+              title="Emergency Fund Defense Gauge"
+              subtitle="Deterministic protection buffer shielding investments against forced liquidation during cash shocks"
             />
-            <div className="p-4 bg-[#F7F9F7] rounded-xl border border-[#E7ECE8] space-y-4">
+            <div className="space-y-4 mt-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#4A554E] font-semibold">Emergency Fund Fill Level</span>
-                <span className="font-mono text-emerald-400 font-bold">{((liquidCash / targetEmergencyFund) * 100).toFixed(1)}%</span>
+                <span className="text-[#758078]">Current Liquidity: ₹{liquidCash.toLocaleString('en-IN')}</span>
+                <span className="text-[#17231D] font-bold">Goal (6 Months): ₹{targetEmergencyFund.toLocaleString('en-IN')}</span>
               </div>
-              <div className="w-full bg-[#F0F4F1] rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-[#E7ECE8] rounded-full h-3 overflow-hidden">
                 <div
-                  className="bg-emerald-500 h-3 rounded-full"
+                  className="bg-[#16A36A] h-3 rounded-full transition-all duration-500"
                   style={{ width: `${Math.min((liquidCash / targetEmergencyFund) * 100, 100)}%` }}
                 />
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-xs pt-2 border-t border-[#E7ECE8]">
-                <div className="p-2 rounded bg-rose-500/10 border border-rose-500/20">
-                  <span className="text-rose-400 font-bold block">&lt; 3 Months</span>
-                  <span className="text-[10px] text-[#758078]">High Risk</span>
+              <p className="text-xs text-[#758078]">
+                Funding gap to 6-month buffer: <strong>₹{(targetEmergencyFund - liquidCash).toLocaleString('en-IN')}</strong>. Priority allocation will protect compounding portfolios.
+              </p>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* VIEW 3: RETIREMENT PLANNING */}
+      {activeTab === 'RETIREMENT' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">Target Corpus</span>
+                <Compass className="w-4 h-4 text-[#16A36A]" />
+              </div>
+              <p className="text-2xl font-bold text-[#17231D] mt-2">₹3.58 Cr</p>
+              <p className="text-[11px] text-[#758078] mt-1">Actuarial Annuity Due (85 yrs)</p>
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">Projected Corpus</span>
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+              </div>
+              <p className="text-2xl font-bold text-emerald-600 mt-2">₹3.12 Cr</p>
+              <p className="text-[11px] text-emerald-600 mt-1">87.1% Retirement Readiness</p>
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">Day 1 Monthly Expense</span>
+                <Flame className="w-4 h-4 text-amber-500" />
+              </div>
+              <p className="text-2xl font-bold text-amber-600 mt-2">₹3.45 L/mo</p>
+              <p className="text-[11px] text-[#758078] mt-1">₹60k escalated @ 6% over 30 yrs</p>
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">Required Contribution</span>
+                <Sparkles className="w-4 h-4 text-[#16A36A]" />
+              </div>
+              <p className="text-2xl font-bold text-[#087A50] mt-2">₹28,450/mo</p>
+              <p className="text-[11px] text-[#758078] mt-1">Current velocity: ₹20,000/mo</p>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader
+              title="Actuarial Drawdown & Corpus Feasibility"
+              subtitle="Compounded growth over 30-year accumulation and 25-year post-retirement drawdown"
+            />
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] space-y-4 mt-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <span className="text-[#758078]">Current Age</span>
+                  <p className="text-sm font-bold text-[#17231D]">30 Years</p>
                 </div>
-                <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20">
-                  <span className="text-amber-400 font-bold block">3 – 6 Months</span>
-                  <span className="text-[10px] text-[#758078]">Current Level ({runwayMonths.toFixed(1)}m)</span>
+                <div>
+                  <span className="text-[#758078]">Retirement Age</span>
+                  <p className="text-sm font-bold text-[#17231D]">60 Years</p>
                 </div>
-                <div className="p-2 rounded bg-emerald-500/10 border border-emerald-500/20">
-                  <span className="text-emerald-400 font-bold block">6 – 12 Months</span>
-                  <span className="text-[10px] text-[#758078]">Fortress Solvency</span>
+                <div>
+                  <span className="text-[#758078]">Pre-Retirement Return</span>
+                  <p className="text-sm font-bold text-[#17231D]">10.0% p.a.</p>
                 </div>
+                <div>
+                  <span className="text-[#758078]">Post-Retirement Return</span>
+                  <p className="text-sm font-bold text-[#17231D]">7.0% p.a. (Real: 0.94%)</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-white border border-[#E7ECE8] flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Badge variant="warning">NEEDS ADJUSTMENT</Badge>
+                  <span className="text-xs text-[#4A554E]">
+                    Increasing monthly contributions by <strong>₹8,450/mo</strong> bridges the ₹46.4 Lakhs funding gap to 100% independence.
+                  </span>
+                </div>
+                <Button variant="primary" size="sm">
+                  Run Detailed What-If Simulator
+                </Button>
               </div>
             </div>
           </Card>
         </div>
       )}
 
-      {/* VIEW 3: DEBT PAYOFF ENGINE */}
+      {/* VIEW 4: DEBT PAYOFF */}
       {activeTab === 'DEBT_PAYOFF' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <div>
-              <h3 className="text-sm font-semibold text-[#17231D]">Payoff Strategy Optimizer</h3>
-              <p className="text-xs text-[#758078]">Choose between mathematical interest savings or behavioral momentum</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setDebtStrategy('AVALANCHE')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  debtStrategy === 'AVALANCHE'
-                    ? 'bg-[#16A36A] text-white'
-                    : 'bg-[#F0F4F1] text-[#758078] hover:text-[#17231D]'
-                }`}
-              >
-                Avalanche (Highest APR First)
-              </button>
-              <button
-                onClick={() => setDebtStrategy('SNOWBALL')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                  debtStrategy === 'SNOWBALL'
-                    ? 'bg-[#16A36A] text-white'
-                    : 'bg-[#F0F4F1] text-[#758078] hover:text-[#17231D]'
-                }`}
-              >
-                Snowball (Lowest Balance First)
-              </button>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+                  Total Debt Obligation
+                </span>
+                <ShieldAlert className="w-4 h-4 text-rose-400" />
+              </div>
+              <p className="text-2xl font-bold text-rose-400 mt-2">
+                ₹{totalDebt.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </p>
+              <p className="text-[11px] text-[#758078] mt-1">Across {debts.length} outstanding credit facilities</p>
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+                  Total Monthly EMI
+                </span>
+                <DollarSign className="w-4 h-4 text-amber-400" />
+              </div>
+              <p className="text-2xl font-bold text-amber-500 mt-2">
+                ₹{debts.reduce((sum, d) => sum + d.minMonthlyPayment, 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}/mo
+              </p>
+              <p className="text-[11px] text-[#758078] mt-1">Mandatory monthly debt-service burden</p>
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+                  Payoff Acceleration Strategy
+                </span>
+                <ArrowRight className="w-4 h-4 text-[#16A36A]" />
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => setDebtStrategy('AVALANCHE')}
+                  className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                    debtStrategy === 'AVALANCHE' ? 'bg-[#16A36A] text-white' : 'bg-[#E7ECE8] text-[#758078]'
+                  }`}
+                >
+                  Avalanche (Highest APR)
+                </button>
+                <button
+                  onClick={() => setDebtStrategy('SNOWBALL')}
+                  className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                    debtStrategy === 'SNOWBALL' ? 'bg-[#16A36A] text-white' : 'bg-[#E7ECE8] text-[#758078]'
+                  }`}
+                >
+                  Snowball (Lowest Balance)
+                </button>
+              </div>
+              <p className="text-[11px] text-emerald-400 mt-1">
+                {debtStrategy === 'AVALANCHE' ? 'Saves ₹1,42,800 in total interest' : 'Maximizes psychological momentum'}
+              </p>
+            </Card>
           </div>
 
           <Card>
-            <div className="p-4 border-b border-[#E7ECE8] flex justify-between items-center">
-              <div>
-                <h2 className="text-base font-semibold text-[#17231D]">Active Debt Stack & Payoff Priority</h2>
-                <p className="text-xs text-[#758078]">Total Outstanding Liabilities: ₹{totalDebt.toLocaleString('en-IN')}</p>
-              </div>
-              <Badge variant="positive">
-                {debtStrategy === 'AVALANCHE' ? 'Saves ₹1,42,000 in Interest' : 'Fastest First Payoff'}
-              </Badge>
-            </div>
-
-            <div className="overflow-x-auto">
+            <CardHeader
+              title="Target Payoff Hierarchy"
+              subtitle={`Sorted by ${debtStrategy === 'AVALANCHE' ? 'highest APR interest saving priority' : 'smallest outstanding balance'}`}
+            />
+            <div className="overflow-x-auto mt-4">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-[#E7ECE8] text-[#758078] uppercase tracking-wider font-semibold">
-                    <th className="py-3 px-4">Priority & Liability</th>
-                    <th className="py-3 px-4">Lender</th>
-                    <th className="py-3 px-4 text-right">Interest Rate (APR)</th>
-                    <th className="py-3 px-4 text-right">Min Monthly Payment</th>
-                    <th className="py-3 px-4 text-right">Outstanding Principal</th>
-                    <th className="py-3 px-4 text-center">Status</th>
+                  <tr className="border-b border-[#E7ECE8] text-[#758078]">
+                    <th className="py-2 px-4">Priority / Liability</th>
+                    <th className="py-2 px-4">Lender</th>
+                    <th className="py-2 px-4 text-right">APR</th>
+                    <th className="py-2 px-4 text-right">Monthly EMI</th>
+                    <th className="py-2 px-4 text-right">Remaining Principal</th>
+                    <th className="py-2 px-4 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E7ECE8]">
@@ -460,7 +659,7 @@ export default function GoalsPage() {
                         </div>
                       </td>
                       <td className="py-3 px-4 text-[#758078]">{d.lender}</td>
-                      <td className="py-3 px-4 text-right font-mono font-semibold text-rose-400">
+                      <td className="py-3 px-4 text-right font-mono font-semibold text-rose-500">
                         {d.apr}%
                       </td>
                       <td className="py-3 px-4 text-right font-mono text-[#4A554E]">
@@ -472,8 +671,8 @@ export default function GoalsPage() {
                       <td className="py-3 px-4 text-center">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                           idx === 0
-                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                            : 'bg-slate-700 text-[#4A554E]'
+                            ? 'bg-rose-500/10 text-rose-600 border border-rose-500/20'
+                            : 'bg-gray-100 text-[#4A554E]'
                         }`}>
                           {idx === 0 ? 'Targeting with Extra Cash' : 'Min Payment Only'}
                         </span>
@@ -487,7 +686,7 @@ export default function GoalsPage() {
         </div>
       )}
 
-      {/* VIEW 4: PASSIVE INCOME */}
+      {/* VIEW 5: PASSIVE INCOME */}
       {activeTab === 'PASSIVE_INCOME' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -498,7 +697,7 @@ export default function GoalsPage() {
                 </span>
                 <DollarSign className="w-4 h-4 text-teal-400" />
               </div>
-              <p className="text-2xl font-bold text-teal-300 mt-2">
+              <p className="text-2xl font-bold text-teal-600 mt-2">
                 ₹{totalPassiveMonthly.toLocaleString('en-IN')}/mo
               </p>
               <p className="text-[11px] text-[#758078] mt-1">Dividends + Commercial Rental Cash Flow</p>
@@ -514,7 +713,7 @@ export default function GoalsPage() {
               <p className="text-2xl font-bold text-[#087A50] mt-2">
                 {freedomPercentage.toFixed(1)}%
               </p>
-              <p className="text-[11px] text-emerald-400 mt-1">Of baseline monthly expenses covered by assets</p>
+              <p className="text-[11px] text-emerald-600 mt-1">Of baseline monthly expenses covered by assets</p>
             </Card>
 
             <Card>

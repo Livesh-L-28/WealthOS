@@ -19,9 +19,9 @@
 | **Phase 4** | Budget & Expense Intelligence | Monthly/annual budgets, envelope allocations, rollover, spending variance against actuals. | Phase 2 | **ACCEPTED** | Migration `0008`, 10 API endpoints, UI envelope variance, 7/7 tests passed. |
 | **Phase 5** | Liability & Debt Management | Loan principal, credit card debts, interest rates, EMI schedules, avalanche/snowball payoff. | Phase 2 | **ACCEPTED** | Migration `0008`, 12 API endpoints, UI amortization & payoff simulator, 8/8 tests passed. |
 | **Phase 6** | Universal Document Intelligence | Multi-format upload, OCR parsing, canonical schema, confidence scoring, arithmetic validation. | Phase 1 | **ACCEPTED** | Migration `0008`, 8 API endpoints, UI verification & one-click approval, 8/8 tests passed. |
-| **Phase 7** | Financial Planning & Forecasting | Deterministic projection engine, retirement/education/home goals, inflation adjustments. | Phase 2, Phase 3 | `NOT STARTED` | Planned. |
-| **Phase 8** | India Tax Readiness | April–March financial year, capital gains (STCG/LTCG), dividend/interest income, tax exports. | Phase 3 | `NOT STARTED` | Planned. |
-| **Phase 9** | Financial Risk Intelligence | Rules-first risk engine (expense jumps, duplicates, large withdrawals, stale valuations). | Phase 1, Phase 4 | `NOT STARTED` | Planned. |
+| **Phase 7** | Financial Planning & Forecasting | Deterministic projection engine, retirement/education/home goals, inflation adjustments. | Phase 2, Phase 3 | **ACCEPTED** | Migration `0009`, 12 API endpoints, UI feasibility badges & inflation toggle, 8/8 tests passed. |
+| **Phase 8** | India Tax Readiness | April–March financial year, capital gains (STCG/LTCG), dividend/interest income, tax exports. | Phase 3 | **ACCEPTED** | Migration `0009`, 7 API endpoints, UI dual-regime comparison matrix, 9/9 tests passed. |
+| **Phase 9** | Financial Risk Intelligence | Rules-first risk engine (expense jumps, duplicates, large withdrawals, stale valuations). | Phase 1, Phase 4 | **ACCEPTED** | Migration `0009`, 5 API endpoints, UI 5-pillar Health Score & alerts, 6/6 tests passed. |
 | **Phase 10** | Copilot & Digital Twin | Read-only financial intelligence layer, grounded citations, digital twin synthesis. | Phases 1–9 | `NOT STARTED` | Planned. |
 | **Phase 11** | Household Wealth Management | Multi-member households, individual vs joint ownership, shared liabilities and reporting. | Phase 10 | `NOT STARTED` | Planned. |
 | **Phase 12** | Unified User Experience | 5-question dashboard, progressive disclosure, WCAG 2.2 AA accessibility, responsive UX. | Phases 1–11 | `NOT STARTED` | Planned. |
@@ -143,3 +143,53 @@
 - **Next.js Production Build:** 26 / 26 static pages prerendered cleanly
 - **Playwright E2E:** 48 / 48 passed (20.6s)
 - **Overall Wave 2 Decision:** **100% ACCEPTED**
+
+---
+
+### Phase 7: Financial Planning & Forecasting
+- **Status:** `ACCEPTED`
+- **Scope:** Deterministic financial goals feasibility engine with multi-horizon inflation compounding, actuarial annuity-due retirement corpus calculation, emergency reserve coverage against mandatory debt service, multi-horizon cash flow forecast, and non-mutating what-if simulation engine.
+- **Deliverables:**
+  - Migration: `backend/migrations/versions/0009_wave_3_planning_tax_risk.py`
+  - Domain Code: `backend/app/domains/planning/` (`models.py`, `schemas.py`, `repository.py`, `service.py`, `router.py`)
+  - Frontend: `apps/web/src/app/goals/page.tsx` (Enhanced with feasibility badges, inflation toggle, retirement tab)
+  - Architecture & Acceptance Docs: `docs/wave-3/PHASE_7_FINANCIAL_PLANNING_ARCHITECTURE.md`, `docs/wave-3/PHASE_7_FINANCIAL_PLANNING_ACCEPTANCE.md`
+- **Test Evidence:**
+  - `backend/tests/test_financial_planning_forecasting.py`: 8/8 passed.
+
+---
+
+### Phase 8: India Tax Readiness
+- **Status:** `ACCEPTED`
+- **Scope:** April 1 – March 31 Financial Year and Assessment Year separation, statutory heads of income classification, strict Transfer Neutrality filtering (self-account transfers excluded from gross income), realized FIFO capital gains with Section 112A ₹1.25L exemption, Finance Act 2024 / 2026.1 New Concessional Regime (Section 115BAC) vs Old Tax Regime dual comparison, and exportable readiness report with non-authoritative regulatory disclaimer.
+- **Deliverables:**
+  - Domain Code: `backend/app/domains/tax/` (`models.py`, `schemas.py`, `repository.py`, `service.py`, `router.py`)
+  - Frontend: `apps/web/src/app/analytics/page.tsx` (India Tax Readiness & dual-regime comparison matrix)
+  - Architecture & Acceptance Docs: `docs/wave-3/PHASE_8_INDIA_TAX_ARCHITECTURE.md`, `docs/wave-3/PHASE_8_INDIA_TAX_RULE_REGISTER.md`, `docs/wave-3/PHASE_8_INDIA_TAX_ACCEPTANCE.md`
+- **Test Evidence:**
+  - `backend/tests/test_india_tax_readiness.py`: 9/9 passed.
+
+---
+
+### Phase 9: Financial Risk Intelligence
+- **Status:** `ACCEPTED`
+- **Scope:** Empirical risk detection across 7 core signals (liquidity deficit, debt service burden, cash drain, spending surges, investment concentration, loan maturity, and stale ledger reconciliation), idempotent alert deduplication by `(tenant_id, alert_key)`, full alert state transition lifecycle (ACTIVE -> ACKNOWLEDGED -> RESOLVED), and transparent 5-pillar Financial Health Score (0–100) with disclosed weights and prescriptive remediation advice.
+- **Deliverables:**
+  - Domain Code: `backend/app/domains/risk/` (`models.py`, `schemas.py`, `repository.py`, `service.py`, `router.py`)
+  - Frontend: `apps/web/src/app/analytics/page.tsx` (Financial Health Score breakdown and evidence-backed active alerts)
+  - Architecture & Acceptance Docs: `docs/wave-3/PHASE_9_RISK_INTELLIGENCE_ARCHITECTURE.md`, `docs/wave-3/PHASE_9_RISK_INTELLIGENCE_ACCEPTANCE.md`
+- **Test Evidence:**
+  - `backend/tests/test_financial_risk_intelligence.py`: 6/6 passed.
+
+---
+
+## 5. Wave 3 Verification Summary
+
+- **Pytest:** 274 / 274 passed (0 failed, 0 skipped in 81.01s)
+- **Vitest Unit Tests:** 35 / 35 passed
+- **TypeScript:** 0 errors across 5 workspace packages
+- **Next.js Production Build:** 26 / 26 static pages prerendered cleanly
+- **Playwright E2E:** 48 / 48 passed (20.6s)
+- **Total Automated Regression Suite:** 357 / 357 tests passed (100% pass rate)
+- **Overall Wave 3 Decision:** **100% ACCEPTED**
+

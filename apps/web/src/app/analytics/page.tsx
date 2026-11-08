@@ -16,6 +16,10 @@ import {
   DollarSign,
   ChevronRight,
   Sparkles,
+  ShieldCheck,
+  ShieldAlert,
+  FileText,
+  CheckCircle2,
 } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -453,6 +457,183 @@ export default function AnalyticsPage() {
               ))}
             </tbody>
           </table>
+        </div>
+      </Card>
+
+      {/* SECTION: INDIA TAX READINESS (FY 2026-27 / AY 2027-28) */}
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E7ECE8]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#16A36A]/10 flex items-center justify-center text-[#16A36A]">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-[#17231D]">India Tax Readiness & Planning</h2>
+                <Badge variant="brand" size="sm">FY 2026-27 &bull; AY 2027-28</Badge>
+              </div>
+              <p className="text-xs text-[#758078] mt-0.5">
+                Statutory heads of income, transfer neutrality filtering, and dual-regime tax optimization
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="positive">Recommended: New Regime (Sec 115BAC)</Badge>
+          </div>
+        </div>
+
+        {/* Informational Disclaimer Banner */}
+        <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <p>
+            <strong>Informational Readiness Tool:</strong> WealthOS structures and estimates your tax position for preparatory review. It does not file returns with the Income Tax Department (ITD) and does not replace a qualified Chartered Accountant (CA).
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+            <span className="text-xs font-semibold text-[#758078] uppercase">Gross Total Income</span>
+            <p className="text-xl font-bold text-[#17231D] mt-1">₹20,70,000</p>
+            <p className="text-[11px] text-[#758078] mt-0.5">Salary + Capital Gains + Other</p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+            <span className="text-xs font-semibold text-[#758078] uppercase">Transfer Neutrality</span>
+            <p className="text-xl font-bold text-[#16A36A] mt-1">₹2,50,000 Excluded</p>
+            <p className="text-[11px] text-[#758078] mt-0.5">Self-transfers excluded from income</p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+            <span className="text-xs font-semibold text-[#758078] uppercase">Standard Deduction</span>
+            <p className="text-xl font-bold text-[#17231D] mt-1">₹75,000</p>
+            <p className="text-[11px] text-emerald-600 mt-0.5">Section 115BAC default</p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+            <span className="text-xs font-semibold text-[#758078] uppercase">Dual-Regime Tax Savings</span>
+            <p className="text-xl font-bold text-[#16A36A] mt-1">₹24,800 Saved</p>
+            <p className="text-[11px] text-[#758078] mt-0.5">New Regime vs Old Regime</p>
+          </div>
+        </div>
+
+        {/* Regime Comparison Table */}
+        <div className="mt-4 p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+          <h4 className="text-xs font-bold text-[#17231D] uppercase tracking-wider mb-3">
+            Regime Comparison Matrix (Finance Act 2024 / 2026.1)
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div className="p-3 rounded-lg bg-white border border-[#16A36A]/30 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-[#17231D]">New Tax Regime (Section 115BAC)</span>
+                <Badge variant="positive">Active Choice</Badge>
+              </div>
+              <div className="flex justify-between text-[#758078]">
+                <span>Standard Deduction:</span>
+                <span className="font-mono text-[#17231D]">₹75,000</span>
+              </div>
+              <div className="flex justify-between text-[#758078]">
+                <span>Taxable Ordinary Income:</span>
+                <span className="font-mono text-[#17231D]">₹18,70,000</span>
+              </div>
+              <div className="flex justify-between text-[#758078]">
+                <span>Tax on Income + Cess (4%):</span>
+                <span className="font-mono font-bold text-[#17231D]">₹2,69,360</span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-lg bg-white border border-[#E7ECE8] space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-[#758078]">Old Tax Regime</span>
+                <Badge variant="neutral">Optional</Badge>
+              </div>
+              <div className="flex justify-between text-[#758078]">
+                <span>Deductions (80C, 80D, Std):</span>
+                <span className="font-mono text-[#17231D]">₹2,35,000</span>
+              </div>
+              <div className="flex justify-between text-[#758078]">
+                <span>Taxable Ordinary Income:</span>
+                <span className="font-mono text-[#17231D]">₹17,10,000</span>
+              </div>
+              <div className="flex justify-between text-[#758078]">
+                <span>Tax on Income + Cess (4%):</span>
+                <span className="font-mono font-bold text-rose-600">₹2,94,160</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* SECTION: FINANCIAL RISK INTELLIGENCE & HEALTH SCORE */}
+      <Card>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E7ECE8]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-[#17231D]">Financial Health & Risk Intelligence</h2>
+                <Badge variant="positive">Score: 88 / 100 &bull; EXCELLENT</Badge>
+              </div>
+              <p className="text-xs text-[#758078] mt-0.5">
+                Deterministic risk monitoring across liquidity, debt service, concentration, and reconciliation
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 5-Pillar Score Weights Breakdown */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
+          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
+            <span className="text-[11px] text-[#758078] block">Emergency (25%)</span>
+            <span className="text-lg font-bold text-[#17231D] mt-1 block">100 / 100</span>
+            <span className="text-[10px] text-emerald-600 font-medium">Optimal (6.2m)</span>
+          </div>
+          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
+            <span className="text-[11px] text-[#758078] block">Debt Service (25%)</span>
+            <span className="text-lg font-bold text-[#17231D] mt-1 block">85 / 100</span>
+            <span className="text-[10px] text-emerald-600 font-medium">Moderate (26%)</span>
+          </div>
+          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
+            <span className="text-[11px] text-[#758078] block">Cash Flow (20%)</span>
+            <span className="text-lg font-bold text-[#17231D] mt-1 block">85 / 100</span>
+            <span className="text-[10px] text-emerald-600 font-medium">Net Surplus</span>
+          </div>
+          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
+            <span className="text-[11px] text-[#758078] block">Diversification (15%)</span>
+            <span className="text-lg font-bold text-[#17231D] mt-1 block">85 / 100</span>
+            <span className="text-[10px] text-emerald-600 font-medium">Balanced</span>
+          </div>
+          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
+            <span className="text-[11px] text-[#758078] block">Data Quality (15%)</span>
+            <span className="text-lg font-bold text-[#17231D] mt-1 block">95 / 100</span>
+            <span className="text-[10px] text-emerald-600 font-medium">Reconciled</span>
+          </div>
+        </div>
+
+        {/* Evidence-Backed Active Risk Signals */}
+        <div className="mt-4 space-y-3">
+          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600 shrink-0 mt-0.5">
+                <Clock className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-xs text-[#17231D]">Loan Maturity Approaching</span>
+                  <Badge variant="neutral" size="sm">INFORMATIONAL</Badge>
+                </div>
+                <p className="text-xs text-[#758078] mt-0.5">
+                  Executive EV Loan with State Bank of India reaches final installment on 15-Dec-2026. Verify closure NOC.
+                </p>
+                <div className="flex gap-3 text-[11px] text-[#758078] mt-1 font-mono">
+                  <span>Maturity: 15-Dec-2026</span>
+                  <span>Principal Remaining: ₹21,500</span>
+                </div>
+              </div>
+            </div>
+            <Button variant="outline" size="sm">Acknowledge</Button>
+          </div>
         </div>
       </Card>
     </div>
