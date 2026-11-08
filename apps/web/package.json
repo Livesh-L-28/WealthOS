@@ -8,7 +8,8 @@
     "start": "next start -p 3000",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "playwright test --config=playwright.config.ts"
   },
   "dependencies": {
     "@wealthos/api-client": "*",
@@ -20,6 +21,7 @@
     "react-dom": "18.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.0",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",

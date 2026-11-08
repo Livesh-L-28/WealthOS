@@ -23,6 +23,11 @@ htmlcov/
 .ruff_cache/
 .mypy_cache/
 
+# Test artifacts
+test-results/
+playwright-report/
+e2e-report.json
+
 # System
 .DS_Store
 Thumbs.db

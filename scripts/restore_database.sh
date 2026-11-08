@@ -186,15 +186,54 @@ if [ "${UNBALANCED_COUNT}" -ne 0 ]; then
 fi
 echo "[INFO] Post-restore General Ledger balance verified: 0 unbalanced entries."
 
-# 8. Post-Restore Verification Gate 3: Row-Level Security Policy Enforcement
-RLS_COUNT=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "
-  SELECT count(*) FROM pg_tables WHERE schemaname = 'public' AND rowsecurity = true;
+# 8. Post-Restore Verification Gate 3: Row-Level Security Policy Enforcement & Behavioral Audit
+RLS_STATS=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "
+  SELECT 
+    COUNT(*) FILTER (WHERE relrowsecurity = true) || ':' ||
+    COUNT(*) FILTER (WHERE relforcerowsecurity = true)
+  FROM pg_class c 
+  JOIN pg_namespace n ON n.oid = c.relnamespace 
+  WHERE n.nspname = 'public' AND c.relkind = 'r';
 ")
-if [ "${RLS_COUNT}" -lt 40 ]; then
-  echo "[CRITICAL FAILURE] Incomplete RLS policy restoration! Only ${RLS_COUNT} tables have RLS enabled (expected >= 40)." >&2
+RLS_ENABLED_COUNT=$(echo "${RLS_STATS}" | cut -d: -f1)
+RLS_FORCED_COUNT=$(echo "${RLS_STATS}" | cut -d: -f2)
+
+if [ "${RLS_ENABLED_COUNT}" -lt 40 ] || [ "${RLS_FORCED_COUNT}" -lt 40 ]; then
+  echo "[CRITICAL FAILURE] Incomplete RLS policy restoration! ${RLS_ENABLED_COUNT} enabled, ${RLS_FORCED_COUNT} forced (expected >= 40)." >&2
   exit 2
 fi
-echo "[INFO] Post-restore Row-Level Security verified: ${RLS_COUNT} tables active."
+echo "[INFO] Post-restore Row-Level Security verified: ${RLS_ENABLED_COUNT} enabled, ${RLS_FORCED_COUNT} forced tables."
+
+# Ensure standard application privileges are established post-restore
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -c "
+  GRANT USAGE ON SCHEMA public TO wealthos_app;
+  GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO wealthos_app;
+  GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO wealthos_app;
+" > /dev/null 2>&1 || true
+
+# Behavioral RLS Denial Verification under non-superuser application role
+CROSS_TENANT_COUNT=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "
+  SET ROLE wealthos_app;
+  SELECT count(*) FROM accounts;
+" 2>&1 | tail -n 1)
+
+if [ "${CROSS_TENANT_COUNT}" != "0" ]; then
+  echo "[CRITICAL FAILURE] Behavioral RLS leak! Role 'wealthos_app' read ${CROSS_TENANT_COUNT} records without tenant context." >&2
+  exit 2
+fi
+echo "[INFO] Behavioral RLS isolation verified: zero cross-tenant records exposed to 'wealthos_app'."
+
+# Verification that application role cannot disable RLS or bypass policies
+CAN_DISABLE_RLS=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -c "
+  SET ROLE wealthos_app;
+  ALTER TABLE accounts DISABLE ROW LEVEL SECURITY;
+" 2>&1 || true)
+
+if ! echo "${CAN_DISABLE_RLS}" | grep -qEi "must be owner|permission denied|denied"; then
+  echo "[CRITICAL FAILURE] Application role 'wealthos_app' was able to alter RLS!" >&2
+  exit 2
+fi
+echo "[INFO] Defense-in-depth verified: role 'wealthos_app' cannot disable RLS."
 
 # 9. Post-Restore Verification Gate 4: Foreign-Key Referential Integrity
 FK_VIOLATIONS=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "

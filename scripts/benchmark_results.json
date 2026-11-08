@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-11-08T05:32:32Z",
+  "target_base_url": "http://localhost:8000",
+  "iterations": 100,
+  "warmup": 10,
+  "results": [
+    {
+      "endpoint": "Liveness Probe (/health/live)",
+      "method": "GET",
+      "url": "http://localhost:8000/health/live",
+      "iterations": 100,
+      "warmup": 10,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 731.73,
+      "latency_ms": {
+        "min": 1.16,
+        "mean": 1.35,
+        "p50": 1.33,
+        "p90": 1.43,
+        "p95": 1.51,
+        "p99": 1.66,
+        "max": 3.07,
+        "std_dev": 0.19
+      }
+    },
+    {
+      "endpoint": "Readiness Probe (/health/ready)",
+      "method": "GET",
+      "url": "http://localhost:8000/health/ready",
+      "iterations": 100,
+      "warmup": 10,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 242.93,
+      "latency_ms": {
+        "min": 3.37,
+        "mean": 4.09,
+        "p50": 3.84,
+        "p90": 4.33,
+        "p95": 4.62,
+        "p99": 9.24,
+        "max": 9.55,
+        "std_dev": 0.99
+      }
+    },
+    {
+      "endpoint": "Detailed Health Probe (/api/v1/health)",
+      "method": "GET",
+      "url": "http://localhost:8000/api/v1/health",
+      "iterations": 100,
+      "warmup": 10,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 166.3,
+      "latency_ms": {
+        "min": 5.3,
+        "mean": 5.97,
+        "p50": 5.89,
+        "p90": 6.25,
+        "p95": 6.75,
+        "p99": 8.75,
+        "max": 9.74,
+        "std_dev": 0.58
+      }
+    },
+    {
+      "endpoint": "Authenticated User Profile (/api/v1/auth/me)",
+      "method": "GET",
+      "url": "http://localhost:8000/api/v1/auth/me",
+      "iterations": 100,
+      "warmup": 10,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 199.54,
+      "latency_ms": {
+        "min": 4.29,
+        "mean": 4.97,
+        "p50": 4.81,
+        "p90": 5.16,
+        "p95": 5.22,
+        "p99": 6.16,
+        "max": 17.92,
+        "std_dev": 1.33
+      }
+    }
+  ]
+}
