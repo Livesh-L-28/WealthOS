@@ -8,6 +8,7 @@ import {
   PlusCircle,
   TrendingDown,
   ShieldAlert,
+  ShieldCheck,
   Calendar,
   Sparkles,
   AlertCircle,
@@ -17,6 +18,13 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { CreateBudgetModal, NewBudgetData } from '@/components/modals/CreateBudgetModal';
+import {
+  ChartContainer,
+  FinancialTableFallback,
+  FinancialHorizontalBarChart,
+  HorizontalBarItem,
+} from '@/components/charts';
+import { formatCurrency, formatPercentage } from '@/lib/formatters';
 
 interface BudgetCategory {
   id: string;
@@ -72,6 +80,29 @@ export default function BudgetsPage() {
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
   const overallUtilization = totalAllocated > 0 ? (totalSpent / totalAllocated) * 100 : 0;
   const surplus = totalAllocated - totalSpent;
+
+  const budgetTableColumns = [
+    { key: 'category', label: 'Budget Envelope' },
+    { key: 'allocated', label: 'Allocated Limit (₹)', isCurrency: true, align: 'right' as const },
+    { key: 'spent', label: 'Spent Amount (₹)', isCurrency: true, align: 'right' as const },
+    { key: 'variance', label: 'Remaining Surplus (₹)', isCurrency: true, align: 'right' as const },
+    { key: 'ratio', label: 'Utilization (%)', isPercentage: true, align: 'right' as const },
+    { key: 'status', label: 'Status' },
+  ];
+
+  const budgetTableData = budgets.map((b) => ({
+    category: b.category,
+    allocated: b.allocated,
+    spent: b.spent,
+    variance: b.allocated - b.spent,
+    ratio: (b.spent / b.allocated) * 100,
+    status:
+      b.spent > b.allocated
+        ? 'Exceeded'
+        : b.spent >= b.allocated * 0.85
+        ? 'Approaching Limit'
+        : 'Within Budget',
+  }));
 
   const handleBudgetCreated = (newB: NewBudgetData) => {
     const record: BudgetCategory = {
@@ -164,12 +195,32 @@ export default function BudgetsPage() {
       </div>
 
       {/* Envelope Progress Bars */}
-      <Card>
-        <CardHeader
-          title="Envelope Allocations & Health Indicators"
-          subtitle="Real-time variance gauges against current billing cycle"
-        />
-
+      <ChartContainer
+        title="Envelope Allocations & Health Indicators"
+        subtitle="Real-time variance gauges against current billing cycle with overspend containment"
+        freshnessBadge={{
+          label: `${overallUtilization.toFixed(1)}% Pool Utilized`,
+          variant: overallUtilization > 90 ? 'warning' : 'positive',
+          icon: <ShieldCheck className="w-3 h-3" />,
+        }}
+        summaryNarrative={`Total allocated envelope pool is ${formatCurrency(totalAllocated)} with ${formatCurrency(surplus)} remaining headroom.`}
+        tableView={
+          <FinancialTableFallback
+            title="Budget Envelopes Master Ledger"
+            columns={budgetTableColumns}
+            data={budgetTableData}
+            summaryRow={{
+              category: 'Consolidated Monthly Budget Pool',
+              allocated: totalAllocated,
+              spent: totalSpent,
+              variance: surplus,
+              ratio: overallUtilization,
+              status: overallUtilization > 90 ? 'High' : 'Controlled',
+            }}
+            filename="wealthos_budgets_ledger.csv"
+          />
+        }
+      >
         <div className="space-y-5">
           {budgets.map((b) => {
             const ratio = (b.spent / b.allocated) * 100;
@@ -241,7 +292,7 @@ export default function BudgetsPage() {
             );
           })}
         </div>
-      </Card>
+      </ChartContainer>
 
       {/* Create Budget Modal */}
       <CreateBudgetModal

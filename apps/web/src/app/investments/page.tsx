@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { AddInvestmentModal, NewInvestmentData } from '@/components/modals/AddInvestmentModal';
+import { PortfolioAllocationChart } from '@/components/dashboard/PortfolioAllocationChart';
 
 type InvestmentView = 'ALL' | 'MUTUAL_FUNDS' | 'EQUITIES' | 'FIFO_LOTS';
 
@@ -744,11 +745,13 @@ export default function InvestmentsPage() {
         </div>
       ) : (
         /* Holdings Table for All Securities / Direct Equities */
-        <Card>
-          <CardHeader
-            title={activeTab === 'EQUITIES' ? 'Direct Equities Portfolio' : 'Consolidated Security Holdings'}
-            subtitle="Real-time multi-asset positions with mark-to-market prices"
-          />
+        <div className="space-y-6">
+          {activeTab === 'ALL' && <PortfolioAllocationChart />}
+          <Card>
+            <CardHeader
+              title={activeTab === 'EQUITIES' ? 'Direct Equities Portfolio' : 'Consolidated Security Holdings'}
+              subtitle="Real-time multi-asset positions with mark-to-market prices"
+            />
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="text-xs uppercase bg-[#F7F9F7] text-[#758078] border-b border-[#E7ECE8]">
@@ -800,7 +803,8 @@ export default function InvestmentsPage() {
             </table>
           </div>
         </Card>
-      )}
+      </div>
+    )}
 
       {/* Add Investment Modal */}
       <AddInvestmentModal

@@ -25,6 +25,17 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import {
+  ChartContainer,
+  FinancialBarChart,
+  FinancialHorizontalBarChart,
+  FinancialHeatmap,
+  FinancialTableFallback,
+  BarSeriesGroup,
+  HorizontalBarItem,
+  HeatmapCell,
+} from '@/components/charts';
+import { formatCurrency, formatPercentage } from '@/lib/formatters';
 
 type TimeCadence = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
@@ -158,6 +169,45 @@ const EXPENSE_DATA: Record<TimeCadence, {
   },
 };
 
+const NOVEMBER_DAILY_HEATMAP: HeatmapCell[] = [
+  { id: 'nov-1', label: '1', date: '01 Nov 2026', value: 85000 },
+  { id: 'nov-2', label: '2', date: '02 Nov 2026', value: 3750 },
+  { id: 'nov-3', label: '3', date: '03 Nov 2026', value: 4850 },
+  { id: 'nov-4', label: '4', date: '04 Nov 2026', value: 1200 },
+  { id: 'nov-5', label: '5', date: '05 Nov 2026', value: 4200 },
+  { id: 'nov-6', label: '6', date: '06 Nov 2026', value: 8900 },
+  { id: 'nov-7', label: '7', date: '07 Nov 2026', value: 14250 },
+  { id: 'nov-8', label: '8', date: '08 Nov 2026', value: 4850 },
+  { id: 'nov-9', label: '9', date: '09 Nov 2026', value: 1800 },
+  { id: 'nov-10', label: '10', date: '10 Nov 2026', value: 2400 },
+  { id: 'nov-11', label: '11', date: '11 Nov 2026', value: 1100 },
+  { id: 'nov-12', label: '12', date: '12 Nov 2026', value: 3200 },
+  { id: 'nov-13', label: '13', date: '13 Nov 2026', value: 5400 },
+  { id: 'nov-14', label: '14', date: '14 Nov 2026', value: 6800 },
+  { id: 'nov-15', label: '15', date: '15 Nov 2026', value: 2900 },
+  { id: 'nov-16', label: '16', date: '16 Nov 2026', value: 1500 },
+  { id: 'nov-17', label: '17', date: '17 Nov 2026', value: 2200 },
+  { id: 'nov-18', label: '18', date: '18 Nov 2026', value: 1750 },
+  { id: 'nov-19', label: '19', date: '19 Nov 2026', value: 3100 },
+  { id: 'nov-20', label: '20', date: '20 Nov 2026', value: 4600 },
+  { id: 'nov-21', label: '21', date: '21 Nov 2026', value: 5800 },
+  { id: 'nov-22', label: '22', date: '22 Nov 2026', value: 2100 },
+  { id: 'nov-23', label: '23', date: '23 Nov 2026', value: 1400 },
+  { id: 'nov-24', label: '24', date: '24 Nov 2026', value: 1900 },
+  { id: 'nov-25', label: '25', date: '25 Nov 2026', value: 2800 },
+  { id: 'nov-26', label: '26', date: '26 Nov 2026', value: 3400 },
+  { id: 'nov-27', label: '27', date: '27 Nov 2026', value: 4900 },
+  { id: 'nov-28', label: '28', date: '28 Nov 2026', value: 6200 },
+  { id: 'nov-29', label: '29', date: '29 Nov 2026', value: 3800 },
+  { id: 'nov-30', label: '30', date: '30 Nov 2026', value: 2500 },
+];
+
+const CAPITAL_GAINS_ITEMS: HorizontalBarItem[] = [
+  { id: 'ltcg', label: 'LTCG (Sec 112A) — ₹1.25L Exemption Applied', value: 285400, secondaryValue: 125000, color: '#16A36A' },
+  { id: 'stcg', label: 'STCG (Sec 111A) — 20% Flat Rate', value: 98000, color: '#6475D8' },
+  { id: 'div', label: 'Ordinary Income (Dividend & Fixed Income)', value: 42500, color: '#D99A32' },
+];
+
 export default function AnalyticsPage() {
   const [cadence, setCadence] = useState<TimeCadence>('MONTHLY');
   const [filterType, setFilterType] = useState<'ALL' | 'NEED' | 'WANT'>('ALL');
@@ -170,6 +220,47 @@ export default function AnalyticsPage() {
   const filteredExpenses = current.recentExpenses.filter((e) =>
     filterType === 'ALL' ? true : e.type === filterType
   );
+
+  const velocityGroups: BarSeriesGroup[] = current.bars.map((bar) => ({
+    label: bar.label.split(' ')[0],
+    sublabel: bar.label,
+    values: [
+      {
+        key: 'amount',
+        label: bar.isProjected ? 'Projected Run-Rate' : 'Actual Settled Expense',
+        value: bar.amount,
+        color: bar.isProjected ? '#758078' : '#16A36A',
+      },
+    ],
+  }));
+
+  const categoryItems: HorizontalBarItem[] = current.categories.map((cat, idx) => ({
+    id: `cat-${idx}`,
+    label: cat.name,
+    value: cat.amount,
+    color:
+      idx === 0
+        ? '#16A36A'
+        : idx === 1
+        ? '#6475D8'
+        : idx === 2
+        ? '#0D9488'
+        : idx === 3
+        ? '#D99A32'
+        : '#8B5CF6',
+  }));
+
+  const tableColumns = [
+    { key: 'label', label: 'Period Interval' },
+    { key: 'amount', label: 'Outflow Amount (₹)', isCurrency: true, align: 'right' as const },
+    { key: 'status', label: 'Accounting Status' },
+  ];
+
+  const tableData = current.bars.map((b) => ({
+    label: b.label,
+    amount: b.amount,
+    status: b.isProjected ? 'Projected Scenario' : 'Settled General Journal Entry',
+  }));
 
   return (
     <div className="space-y-8">
@@ -319,81 +410,73 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cadence Velocity Chart */}
         <div className="lg:col-span-2">
-          <Card>
-            <CardHeader
-              title={`Expense Distribution — ${current.cadenceLabel}`}
-              subtitle="Chronological outflow distribution and projected end-of-period run-rates"
+          <ChartContainer
+            title={`Expense Distribution — ${current.cadenceLabel}`}
+            subtitle="Chronological outflow distribution and projected end-of-period run-rates"
+            freshnessBadge={{
+              label: 'Double-Entry Verified',
+              variant: 'positive',
+              icon: <ShieldCheck className="w-3 h-3" />,
+            }}
+            summaryNarrative={`Total outflow of ${formatCurrency(
+              current.totalSpend
+            )} is tracking against budget ceiling of ${formatCurrency(current.budgetCeiling)}.`}
+            tableView={
+              <FinancialTableFallback
+                title={`Outflow Ledger — ${current.cadenceLabel}`}
+                columns={tableColumns}
+                data={tableData}
+                filename={`wealthos_expense_velocity_${cadence.toLowerCase()}.csv`}
+              />
+            }
+          >
+            <FinancialBarChart
+              groups={velocityGroups}
+              accessibleDescription={`Expense Distribution for ${current.cadenceLabel}`}
             />
-            <div className="mt-6">
-              <div className="flex items-end gap-3 h-48 pt-4 pb-2 border-b border-[#E7ECE8]">
-                {current.bars.map((bar, idx) => {
-                  const maxAmount = Math.max(...current.bars.map((b) => b.amount));
-                  const heightPct = (bar.amount / maxAmount) * 100;
-                  return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                      <div className="text-[10px] text-[#758078] opacity-0 group-hover:opacity-100 transition-opacity">
-                        ₹{bar.amount.toLocaleString('en-IN')}
-                      </div>
-                      <div
-                        className={`w-full rounded-t-md transition-all duration-300 ${
-                          bar.isProjected
-                            ? 'bg-slate-700/60 border border-dashed border-slate-500 hover:bg-slate-600'
-                            : 'bg-[#16A36A] hover:bg-[#087A50]'
-                        }`}
-                        style={{ height: `${heightPct}%` }}
-                      />
-                      <span className="text-[11px] text-[#758078] font-medium truncate max-w-[60px] text-center">
-                        {bar.label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="flex items-center justify-between text-xs text-[#758078] mt-3 pt-1">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-[#16A36A] inline-block"></span>
-                    Actual Settled Expense
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-slate-700 border border-dashed border-slate-500 inline-block"></span>
-                    Projected Run-Rate
-                  </span>
-                </div>
-                <span>Double-entry verified</span>
-              </div>
-            </div>
-          </Card>
+          </ChartContainer>
         </div>
 
         {/* Category Breakdown */}
         <div>
-          <Card>
-            <CardHeader
-              title="Top Burn Categories"
-              subtitle="Spending concentration and allocation shares"
-            />
-            <div className="mt-4 space-y-3">
-              {current.categories.map((cat, idx) => (
-                <div key={idx} className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-[#4A554E] font-medium">{cat.name}</span>
-                    <span className="text-[#758078]">
-                      ₹{cat.amount.toLocaleString('en-IN')} ({cat.percentage}%)
-                    </span>
-                  </div>
-                  <div className="w-full bg-[#F0F4F1] rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={`h-1.5 rounded-full ${cat.color}`}
-                      style={{ width: `${cat.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+          <ChartContainer
+            title="Top Burn Categories"
+            subtitle="Spending concentration and allocation shares"
+            freshnessBadge={{
+              label: 'Categorized',
+              variant: 'neutral',
+              icon: <PieChart className="w-3 h-3" />,
+            }}
+          >
+            <div className="pt-2">
+              <FinancialHorizontalBarChart
+                items={categoryItems}
+                showComparison={false}
+                accessibleDescription="Top Burn Categories Ranking"
+              />
             </div>
-          </Card>
+          </ChartContainer>
         </div>
       </div>
+
+      {/* 30-Day Spending Intensity Heatmap */}
+      <ChartContainer
+        title="30-Day Spending Intensity Heatmap (November 2026)"
+        subtitle="Daily burn intensity visualization detecting peak spending clusters and non-discretionary settlement spikes"
+        freshnessBadge={{
+          label: 'Verified Journal Feeds',
+          variant: 'positive',
+          icon: <ShieldCheck className="w-3 h-3" />,
+        }}
+        summaryNarrative="Peak monthly burn occurred on 1st Nov due to executive residence lease payment (₹85,000.00). Daily run-rate stabilized below ₹5,000 baseline."
+      >
+        <FinancialHeatmap
+          cells={NOVEMBER_DAILY_HEATMAP}
+          columns={10}
+          palette="rose"
+          accessibleDescription="November 2026 Daily Outflow Intensity Heatmap"
+        />
+      </ChartContainer>
 
       {/* Itemized Expense Log */}
       <Card>
@@ -560,6 +643,26 @@ export default function AnalyticsPage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Capital Gains Classification Visualizer */}
+        <div className="mt-4 p-4 rounded-xl bg-white border border-[#E7ECE8]">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h4 className="text-xs font-bold text-[#17231D] uppercase tracking-wider">
+                Capital Gains Classification & Statutory Thresholds (FY 2026-27)
+              </h4>
+              <p className="text-[11px] text-[#758078]">
+                Realized equity capital gains separated into LTCG and STCG with automatic Section 112A ₹1.25L exemption applied
+              </p>
+            </div>
+            <Badge variant="positive" size="sm">AIS/26AS Reconciled</Badge>
+          </div>
+          <FinancialHorizontalBarChart
+            items={CAPITAL_GAINS_ITEMS}
+            showComparison={true}
+            accessibleDescription="Capital Gains Classification and Exemptions"
+          />
         </div>
       </Card>
 

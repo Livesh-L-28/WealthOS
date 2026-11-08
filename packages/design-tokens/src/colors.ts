@@ -89,3 +89,41 @@ export const fintechLight = {
   },
 } as const;
 
+/**
+ * WealthOS Enterprise Financial Chart Tokens
+ * Meets WCAG 2.1 AA contrast requirements across surfaces.
+ */
+export const chartTokens = {
+  series: {
+    primary: '#16A36A',      // Emerald Green (Net Worth, Inflow, Equities)
+    primaryDark: '#087A50',  // Deep Green (Surplus, Retained Cash)
+    secondary: '#6475D8',    // Indigo (Expenses, Outflow, Mutual Funds)
+    warning: '#D99A32',      // Amber (Fixed Income, Debt, Amortization)
+    danger: '#DC5B5B',       // Rose Red (Deficit, Overspending, Liabilities)
+    teal: '#0D9488',         // Deep Teal (Gold, SGBs, Commodities)
+    purple: '#8B5CF6',       // Purple (Real Estate, Alternative Assets)
+    blue: '#0284C7',         // Sky Blue (Cash, Liquid Accounts)
+    neutral: '#758078',      // Slate (Benchmark, Historical Average)
+  },
+  assetClasses: {
+    EQUITY: '#16A36A',
+    MUTUAL_FUND: '#6475D8',
+    DEBT: '#D99A32',
+    GOLD: '#0D9488',
+    REAL_ESTATE: '#8B5CF6',
+    CASH: '#0284C7',
+    LIABILITY: '#DC5B5B',
+  },
+  ui: {
+    gridline: '#E7ECE8',
+    axisLabel: '#758078',
+    crosshair: '#94A3B8',
+    zeroBaseline: '#475569',
+    tooltipBg: '#17231D',
+    tooltipText: '#F8FAFC',
+    cardBg: '#FFFFFF',
+    border: '#E7ECE8',
+  },
+} as const;
+
+
