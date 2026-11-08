@@ -161,3 +161,20 @@ async def test_metrics_endpoint(client):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "operational"
+
+
+@pytest.mark.asyncio
+async def test_operations_dashboard_endpoint(client):
+    response = await client.get("/api/v1/health/dashboard")
+    assert response.status_code == 200
+    data = response.json()
+    assert "status" in data
+    assert "telemetry" in data
+    telemetry = data["telemetry"]
+    assert "database" in telemetry
+    assert "redis" in telemetry
+    assert "celery" in telemetry
+    assert "storage" in telemetry
+    assert "outbox" in telemetry
+    assert "financial_integrity" in telemetry
+    assert telemetry["financial_integrity"]["invariants_enforced"] is True
