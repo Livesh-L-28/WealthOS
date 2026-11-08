@@ -168,3 +168,10 @@ class UserProfileResponse(BaseModel):
     mfa_enabled: bool
     active_tenant: TenantSummary | None = None
     memberships: list[TenantSummary] = Field(default_factory=list)
+
+
+class DeleteAccountRequest(BaseModel):
+    """Payload for requesting permanent user account deletion."""
+
+    password: str = Field(min_length=1, description="Current password for verification")
+    confirmation_phrase: str = Field(description="Must match 'DELETE MY ACCOUNT'")

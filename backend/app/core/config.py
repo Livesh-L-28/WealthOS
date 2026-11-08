@@ -153,6 +153,25 @@ class Settings(BaseSettings):
         description="Sync SQLAlchemy database connection string for Alembic",
     )
 
+    # Read Replica Settings (Phase 2 & 3 Database Topology)
+    POSTGRES_REPLICA_HOST: str | None = Field(
+        default=None, description="PostgreSQL read replica host"
+    )
+    POSTGRES_REPLICA_PORT: int = Field(default=5433, description="PostgreSQL read replica port")
+    POSTGRES_REPLICA_DB: str | None = Field(
+        default=None, description="PostgreSQL read replica database name"
+    )
+    POSTGRES_REPLICA_USER: str | None = Field(
+        default=None, description="PostgreSQL read replica user"
+    )
+    POSTGRES_REPLICA_PASSWORD: str | None = Field(
+        default=None, description="PostgreSQL read replica password"
+    )
+    DATABASE_REPLICA_URL: str | None = Field(
+        default=None,
+        description="Async SQLAlchemy database connection string for read replica",
+    )
+
     # Database Pool
     DB_POOL_SIZE: int = Field(default=10, description="Database connection pool size")
     DB_MAX_OVERFLOW: int = Field(default=20, description="Max overflow connections")
@@ -310,6 +329,18 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
             f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
+
+    def get_replica_database_url(self) -> str | None:
+        """Return the async database URL for read replica if configured, else None."""
+        if self.DATABASE_REPLICA_URL:
+            return self.DATABASE_REPLICA_URL
+        if self.POSTGRES_REPLICA_HOST:
+            user = self.POSTGRES_REPLICA_USER or self.POSTGRES_USER
+            password = self.POSTGRES_REPLICA_PASSWORD or self.POSTGRES_PASSWORD
+            db = self.POSTGRES_REPLICA_DB or self.POSTGRES_DB
+            port = self.POSTGRES_REPLICA_PORT
+            return f"postgresql+asyncpg://{user}:{password}@{self.POSTGRES_REPLICA_HOST}:{port}/{db}"
+        return None
 
     def get_database_admin_url(self) -> str:
         """Return the async database URL with admin credentials for migrations."""

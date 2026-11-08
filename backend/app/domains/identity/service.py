@@ -1131,3 +1131,55 @@ async def regenerate_recovery_codes(
     await session.flush()
     logger.info(f"Regenerated recovery codes for user {user.id}")
     return raw_codes
+
+
+async def delete_user_account(
+    session: AsyncSession,
+    user: User,
+    password: str,
+    confirmation_phrase: str,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+    correlation_id: str | None = None,
+) -> dict:
+    """Permanently deactivate and soft-delete user account and purge personal identity.
+
+    Adheres to GDPR/DPDP Right to be Forgotten and Google Play User Data Deletion requirements.
+    """
+    if confirmation_phrase.strip().upper() != "DELETE MY ACCOUNT":
+        raise AuthenticationServiceError("Confirmation phrase must exactly equal 'DELETE MY ACCOUNT'.")
+
+    # Verify user's current password
+    stmt = select(UserCredential).where(UserCredential.user_id == user.id)
+    cred = (await session.execute(stmt)).scalar_one_or_none()
+    if not cred or not verify_password(password, cred.password_hash):
+        raise AuthenticationServiceError("Password verification failed. Account deletion rejected.")
+
+    # Invalidate all active sessions
+    await logout_all_sessions(session, user.id, ip_address, user_agent, correlation_id)
+
+    # Anonymize personal identity details
+    now = datetime.now(UTC)
+    user.first_name = "Deleted"
+    user.last_name = "User"
+    user.email = f"deleted-{user.id}@deleted.wealthos.local"
+    user.status = "deactivated"
+    user.is_deleted = True
+    user.deleted_at = now
+
+    # Remove MFA credentials and recovery codes
+    await session.execute(delete(MFARecoveryCode).where(MFARecoveryCode.user_id == user.id))
+    await session.execute(delete(MFACredential).where(MFACredential.user_id == user.id))
+
+    await record_security_event(
+        session,
+        event_type="account_deleted",
+        status="success",
+        user_id=user.id,
+        ip_address=ip_address,
+        user_agent=user_agent,
+        correlation_id=correlation_id,
+        details={"anonymized_at": now.isoformat()},
+    )
+    logger.info(f"User account {user.id} permanently deleted and identity anonymized.")
+    return {"status": "success", "message": "Account successfully deleted and personal data purged."}

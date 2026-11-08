@@ -19,6 +19,7 @@ from app.domains.identity.models import User
 from app.domains.identity.passwords import PasswordPolicyError
 from app.domains.identity.schemas import (
     ChangePasswordRequest,
+    DeleteAccountRequest,
     ForgotPasswordRequest,
     LoginRequest,
     MFAChallengeRequest,
@@ -40,6 +41,7 @@ from app.domains.identity.service import (
     authenticate_user,
     change_password,
     complete_mfa_challenge,
+    delete_user_account,
     disable_mfa,
     enroll_mfa,
     list_user_sessions,
@@ -93,12 +95,32 @@ def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
     )
 
 
+def _set_access_cookie(response: Response, access_token: str) -> None:
+    """Attach the access token in an HttpOnly, SameSite, Secure cookie."""
+    response.set_cookie(
+        key="wealthos_access_token",
+        value=access_token,
+        httponly=True,
+        secure=settings.is_production,
+        samesite="lax",
+        path="/",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+
 def _clear_refresh_cookie(response: Response) -> None:
     """Clear the refresh token cookie."""
     response.delete_cookie(
         key="refresh_token",
         path="/api/v1/auth",
     )
+
+
+def _clear_auth_cookies(response: Response) -> None:
+    """Clear all authentication cookies (access and refresh)."""
+    _clear_refresh_cookie(response)
+    response.delete_cookie(key="wealthos_access_token", path="/")
+    response.delete_cookie(key="access_token", path="/")
 
 
 # --------------------------------------------------------------------------
@@ -194,6 +216,7 @@ async def login(
 
         # Successful complete login
         _set_refresh_cookie(response, result["refresh_token"])
+        _set_access_cookie(response, result["access_token"])
         return {
             "success": True,
             "data": result,
@@ -238,6 +261,7 @@ async def mfa_challenge(
             correlation_id=cid,
         )
         _set_refresh_cookie(response, result["refresh_token"])
+        _set_access_cookie(response, result["access_token"])
         return {
             "success": True,
             "data": result,
@@ -291,12 +315,13 @@ async def refresh_tokens(
             correlation_id=cid,
         )
         _set_refresh_cookie(response, result["refresh_token"])
+        _set_access_cookie(response, result["access_token"])
         return {
             "success": True,
             "data": result,
         }
     except AuthenticationServiceError as exc:
-        _clear_refresh_cookie(response)
+        _clear_auth_cookies(response)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=str(exc),
@@ -327,7 +352,7 @@ async def logout(
         user_agent=ua,
         correlation_id=cid,
     )
-    _clear_refresh_cookie(response)
+    _clear_auth_cookies(response)
     return {
         "success": True,
         "message": "Successfully logged out.",
@@ -356,7 +381,7 @@ async def logout_all(
         user_agent=ua,
         correlation_id=cid,
     )
-    _clear_refresh_cookie(response)
+    _clear_auth_cookies(response)
     return {
         "success": True,
         "message": "All active sessions have been terminated.",
@@ -436,6 +461,47 @@ async def get_me(
         "success": True,
         "data": profile.model_dump(mode="json"),
     }
+
+
+@router.delete(
+    "/me",
+    response_model=dict[str, Any],
+    summary="Delete user account and purge personal data",
+)
+async def delete_account(
+    payload: DeleteAccountRequest,
+    request: Request,
+    response: Response,
+    auth_data: tuple[User, uuid.UUID] = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """Permanently delete user account, invalidate sessions, and anonymize personal information.
+
+    Complies with Google Play User Data Deletion and GDPR/DPDP Right to be Forgotten.
+    """
+    user, _ = auth_data
+    ip, ua, cid = _get_client_meta(request)
+
+    try:
+        result = await delete_user_account(
+            session=session,
+            user=user,
+            password=payload.password,
+            confirmation_phrase=payload.confirmation_phrase,
+            ip_address=ip,
+            user_agent=ua,
+            correlation_id=cid,
+        )
+        _clear_auth_cookies(response)
+        return {
+            "success": True,
+            "data": result,
+        }
+    except AuthenticationServiceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
 
 
 # --------------------------------------------------------------------------

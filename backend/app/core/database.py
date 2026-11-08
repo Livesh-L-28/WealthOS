@@ -23,9 +23,12 @@ from app.core.logging import get_logger
 
 logger = get_logger("wealthos.database")
 
-# Global async engine & sessionmaker (initialized during lifespan)
+# Global async engines & sessionmakers (Primary Writer + Optional Read Replica)
 engine: AsyncEngine | None = None
 async_session_factory: async_sessionmaker[AsyncSession] | None = None
+
+read_engine: AsyncEngine | None = None
+read_session_factory: async_sessionmaker[AsyncSession] | None = None
 
 
 class Base(DeclarativeBase):
@@ -123,7 +126,7 @@ def get_engine() -> AsyncEngine:
 
 
 def get_session_factory() -> async_sessionmaker[AsyncSession]:
-    """Retrieve or create the async session factory."""
+    """Retrieve or create the async session factory for primary writer database."""
     global async_session_factory
     if async_session_factory is None:
         eng = get_engine()
@@ -137,31 +140,115 @@ def get_session_factory() -> async_sessionmaker[AsyncSession]:
     return async_session_factory
 
 
+def get_read_engine() -> AsyncEngine:
+    """Retrieve or create the async database engine for read replica.
+    
+    If no read replica is configured, gracefully falls back to the primary engine.
+    """
+    global read_engine
+    replica_url = settings.get_replica_database_url()
+    if replica_url is None:
+        return get_engine()
+
+    if read_engine is None:
+        logger.info(
+            f"Initializing read-replica database engine: host={settings.POSTGRES_REPLICA_HOST}, port={settings.POSTGRES_REPLICA_PORT}"
+        )
+        read_engine = create_async_engine(
+            replica_url,
+            pool_size=settings.DB_POOL_SIZE,
+            max_overflow=settings.DB_MAX_OVERFLOW,
+            pool_timeout=settings.DB_POOL_TIMEOUT,
+            pool_pre_ping=settings.DB_POOL_PRE_PING,
+            echo=settings.DEBUG and settings.LOG_LEVEL == "DEBUG",
+        )
+    return read_engine
+
+
+def get_read_session_factory() -> async_sessionmaker[AsyncSession]:
+    """Retrieve or create the async session factory for read-replica queries."""
+    global read_session_factory
+    if read_session_factory is None:
+        eng = get_read_engine()
+        read_session_factory = async_sessionmaker(
+            bind=eng,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+    return read_session_factory
+
+
+class PrimaryReplicaRouter:
+    """Explicit Primary/Replica query routing engine for analytical read scaling."""
+
+    @staticmethod
+    def get_write_engine() -> AsyncEngine:
+        """Return primary writer engine."""
+        return get_engine()
+
+    @staticmethod
+    def get_read_engine() -> AsyncEngine:
+        """Return read replica engine (or primary if replica not configured)."""
+        return get_read_engine()
+
+    @staticmethod
+    def is_replica_active() -> bool:
+        """Check if an independent read replica is configured."""
+        return settings.get_replica_database_url() is not None
+
+
 async def init_db() -> None:
-    """Initialize database connection pool."""
+    """Initialize database connection pools (Primary + Read Replica)."""
     get_engine()
     get_session_factory()
-    logger.info("Database connection pool initialized")
+    if settings.get_replica_database_url():
+        get_read_engine()
+        get_read_session_factory()
+    logger.info("Database connection pool(s) initialized")
 
 
 async def close_db() -> None:
-    """Dispose of database engine and release connections."""
-    global engine, async_session_factory
+    """Dispose of database engines and release connections."""
+    global engine, async_session_factory, read_engine, read_session_factory
     if engine is not None:
-        logger.info("Disposing database connection pool...")
+        logger.info("Disposing primary database connection pool...")
         await engine.dispose()
         engine = None
         async_session_factory = None
-        logger.info("Database engine disposed")
+        logger.info("Primary database engine disposed")
+    if read_engine is not None:
+        logger.info("Disposing read replica database connection pool...")
+        await read_engine.dispose()
+        read_engine = None
+        read_session_factory = None
+        logger.info("Read replica database engine disposed")
 
 
 async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency for yielding transactional database sessions."""
+    """FastAPI dependency for yielding transactional database sessions (Primary Writer)."""
     factory = get_session_factory()
     async with factory() as session:
         try:
             yield session
             await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            from app.core.tenant_context import reset_db_session_state
+
+            await reset_db_session_state(session)
+            await session.close()
+
+
+async def get_read_db_session() -> AsyncGenerator[AsyncSession, None]:
+    """FastAPI dependency for yielding read-only database sessions (Replica or Primary fallback)."""
+    factory = get_read_session_factory()
+    async with factory() as session:
+        try:
+            yield session
         except Exception:
             await session.rollback()
             raise

@@ -39,7 +39,7 @@ def create_celery_app() -> Celery:
         "wealthos_tasks",
         broker=settings.get_celery_broker_url(),
         backend=settings.get_celery_result_backend(),
-        include=["app.workers.health_tasks"],
+        include=["app.workers.health_tasks", "app.workers.financial_tasks"],
     )
 
     # Queue definitions
@@ -62,6 +62,9 @@ def create_celery_app() -> Celery:
             "app.workers.health_tasks.transient_retry_task": {"queue": "default"},
             "app.workers.health_tasks.ocr_preflight_check": {"queue": "ocr_heavy"},
             "app.workers.health_tasks.market_feed_heartbeat": {"queue": "market_data"},
+            "app.workers.financial_tasks.parse_document_statement_async": {"queue": "ocr_heavy"},
+            "app.workers.financial_tasks.sync_market_feed_async": {"queue": "market_data"},
+            "app.workers.financial_tasks.generate_financial_report_async": {"queue": "default"},
         },
         # Task retry & resilience policy
         task_annotations={

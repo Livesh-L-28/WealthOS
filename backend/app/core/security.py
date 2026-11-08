@@ -55,10 +55,11 @@ class TenantContext:
 
 
 async def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     session: AsyncSession = Depends(get_db_session),
 ) -> tuple[User, uuid.UUID]:
-    """Validate Bearer access token and resolve active authenticated user and session ID.
+    """Validate Bearer access token or HttpOnly session cookie and resolve active authenticated user and session ID.
 
     Returns:
         tuple[User, uuid.UUID]: Authenticated user model and session ID.
@@ -66,14 +67,20 @@ async def get_current_user(
     Raises:
         HTTPException: 401 if unauthenticated, token invalid, or session terminated.
     """
-    if not credentials or not credentials.credentials:
+    raw_token: str | None = None
+    if credentials and credentials.credentials:
+        raw_token = credentials.credentials
+    elif request.cookies.get("wealthos_access_token"):
+        raw_token = request.cookies.get("wealthos_access_token")
+    elif request.cookies.get("access_token"):
+        raw_token = request.cookies.get("access_token")
+
+    if not raw_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication credentials were not provided.",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    raw_token = credentials.credentials
 
     try:
         payload = decode_and_validate_token(raw_token, expected_token_type="access")

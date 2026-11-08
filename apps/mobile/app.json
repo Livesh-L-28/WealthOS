@@ -2,7 +2,7 @@
   "expo": {
     "name": "WealthOS",
     "slug": "wealthos",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -17,7 +17,17 @@
       "adaptiveIcon": {
         "backgroundColor": "#0B0F17"
       },
-      "package": "com.wealthos.app"
+      "package": "com.wealthos.app",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.READ_PHONE_STATE",
+        "android.permission.RECEIVE_SMS",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
