@@ -162,3 +162,4 @@ class InvestmentRepository:
         self.session.add(action)
         await self.session.flush()
         return action
+

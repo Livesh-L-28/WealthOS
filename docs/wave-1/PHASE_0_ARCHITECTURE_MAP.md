@@ -86,3 +86,4 @@ API Router (FastAPI Pydantic endpoints)
 2. Money calculations strictly use `Decimal` with fixed scales (`Numeric(28, 4)` and `Numeric(38, 4)`).
 3. No parallel ledgers. Cash movements and investment disposals update the single General Ledger via `PostingService`.
 4. Tenant isolation is enforced at the database level by PostgreSQL RLS with `FORCE ROW LEVEL SECURITY`.
+

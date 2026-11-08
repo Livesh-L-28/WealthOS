@@ -24,3 +24,4 @@
 | **Double Counting in Cash & Investments** | Medium | Critical | All investment purchases and account transfers must maintain transfer neutrality ($\Delta\text{NetWorth} = 0$). Handled via `PostingService`. |
 | **Silent Discrepancy Auto-Correction** | Low | High | Financial Control Centre forbids silent database mutations. Discrepancy resolutions must create auditable adjustment journal entries. |
 | **Cross-Tenant Data Leakage** | Low | Critical | PostgreSQL RLS enabled with `FORCE ROW LEVEL SECURITY`. Every query verifies `app.current_tenant_id` session context. |
+

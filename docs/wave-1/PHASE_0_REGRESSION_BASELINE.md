@@ -38,3 +38,4 @@ Before adding new Wave 1 domain code, the full regression suite was executed:
 ## 3. Regression Baseline Guarantee
 
 Every subsequent Wave 1 commit must maintain 100% pass rates across these 290 tests, plus all new Wave 1 tests. Zero regression tolerance.
+

@@ -117,3 +117,4 @@ class FinancialControlDashboardResponse(BaseModel):
     ledger_integrity: LedgerIntegrityReport
     data_quality: list[DataQualityItem]
     recent_discrepancies: list[ReconciliationRecordResponse]
+

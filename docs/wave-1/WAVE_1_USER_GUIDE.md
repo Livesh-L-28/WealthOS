@@ -72,3 +72,4 @@ The Investment engine manages stocks, mutual funds, ETFs, and bonds with profess
 - **Row-Level Security (RLS):** Every database query is strictly partitioned by tenant workspace.
 - **Immutable Ledger:** Posted double-entry transactions cannot be deleted. Any corrections require balanced reversal entries.
 - **AES-256-GCM Backups:** Automated backups are cryptographically encrypted with SHA-256 checksum verification.
+

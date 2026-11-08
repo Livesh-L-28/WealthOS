@@ -56,3 +56,4 @@ $$\text{Emergency Fund Coverage (Months)} = \frac{\text{Eligible Liquid Reserves
 - `POST /api/v1/cash-management/recurring-rules` — Register recurring payment obligation or income stream.
 - `GET /api/v1/cash-management/recurring-rules` — List active recurring rules with next due dates.
 - `POST /api/v1/cash-management/simulate-scenario` — Run deterministic scenario (EMI addition, income shock, expense increase) without ledger mutation.
+

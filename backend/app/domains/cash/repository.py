@@ -109,3 +109,4 @@ class CashRepository:
         self.session.add(scenario)
         await self.session.flush()
         return scenario
+

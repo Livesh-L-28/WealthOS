@@ -90,3 +90,4 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.execute("DROP TABLE IF EXISTS corporate_actions CASCADE;")
     op.execute("DROP TABLE IF EXISTS investment_transactions CASCADE;")
+

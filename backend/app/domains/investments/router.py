@@ -216,3 +216,4 @@ async def list_passive_income(
     """Retrieve dividends and distributions."""
     service = InvestmentService(session)
     return await service.list_passive_income(tenant_id=context.tenant.id, limit=limit)
+

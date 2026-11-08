@@ -140,3 +140,4 @@ erDiagram
    - Real-time audit verifying that internal account balance equals sum of journal lines and General Ledger is strictly in balance ($\Delta = 0.0000$).
 6. **`GET /api/v1/reconciliation/data-quality`**
    - Returns freshness status (`VERIFIED`, `NEEDS_REVIEW`, `INCOMPLETE`, `STALE`, `UNAVAILABLE`) per account.
+

@@ -345,3 +345,4 @@ class CashManagementService:
             baseline_trajectory=baseline.items,
             simulated_trajectory=simulated_items,
         )
+

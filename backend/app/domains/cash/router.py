@@ -179,3 +179,4 @@ async def simulate_scenario(
     result = await service.simulate_scenario(context.tenant.id, payload)
     await session.commit()
     return result
+

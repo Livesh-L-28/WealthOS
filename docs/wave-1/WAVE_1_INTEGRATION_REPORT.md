@@ -76,3 +76,4 @@ All systems are anchored to the General Ledger as the sole source of truth ($\su
 4. **Corporate Action Cost Basis Invariance:** 2:1 split doubles units, halves price, cost basis invariant.
 5. **Fail-Closed Multi-Tenant Security:** PostgreSQL Row-Level Security with `FORCE ROW LEVEL SECURITY` active across all tenant-scoped tables.
 6. **Immutable Ledger Audit Trail:** Posted journal entries cannot be deleted or updated in place.
+

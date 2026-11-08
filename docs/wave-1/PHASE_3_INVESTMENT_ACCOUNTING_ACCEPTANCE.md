@@ -54,3 +54,4 @@ Automated test suite `backend/tests/test_investment_accounting.py` passed with 1
 ## 4. Phase Acceptance Sign-Off
 
 Phase 3 is hereby formally **ACCEPTED** into the WealthOS Wave 1 baseline.
+

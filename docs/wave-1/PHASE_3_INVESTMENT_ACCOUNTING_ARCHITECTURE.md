@@ -71,3 +71,4 @@ When a `SELL` transaction of quantity $Q_{\text{sell}}$ occurs:
 - `POST /api/v1/investments/corporate-actions/split` — Execute stock split (adjust unit count and unit price).
 - `POST /api/v1/investments/corporate-actions/bonus` — Execute bonus issue.
 - `POST /api/v1/investments/income/dividend` — Record dividend income with tax withholding.
+

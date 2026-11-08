@@ -123,3 +123,4 @@ class DataQualityMetric(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     unreconciled_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     discrepancy_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     freshness_seconds: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+

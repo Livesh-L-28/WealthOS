@@ -136,3 +136,4 @@ def downgrade() -> None:
             DROP COLUMN IF EXISTS session_id;
         """
     )
+
