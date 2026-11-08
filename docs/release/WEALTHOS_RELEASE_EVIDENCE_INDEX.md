@@ -2,6 +2,8 @@
 
 **Document:** Gate 12 — Authoritative Evidence Index  
 **Branch:** `feature/final-financial-intelligence-production`  
+**Remediation Commit:** `416912ba3f7c7d1841db14a736e5bed6aed19740`  
+**Verified CI Run:** `42443005211`  
 **Target Release Candidate:** `v1.0.0-rc1`  
 **Date:** 2026-11-08  
 **Author:** Staff QA Architect & DevSecOps Engineer  
@@ -32,3 +34,4 @@ This index connects every claim, test execution, cryptographic drill, performanc
 | **Gate 10** | Application & Secret Security | [`backend/app/core/config.py`](file:///Users/livesh/WEALTHOS/backend/app/core/config.py)<br>[`tests/test_config.py`](file:///Users/livesh/WEALTHOS/backend/tests/test_config.py) | `pytest tests/test_config.py` | `validate_production_secrets` fails closed if dev secrets used in production. |
 | **Gate 11** | Performance & Observability | [`WEALTHOS_FINAL_PERFORMANCE_REPORT.md`](file:///Users/livesh/WEALTHOS/docs/performance/WEALTHOS_FINAL_PERFORMANCE_REPORT.md) | Benchmarking suite | p95 latency < 80ms, connection pool pre-ping (1800s recycle), zero deadlocks under concurrency. |
 | **Gate 12** | Release Remediation & Acceptance | [`WEALTHOS_RELEASE_REMEDIATION_AND_ACCEPTANCE_REPORT.md`](file:///Users/livesh/WEALTHOS/docs/release/WEALTHOS_RELEASE_REMEDIATION_AND_ACCEPTANCE_REPORT.md) | Master Audit Signoff | Final verified release recommendation for human executive approval. |
+
