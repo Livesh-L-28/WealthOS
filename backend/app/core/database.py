@@ -7,6 +7,7 @@ and enterprise multi-tenant mixins.
 import uuid
 from collections.abc import AsyncGenerator
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import Boolean, DateTime, text
 from sqlalchemy.dialects.postgresql import UUID
@@ -283,6 +284,41 @@ async def get_read_db_session() -> AsyncGenerator[AsyncSession, None]:
                     await session.close()
         else:
             raise
+
+
+async def check_replication_lag(session: AsyncSession) -> dict[str, Any]:
+    """Measure PostgreSQL replication status and lag in milliseconds.
+    
+    Circuit breaker rule: standby replication lag > MAX_REPLICATION_LAG_MS (default 1000ms)
+    trips the breaker, redirecting analytical traffic to the primary writer.
+    """
+    query = text(
+        """
+        SELECT pg_is_in_recovery() AS in_recovery,
+               CASE 
+                 WHEN pg_is_in_recovery() THEN 
+                   COALESCE(EXTRACT(EPOCH FROM (clock_timestamp() - pg_last_xact_replay_timestamp())), 0) * 1000
+                 ELSE 0.0 
+               END AS lag_ms;
+        """
+    )
+    try:
+        res = await session.execute(query)
+        row = res.fetchone()
+        in_recovery = bool(row[0]) if row else False
+        lag_ms = float(row[1]) if row and row[1] is not None else 0.0
+    except Exception as e:
+        logger.warning(f"Failed to query replication lag: {e}")
+        in_recovery = False
+        lag_ms = 0.0
+
+    max_lag = getattr(settings, "MAX_REPLICATION_LAG_MS", 1000.0)
+    return {
+        "in_recovery": in_recovery,
+        "lag_ms": lag_ms,
+        "is_healthy": lag_ms <= max_lag,
+        "threshold_ms": max_lag,
+    }
 
 
 async def check_database_health() -> dict:
