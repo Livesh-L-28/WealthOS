@@ -158,6 +158,20 @@ async def clean_database():
     """Clean test tables before each test execution, preserving system RBAC."""
     admin_engine = get_test_admin_engine()
     tables = [
+        "copilot_messages",
+        "copilot_conversations",
+        "budget_allocations",
+        "budgets",
+        "goal_contributions",
+        "financial_goals",
+        "forecast_runs",
+        "passive_income_records",
+        "investment_holding_lots",
+        "reconciliation_sessions",
+        "financial_documents",
+        "assets",
+        "liabilities",
+        "financial_accounts",
         "reconciliation_records",
         "accounting_idempotency_records",
         "journal_lines",
