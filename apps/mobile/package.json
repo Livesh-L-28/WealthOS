@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "validate": "expo config --type public"
+    "validate": "expo config --type public",
+    "test": "vitest run"
   },
   "dependencies": {
     "@wealthos/api-client": "*",
