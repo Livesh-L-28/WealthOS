@@ -9,8 +9,12 @@ from app.core.database import get_db_session
 from app.core.logging import get_logger
 from app.core.security import TenantContext, get_current_tenant_context
 from app.domains.investments.schemas import (
+    BrokerSyncRequest,
+    BrokerSyncResponse,
     CorporateActionResponse,
     CorporateActionSplitRequest,
+    CorporateActionSyncRequest,
+    CorporateActionSyncResponse,
     DividendRecordRequest,
     FinancialInstrumentCreate,
     FinancialInstrumentResponse,
@@ -22,6 +26,15 @@ from app.domains.investments.schemas import (
     PortfolioSummaryResponse,
 )
 from app.domains.investments.service import InvestmentService
+from app.domains.investments.broker_sync import (
+    BrokerPortfolioSyncService,
+    BrokerSyncError,
+    CasMutualFundAdapter,
+    UpstoxBrokerAdapter,
+    ZerodhaKiteAdapter,
+)
+from app.domains.investments.corporate_actions_sync import CorporateActionsSyncService
+
 
 logger = get_logger("wealthos.investments")
 
@@ -216,4 +229,102 @@ async def list_passive_income(
     """Retrieve dividends and distributions."""
     service = InvestmentService(session)
     return await service.list_passive_income(tenant_id=context.tenant.id, limit=limit)
+
+
+@router.post(
+    "/sync/broker",
+    response_model=BrokerSyncResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Synchronize holdings from Zerodha, Upstox, or CAMS/KFintech eCAS",
+)
+async def sync_broker_portfolio(
+    payload: BrokerSyncRequest,
+    context: TenantContext = Depends(get_current_tenant_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> BrokerSyncResponse:
+    """Sync holdings from supported broker/RTA and capitalize into FIFO acquisition lots."""
+    from app.domains.investments.repository import InvestmentRepository
+
+    repo = InvestmentRepository(session)
+    sync_service = BrokerPortfolioSyncService(repo)
+
+    try:
+        if payload.provider == "UPSTOX":
+            if not payload.access_token:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Upstox provider requires 'access_token'.",
+                )
+            holdings = await UpstoxBrokerAdapter.fetch_holdings(payload.access_token)
+        elif payload.provider == "ZERODHA":
+            if not payload.api_key or not payload.access_token:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Zerodha provider requires both 'api_key' and 'access_token'.",
+                )
+            holdings = await ZerodhaKiteAdapter.fetch_holdings(payload.api_key, payload.access_token)
+        elif payload.provider == "CAMS_KFINTECH_CAS":
+            if not payload.cas_payload:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="CAMS/KFintech provider requires 'cas_payload'.",
+                )
+            holdings = CasMutualFundAdapter.parse_cas_payload(payload.cas_payload)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported broker provider: {payload.provider}",
+            )
+
+        res = await sync_service.sync_holdings(
+            tenant_id=context.tenant.id,
+            account_id=payload.account_id,
+            provider=payload.provider,
+            holdings_data=holdings,
+        )
+        await session.commit()
+        return BrokerSyncResponse(**res)
+    except BrokerSyncError as exc:
+        await session.rollback()
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+
+@router.post(
+    "/sync/corporate-actions",
+    response_model=CorporateActionSyncResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Scan and auto-apply corporate actions (splits, bonus, dividends)",
+)
+async def sync_corporate_actions(
+    payload: CorporateActionSyncRequest,
+    context: TenantContext = Depends(get_current_tenant_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> CorporateActionSyncResponse:
+    """Detect and execute stock splits, bonus allotments, and dividends across tenant holdings."""
+    from app.domains.investments.repository import InvestmentRepository
+
+    repo = InvestmentRepository(session)
+    sync_service = CorporateActionsSyncService(repo)
+    res = await sync_service.sync_and_apply_corporate_actions(
+        tenant_id=context.tenant.id,
+        symbols_filter=payload.symbols,
+        auto_apply=payload.auto_apply,
+        external_actions=payload.custom_actions,
+    )
+    await session.commit()
+    return CorporateActionSyncResponse(**res)
+
+
+@router.get(
+    "/corporate-actions/public-feed",
+    summary="Retrieve public corporate actions announcements for Indian equities",
+)
+async def get_public_corporate_actions_feed(
+    symbols: str | None = Query(None, description="Comma-separated symbols, e.g. TCS,RELIANCE,INFY"),
+    context: TenantContext = Depends(get_current_tenant_context),
+) -> list[dict]:
+    """Retrieve corporate actions from public NSE/BSE feeds with canonical reference fallback."""
+    sym_list = [s.strip().upper() for s in symbols.split(",")] if symbols else None
+    return await CorporateActionsSyncService.fetch_public_corporate_actions(symbols=sym_list)
+
 

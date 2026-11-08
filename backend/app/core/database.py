@@ -244,30 +244,74 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def get_read_db_session() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency for yielding read-only database sessions (Replica or Primary fallback)."""
+    """FastAPI dependency for yielding read-only database sessions.
+    
+    Circuit Breaker Pattern:
+    Attempts connection to the read replica; if the replica is unconfigured, unreachable,
+    or times out, seamlessly falls back to the primary writer session to guarantee zero downtime.
+    """
     factory = get_read_session_factory()
-    async with factory() as session:
-        try:
-            yield session
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            from app.core.tenant_context import reset_db_session_state
+    try:
+        async with factory() as session:
+            try:
+                yield session
+            except Exception:
+                await session.rollback()
+                raise
+            finally:
+                from app.core.tenant_context import reset_db_session_state
 
-            await reset_db_session_state(session)
-            await session.close()
+                await reset_db_session_state(session)
+                await session.close()
+    except Exception as replica_exc:
+        # If replica failed before session yield and replica is independent, fall back to primary
+        if PrimaryReplicaRouter.is_replica_active():
+            logger.warning(
+                f"Read replica connection failed ({replica_exc}); circuit breaker falling back to primary writer."
+            )
+            primary_factory = get_session_factory()
+            async with primary_factory() as session:
+                try:
+                    yield session
+                except Exception:
+                    await session.rollback()
+                    raise
+                finally:
+                    from app.core.tenant_context import reset_db_session_state
+
+                    await reset_db_session_state(session)
+                    await session.close()
+        else:
+            raise
 
 
 async def check_database_health() -> dict:
-    """Check database connectivity with a lightweight ping query."""
+    """Check database connectivity with a lightweight ping query and latency telemetry."""
+    import time
+
+    start_time = time.perf_counter()
     try:
         eng = get_engine()
         async with eng.connect() as conn:
             result = await conn.execute(text("SELECT 1"))
             val = result.scalar()
+            latency = round((time.perf_counter() - start_time) * 1000, 2)
             if val == 1:
-                return {"status": "healthy", "latency_ms": None}
+                status_dict = {"status": "healthy", "latency_ms": latency}
+                if PrimaryReplicaRouter.is_replica_active():
+                    try:
+                        rep_start = time.perf_counter()
+                        rep_eng = get_read_engine()
+                        async with rep_eng.connect() as rep_conn:
+                            rep_val = (await rep_conn.execute(text("SELECT 1"))).scalar()
+                            rep_latency = round((time.perf_counter() - rep_start) * 1000, 2)
+                            status_dict["replica"] = {
+                                "status": "healthy" if rep_val == 1 else "degraded",
+                                "latency_ms": rep_latency,
+                            }
+                    except Exception as rep_exc:
+                        status_dict["replica"] = {"status": "unhealthy", "error": str(rep_exc)}
+                return status_dict
             return {"status": "degraded", "error": f"Unexpected ping value: {val}"}
     except Exception as exc:
         logger.warning(f"Database health check failed: {exc}")

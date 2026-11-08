@@ -193,3 +193,61 @@ class PortfolioSummaryResponse(BaseModel):
     holdings: list[HoldingSummary]
     asset_allocation: dict[str, Decimal]
     last_valuation_at: datetime
+
+
+class BrokerSyncRequest(BaseModel):
+    """Payload to synchronize holdings from broker or eCAS."""
+
+    provider: str = Field(..., pattern="^(UPSTOX|ZERODHA|CAMS_KFINTECH_CAS|ANGEL_ONE)$")
+    account_id: uuid.UUID
+    access_token: str | None = None
+    api_key: str | None = None
+    cas_payload: list[dict[str, Any]] | None = None
+
+
+class BrokerSyncResponse(BaseModel):
+    """Result of broker portfolio synchronization."""
+
+    provider: str
+    status: str
+    instruments_synced: int
+    lots_created: int
+    total_market_value: Decimal
+    synced_at: datetime
+    details: list[dict[str, Any]]
+
+
+class CorporateActionSyncRequest(BaseModel):
+    """Payload to trigger corporate actions discovery and auto-application."""
+
+    symbols: list[str] | None = None
+    auto_apply: bool = True
+    custom_actions: list[dict[str, Any]] | None = None
+
+
+class CorporateActionItem(BaseModel):
+    """Detected corporate action event."""
+
+    symbol: str
+    action_type: str
+    record_date: date
+    ratio_numerator: Decimal | None = None
+    ratio_denominator: Decimal | None = None
+    dividend_per_share: Decimal | None = None
+    description: str
+    applied: bool
+    effect: str | None = None
+    reason: str | None = None
+
+
+class CorporateActionSyncResponse(BaseModel):
+    """Result of corporate action synchronization."""
+
+    scanned_instruments: int
+    actions_detected: int
+    actions_applied: int
+    splits_executed: int
+    bonuses_allotted: int
+    dividends_recorded: int
+    events: list[dict[str, Any]]
+

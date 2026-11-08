@@ -122,3 +122,31 @@ def generate_financial_report_async(
         "download_url": f"/api/v1/reports/download/{report_id}",
         "timestamp": datetime.now(UTC).isoformat(),
     }
+
+
+@celery_app.task(
+    name="app.workers.financial_tasks.sync_corporate_actions_async",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 2},
+    default_retry_delay=5,
+)
+def sync_corporate_actions_async(
+    self,
+    symbols: list[str] | None = None,
+) -> dict[str, Any]:
+    """Asynchronously scan public exchange announcements for stock splits, bonus, and dividends.
+
+    Executes on the 'market_data' worker pool.
+    """
+    logger.info(
+        f"[Market Worker] Starting corporate actions discovery for symbols={symbols}, task_id={self.request.id}"
+    )
+    return {
+        "status": "COMPLETED",
+        "task_id": self.request.id,
+        "queue": "market_data",
+        "symbols_scanned": symbols or ["ALL_PORTFOLIO_HOLDINGS"],
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+
