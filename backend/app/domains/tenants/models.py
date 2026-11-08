@@ -5,10 +5,10 @@ invitations, roles, and granular permissions.
 """
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -237,3 +237,26 @@ class TenantInvitation(Base, UUIDPrimaryKeyMixin):
     )
 
     tenant: Mapped["Tenant"] = relationship("Tenant", back_populates="invitations")
+
+
+class TenantResourceQuota(Base, UUIDPrimaryKeyMixin, TimestampMixin):
+    """Enforces noisy-neighbour protection and resource limits per tenant."""
+
+    __tablename__ = "tenant_resource_quotas"
+
+    tenant_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+    max_daily_ocr_documents: Mapped[int] = mapped_column(Integer, default=100, nullable=False)
+    max_daily_ai_requests: Mapped[int] = mapped_column(Integer, default=500, nullable=False)
+    max_daily_report_exports: Mapped[int] = mapped_column(Integer, default=50, nullable=False)
+    max_concurrent_syncs: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
+    used_ocr_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    used_ai_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    used_report_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    quota_reset_date: Mapped[date] = mapped_column(Date, default=lambda: datetime.now(UTC).date(), nullable=False)
+
