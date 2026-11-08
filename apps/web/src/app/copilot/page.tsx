@@ -132,27 +132,23 @@ export default function CopilotPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">AI Financial Copilot</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">AI Financial Copilot</h1>
+            <Badge variant="positive" size="sm">
+              <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
+              Read-Only Grounded Tools
+            </Badge>
+          </div>
+          <p className="text-xs text-[#758078] mt-1">
             Grounded conversational intelligence with zero hallucinations and read-only safety guarantees.
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="brand" size="sm">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
-            Read-Only Grounded Tools
-          </Badge>
-          <Badge variant="neutral" size="sm">
-            <Database className="w-3.5 h-3.5 mr-1 inline" />
-            RLS Isolated
-          </Badge>
         </div>
       </div>
 
       {/* Chat Thread Card */}
-      <Card className="min-h-[500px] flex flex-col justify-between p-4">
+      <Card className="min-h-[500px] flex flex-col justify-between p-5">
         {/* Messages */}
         <div className="space-y-4 mb-4 overflow-y-auto max-h-[460px] pr-2">
           {messages.map((m) => (
@@ -163,36 +159,38 @@ export default function CopilotPage() {
               }`}
             >
               <div
-                className={`max-w-2xl rounded-lg p-4 ${
+                className={`max-w-2xl rounded-2xl p-4 shadow-xs ${
                   m.role === 'user'
-                    ? 'bg-indigo-600 text-white font-medium'
-                    : 'bg-slate-900 border border-slate-800 text-slate-200'
+                    ? 'bg-[#16A36A] text-white font-medium'
+                    : 'bg-[#F7F9F7] border border-[#E7ECE8] text-[#17231D]'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1.5">
                   {m.role === 'assistant' ? (
-                    <Bot className="w-4 h-4 text-indigo-400" />
+                    <div className="w-5 h-5 rounded-md bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
+                      <Bot className="w-3.5 h-3.5" />
+                    </div>
                   ) : (
-                    <span className="text-[11px] uppercase tracking-wider text-indigo-200">
+                    <span className="text-[11px] uppercase tracking-wider text-emerald-100 font-bold">
                       You
                     </span>
                   )}
-                  <span className="text-xs font-semibold text-slate-400">
+                  <span className="text-xs font-semibold text-[#758078]">
                     {m.role === 'assistant' ? 'WealthOS Copilot' : ''}
                   </span>
                 </div>
-                <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                <p className="text-xs leading-relaxed whitespace-pre-wrap">{m.content}</p>
 
                 {/* Citations and Tools */}
                 {m.toolsExecuted && m.toolsExecuted.length > 0 && (
-                  <div className="mt-3 pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-2">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+                  <div className="mt-3 pt-2 border-t border-[#E7ECE8] flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] text-[#758078] uppercase tracking-wider font-semibold">
                       Grounding Tool:
                     </span>
                     {m.toolsExecuted.map((t) => (
                       <span
                         key={t}
-                        className="px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-900 text-[11px] font-mono"
+                        className="px-2 py-0.5 rounded-full bg-[#16A36A]/10 text-[#087A50] border border-[#16A36A]/20 text-[10px] font-mono font-semibold"
                       >
                         {t}
                       </span>
@@ -203,21 +201,21 @@ export default function CopilotPage() {
             </div>
           ))}
           {isLoading && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <Sparkles className="w-4 h-4 animate-spin text-indigo-400" />
-              <span>Querying ledger and verifying citations...</span>
+            <div className="flex items-center gap-2 text-xs text-[#758078] p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] max-w-sm">
+              <Sparkles className="w-4 h-4 animate-spin text-[#16A36A]" />
+              <span>Querying double-entry ledger & citations...</span>
             </div>
           )}
         </div>
 
         {/* Query Suggestions & Input Bar */}
-        <div className="space-y-3 pt-3 border-t border-slate-800">
+        <div className="space-y-3 pt-3 border-t border-[#E7ECE8]">
           <div className="flex flex-wrap gap-2">
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
                 onClick={() => handleSend(s)}
-                className="text-xs px-3 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300 hover:border-indigo-600/80 hover:text-indigo-300 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-full bg-[#F7F9F7] border border-[#E7ECE8] text-[#17231D] hover:border-[#16A36A] hover:bg-[#16A36A]/10 transition-colors font-medium shadow-xs"
               >
                 {s}
               </button>
@@ -231,7 +229,7 @@ export default function CopilotPage() {
               value={inputQuery}
               onChange={(e) => setInputQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              className="flex-1 bg-slate-900 border border-slate-800 rounded-md px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="flex-1 bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl px-4 py-2 text-xs text-[#17231D] placeholder-[#9BA39D] focus:outline-none focus:ring-1 focus:ring-[#16A36A]"
             />
             <Button
               variant="primary"
@@ -249,4 +247,3 @@ export default function CopilotPage() {
     </div>
   );
 }
-

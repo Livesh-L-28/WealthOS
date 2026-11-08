@@ -263,26 +263,26 @@ export default function InvestmentsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E7ECE8]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Investments & Mutual Funds Manager</h1>
+            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Investments & Mutual Funds Manager</h1>
             <Badge variant="positive" className="gap-1">
               <Sparkles className="w-3 h-3" />
               <span>Mark-to-Market</span>
             </Badge>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-[#758078] mt-1">
             Real-time equity valuation, mutual fund NAVs, active SIP schedules, and strict FIFO tax-lot consumption.
           </p>
         </div>
 
         {/* View Switcher */}
-        <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-1">
+        <div className="flex items-center bg-[#F7F9F7] border border-[#E7ECE8] rounded-lg p-1">
           <button
             onClick={() => setActiveTab('ALL')}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'ALL' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'ALL' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
             }`}
           >
             All Securities
@@ -290,7 +290,7 @@ export default function InvestmentsPage() {
           <button
             onClick={() => setActiveTab('MUTUAL_FUNDS')}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'MUTUAL_FUNDS' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'MUTUAL_FUNDS' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
             }`}
           >
             Mutual Funds & SIPs ({mutualFunds.length})
@@ -298,7 +298,7 @@ export default function InvestmentsPage() {
           <button
             onClick={() => setActiveTab('EQUITIES')}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'EQUITIES' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'EQUITIES' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
             }`}
           >
             Direct Equities
@@ -310,17 +310,17 @@ export default function InvestmentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
               {activeTab === 'MUTUAL_FUNDS' ? 'Mutual Fund AUM' : 'Total Portfolio AUM'}
             </span>
-            <PieChart className="w-4 h-4 text-indigo-400" />
+            <PieChart className="w-4 h-4 text-[#16A36A]" />
           </div>
-          <p className="text-2xl font-bold text-slate-100 mt-2">
+          <p className="text-2xl font-bold text-[#17231D] mt-2">
             ₹{(activeTab === 'MUTUAL_FUNDS' ? totalMfValue : totalValue).toLocaleString('en-IN', {
               minimumFractionDigits: 2,
             })}
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">
+          <p className="text-[11px] text-[#758078] mt-1">
             Invested Capital: ₹{(activeTab === 'MUTUAL_FUNDS' ? totalMfCost : totalCost).toLocaleString('en-IN', {
               minimumFractionDigits: 2,
             })}
@@ -329,7 +329,7 @@ export default function InvestmentsPage() {
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
               Unrealized Gain / Return
             </span>
             <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -347,7 +347,7 @@ export default function InvestmentsPage() {
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
               Active SIP Outflow
             </span>
             <Repeat className="w-4 h-4 text-teal-400" />
@@ -355,20 +355,20 @@ export default function InvestmentsPage() {
           <p className="text-2xl font-bold text-teal-300 mt-2">
             ₹{totalMonthlySip.toLocaleString('en-IN')}/mo
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">
+          <p className="text-[11px] text-[#758078] mt-1">
             4 active automated systematic mandates
           </p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
               Tax Lot Grounding
             </span>
             <ShieldCheck className="w-4 h-4 text-brand-400" />
           </div>
-          <p className="text-2xl font-bold text-slate-100 mt-2">Strict FIFO</p>
-          <p className="text-[11px] text-slate-400 mt-1">STCG vs LTCG tax optimization enabled</p>
+          <p className="text-2xl font-bold text-[#17231D] mt-2">Strict FIFO</p>
+          <p className="text-[11px] text-[#758078] mt-1">STCG vs LTCG tax optimization enabled</p>
         </Card>
       </div>
 
@@ -376,14 +376,14 @@ export default function InvestmentsPage() {
       {activeTab === 'MUTUAL_FUNDS' ? (
         <div className="space-y-6">
           {/* Active SIP Schedule Banner */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-slate-100">Next Systematic Investment (SIP) Due</h3>
-                <p className="text-xs text-slate-400">
+                <h3 className="text-sm font-semibold text-[#17231D]">Next Systematic Investment (SIP) Due</h3>
+                <p className="text-xs text-[#758078]">
                   <span className="text-teal-400 font-semibold">10 Nov 2026</span> — ₹20,000 for Mirae Asset Large & Midcap Fund
                 </p>
               </div>
@@ -401,10 +401,10 @@ export default function InvestmentsPage() {
 
           {/* Mutual Funds Table */}
           <Card>
-            <div className="p-4 border-b border-slate-800 flex justify-between items-center">
+            <div className="p-4 border-b border-[#E7ECE8] flex justify-between items-center">
               <div>
-                <h2 className="text-base font-semibold text-slate-100">Mutual Fund Schemes & Folios</h2>
-                <p className="text-xs text-slate-400">Direct growth schemes with automated daily NAV synchronization</p>
+                <h2 className="text-base font-semibold text-[#17231D]">Mutual Fund Schemes & Folios</h2>
+                <p className="text-xs text-[#758078]">Direct growth schemes with automated daily NAV synchronization</p>
               </div>
               <Button size="sm" variant="primary" className="gap-1.5">
                 <PlusCircle className="w-3.5 h-3.5" />
@@ -415,7 +415,7 @@ export default function InvestmentsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider font-semibold">
+                  <tr className="border-b border-[#E7ECE8] text-[#758078] uppercase tracking-wider font-semibold">
                     <th className="py-3 px-4">Scheme & Folio</th>
                     <th className="py-3 px-4">Category</th>
                     <th className="py-3 px-4 text-right">Units / Balance</th>
@@ -426,15 +426,15 @@ export default function InvestmentsPage() {
                     <th className="py-3 px-4 text-center">Active SIP</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="divide-y divide-[#E7ECE8]">
                   {mutualFunds.map((mf) => (
-                    <tr key={mf.folioNumber} className="hover:bg-slate-800/30 transition-colors">
+                    <tr key={mf.folioNumber} className="hover:bg-[#F0F4F1] transition-colors">
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-100 text-sm">{mf.schemeName}</div>
-                        <div className="text-slate-400 font-mono text-[11px] flex items-center gap-1.5 mt-0.5">
+                        <div className="font-semibold text-[#17231D] text-sm">{mf.schemeName}</div>
+                        <div className="text-[#758078] font-mono text-[11px] flex items-center gap-1.5 mt-0.5">
                           <span>{mf.amc}</span>
                           <span>•</span>
-                          <span className="text-slate-500">{mf.folioNumber}</span>
+                          <span className="text-[#9BA39D]">{mf.folioNumber}</span>
                         </div>
                         {mf.lockInMaturityDate && (
                           <div className="mt-1 inline-flex items-center gap-1 text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
@@ -444,21 +444,21 @@ export default function InvestmentsPage() {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#16A36A]/10 text-[#087A50] border border-[#16A36A]/20">
                           {mf.category}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-200">
+                      <td className="py-3 px-4 text-right font-mono text-[#17231D]">
                         {mf.units.toLocaleString('en-IN', { maximumFractionDigits: 3 })}
                       </td>
                       <td className="py-3 px-4 text-right font-mono">
-                        <div className="text-slate-100 font-semibold">₹{mf.currentNav.toFixed(2)}</div>
-                        <div className="text-slate-500 text-[11px]">Avg: ₹{mf.avgNav.toFixed(2)}</div>
+                        <div className="text-[#17231D] font-semibold">₹{mf.currentNav.toFixed(2)}</div>
+                        <div className="text-[#9BA39D] text-[11px]">Avg: ₹{mf.avgNav.toFixed(2)}</div>
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-300">
+                      <td className="py-3 px-4 text-right font-mono text-[#4A554E]">
                         ₹{mf.investedValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-semibold text-slate-100">
+                      <td className="py-3 px-4 text-right font-mono font-semibold text-[#17231D]">
                         ₹{mf.currentValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-3 px-4 text-right font-mono">
@@ -476,10 +476,10 @@ export default function InvestmentsPage() {
                               <Repeat className="w-2.5 h-2.5" />
                               ₹{(mf.sipDetails.monthlyAmount / 1000).toFixed(0)}k/mo
                             </span>
-                            <span className="text-[10px] text-slate-500 mt-0.5">Due Day {mf.sipDetails.debitDay}</span>
+                            <span className="text-[10px] text-[#9BA39D] mt-0.5">Due Day {mf.sipDetails.debitDay}</span>
                           </div>
                         ) : (
-                          <span className="text-slate-600 font-mono text-xs">—</span>
+                          <span className="text-[#9BA39D] font-mono text-xs">—</span>
                         )}
                       </td>
                     </tr>
@@ -498,7 +498,7 @@ export default function InvestmentsPage() {
           />
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase bg-slate-900/60 text-slate-400 border-b border-slate-800">
+              <thead className="text-xs uppercase bg-[#F7F9F7] text-[#758078] border-b border-[#E7ECE8]">
                 <tr>
                   <th className="px-4 py-3">Symbol & Name</th>
                   <th className="px-4 py-3">Asset Class</th>
@@ -509,30 +509,30 @@ export default function InvestmentsPage() {
                   <th className="px-4 py-3 text-right">Unrealized P&L</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-[#E7ECE8]">
                 {holdings
                   .filter((h) => (activeTab === 'EQUITIES' ? h.assetClass === 'EQUITY' : true))
                   .map((h) => (
-                    <tr key={h.symbol} className="hover:bg-slate-800/30 transition-colors">
+                    <tr key={h.symbol} className="hover:bg-[#F0F4F1] transition-colors">
                       <td className="px-4 py-3">
-                        <div className="font-mono font-bold text-slate-100">{h.symbol}</div>
-                        <div className="text-xs text-slate-400">{h.name}</div>
+                        <div className="font-mono font-bold text-[#17231D]">{h.symbol}</div>
+                        <div className="text-xs text-[#758078]">{h.name}</div>
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant="neutral" size="sm">
                           {h.assetClass}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-slate-200">
+                      <td className="px-4 py-3 text-right font-mono text-[#17231D]">
                         {h.quantity.toLocaleString('en-IN')}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-slate-300">
+                      <td className="px-4 py-3 text-right font-mono text-[#4A554E]">
                         ₹{h.avgCost.toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-slate-200">
+                      <td className="px-4 py-3 text-right font-mono text-[#17231D]">
                         ₹{h.currentPrice.toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-medium text-slate-100">
+                      <td className="px-4 py-3 text-right font-mono font-medium text-[#17231D]">
                         ₹{h.currentValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3 text-right font-mono">

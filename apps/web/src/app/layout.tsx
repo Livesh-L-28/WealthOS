@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="bg-[#0B0F17] text-slate-100 min-h-screen">
+      <body className="bg-[#F7F9F7] text-[#17231D] min-h-screen selection:bg-[#16A36A]/20 selection:text-[#087A50]">
         <AuthProvider>
           <AppShell>
             {children}

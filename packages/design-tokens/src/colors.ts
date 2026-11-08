@@ -57,3 +57,35 @@ export const colors = {
     '#FB7185', // Rose (Liabilities / Debt)
   ],
 } as const;
+
+/**
+ * WealthOS Premium Fintech Light Theme Palette
+ * Inspired by high-end financial wealth SaaS platforms (Brex, Mercury, Monarch, Stripe).
+ * Features white card surfaces on soft neutral canvas (#F7F9F7) with financial green (#16A36A) accents.
+ */
+export const fintechLight = {
+  bg: '#F7F9F7',
+  card: '#FFFFFF',
+  cardHover: '#FAFCFA',
+  primary: '#16A36A',
+  primaryDark: '#087A50',
+  text: '#17231D',
+  textSecondary: '#758078',
+  textMuted: '#9BA39D',
+  border: '#E7ECE8',
+  borderStrong: '#D1D9D3',
+  positive: '#16A36A',
+  negative: '#DC5B5B',
+  warning: '#D99A32',
+  accent: '#6475D8',
+  charts: {
+    green: '#16A36A',
+    darkGreen: '#087A50',
+    indigo: '#6475D8',
+    amber: '#D99A32',
+    teal: '#0D9488',
+    rose: '#DC5B5B',
+    slate: '#758078',
+  },
+} as const;
+

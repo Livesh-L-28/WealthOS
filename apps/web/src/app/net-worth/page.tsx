@@ -11,6 +11,7 @@ import {
   CreditCard,
   Briefcase,
   PieChart,
+  Sparkles,
 } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -33,46 +34,46 @@ export default function NetWorthPage() {
   const netWorth = totalAssets - totalLiabilities;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Consolidated Net Worth Statement</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Consolidated Net Worth Statement</h1>
+            <Badge variant="positive" size="sm">
+              <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
+              Audited Ledger Invariant
+            </Badge>
+          </div>
+          <p className="text-xs text-[#758078] mt-1">
             Real-time balance sheet statement: Net Worth = Total Assets - Total Liabilities.
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="brand" size="sm">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
-            Audited Ledger Invariant
-          </Badge>
         </div>
       </div>
 
       {/* KPI Net Worth Card */}
-      <div className="p-6 rounded-lg bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-900/60 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="p-6 rounded-2xl bg-white border border-[#E7ECE8] shadow-[0_1px_3px_0_rgba(23,35,29,0.04)] flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
-            Total Calculated Net Worth
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#758078]">
+            Total Consolidated Net Worth
           </span>
-          <p className="text-4xl font-extrabold text-slate-100 mt-2 font-mono">
+          <p className="text-4xl font-extrabold text-[#17231D] mt-2 font-mono tracking-tight">
             ₹{netWorth.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-slate-400 mt-1">
-            Assets: ₹{totalAssets.toLocaleString('en-IN', { minimumFractionDigits: 2 })} | Liabilities: ₹{totalLiabilities.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          <p className="text-xs text-[#758078] mt-1">
+            Assets: ₹{totalAssets.toLocaleString('en-IN', { minimumFractionDigits: 2 })} &bull; Liabilities: ₹{totalLiabilities.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
         </div>
         <div className="flex gap-4">
-          <div className="text-center p-3 rounded bg-slate-900/80 border border-slate-800">
-            <p className="text-xs text-slate-400">Solvency Ratio</p>
-            <p className="text-lg font-bold text-emerald-400 font-mono">
+          <div className="text-center p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+            <p className="text-xs text-[#758078]">Solvency Ratio</p>
+            <p className="text-xl font-bold text-[#16A36A] font-mono mt-0.5">
               {((totalAssets / (totalLiabilities || 1))).toFixed(2)}x
             </p>
           </div>
-          <div className="text-center p-3 rounded bg-slate-900/80 border border-slate-800">
-            <p className="text-xs text-slate-400">Debt-to-Asset</p>
-            <p className="text-lg font-bold text-slate-200 font-mono">
+          <div className="text-center p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+            <p className="text-xs text-[#758078]">Debt-to-Asset</p>
+            <p className="text-xl font-bold text-[#17231D] font-mono mt-0.5">
               {((totalLiabilities / totalAssets) * 100).toFixed(1)}%
             </p>
           </div>
@@ -87,21 +88,21 @@ export default function NetWorthPage() {
             title="Recognized Assets"
             subtitle={`Total: ₹${totalAssets.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           />
-          <div className="space-y-4">
+          <div className="space-y-3">
             {assets.map((asset) => {
               const Icon = asset.icon;
               return (
-                <div key={asset.name} className="flex items-center justify-between p-3 rounded bg-slate-900/40 border border-slate-800/80">
+                <div key={asset.name} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded bg-indigo-950/60 text-indigo-400 border border-indigo-900/50">
+                    <div className="p-2 rounded-lg bg-white border border-[#E7ECE8] text-[#16A36A]">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-200">{asset.name}</p>
-                      <p className="text-xs text-slate-400">{asset.share} of total portfolio</p>
+                      <p className="text-xs font-semibold text-[#17231D]">{asset.name}</p>
+                      <p className="text-[10px] text-[#758078]">{asset.share} of total assets</p>
                     </div>
                   </div>
-                  <p className="font-mono text-sm font-semibold text-slate-100">
+                  <p className="text-xs font-mono font-bold text-[#17231D]">
                     ₹{asset.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
@@ -116,22 +117,22 @@ export default function NetWorthPage() {
             title="Recognized Liabilities"
             subtitle={`Total: ₹${totalLiabilities.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           />
-          <div className="space-y-4">
-            {liabilities.map((liab) => {
-              const Icon = liab.icon;
+          <div className="space-y-3">
+            {liabilities.map((liability) => {
+              const Icon = liability.icon;
               return (
-                <div key={liab.name} className="flex items-center justify-between p-3 rounded bg-slate-900/40 border border-slate-800/80">
+                <div key={liability.name} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded bg-rose-950/60 text-rose-400 border border-rose-900/50">
+                    <div className="p-2 rounded-lg bg-white border border-[#E7ECE8] text-[#DC5B5B]">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-200">{liab.name}</p>
-                      <p className="text-xs text-slate-400">{liab.share} of total obligations</p>
+                      <p className="text-xs font-semibold text-[#17231D]">{liability.name}</p>
+                      <p className="text-[10px] text-[#758078]">{liability.share} of total debt</p>
                     </div>
                   </div>
-                  <p className="font-mono text-sm font-semibold text-rose-400">
-                    ₹{liab.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  <p className="text-xs font-mono font-bold text-[#DC5B5B]">
+                    ₹{liability.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               );
@@ -142,4 +143,3 @@ export default function NetWorthPage() {
     </div>
   );
 }
-

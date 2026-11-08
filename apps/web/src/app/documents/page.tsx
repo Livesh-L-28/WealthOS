@@ -11,6 +11,7 @@ import {
   FileCheck2,
   ArrowRight,
   Database,
+  Sparkles,
 } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -63,92 +64,101 @@ export default function DocumentsPage() {
   const [documents] = useState<DocumentItem[]>(DOCUMENTS);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Universal Document Vault & OCR</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Financial Document Vault & OCR</h1>
+            <Badge variant="positive" size="sm">
+              <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
+              MinIO S3 Encrypted
+            </Badge>
+          </div>
+          <p className="text-xs text-[#758078] mt-1">
             Automated financial statement parsing, MIME validation, and double-entry reconciliation.
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="brand" size="sm">
-            <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
-            MinIO Quarantine Pipeline
-          </Badge>
         </div>
       </div>
 
       {/* Upload Zone */}
-      <div className="border-2 border-dashed border-slate-800 rounded-lg p-8 text-center bg-slate-900/30 hover:bg-slate-900/60 transition-colors flex flex-col items-center justify-center">
-        <div className="p-4 rounded-full bg-indigo-950/60 text-indigo-400 border border-indigo-900/50 mb-3">
+      <div className="border-2 border-dashed border-[#E7ECE8] rounded-2xl p-8 text-center bg-white hover:bg-[#F7F9F7] hover:border-[#16A36A] transition-all flex flex-col items-center justify-center shadow-xs group">
+        <div className="p-4 rounded-2xl bg-[#16A36A]/10 text-[#16A36A] border border-[#16A36A]/20 mb-3 group-hover:scale-105 transition-transform">
           <UploadCloud className="w-8 h-8" />
         </div>
-        <h3 className="text-base font-semibold text-slate-200">
+        <h3 className="text-base font-semibold text-[#17231D]">
           Upload Financial Statements, Invoices or Receipts
         </h3>
-        <p className="text-xs text-slate-400 mt-1 max-w-md">
-          Supported formats: PDF (%PDF-1.x), PNG, JPEG, Excel, CSV up to 50 MB. Files are quarantined and verified before promotion.
+        <p className="text-xs text-[#758078] mt-1 max-w-md">
+          Supported formats: PDF (%PDF-1.x), PNG, JPEG, Excel, CSV up to 50 MB. Files are quarantined in MinIO and processed via asynchronous Celery workers.
         </p>
         <div className="mt-4 flex gap-3">
           <Button variant="primary" size="sm" className="gap-2">
             <FileText className="w-3.5 h-3.5" />
-            <span>Select File</span>
+            <span>Select File to Upload</span>
           </Button>
         </div>
       </div>
 
-      {/* Documents Ledger Table */}
+      {/* Processed Documents Table */}
       <Card>
         <CardHeader
-          title="Ingested Documents"
-          subtitle="Audit-logged files with OCR extraction confidence and reconciliation status"
+          title="Document Repository & Reconciliation State"
+          subtitle="Processed statements with confidence scores and mapped general journal entries"
         />
+
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="text-xs uppercase bg-slate-900/60 text-slate-400 border-b border-slate-800">
-              <tr>
-                <th className="px-4 py-3">Document Name</th>
-                <th className="px-4 py-3">Type & Size</th>
-                <th className="px-4 py-3">Uploaded</th>
-                <th className="px-4 py-3">OCR Confidence</th>
-                <th className="px-4 py-3">Processing Status</th>
-                <th className="px-4 py-3 text-right">Journal Ref</th>
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-[#E7ECE8] text-[#758078] uppercase tracking-wider font-semibold">
+                <th className="py-3 px-4">Filename</th>
+                <th className="py-3 px-4">Size & Format</th>
+                <th className="py-3 px-4">Upload Timestamp</th>
+                <th className="py-3 px-4">Extraction Confidence</th>
+                <th className="py-3 px-4">Ledger Reference</th>
+                <th className="py-3 px-4 text-center">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-[#E7ECE8]">
               {documents.map((doc) => (
-                <tr key={doc.id} className="hover:bg-slate-800/30 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-indigo-400" />
-                      <span className="font-medium text-slate-200">{doc.name}</span>
+                <tr key={doc.id} className="hover:bg-[#F7F9F7] transition-colors">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-1.5 rounded-lg bg-[#F0F4F1] text-[#16A36A] border border-[#E7ECE8]">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <span className="font-semibold text-[#17231D]">{doc.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-400">
-                    {doc.mimeType} ({doc.size})
+                  <td className="py-3 px-4 text-[#758078]">{doc.size} &bull; {doc.mimeType}</td>
+                  <td className="py-3 px-4 font-mono text-[#758078]">{doc.uploadDate}</td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 bg-[#E7ECE8] rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-[#16A36A] h-1.5 rounded-full"
+                          style={{ width: `${doc.confidence * 100}%` }}
+                        />
+                      </div>
+                      <span className="font-mono font-medium text-[#17231D]">
+                        {(doc.confidence * 100).toFixed(0)}%
+                      </span>
+                    </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-400">{doc.uploadDate}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-emerald-400">
-                    {(doc.confidence * 100).toFixed(1)}%
+                  <td className="py-3 px-4 font-mono text-xs">
+                    {doc.journalRef ? (
+                      <span className="text-[#16A36A] font-medium">{doc.journalRef}</span>
+                    ) : (
+                      <span className="text-[#9BA39D]">—</span>
+                    )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="py-3 px-4 text-center">
                     <Badge
-                      variant={
-                        doc.status === 'RECONCILED'
-                          ? 'positive'
-                          : doc.status === 'EXTRACTED'
-                          ? 'brand'
-                          : 'warning'
-                      }
+                      variant={doc.status === 'RECONCILED' ? 'positive' : 'warning'}
                       size="sm"
                     >
                       {doc.status}
                     </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-right font-mono text-xs text-indigo-400">
-                    {doc.journalRef || '—'}
                   </td>
                 </tr>
               ))}
@@ -159,4 +169,3 @@ export default function DocumentsPage() {
     </div>
   );
 }
-

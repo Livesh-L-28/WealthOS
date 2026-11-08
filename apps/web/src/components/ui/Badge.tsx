@@ -13,22 +13,21 @@ export function Badge({
   size = 'md',
   className = '',
 }: BadgeProps) {
-  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs';
+  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs';
 
   const variantClasses = {
-    positive: 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/60',
-    negative: 'bg-rose-950/60 text-rose-300 border border-rose-800/60',
-    warning: 'bg-amber-950/60 text-amber-300 border border-amber-800/60',
-    neutral: 'bg-slate-800/80 text-slate-300 border border-slate-700/60',
-    brand: 'bg-indigo-950/60 text-indigo-300 border border-indigo-800/60',
+    positive: 'bg-[#16A36A]/10 text-[#087A50] border border-[#16A36A]/25 font-medium',
+    negative: 'bg-[#DC5B5B]/10 text-[#B91C1C] border border-[#DC5B5B]/25 font-medium',
+    warning: 'bg-[#D99A32]/10 text-[#B45309] border border-[#D99A32]/25 font-medium',
+    neutral: 'bg-[#F0F4F1] text-[#4A554E] border border-[#E7ECE8]',
+    brand: 'bg-[#16A36A]/15 text-[#087A50] border border-[#16A36A]/30 font-semibold',
   }[variant];
 
   return (
     <span
-      className={`inline-flex items-center font-medium rounded-full ${sizeClasses} ${variantClasses} ${className}`}
+      className={`inline-flex items-center rounded-full ${sizeClasses} ${variantClasses} ${className}`}
     >
       {children}
     </span>
   );
 }
-

@@ -11,18 +11,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isAuthRoute) {
     return (
-      <main className="min-h-screen w-full flex items-center justify-center p-4 bg-[#0B0F17] text-slate-100">
+      <main className="min-h-screen w-full flex items-center justify-center p-4 bg-[#F7F9F7] text-[#17231D]">
         {children}
       </main>
     );
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-[#0B0F17] text-slate-100">
+    <div className="flex min-h-screen w-full bg-[#F7F9F7] text-[#17231D]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <Header />
-        <main className="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-5 md:p-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

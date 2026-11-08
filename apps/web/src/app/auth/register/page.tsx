@@ -76,17 +76,17 @@ export default function RegisterPage() {
   if (isSuccess) {
     return (
       <div className="w-full max-w-md py-8">
-        <Card className="bg-[#111827] border-slate-800 p-8 text-center shadow-2xl">
+        <Card className="bg-white border-[#E7ECE8] p-8 text-center shadow-2xl">
           <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-slate-100">Verify your email address</h2>
-          <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+          <h2 className="text-xl font-bold text-[#17231D]">Verify your email address</h2>
+          <p className="text-xs text-[#758078] mt-2 leading-relaxed">
             We have created your personal workspace and dispatched a cryptographic verification link to{' '}
-            <span className="text-slate-200 font-medium">{email}</span>.
+            <span className="text-[#17231D] font-medium">{email}</span>.
           </p>
-          <div className="mt-6 p-3 rounded-lg bg-slate-900 border border-slate-800 text-left text-xs text-slate-400 space-y-1">
-            <p className="font-semibold text-slate-300">Next Steps:</p>
+          <div className="mt-6 p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-left text-xs text-[#758078] space-y-1">
+            <p className="font-semibold text-[#4A554E]">Next Steps:</p>
             <p>1. Check your email inbox for the verification token link.</p>
             <p>2. Verify your email to activate all platform capabilities.</p>
             <p>3. Sign in to your newly provisioned workspace.</p>
@@ -107,18 +107,18 @@ export default function RegisterPage() {
     <div className="w-full max-w-md py-8">
       {/* Brand Header */}
       <div className="flex flex-col items-center mb-6 text-center">
-        <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/20 mb-3">
+        <div className="w-12 h-12 rounded-xl bg-[#16A36A] flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/20 mb-3">
           W
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">
+        <h1 className="text-2xl font-bold tracking-tight text-[#17231D]">
           Create WealthOS Account
         </h1>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-[#758078] mt-1">
           Provision your private, multi-tenant financial workspace
         </p>
       </div>
 
-      <Card className="bg-[#111827] border-slate-800 p-6 sm:p-8 shadow-2xl">
+      <Card className="bg-white border-[#E7ECE8] p-6 sm:p-8 shadow-2xl">
         {errorMessage && (
           <div
             role="alert"
@@ -136,11 +136,11 @@ export default function RegisterPage() {
           {/* Name Row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="reg-first-name" className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label htmlFor="reg-first-name" className="block text-xs font-medium text-[#4A554E] mb-1.5">
                 First Name
               </label>
               <div className="relative">
-                <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <User className="w-4 h-4 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   id="reg-first-name"
                   type="text"
@@ -148,13 +148,13 @@ export default function RegisterPage() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   placeholder="Livesh"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-md pl-9 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-md pl-9 pr-3 py-2 text-xs text-[#17231D] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A] transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="reg-last-name" className="block text-xs font-medium text-slate-300 mb-1.5">
+              <label htmlFor="reg-last-name" className="block text-xs font-medium text-[#4A554E] mb-1.5">
                 Last Name
               </label>
               <input
@@ -164,18 +164,18 @@ export default function RegisterPage() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="L"
-                className="w-full bg-slate-900 border border-slate-800 rounded-md px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-md px-3 py-2 text-xs text-[#17231D] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A] transition-colors"
               />
             </div>
           </div>
 
           {/* Email */}
           <div>
-            <label htmlFor="reg-email" className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label htmlFor="reg-email" className="block text-xs font-medium text-[#4A554E] mb-1.5">
               Work or Personal Email
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 id="reg-email"
                 type="email"
@@ -184,39 +184,39 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="livesh@example.com"
-                className="w-full bg-slate-900 border border-slate-800 rounded-md pl-9 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-md pl-9 pr-3 py-2 text-xs text-[#17231D] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A] transition-colors"
               />
             </div>
           </div>
 
           {/* Workspace Name */}
           <div>
-            <label htmlFor="reg-workspace" className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label htmlFor="reg-workspace" className="block text-xs font-medium text-[#4A554E] mb-1.5">
               Initial Workspace Name
             </label>
             <div className="relative">
-              <Building className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Building className="w-4 h-4 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 id="reg-workspace"
                 type="text"
                 value={workspaceName}
                 onChange={(e) => setWorkspaceName(e.target.value)}
                 placeholder={defaultWorkspaceName}
-                className="w-full bg-slate-900 border border-slate-800 rounded-md pl-9 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-md pl-9 pr-3 py-2 text-xs text-[#17231D] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A] transition-colors"
               />
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">
+            <p className="text-[10px] text-[#758078] mt-1">
               Will be provisioned as your primary isolated tenant ({workspaceName.trim() || defaultWorkspaceName}).
             </p>
           </div>
 
           {/* Password */}
           <div>
-            <label htmlFor="reg-password" className="block text-xs font-medium text-slate-300 mb-1.5">
+            <label htmlFor="reg-password" className="block text-xs font-medium text-[#4A554E] mb-1.5">
               Argon2id Master Password
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 id="reg-password"
                 type={showPassword ? 'text' : 'password'}
@@ -225,21 +225,21 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••••••"
-                className="w-full bg-slate-900 border border-slate-800 rounded-md pl-9 pr-10 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-md pl-9 pr-10 py-2 text-xs text-[#17231D] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A] transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="p-1.5 text-slate-400 hover:text-slate-200 absolute right-2.5 top-1/2 -translate-y-1/2 rounded focus:outline-none"
+                className="p-1.5 text-[#758078] hover:text-[#17231D] absolute right-2.5 top-1/2 -translate-y-1/2 rounded focus:outline-none"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
 
             {/* NIST Policy Checklist */}
-            <div className="mt-3 p-3 rounded bg-slate-900/80 border border-slate-800/80 space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
+            <div className="mt-3 p-3 rounded bg-[#F7F9F7] border border-[#E7ECE8] space-y-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#758078] mb-1">
                 NIST SP 800-63B Requirements:
               </p>
               {passwordCriteria.map((c) => (
@@ -247,9 +247,9 @@ export default function RegisterPage() {
                   {c.valid ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                    <XCircle className="w-3.5 h-3.5 text-[#9BA39D] flex-shrink-0" />
                   )}
-                  <span className={c.valid ? 'text-emerald-300' : 'text-slate-400'}>
+                  <span className={c.valid ? 'text-emerald-300' : 'text-[#758078]'}>
                     {c.label}
                   </span>
                 </div>
@@ -268,12 +268,12 @@ export default function RegisterPage() {
           </Button>
         </form>
 
-        <div className="mt-5 pt-5 border-t border-slate-800/80 text-center">
-          <p className="text-xs text-slate-400">
+        <div className="mt-5 pt-5 border-t border-[#E7ECE8] text-center">
+          <p className="text-xs text-[#758078]">
             Already have an account?{' '}
             <Link
               href="/auth/login"
-              className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
+              className="font-medium text-[#16A36A] hover:text-[#087A50] transition-colors"
             >
               Sign in
             </Link>

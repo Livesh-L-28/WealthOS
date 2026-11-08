@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -16,14 +16,18 @@ import {
   FileCheck2,
   FileSpreadsheet,
   Settings,
-  Bell,
-  CheckCheck,
+  ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
 }
 
 interface NavCluster {
@@ -33,85 +37,80 @@ interface NavCluster {
 
 const NAVIGATION_CLUSTERS: NavCluster[] = [
   {
-    title: 'Overview',
+    title: 'Core Wealth',
     items: [
       { label: 'Executive Dashboard', href: '/dashboard', icon: LayoutDashboard },
       { label: 'Net Worth Statement', href: '/net-worth', icon: Scale },
-    ],
-  },
-  {
-    title: 'Banking & Cash',
-    items: [
       { label: 'Accounts & Wallets', href: '/accounts', icon: Landmark },
       { label: 'Transaction Ledger', href: '/transactions', icon: ArrowLeftRight },
     ],
   },
   {
-    title: 'Cashflow & Budgets',
+    title: 'Growth & Planning',
     items: [
-      { label: 'Income & Cash Flow', href: '/cashflow', icon: Wallet },
+      { label: 'Investment Portfolio', href: '/investments', icon: TrendingUp },
+      { label: 'Expense & Cash Flow', href: '/analytics', icon: Wallet },
       { label: 'Budgets & Envelopes', href: '/budgets', icon: PieChart },
+      { label: 'Financial Goals', href: '/goals', icon: Target },
     ],
   },
   {
-    title: 'Investments',
+    title: 'Intelligence & Vault',
     items: [
-      { label: 'Portfolio Analytics', href: '/investments', icon: PieChart },
-      { label: 'Dividends & Interest', href: '/dividends', icon: Wallet },
-    ],
-  },
-  {
-    title: 'Documents & Audit',
-    items: [
-      { label: 'Document Vault (OCR)', href: '/documents', icon: FileText },
-      { label: 'Ledger Reconciliation', href: '/reconciliation', icon: CheckCheck },
-    ],
-  },
-  {
-    title: 'Intelligence',
-    items: [
-      { label: 'Financial Copilot', href: '/copilot', icon: Bot },
-      { label: 'Goals & Projections', href: '/goals', icon: Target },
-    ],
-  },
-  {
-    title: 'Reports & Settings',
-    items: [
-      { label: 'Tax & Compliance', href: '/reports/tax', icon: FileSpreadsheet },
-      { label: 'Audit Trail & Export', href: '/settings/audit', icon: FileCheck2 },
-      { label: 'System Settings', href: '/settings/security', icon: Settings },
+      { label: 'Financial Copilot', href: '/copilot', icon: Bot, badge: 'AI' },
+      { label: 'Document Vault', href: '/documents', icon: FileText },
+      { label: 'Security & Audit', href: '/settings/security', icon: Settings },
     ],
   },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <aside
       aria-label="Main Navigation"
-      className="w-64 flex-shrink-0 bg-[#0E131F] border-r border-slate-800 flex flex-col h-screen sticky top-0 overflow-y-auto"
+      className={`${
+        collapsed ? 'w-20' : 'w-64'
+      } flex-shrink-0 bg-white border-r border-[#E7ECE8] flex flex-col h-screen sticky top-0 transition-all duration-300 z-30 select-none shadow-[1px_0_3px_0_rgba(23,35,29,0.02)]`}
     >
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-800">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md">
+      <div className="h-16 flex items-center justify-between px-5 border-b border-[#E7ECE8]">
+        <Link href="/dashboard" className="flex items-center gap-3 overflow-hidden">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#16A36A] to-[#087A50] flex items-center justify-center font-bold text-white shadow-sm flex-shrink-0">
             W
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-sm tracking-wide text-slate-100">WEALTH<span className="text-indigo-400">OS</span></span>
-            <span className="text-[10px] text-slate-400 font-mono">ENTERPRISE SAAS</span>
-          </div>
+          {!collapsed && (
+            <div className="flex flex-col truncate">
+              <span className="font-bold text-sm tracking-tight text-[#17231D]">
+                Wealth<span className="text-[#16A36A]">OS</span>
+              </span>
+              <span className="text-[10px] text-[#758078] font-medium tracking-wider uppercase">
+                Enterprise Wealth
+              </span>
+            </div>
+          )}
         </Link>
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="w-7 h-7 rounded-lg text-[#758078] hover:text-[#17231D] hover:bg-[#F0F4F1] flex items-center justify-center transition-colors"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </button>
       </div>
 
       {/* Navigation Sections */}
-      <nav className="flex-1 px-3 py-4 space-y-6">
+      <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
         {NAVIGATION_CLUSTERS.map((cluster) => (
           <div key={cluster.title} className="space-y-1">
-            <h4 className="px-3 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-              {cluster.title}
-            </h4>
+            {!collapsed && (
+              <h4 className="px-3 text-[10px] font-semibold uppercase tracking-wider text-[#9BA39D]">
+                {cluster.title}
+              </h4>
+            )}
             <div className="space-y-0.5 mt-1">
               {cluster.items.map((item) => {
                 const isActive = pathname === item.href;
@@ -120,14 +119,24 @@ export function Sidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
+                    title={collapsed ? item.label : undefined}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 ${
                       isActive
-                        ? 'bg-indigo-600/15 text-indigo-300 border border-indigo-500/20'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                        ? 'bg-[#16A36A]/10 text-[#087A50] font-semibold border-l-2 border-[#16A36A]'
+                        : 'text-[#758078] hover:text-[#17231D] hover:bg-[#F0F4F1]'
                     }`}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-400' : 'text-slate-400'}`} />
-                    <span>{item.label}</span>
+                    <Icon
+                      className={`w-4 h-4 flex-shrink-0 ${
+                        isActive ? 'text-[#16A36A]' : 'text-[#758078]'
+                      }`}
+                    />
+                    {!collapsed && <span className="truncate flex-1">{item.label}</span>}
+                    {!collapsed && item.badge && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-[#16A36A]/15 text-[#087A50]">
+                        {item.badge}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -136,12 +145,19 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom Tenant & Version Info */}
-      <div className="p-4 border-t border-slate-800 text-[11px] text-slate-500 flex items-center justify-between">
-        <span>WealthOS v0.2.0</span>
-        <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 text-[10px] font-mono">ONLINE</span>
+      {/* Bottom Tenant & Version Status */}
+      <div className="p-4 border-t border-[#E7ECE8] text-[11px] text-[#758078] flex items-center justify-between bg-[#FAFCFA]">
+        {!collapsed && (
+          <div className="flex flex-col">
+            <span className="font-medium text-[#17231D]">WealthOS v1.0-rc1</span>
+            <span className="text-[10px] text-[#758078]">Double-Entry Grounded</span>
+          </div>
+        )}
+        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#16A36A]/10 text-[#087A50] text-[10px] font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#16A36A] animate-pulse"></span>
+          ONLINE
+        </span>
       </div>
     </aside>
   );
 }
-

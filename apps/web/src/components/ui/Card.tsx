@@ -10,10 +10,11 @@ export function Card({
   variant = 'default',
   ...props
 }: CardProps) {
-  const baseClasses = 'bg-[#1E293B] border border-slate-800 rounded-lg p-5';
+  const baseClasses =
+    'bg-white border border-[#E7ECE8] rounded-2xl p-5 shadow-[0_1px_3px_0_rgba(23,35,29,0.04),0_1px_2px_-1px_rgba(23,35,29,0.02)] transition-all duration-200';
   const interactiveClasses =
     variant === 'interactive'
-      ? 'hover:border-slate-700 hover:bg-[#243042] transition-colors cursor-pointer'
+      ? 'hover:border-[#D1D9D3] hover:shadow-md cursor-pointer'
       : '';
 
   return (
@@ -35,13 +36,12 @@ export function CardHeader({
   className?: string;
 }) {
   return (
-    <div className={`flex items-start justify-between pb-4 border-b border-slate-800/80 mb-4 ${className}`}>
+    <div className={`flex items-start justify-between pb-3.5 border-b border-[#E7ECE8] mb-4 ${className}`}>
       <div>
-        <h3 className="text-base font-semibold text-slate-100">{title}</h3>
-        {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
+        <h3 className="text-sm font-semibold text-[#17231D] tracking-tight">{title}</h3>
+        {subtitle && <p className="text-xs text-[#758078] mt-0.5">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}
     </div>
   );
 }
-

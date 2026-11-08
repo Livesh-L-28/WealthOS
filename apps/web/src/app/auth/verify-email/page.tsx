@@ -63,12 +63,12 @@ function VerifyEmailContent() {
 
   return (
     <div className="w-full max-w-md py-8">
-      <Card className="bg-[#111827] border-slate-800 p-8 text-center shadow-2xl">
+      <Card className="bg-white border-[#E7ECE8] p-8 text-center shadow-2xl">
         {status === 'verifying' && (
           <div className="py-8">
-            <RefreshCw className="w-10 h-10 text-indigo-400 animate-spin mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-slate-100">Verifying Email Token</h2>
-            <p className="text-xs text-slate-400 mt-2">
+            <RefreshCw className="w-10 h-10 text-[#16A36A] animate-spin mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-[#17231D]">Verifying Email Token</h2>
+            <p className="text-xs text-[#758078] mt-2">
               Validating your cryptographic verification signature with WealthOS identity service...
             </p>
           </div>
@@ -79,8 +79,8 @@ function VerifyEmailContent() {
             <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-bold text-slate-100">Email Verified Successfully</h2>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            <h2 className="text-xl font-bold text-[#17231D]">Email Verified Successfully</h2>
+            <p className="text-xs text-[#758078] mt-2 leading-relaxed">
               Your account and primary workspace are fully verified. You may now sign in to access your financial intelligence portal.
             </p>
             <div className="mt-6">
@@ -99,7 +99,7 @@ function VerifyEmailContent() {
             <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-bold text-slate-100">Verification Failed</h2>
+            <h2 className="text-xl font-bold text-[#17231D]">Verification Failed</h2>
             <p className="text-xs text-rose-300 mt-2 leading-relaxed">
               {errorMessage || 'This email verification token is invalid or has expired.'}
             </p>
@@ -119,7 +119,7 @@ function VerifyEmailContent() {
                 >
                   Resend Verification Email
                 </Button>
-                <Link href="/auth/login" className="block text-xs text-slate-400 hover:text-slate-200">
+                <Link href="/auth/login" className="block text-xs text-[#758078] hover:text-[#17231D]">
                   Return to Sign In
                 </Link>
               </div>
@@ -129,11 +129,11 @@ function VerifyEmailContent() {
 
         {status === 'idle' && (
           <div>
-            <div className="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[#16A36A] flex items-center justify-center mx-auto mb-4">
               <Mail className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-bold text-slate-100">Email Verification Required</h2>
-            <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            <h2 className="text-xl font-bold text-[#17231D]">Email Verification Required</h2>
+            <p className="text-xs text-[#758078] mt-2 leading-relaxed">
               Please click the link sent to your registered inbox to verify your email address.
             </p>
             <div className="mt-6 space-y-3">
@@ -146,7 +146,7 @@ function VerifyEmailContent() {
               >
                 Resend Verification Link
               </Button>
-              <Link href="/auth/login" className="block text-xs text-slate-400 hover:text-slate-200">
+              <Link href="/auth/login" className="block text-xs text-[#758078] hover:text-[#17231D]">
                 Return to Sign In
               </Link>
             </div>
@@ -161,8 +161,8 @@ export default function VerifyEmailPage() {
   return (
     <Suspense
       fallback={
-        <div className="text-xs text-slate-400 flex items-center gap-2">
-          <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" />
+        <div className="text-xs text-[#758078] flex items-center gap-2">
+          <RefreshCw className="w-4 h-4 animate-spin text-[#16A36A]" />
           <span>Loading verification status...</span>
         </div>
       }

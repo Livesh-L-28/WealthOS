@@ -9,6 +9,8 @@ import {
   TrendingDown,
   ShieldAlert,
   Calendar,
+  Sparkles,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -66,25 +68,28 @@ export default function BudgetsPage() {
   const totalAllocated = budgets.reduce((sum, b) => sum + b.allocated, 0);
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
   const overallUtilization = totalAllocated > 0 ? (totalSpent / totalAllocated) * 100 : 0;
+  const surplus = totalAllocated - totalSpent;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
         <div>
-          <h1 className="text-2xl font-bold text-slate-100 tracking-tight">Budgets & Spend Tracking</h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Budgets & Envelope Tracking</h1>
+            <Badge variant="positive" size="sm">
+              <Calendar className="w-3 h-3 mr-1 inline" />
+              November 2026
+            </Badge>
+          </div>
+          <p className="text-xs text-[#758078] mt-1">
             Category spend envelope allocations with real-time overspending alerts.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="gap-2">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>November 2026</span>
-          </Button>
+        <div className="flex items-center gap-2.5">
           <Button variant="primary" size="sm" className="gap-2">
             <PlusCircle className="w-3.5 h-3.5" />
-            <span>New Budget</span>
+            <span>New Budget Envelope</span>
           </Button>
         </div>
       </div>
@@ -93,97 +98,125 @@ export default function BudgetsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
               Total Budget Pool
             </span>
-            <PieChart className="w-4 h-4 text-indigo-400" />
+            <div className="w-8 h-8 rounded-xl bg-[#6475D8]/10 flex items-center justify-center text-[#6475D8]">
+              <PieChart className="w-4 h-4" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-slate-100 mt-2">
+          <p className="text-2xl font-bold text-[#17231D] mt-2">
             ₹{totalAllocated.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">Allocated across {budgets.length} expense categories</p>
+          <p className="text-xs text-[#758078] mt-1">Allocated across 5 active envelopes</p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Actual MTD Spend
+            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+              Settled Expenditure
             </span>
-            <TrendingDown className="w-4 h-4 text-emerald-400" />
+            <div className="w-8 h-8 rounded-xl bg-[#F7F9F7] flex items-center justify-center text-[#17231D]">
+              <TrendingDown className="w-4 h-4" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-slate-100 mt-2">
+          <p className="text-2xl font-bold text-[#17231D] mt-2">
             ₹{totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[11px] text-slate-400 mt-1">
-            Remaining Buffer: ₹{(totalAllocated - totalSpent).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          <p className="text-xs text-[#758078] mt-1">
+            {overallUtilization.toFixed(1)}% of total allocation consumed
           </p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Overall Spend Ratio
+            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+              Budget Headroom
             </span>
-            <ShieldAlert className="w-4 h-4 text-amber-400" />
+            <div className="w-8 h-8 rounded-xl bg-[#16A36A]/10 flex items-center justify-center text-[#16A36A]">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-slate-100 mt-2">
-            {overallUtilization.toFixed(1)}%
+          <p className="text-2xl font-bold text-[#16A36A] mt-2">
+            ₹{surplus.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[11px] text-amber-400 mt-1">Target limit: &le; 90.0% of monthly income</p>
+          <p className="text-xs text-[#16A36A] font-medium mt-1">Available spending capacity</p>
         </Card>
       </div>
 
-      {/* Category Envelopes List */}
+      {/* Envelope Progress Bars */}
       <Card>
         <CardHeader
-          title="Category Allocations & Status"
-          subtitle="Real-time warning threshold triggers at 85% and critical alerts at 100%+"
+          title="Envelope Allocations & Health Indicators"
+          subtitle="Real-time variance gauges against current billing cycle"
         />
-        <div className="space-y-6">
+
+        <div className="space-y-5">
           {budgets.map((b) => {
             const ratio = (b.spent / b.allocated) * 100;
             const isOverspent = ratio > 100;
             const isWarning = ratio >= 85 && ratio <= 100;
 
-            const barColor = isOverspent
-              ? 'bg-rose-500'
-              : isWarning
-              ? 'bg-amber-500'
-              : 'bg-emerald-500';
-
             return (
-              <div key={b.id} className="space-y-2 p-3 rounded bg-slate-900/50 border border-slate-800/80">
-                <div className="flex items-center justify-between">
+              <div
+                key={b.id}
+                className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] space-y-2.5"
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-slate-200">{b.category}</span>
                     {isOverspent && (
-                      <Badge variant="negative" size="sm">
-                        <AlertTriangle className="w-3 h-3 mr-1 inline" /> Overspent ({ratio.toFixed(0)}%)
-                      </Badge>
+                      <AlertCircle className="w-4 h-4 text-[#DC5B5B] flex-shrink-0" />
                     )}
                     {isWarning && (
-                      <Badge variant="warning" size="sm">
-                        Near Limit ({ratio.toFixed(0)}%)
-                      </Badge>
+                      <AlertTriangle className="w-4 h-4 text-[#D99A32] flex-shrink-0" />
                     )}
                     {!isOverspent && !isWarning && (
-                      <Badge variant="positive" size="sm">
-                        On Track ({ratio.toFixed(0)}%)
-                      </Badge>
+                      <CheckCircle2 className="w-4 h-4 text-[#16A36A] flex-shrink-0" />
                     )}
+                    <span className="font-semibold text-sm text-[#17231D]">{b.category}</span>
                   </div>
-                  <div className="font-mono text-xs text-slate-300">
-                    ₹{b.spent.toLocaleString('en-IN', { minimumFractionDigits: 2 })} / ₹
-                    {b.allocated.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono font-medium text-[#758078]">
+                      ₹{b.spent.toLocaleString('en-IN')} / ₹{b.allocated.toLocaleString('en-IN')}
+                    </span>
+                    <Badge
+                      variant={
+                        isOverspent
+                          ? 'negative'
+                          : isWarning
+                          ? 'warning'
+                          : 'positive'
+                      }
+                      size="sm"
+                    >
+                      {ratio.toFixed(1)}%
+                    </Badge>
                   </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-[#E7ECE8] rounded-full h-2.5 overflow-hidden">
                   <div
-                    className={`h-2.5 rounded-full transition-all duration-500 ${barColor}`}
+                    className={`h-2.5 rounded-full transition-all duration-500 ${
+                      isOverspent
+                        ? 'bg-[#DC5B5B]'
+                        : isWarning
+                        ? 'bg-[#D99A32]'
+                        : 'bg-[#16A36A]'
+                    }`}
                     style={{ width: `${Math.min(ratio, 100)}%` }}
                   />
+                </div>
+
+                <div className="flex justify-between items-center text-[11px] text-[#758078] pt-1">
+                  <span>
+                    {isOverspent
+                      ? `Overspent by ₹${(b.spent - b.allocated).toLocaleString('en-IN')}`
+                      : `Remaining: ₹${(b.allocated - b.spent).toLocaleString('en-IN')}`}
+                  </span>
+                  <span className="font-medium text-[#17231D]">
+                    {isOverspent ? 'Budget Exceeded' : isWarning ? 'Close to Limit' : 'Within Budget'}
+                  </span>
                 </div>
               </div>
             );
@@ -193,4 +226,3 @@ export default function BudgetsPage() {
     </div>
   );
 }
-
