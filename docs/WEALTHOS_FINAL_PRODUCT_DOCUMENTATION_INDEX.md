@@ -49,3 +49,22 @@
 - [WEALTHOS_FINAL_FINANCIAL_CONSISTENCY_REPORT.md](file:///Users/livesh/WEALTHOS/docs/testing/WEALTHOS_FINAL_FINANCIAL_CONSISTENCY_REPORT.md): 100% mathematical consistency verification across surfaces.
 - [WEALTHOS_STAGE_11_FINAL_TEST_STRATEGY.md](file:///Users/livesh/WEALTHOS/docs/testing/WEALTHOS_STAGE_11_FINAL_TEST_STRATEGY.md): Comprehensive test pyramid and 12 end-to-end integration workflows.
 - [WEALTHOS_FINAL_API_CONTRACT_AUDIT.md](file:///Users/livesh/WEALTHOS/docs/api/WEALTHOS_FINAL_API_CONTRACT_AUDIT.md): REST API contracts and web/mobile compatibility matrix.
+- [WEALTHOS_FINAL_E2E_EXECUTION_REPORT.md](file:///Users/livesh/WEALTHOS/docs/testing/WEALTHOS_FINAL_E2E_EXECUTION_REPORT.md): Verified execution results for all 12 canonical end-to-end workflows (WF-01 to WF-12).
+- [WEALTHOS_API_CONTRACT_ACCEPTANCE.md](file:///Users/livesh/WEALTHOS/docs/testing/WEALTHOS_API_CONTRACT_ACCEPTANCE.md): Final API contract compatibility across backend, web, and mobile surfaces.
+- [WEALTHOS_FINAL_FINANCIAL_RECONCILIATION_REPORT.md](file:///Users/livesh/WEALTHOS/docs/testing/WEALTHOS_FINAL_FINANCIAL_RECONCILIATION_REPORT.md): Master cross-surface net worth, cash flow, and FIFO portfolio reconciliation report.
+- [WEALTHOS_FINAL_PERFORMANCE_REPORT.md](file:///Users/livesh/WEALTHOS/docs/performance/WEALTHOS_FINAL_PERFORMANCE_REPORT.md): Measured latency benchmarks, connection pool behavior, and SLO/SLI validation.
+
+---
+
+## 5. Master Release, Operations & Hardening Suite
+
+- [WEALTHOS_MASTER_BASELINE_AUDIT.md](file:///Users/livesh/WEALTHOS/docs/release/WEALTHOS_MASTER_BASELINE_AUDIT.md): Master discovery baseline and commit audit.
+- [WEALTHOS_FINAL_MIGRATION_AUDIT.md](file:///Users/livesh/WEALTHOS/docs/database/WEALTHOS_FINAL_MIGRATION_AUDIT.md): Alembic migration 0005 consolidation, reversible lifecycle, and RLS audit.
+- [WEALTHOS_BACKUP_RUNBOOK.md](file:///Users/livesh/WEALTHOS/docs/operations/WEALTHOS_BACKUP_RUNBOOK.md): Authoritative AES-256 encrypted PostgreSQL backup runbook.
+- [WEALTHOS_RESTORE_RUNBOOK.md](file:///Users/livesh/WEALTHOS/docs/operations/WEALTHOS_RESTORE_RUNBOOK.md): Clean-environment restoration runbook with post-restore balance audit.
+- [WEALTHOS_DR_EXERCISE_REPORT.md](file:///Users/livesh/WEALTHOS/docs/operations/WEALTHOS_DR_EXERCISE_REPORT.md): Live disaster recovery drill execution report (RPO: 0.000m, RTO: 1.213s).
+- [WEALTHOS_FINAL_SECURITY_VERIFICATION.md](file:///Users/livesh/WEALTHOS/docs/security/WEALTHOS_FINAL_SECURITY_VERIFICATION.md): Comprehensive security, tenant-isolation, and AI safety verification report.
+- [WEALTHOS_FINAL_CI_ACCEPTANCE.md](file:///Users/livesh/WEALTHOS/docs/release/WEALTHOS_FINAL_CI_ACCEPTANCE.md): GitHub Actions CI/CD gate audit and exact-HEAD verification.
+- [WEALTHOS_PRODUCTION_DEPLOYMENT_RUNBOOK.md](file:///Users/livesh/WEALTHOS/docs/release/WEALTHOS_PRODUCTION_DEPLOYMENT_RUNBOOK.md): Zero-downtime deployment steps, rollback runbook, and launch dependencies matrix.
+- [WEALTHOS_FINAL_DEFECT_REGISTER.md](file:///Users/livesh/WEALTHOS/docs/release/WEALTHOS_FINAL_DEFECT_REGISTER.md): Exhaustive defect register with root cause, remediation, and regression verification for all defects.
+- [WEALTHOS_FINAL_RELEASE_READINESS_REPORT.md](file:///Users/livesh/WEALTHOS/docs/release/WEALTHOS_FINAL_RELEASE_READINESS_REPORT.md): Capstone 21-category release readiness scorecard and release candidate recommendation (`v1.0.0-rc1`).
