@@ -6,7 +6,6 @@ import {
   ScrollView,
   RefreshControl,
   Text,
-  Animated,
   Platform,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
@@ -14,6 +13,7 @@ import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { theme } from './src/theme';
 import {
   TabType,
+  ActiveScreen,
   DashboardPeriod,
   BankAccount,
   Transaction,
@@ -38,6 +38,13 @@ import { AccountsScreen } from './src/components/AccountsScreen';
 import { PortfolioScreen } from './src/components/PortfolioScreen';
 import { BudgetsScreen } from './src/components/BudgetsScreen';
 import { CopilotScreen } from './src/components/CopilotScreen';
+import { EnterpriseDrawer } from './src/components/EnterpriseDrawer';
+import { NetWorthScreen } from './src/components/NetWorthScreen';
+import { AnalyticsScreen } from './src/components/AnalyticsScreen';
+import { ReconciliationScreen } from './src/components/ReconciliationScreen';
+import { DocumentsScreen } from './src/components/DocumentsScreen';
+import { HouseholdScreen } from './src/components/HouseholdScreen';
+import { SettingsScreen } from './src/components/SettingsScreen';
 import { ReconciliationModal } from './src/components/ReconciliationModal';
 import { AddTransactionModal } from './src/components/AddTransactionModal';
 import { ConnectAccountModal } from './src/components/ConnectAccountModal';
@@ -47,7 +54,8 @@ import { formatINR } from './src/formatters';
 export { formatINR };
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeScreen, setActiveScreen] = useState<ActiveScreen>('overview');
+  const [activeWorkspace, setActiveWorkspace] = useState('Family Office');
   const [period, setPeriod] = useState<DashboardPeriod>('1M');
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
@@ -61,7 +69,8 @@ export default function App() {
   const [copilotMessages, setCopilotMessages] = useState<CopilotMessage[]>(INITIAL_COPILOT_MESSAGES);
   const [chatInput, setChatInput] = useState('');
 
-  // Modals
+  // Modals & Drawer
+  const [isEnterpriseDrawerOpen, setIsEnterpriseDrawerOpen] = useState(false);
   const [isReconModalOpen, setIsReconModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
@@ -126,7 +135,6 @@ export default function App() {
       status: 'RECONCILED',
     };
 
-    // Update account balance
     setAccounts((prev) =>
       prev.map((acc) => {
         if (acc.name === data.accountName || acc.id === accounts[0]?.id) {
@@ -232,6 +240,12 @@ export default function App() {
     }, 550);
   };
 
+  // Determine if active screen is a primary bottom tab
+  const isPrimaryTab = ['overview', 'accounts', 'investments', 'budgets', 'copilot'].includes(
+    activeScreen
+  );
+  const activeTab: TabType = isPrimaryTab ? (activeScreen as TabType) : 'overview';
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <ExpoStatusBar style="dark" backgroundColor={theme.colors.surface} />
@@ -239,7 +253,9 @@ export default function App() {
       {/* Top Header */}
       <Header
         onAddTransaction={() => setIsAddTxModalOpen(true)}
-        onOpenReconciliation={() => setIsReconModalOpen(true)}
+        onOpenReconciliation={() => setActiveScreen('reconciliation')}
+        onOpenHub={() => setIsEnterpriseDrawerOpen(true)}
+        activeWorkspace={activeWorkspace}
         isSyncing={refreshing}
       />
 
@@ -255,9 +271,53 @@ export default function App() {
         </View>
       )}
 
-      {/* Main Tab Screen Content */}
+      {/* Main Content Router */}
       <View style={styles.mainContent}>
-        {activeTab === 'overview' && (
+        {/* Enterprise Dedicated Screens */}
+        {activeScreen === 'net-worth' && (
+          <NetWorthScreen onBack={() => setActiveScreen('overview')} />
+        )}
+
+        {activeScreen === 'analytics' && (
+          <AnalyticsScreen onBack={() => setActiveScreen('overview')} />
+        )}
+
+        {activeScreen === 'reconciliation' && (
+          <ReconciliationScreen
+            onBack={() => setActiveScreen('overview')}
+            onShowToast={showNotification}
+          />
+        )}
+
+        {activeScreen === 'documents' && (
+          <DocumentsScreen
+            onBack={() => setActiveScreen('overview')}
+            onUploadDocument={() => setIsImportModalOpen(true)}
+            onShowToast={showNotification}
+          />
+        )}
+
+        {activeScreen === 'household' && (
+          <HouseholdScreen
+            onBack={() => setActiveScreen('overview')}
+            onShowToast={showNotification}
+          />
+        )}
+
+        {activeScreen === 'settings' && (
+          <SettingsScreen
+            onBack={() => setActiveScreen('overview')}
+            activeWorkspace={activeWorkspace}
+            onSelectWorkspace={(ws) => {
+              setActiveWorkspace(ws);
+              showNotification(`Switched tenant workspace to ${ws}`);
+            }}
+            onShowToast={showNotification}
+          />
+        )}
+
+        {/* Primary Bottom Tab Screens */}
+        {activeScreen === 'overview' && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -286,13 +346,15 @@ export default function App() {
               onConnectBank={() => setIsConnectModalOpen(true)}
               onImportStatement={() => setIsImportModalOpen(true)}
               onAddTransaction={() => setIsAddTxModalOpen(true)}
-              onAskCopilot={() => setActiveTab('copilot')}
-              onViewAllTransactions={() => setActiveTab('accounts')}
+              onAskCopilot={() => setActiveScreen('copilot')}
+              onViewAllTransactions={() => setActiveScreen('accounts')}
+              onOpenNetWorth={() => setActiveScreen('net-worth')}
+              onOpenAnalytics={() => setActiveScreen('analytics')}
             />
           </ScrollView>
         )}
 
-        {activeTab === 'accounts' && (
+        {activeScreen === 'accounts' && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -307,12 +369,14 @@ export default function App() {
           >
             <AccountsScreen
               accounts={accounts}
+              transactions={transactions}
               onConnectAccount={() => setIsConnectModalOpen(true)}
+              onAddTransaction={() => setIsAddTxModalOpen(true)}
             />
           </ScrollView>
         )}
 
-        {activeTab === 'investments' && (
+        {activeScreen === 'investments' && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -329,7 +393,7 @@ export default function App() {
           </ScrollView>
         )}
 
-        {activeTab === 'budgets' && (
+        {activeScreen === 'budgets' && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -346,7 +410,7 @@ export default function App() {
           </ScrollView>
         )}
 
-        {activeTab === 'copilot' && (
+        {activeScreen === 'copilot' && (
           <CopilotScreen
             messages={copilotMessages}
             chatInput={chatInput}
@@ -357,7 +421,23 @@ export default function App() {
       </View>
 
       {/* Bottom Navigation */}
-      <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomNav
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveScreen(tab)}
+      />
+
+      {/* Enterprise Drawer Hub */}
+      <EnterpriseDrawer
+        isOpen={isEnterpriseDrawerOpen}
+        onClose={() => setIsEnterpriseDrawerOpen(false)}
+        activeScreen={activeScreen}
+        onSelectScreen={(screen) => setActiveScreen(screen)}
+        activeWorkspace={activeWorkspace}
+        onSelectWorkspace={(ws) => {
+          setActiveWorkspace(ws);
+          showNotification(`Active tenant switched to ${ws}`);
+        }}
+      />
 
       {/* Modals */}
       <ReconciliationModal

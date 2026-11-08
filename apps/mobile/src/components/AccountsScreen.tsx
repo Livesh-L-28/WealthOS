@@ -1,22 +1,37 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
+  Modal,
+} from 'react-native';
 import { theme } from '../theme';
-import { BankAccount } from '../types';
+import { BankAccount, Transaction } from '../types';
 import { formatINR } from '../formatters';
 
 interface AccountsScreenProps {
   accounts: BankAccount[];
+  transactions: Transaction[];
   onConnectAccount: () => void;
+  onAddTransaction: () => void;
 }
 
 export const AccountsScreen: React.FC<AccountsScreenProps> = ({
   accounts,
+  transactions,
   onConnectAccount,
+  onAddTransaction,
 }) => {
-  const [filter, setFilter] = useState<'ALL' | 'ASSET' | 'LIABILITY'>('ALL');
+  const [activeSubTab, setActiveSubTab] = useState<'ACCOUNTS' | 'TRANSACTIONS'>('ACCOUNTS');
+  const [accountFilter, setAccountFilter] = useState<'ALL' | 'ASSET' | 'LIABILITY'>('ALL');
+  const [txTypeFilter, setTxTypeFilter] = useState<'ALL' | 'DEBIT' | 'CREDIT'>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const filteredAccounts = accounts.filter(
-    (a) => filter === 'ALL' || a.category === filter
+    (a) => accountFilter === 'ALL' || a.category === accountFilter
   );
 
   const totalAssets = accounts
@@ -27,131 +42,359 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
     .filter((a) => a.category === 'LIABILITY')
     .reduce((sum, a) => sum + a.balance, 0);
 
+  const filteredTransactions = transactions.filter((tx) => {
+    const matchesType = txTypeFilter === 'ALL' || tx.type === txTypeFilter;
+    const matchesSearch =
+      !searchQuery ||
+      tx.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tx.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tx.accountName.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesType && matchesSearch;
+  });
+
   return (
     <View style={styles.container}>
-      {/* Summary Card */}
-      <View style={styles.summaryCard}>
-        <View style={styles.summaryTop}>
-          <Text style={styles.summaryLabel}>CONNECTED INSTITUTION ACCOUNTS</Text>
-          <View style={styles.syncBadge}>
-            <Text style={styles.syncBadgeText}>● All 6 Synced</Text>
-          </View>
-        </View>
-
-        <View style={styles.summaryNumbersRow}>
-          <View style={styles.summaryBox}>
-            <Text style={styles.summaryBoxLabel}>Asset Balances</Text>
-            <Text style={styles.assetVal}>{formatINR(totalAssets)}</Text>
-          </View>
-          <View style={styles.divider} />
-          <View style={styles.summaryBox}>
-            <Text style={styles.summaryBoxLabel}>Liability Debts</Text>
-            <Text style={styles.liabilityVal}>{formatINR(totalLiabilities)}</Text>
-          </View>
-        </View>
+      {/* Top Cockpit Mode Switcher */}
+      <View style={styles.modeTabs}>
+        <TouchableOpacity
+          style={[styles.modeTab, activeSubTab === 'ACCOUNTS' && styles.modeTabActive]}
+          onPress={() => setActiveSubTab('ACCOUNTS')}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.modeTabText,
+              activeSubTab === 'ACCOUNTS' && styles.modeTabTextActive,
+            ]}
+          >
+            Connected Accounts ({accounts.length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modeTab, activeSubTab === 'TRANSACTIONS' && styles.modeTabActive]}
+          onPress={() => setActiveSubTab('TRANSACTIONS')}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.modeTabText,
+              activeSubTab === 'TRANSACTIONS' && styles.modeTabTextActive,
+            ]}
+          >
+            Transactions Ledger ({transactions.length})
+          </Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Segmented Filter Control */}
-      <View style={styles.segmentedControl}>
-        {(
-          [
-            { id: 'ALL', label: `All (${accounts.length})` },
-            { id: 'ASSET', label: 'Assets' },
-            { id: 'LIABILITY', label: 'Debts' },
-          ] as const
-        ).map((f) => {
-          const isActive = filter === f.id;
-          return (
-            <TouchableOpacity
-              key={f.id}
-              style={[styles.segmentBtn, isActive && styles.segmentBtnActive]}
-              onPress={() => setFilter(f.id)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.segmentText, isActive && styles.segmentTextActive]}>
-                {f.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {activeSubTab === 'ACCOUNTS' ? (
+        <>
+          {/* Summary Card */}
+          <View style={styles.summaryCard}>
+            <View style={styles.summaryTop}>
+              <Text style={styles.summaryLabel}>CONNECTED INSTITUTION ACCOUNTS</Text>
+              <View style={styles.syncBadge}>
+                <Text style={styles.syncBadgeText}>● All 6 Synced</Text>
+              </View>
+            </View>
 
-      {/* Accounts List */}
-      <View style={styles.accountList}>
-        {filteredAccounts.map((acc) => {
-          const isAsset = acc.category === 'ASSET';
-          return (
-            <View key={acc.id} style={styles.accountCard}>
-              <View style={styles.cardTopRow}>
-                <View style={styles.bankAvatar}>
-                  <Text style={styles.bankEmoji}>
-                    {acc.type === 'CREDIT_CARD' ? '💳' : acc.type === 'DEMAT' ? '📈' : '🏛️'}
+            <View style={styles.summaryNumbersRow}>
+              <View style={styles.summaryBox}>
+                <Text style={styles.summaryBoxLabel}>Asset Balances</Text>
+                <Text style={styles.assetVal}>{formatINR(totalAssets)}</Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.summaryBox}>
+                <Text style={styles.summaryBoxLabel}>Liability Debts</Text>
+                <Text style={styles.liabilityVal}>{formatINR(totalLiabilities)}</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Segmented Filter Control */}
+          <View style={styles.segmentedControl}>
+            {(
+              [
+                { id: 'ALL', label: `All (${accounts.length})` },
+                { id: 'ASSET', label: 'Assets' },
+                { id: 'LIABILITY', label: 'Debts' },
+              ] as const
+            ).map((f) => {
+              const isActive = accountFilter === f.id;
+              return (
+                <TouchableOpacity
+                  key={f.id}
+                  style={[styles.segmentBtn, isActive && styles.segmentBtnActive]}
+                  onPress={() => setAccountFilter(f.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.segmentText, isActive && styles.segmentTextActive]}>
+                    {f.label}
                   </Text>
-                </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
-                <View style={styles.accountMeta}>
-                  <Text style={styles.accountName}>{acc.name}</Text>
-                  <Text style={styles.accountInstitution}>
-                    {acc.institution} · {acc.accountNumberMask}
-                  </Text>
-                </View>
+          {/* Accounts List */}
+          <View style={styles.accountList}>
+            {filteredAccounts.map((acc) => {
+              const isAsset = acc.category === 'ASSET';
+              return (
+                <View key={acc.id} style={styles.accountCard}>
+                  <View style={styles.cardTopRow}>
+                    <View style={styles.bankAvatar}>
+                      <Text style={styles.bankEmoji}>
+                        {acc.type === 'CREDIT_CARD' ? '💳' : acc.type === 'DEMAT' ? '📈' : '🏛️'}
+                      </Text>
+                    </View>
 
-                <View
-                  style={[
-                    styles.typeBadge,
-                    isAsset ? styles.typeBadgeAsset : styles.typeBadgeLiability,
-                  ]}
+                    <View style={styles.accountMeta}>
+                      <Text style={styles.accountName}>{acc.name}</Text>
+                      <Text style={styles.accountInstitution}>
+                        {acc.institution} · {acc.accountNumberMask}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={[
+                        styles.typeBadge,
+                        isAsset ? styles.typeBadgeAsset : styles.typeBadgeLiability,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.typeBadgeText,
+                          isAsset ? styles.typeTextAsset : styles.typeTextLiability,
+                        ]}
+                      >
+                        {acc.type}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.cardMidRow}>
+                    <View>
+                      <Text style={styles.balanceLabel}>LEDGER BALANCE</Text>
+                      <Text
+                        style={[
+                          styles.accountBalance,
+                          isAsset ? styles.balanceAsset : styles.balanceLiability,
+                        ]}
+                      >
+                        {formatINR(acc.balance)}
+                      </Text>
+                    </View>
+                    {acc.interestRate && (
+                      <View style={styles.rateBadge}>
+                        <Text style={styles.rateText}>{acc.interestRate}% p.a.</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={styles.cardFooter}>
+                    <Text style={styles.syncStatusText}>Synced: {acc.lastSynced}</Text>
+                    <View style={styles.verifiedRow}>
+                      <Text style={styles.verifiedDot}>●</Text>
+                      <Text style={styles.verifiedText}>Double-Entry Verified</Text>
+                    </View>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Add Account Button */}
+          <TouchableOpacity
+            style={styles.connectBtn}
+            onPress={onConnectAccount}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.connectBtnText}>+ Connect Another Bank or Demat</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          {/* Transactions Ledger Search & Filter Bar */}
+          <View style={styles.searchContainer}>
+            <Text style={styles.searchIcon}>🔍</Text>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search merchant, category, account..."
+              placeholderTextColor={theme.colors.textTertiary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} activeOpacity={0.7}>
+                <Text style={styles.clearSearch}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Filter Pills */}
+          <View style={styles.txFilterRow}>
+            {(['ALL', 'DEBIT', 'CREDIT'] as const).map((type) => {
+              const isSelected = txTypeFilter === type;
+              return (
+                <TouchableOpacity
+                  key={type}
+                  style={[styles.txFilterPill, isSelected && styles.txFilterPillActive]}
+                  onPress={() => setTxTypeFilter(type)}
+                  activeOpacity={0.7}
                 >
                   <Text
                     style={[
-                      styles.typeBadgeText,
-                      isAsset ? styles.typeTextAsset : styles.typeTextLiability,
+                      styles.txFilterPillText,
+                      isSelected && styles.txFilterPillTextActive,
                     ]}
                   >
-                    {acc.type}
+                    {type === 'ALL' ? 'All Transactions' : type === 'DEBIT' ? 'Outflows (-)' : 'Inflows (+)'}
                   </Text>
-                </View>
-              </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
 
-              <View style={styles.cardMidRow}>
-                <View>
-                  <Text style={styles.balanceLabel}>LEDGER BALANCE</Text>
+          {/* Transactions List */}
+          <View style={styles.txList}>
+            {filteredTransactions.map((tx) => {
+              const isCredit = tx.type === 'CREDIT';
+              return (
+                <TouchableOpacity
+                  key={tx.id}
+                  style={styles.txCard}
+                  onPress={() => setSelectedTx(tx)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.txRow}>
+                    <View
+                      style={[
+                        styles.txIconBox,
+                        isCredit ? styles.txIconCredit : styles.txIconDebit,
+                      ]}
+                    >
+                      <Text style={styles.txIconText}>{isCredit ? '↓' : '↑'}</Text>
+                    </View>
+
+                    <View style={styles.txInfoCol}>
+                      <View style={styles.txTitleRow}>
+                        <Text style={styles.txTitle} numberOfLines={1}>
+                          {tx.title}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.txAmount,
+                            isCredit ? styles.txAmountCredit : styles.txAmountDebit,
+                          ]}
+                        >
+                          {isCredit ? '+' : '-'}{formatINR(tx.amount)}
+                        </Text>
+                      </View>
+                      <View style={styles.txSubRow}>
+                        <Text style={styles.txMeta}>
+                          {tx.category} • {tx.accountName}
+                        </Text>
+                        <View style={styles.txStatusPill}>
+                          <Text style={styles.txStatusText}>{tx.status}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Add Entry Button */}
+          <TouchableOpacity
+            style={styles.connectBtn}
+            onPress={onAddTransaction}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.connectBtnText}>+ Record New Journal Entry</Text>
+          </TouchableOpacity>
+        </>
+      )}
+
+      {/* Transaction Detail Bottom Sheet Modal */}
+      <Modal
+        visible={selectedTx !== null}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setSelectedTx(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={() => setSelectedTx(null)}
+          />
+          <View style={styles.txModalSheet}>
+            <View style={styles.modalDragPill} />
+            {selectedTx && (
+              <>
+                <View style={styles.txModalHeader}>
+                  <Text style={styles.txModalEyebrow}>JOURNAL ENTRY RECORD</Text>
+                  <Text style={styles.txModalTitle}>{selectedTx.title}</Text>
                   <Text
                     style={[
-                      styles.accountBalance,
-                      isAsset ? styles.balanceAsset : styles.balanceLiability,
+                      styles.txModalAmount,
+                      selectedTx.type === 'CREDIT' ? styles.txAmountCredit : styles.txAmountDebit,
                     ]}
                   >
-                    {formatINR(acc.balance)}
+                    {selectedTx.type === 'CREDIT' ? '+' : '-'}{formatINR(selectedTx.amount)}
                   </Text>
                 </View>
-                {acc.interestRate && (
-                  <View style={styles.rateBadge}>
-                    <Text style={styles.rateText}>{acc.interestRate}% p.a.</Text>
+
+                {/* Double-entry Ledger Legs */}
+                <View style={styles.ledgerLegsBox}>
+                  <Text style={styles.ledgerLegsTitle}>DOUBLE-ENTRY LEDGER LEGS</Text>
+                  <View style={styles.legRow}>
+                    <Text style={styles.legType}>
+                      {selectedTx.type === 'CREDIT' ? 'DEBIT LEG (Cash Inflow)' : 'DEBIT LEG (Expense Acc)'}
+                    </Text>
+                    <Text style={styles.legValue}>{formatINR(selectedTx.amount)}</Text>
                   </View>
-                )}
-              </View>
-
-              <View style={styles.cardFooter}>
-                <Text style={styles.syncStatusText}>Synced: {acc.lastSynced}</Text>
-                <View style={styles.verifiedRow}>
-                  <Text style={styles.verifiedDot}>●</Text>
-                  <Text style={styles.verifiedText}>Double-Entry Verified</Text>
+                  <View style={styles.legRow}>
+                    <Text style={styles.legType}>
+                      {selectedTx.type === 'CREDIT' ? 'CREDIT LEG (Revenue/Yield)' : 'CREDIT LEG (Depository Asset)'}
+                    </Text>
+                    <Text style={styles.legValue}>{formatINR(selectedTx.amount)}</Text>
+                  </View>
                 </View>
-              </View>
-            </View>
-          );
-        })}
-      </View>
 
-      {/* Add Account Button */}
-      <TouchableOpacity
-        style={styles.connectBtn}
-        onPress={onConnectAccount}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.connectBtnText}>+ Connect Another Bank or Demat</Text>
-      </TouchableOpacity>
+                {/* Audit Attributes */}
+                <View style={styles.auditAttributes}>
+                  <View style={styles.attrRow}>
+                    <Text style={styles.attrLabel}>Account</Text>
+                    <Text style={styles.attrVal}>{selectedTx.accountName}</Text>
+                  </View>
+                  <View style={styles.attrRow}>
+                    <Text style={styles.attrLabel}>Category</Text>
+                    <Text style={styles.attrVal}>{selectedTx.category}</Text>
+                  </View>
+                  <View style={styles.attrRow}>
+                    <Text style={styles.attrLabel}>Date Posted</Text>
+                    <Text style={styles.attrVal}>{selectedTx.date}</Text>
+                  </View>
+                  <View style={styles.attrRow}>
+                    <Text style={styles.attrLabel}>Audit Status</Text>
+                    <Text style={styles.attrValGreen}>● Verified & Settled</Text>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.closeModalBtn}
+                  onPress={() => setSelectedTx(null)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.closeModalBtnText}>Close Journal Details</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -161,6 +404,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 14,
     paddingBottom: 24,
+  },
+  modeTabs: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  modeTab: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: 'center',
+    borderRadius: 9,
+  },
+  modeTabActive: {
+    backgroundColor: theme.colors.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  modeTabText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+  modeTabTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '700',
   },
   summaryCard: {
     backgroundColor: theme.colors.surface,
@@ -408,5 +683,246 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryDark,
     fontSize: 12.5,
     fontWeight: '700',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  searchIcon: {
+    fontSize: 14,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 13,
+    color: theme.colors.textPrimary,
+    padding: 0,
+  },
+  clearSearch: {
+    fontSize: 14,
+    color: theme.colors.textTertiary,
+    paddingHorizontal: 4,
+  },
+  txFilterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+  },
+  txFilterPill: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  txFilterPillActive: {
+    backgroundColor: theme.colors.primaryAlpha10,
+    borderColor: theme.colors.primary,
+  },
+  txFilterPillText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+  txFilterPillTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '700',
+  },
+  txList: {
+    gap: 10,
+  },
+  txCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  txRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  txIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  txIconCredit: {
+    backgroundColor: '#DCFCE7',
+  },
+  txIconDebit: {
+    backgroundColor: '#FEE2E2',
+  },
+  txIconText: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  txInfoCol: {
+    flex: 1,
+  },
+  txTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 3,
+  },
+  txTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+    flex: 1,
+    marginRight: 8,
+  },
+  txAmount: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  txAmountCredit: {
+    color: theme.colors.primary,
+  },
+  txAmountDebit: {
+    color: theme.colors.danger,
+  },
+  txSubRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  txMeta: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  txStatusPill: {
+    backgroundColor: theme.colors.surfaceElevated,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  txStatusText: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: theme.colors.textTertiary,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 20, 0.45)',
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    flex: 1,
+  },
+  txModalSheet: {
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  modalDragPill: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.border,
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  txModalHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  txModalEyebrow: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.textTertiary,
+    letterSpacing: 0.8,
+  },
+  txModalTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  txModalAmount: {
+    fontSize: 26,
+    fontWeight: '800',
+    marginTop: 6,
+  },
+  ledgerLegsBox: {
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    gap: 8,
+  },
+  ledgerLegsTitle: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.textTertiary,
+    letterSpacing: 0.8,
+  },
+  legRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  legType: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+  legValue: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+  },
+  auditAttributes: {
+    gap: 10,
+    marginBottom: 20,
+  },
+  attrRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  attrLabel: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+  },
+  attrVal: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  attrValGreen: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  closeModalBtn: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  closeModalBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textWhite,
   },
 });

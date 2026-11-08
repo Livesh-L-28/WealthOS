@@ -13,6 +13,7 @@ interface ExecutiveClarityBarProps {
   monthlyInflows: number;
   monthlyOutflows: number;
   goalsFundedPct: number;
+  onOpenNetWorth?: () => void;
 }
 
 export const ExecutiveClarityBar: React.FC<ExecutiveClarityBarProps> = ({
@@ -24,6 +25,7 @@ export const ExecutiveClarityBar: React.FC<ExecutiveClarityBarProps> = ({
   monthlyInflows,
   monthlyOutflows,
   goalsFundedPct,
+  onOpenNetWorth,
 }) => {
   const netCashFlow = monthlyInflows - monthlyOutflows;
   const savingsRate = monthlyInflows > 0 ? ((netCashFlow / monthlyInflows) * 100).toFixed(1) : '0';
@@ -66,8 +68,28 @@ export const ExecutiveClarityBar: React.FC<ExecutiveClarityBarProps> = ({
               <Text style={styles.actualBadgeText}>ACTUAL</Text>
             </View>
           </View>
-          <View style={styles.changeBadge}>
-            <Text style={styles.changeBadgeText}>+5.2% MoM</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={styles.changeBadge}>
+              <Text style={styles.changeBadgeText}>+5.2% MoM</Text>
+            </View>
+            {onOpenNetWorth && (
+              <TouchableOpacity
+                onPress={onOpenNetWorth}
+                style={{
+                  backgroundColor: theme.colors.surfaceElevated,
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 9.5, fontWeight: '700', color: theme.colors.primaryDark }}>
+                  Sheet ›
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 

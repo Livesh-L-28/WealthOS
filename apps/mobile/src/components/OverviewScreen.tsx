@@ -27,6 +27,8 @@ interface OverviewScreenProps {
   onAddTransaction: () => void;
   onAskCopilot: () => void;
   onViewAllTransactions: () => void;
+  onOpenNetWorth?: () => void;
+  onOpenAnalytics?: () => void;
 }
 
 export const OverviewScreen: React.FC<OverviewScreenProps> = ({
@@ -47,6 +49,8 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
   onAddTransaction,
   onAskCopilot,
   onViewAllTransactions,
+  onOpenNetWorth,
+  onOpenAnalytics,
 }) => {
   const totalBudgeted = budgets.reduce((s, b) => s + b.budgeted, 0);
   const totalTargetGoals = goals.reduce((s, g) => s + g.targetAmount, 0);
@@ -65,6 +69,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         monthlyInflows={monthlyInflows}
         monthlyOutflows={monthlyOutflows}
         goalsFundedPct={goalsFundedPct}
+        onOpenNetWorth={onOpenNetWorth}
       />
 
       {/* 2. Quick Actions Dock */}
@@ -88,6 +93,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
       <CashFlowCard
         monthlyInflows={monthlyInflows}
         monthlyOutflows={monthlyOutflows}
+        onOpenAnalytics={onOpenAnalytics}
       />
 
       {/* 5. Multi-Asset Portfolio Distribution */}

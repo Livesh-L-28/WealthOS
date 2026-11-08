@@ -1,16 +1,18 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '../theme';
 import { formatINR } from '../formatters';
 
 interface CashFlowCardProps {
   monthlyInflows: number;
   monthlyOutflows: number;
+  onOpenAnalytics?: () => void;
 }
 
 export const CashFlowCard: React.FC<CashFlowCardProps> = ({
   monthlyInflows,
   monthlyOutflows,
+  onOpenAnalytics,
 }) => {
   const surplus = monthlyInflows - monthlyOutflows;
   const outflowRatio = monthlyInflows > 0 ? (monthlyOutflows / monthlyInflows) * 100 : 0;
@@ -24,11 +26,31 @@ export const CashFlowCard: React.FC<CashFlowCardProps> = ({
             <Text style={styles.title}>MONTHLY CASH FLOW</Text>
             <Text style={styles.subtitle}>Double-Entry Verified Ledger Postings</Text>
           </View>
-          <View style={styles.surplusBadge}>
-            <Text style={styles.surplusText}>
-              Surplus: {surplus >= 0 ? '+' : ''}
-              {formatINR(surplus)}
-            </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={styles.surplusBadge}>
+              <Text style={styles.surplusText}>
+                Surplus: {surplus >= 0 ? '+' : ''}
+                {formatINR(surplus)}
+              </Text>
+            </View>
+            {onOpenAnalytics && (
+              <TouchableOpacity
+                onPress={onOpenAnalytics}
+                style={{
+                  backgroundColor: theme.colors.surfaceElevated,
+                  paddingHorizontal: 7,
+                  paddingVertical: 3,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 9.5, fontWeight: '700', color: theme.colors.primaryDark }}>
+                  Analytics ›
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 

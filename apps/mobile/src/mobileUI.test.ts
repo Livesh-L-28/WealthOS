@@ -97,5 +97,57 @@ describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
         expect(goal.targetYear).toBeGreaterThanOrEqual(2026);
       });
     });
+
+    it('verifies balance sheet assets and liabilities accounting equation', async () => {
+      const { BALANCE_SHEET_ASSETS, BALANCE_SHEET_LIABILITIES } = await import('./data');
+      const totalAssets = BALANCE_SHEET_ASSETS.reduce((s, a) => s + a.amount, 0);
+      const totalLiabilities = BALANCE_SHEET_LIABILITIES.reduce((s, l) => s + l.amount, 0);
+      const netEquity = totalAssets - totalLiabilities;
+
+      expect(totalAssets).toBeGreaterThan(9000000);
+      expect(totalLiabilities).toBeLessThan(2000000);
+      expect(netEquity).toBeCloseTo(7537901.25, -1);
+    });
+
+    it('verifies loan amortization schedule integrity and positive balances', async () => {
+      const { SAMPLE_AMORTIZATION_SCHEDULE } = await import('./data');
+      expect(SAMPLE_AMORTIZATION_SCHEDULE.length).toBe(5);
+
+      SAMPLE_AMORTIZATION_SCHEDULE.forEach((item) => {
+        expect(item.emi).toBeCloseTo(item.principal + item.interest, 0);
+        expect(item.remaining).toBeGreaterThan(0);
+      });
+    });
+
+    it('verifies reconciliation discrepancy queue and severity distribution', async () => {
+      const { INITIAL_DISCREPANCIES } = await import('./data');
+      expect(INITIAL_DISCREPANCIES.length).toBe(3);
+
+      const highSeverity = INITIAL_DISCREPANCIES.filter((d) => d.severity === 'HIGH');
+      expect(highSeverity.length).toBe(1);
+
+      const matched = INITIAL_DISCREPANCIES.filter((d) => d.status === 'MATCHED');
+      expect(matched.length).toBe(1);
+    });
+
+    it('verifies document vault OCR confidence threshold and arithmetic checks', async () => {
+      const { INITIAL_DOCUMENTS } = await import('./data');
+      expect(INITIAL_DOCUMENTS.length).toBe(3);
+
+      INITIAL_DOCUMENTS.forEach((doc) => {
+        expect(doc.confidence).toBeGreaterThanOrEqual(0.9);
+        expect(doc.arithmeticCheck).toBe('VALIDATED');
+      });
+    });
+
+    it('verifies household members joint wealth contributions', async () => {
+      const { INITIAL_HOUSEHOLD_MEMBERS } = await import('./data');
+      expect(INITIAL_HOUSEHOLD_MEMBERS.length).toBe(3);
+
+      const owner = INITIAL_HOUSEHOLD_MEMBERS.find((m) => m.role === 'OWNER');
+      expect(owner).toBeDefined();
+      expect(owner?.netContributionPercentage).toBe(68);
+    });
   });
 });
+

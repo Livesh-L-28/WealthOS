@@ -1,0 +1,519 @@
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Switch,
+  ScrollView,
+} from 'react-native';
+import { theme } from '../theme';
+import { INITIAL_AUDIT_LOGS } from '../data';
+
+interface SettingsScreenProps {
+  onBack: () => void;
+  activeWorkspace: string;
+  onSelectWorkspace: (ws: string) => void;
+  onShowToast: (msg: string) => void;
+}
+
+export const SettingsScreen: React.FC<SettingsScreenProps> = ({
+  onBack,
+  activeWorkspace,
+  onSelectWorkspace,
+  onShowToast,
+}) => {
+  const [biometricsEnabled, setBiometricsEnabled] = useState(true);
+  const [offlineSync, setOfflineSync] = useState(true);
+  const [pushAlerts, setPushAlerts] = useState(true);
+
+  const handleToggleBiometrics = (val: boolean) => {
+    setBiometricsEnabled(val);
+    onShowToast(
+      val
+        ? 'Hardware KeyStore Biometric Guard Enabled'
+        : 'Biometric Guard Disabled (Passcode Required)'
+    );
+  };
+
+  return (
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      {/* Top Bar */}
+      <View style={styles.topBar}>
+        <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
+          <Text style={styles.backArrow}>‹</Text>
+          <Text style={styles.backLabel}>Overview</Text>
+        </TouchableOpacity>
+        <Text style={styles.screenTitle}>Security & Hardware Custody</Text>
+        <View style={styles.topRightBadge}>
+          <Text style={styles.topRightBadgeText}>GATE 9</Text>
+        </View>
+      </View>
+
+      {/* Hardware Security Enclave Card */}
+      <View style={styles.heroCard}>
+        <View style={styles.heroTopRow}>
+          <View style={styles.lockIconBox}>
+            <Text style={styles.lockIcon}>🛡️</Text>
+          </View>
+          <View style={styles.heroTextCol}>
+            <Text style={styles.heroTitle}>Hardware SecureStore Enclave</Text>
+            <Text style={styles.heroSub}>
+              Android KeyStore / iOS Secure Enclave hardware custody
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.switchRow}>
+          <View style={styles.switchTextCol}>
+            <Text style={styles.switchTitle}>Biometric Authentication</Text>
+            <Text style={styles.switchSub}>
+              Require Fingerprint or Face Unlock to access ledger
+            </Text>
+          </View>
+          <Switch
+            value={biometricsEnabled}
+            onValueChange={handleToggleBiometrics}
+            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+            thumbColor={theme.colors.surface}
+          />
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.switchRow}>
+          <View style={styles.switchTextCol}>
+            <Text style={styles.switchTitle}>Deterministic Offline Ingestion</Text>
+            <Text style={styles.switchSub}>
+              Queue mutations securely when network drops
+            </Text>
+          </View>
+          <Switch
+            value={offlineSync}
+            onValueChange={setOfflineSync}
+            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+            thumbColor={theme.colors.surface}
+          />
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.switchRow}>
+          <View style={styles.switchTextCol}>
+            <Text style={styles.switchTitle}>Discrepancy Push Alerts</Text>
+            <Text style={styles.switchSub}>
+              Immediate alert on bank feed variance {'>'} ₹100
+            </Text>
+          </View>
+          <Switch
+            value={pushAlerts}
+            onValueChange={setPushAlerts}
+            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+            thumbColor={theme.colors.surface}
+          />
+        </View>
+      </View>
+
+      {/* Workspace Switcher */}
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionHeading}>ACTIVE TENANT WORKSPACE</Text>
+      </View>
+
+      <View style={styles.workspacesCard}>
+        {[
+          { name: 'Family Office', desc: 'Primary multi-member trust & joint wealth' },
+          { name: 'Personal Holdings', desc: 'Private individual investment ledger' },
+          { name: 'Business Treasury', desc: 'Corporate operating cash flow & taxes' },
+        ].map((ws, i) => {
+          const isSelected = activeWorkspace === ws.name;
+          return (
+            <TouchableOpacity
+              key={ws.name}
+              style={[styles.wsRow, i > 0 && styles.wsRowBorder]}
+              onPress={() => {
+                onSelectWorkspace(ws.name);
+                onShowToast(`Switched active workspace to ${ws.name}`);
+              }}
+              activeOpacity={0.7}
+            >
+              <View style={styles.wsInfoCol}>
+                <Text style={[styles.wsName, isSelected && styles.wsNameActive]}>
+                  {ws.name}
+                </Text>
+                <Text style={styles.wsDesc}>{ws.desc}</Text>
+              </View>
+              {isSelected ? (
+                <View style={styles.activeCheckPill}>
+                  <Text style={styles.activeCheckText}>ACTIVE</Text>
+                </View>
+              ) : (
+                <Text style={styles.selectArrow}>›</Text>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* Active Device Sessions */}
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionHeading}>ACTIVE AUTHORIZED SESSIONS</Text>
+        <Text style={styles.sectionSub}>2 Devices</Text>
+      </View>
+
+      <View style={styles.sessionsCard}>
+        <View style={styles.sessionItem}>
+          <View style={styles.deviceIconBox}>
+            <Text style={styles.deviceIcon}>📱</Text>
+          </View>
+          <View style={styles.sessionTextCol}>
+            <View style={styles.sessionTitleRow}>
+              <Text style={styles.deviceName}>Android Pixel 8 Pro</Text>
+              <View style={styles.currentDevicePill}>
+                <Text style={styles.currentDeviceText}>THIS DEVICE</Text>
+              </View>
+            </View>
+            <Text style={styles.sessionMeta}>
+              Bengaluru, IN • KeyStore Hardware Token #WOS-PIXEL8
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.sessionDivider} />
+
+        <View style={styles.sessionItem}>
+          <View style={styles.deviceIconBox}>
+            <Text style={styles.deviceIcon}>💻</Text>
+          </View>
+          <View style={styles.sessionTextCol}>
+            <View style={styles.sessionTitleRow}>
+              <Text style={styles.deviceName}>MacBook Pro M3 (Web Client)</Text>
+              <TouchableOpacity
+                onPress={() => onShowToast('Revoked MacBook Pro web session')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.revokeText}>Revoke</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.sessionMeta}>
+              192.168.1.42 • Chrome Browser • Active 12m ago
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Cryptographic Audit Trail Log */}
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionHeading}>CRYPTOGRAPHIC AUDIT LOG</Text>
+        <Text style={styles.sectionSub}>Immutable</Text>
+      </View>
+
+      <View style={styles.auditLogCard}>
+        {INITIAL_AUDIT_LOGS.map((item, i) => (
+          <View key={item.id} style={[styles.auditLogRow, i > 0 && styles.auditLogRowBorder]}>
+            <View style={styles.auditLogTop}>
+              <Text style={styles.auditActor}>{item.actor}</Text>
+              <Text style={styles.auditTime}>{item.timestamp}</Text>
+            </View>
+            <Text style={styles.auditAction}>{item.action}</Text>
+            <Text style={styles.auditDetails}>{item.details}</Text>
+            <Text style={styles.auditHashText}>Hash: {item.hash}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={{ height: 40 }} />
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+    marginBottom: 16,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+    paddingRight: 8,
+  },
+  backArrow: {
+    fontSize: 22,
+    color: theme.colors.primary,
+    fontWeight: '700',
+    marginTop: -2,
+  },
+  backLabel: {
+    fontSize: 14,
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  screenTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+  },
+  topRightBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    backgroundColor: theme.colors.primaryAlpha10,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  topRightBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  heroCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 20,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  lockIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lockIcon: {
+    fontSize: 20,
+  },
+  heroTextCol: {
+    flex: 1,
+  },
+  heroTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+  },
+  heroSub: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+  },
+  switchTextCol: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  switchTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+  },
+  switchSub: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.borderLight,
+    marginVertical: 10,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  sectionHeading: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: theme.colors.textTertiary,
+    letterSpacing: 0.8,
+  },
+  sectionSub: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  workspacesCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  wsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+  },
+  wsRowBorder: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.borderLight,
+  },
+  wsInfoCol: {
+    flex: 1,
+  },
+  wsName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+  },
+  wsNameActive: {
+    color: theme.colors.primaryDark,
+  },
+  wsDesc: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  activeCheckPill: {
+    backgroundColor: theme.colors.primaryAlpha10,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  activeCheckText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  selectArrow: {
+    fontSize: 18,
+    color: theme.colors.textTertiary,
+  },
+  sessionsCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 16,
+    marginBottom: 20,
+  },
+  sessionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  deviceIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: theme.colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deviceIcon: {
+    fontSize: 18,
+  },
+  sessionTextCol: {
+    flex: 1,
+  },
+  sessionTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  deviceName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+  },
+  currentDevicePill: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  currentDeviceText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#15803D',
+  },
+  revokeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: theme.colors.danger,
+  },
+  sessionMeta: {
+    fontSize: 10,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  sessionDivider: {
+    height: 1,
+    backgroundColor: theme.colors.borderLight,
+    marginVertical: 12,
+  },
+  auditLogCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+  },
+  auditLogRow: {
+    paddingVertical: 12,
+  },
+  auditLogRowBorder: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.borderLight,
+  },
+  auditLogTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  auditActor: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+  },
+  auditTime: {
+    fontSize: 10,
+    color: theme.colors.textTertiary,
+  },
+  auditAction: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  auditDetails: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  auditHashText: {
+    fontSize: 9,
+    fontFamily: 'Courier',
+    color: theme.colors.textTertiary,
+    marginTop: 4,
+  },
+});

@@ -1,5 +1,15 @@
 export type TabType = 'overview' | 'accounts' | 'investments' | 'budgets' | 'copilot';
 
+export type HubViewType =
+  | 'net-worth'
+  | 'analytics'
+  | 'reconciliation'
+  | 'documents'
+  | 'household'
+  | 'settings';
+
+export type ActiveScreen = TabType | HubViewType;
+
 export type DashboardPeriod = '1M' | '3M' | 'YTD' | 'ALL';
 
 export interface BankAccount {
@@ -25,6 +35,8 @@ export interface Transaction {
   accountName: string;
   date: string;
   status: 'SETTLED' | 'PENDING' | 'RECONCILED';
+  journalEntryId?: string;
+  notes?: string;
 }
 
 export interface InvestmentHolding {
@@ -77,4 +89,58 @@ export interface LedgerReconciliation {
   totalInstitutionsCount: number;
   auditHash: string;
   lastChecked: string;
+}
+
+export interface AmortizationScheduleItem {
+  installment: number;
+  dueDate: string;
+  emi: number;
+  principal: number;
+  interest: number;
+  remaining: number;
+  status: 'PAID' | 'DUE' | 'UPCOMING';
+}
+
+export interface DiscrepancyItem {
+  id: string;
+  sourceReference: string;
+  accountName: string;
+  expectedAmount: number;
+  postedAmount: number | null;
+  difference: number;
+  category: string;
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  status: 'UNMATCHED' | 'DISCREPANCY' | 'MATCHED';
+  reason: string;
+  createdAt: string;
+}
+
+export interface DocumentItem {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: string;
+  uploadDate: string;
+  status: 'POSTED' | 'RECONCILED' | 'READY_FOR_APPROVAL' | 'QUARANTINED';
+  confidence: number;
+  journalRef?: string;
+  arithmeticCheck: 'VALIDATED' | 'MISMATCH';
+}
+
+export interface HouseholdMember {
+  id: string;
+  name: string;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
+  sharedAssets: number;
+  sharedLiabilities: number;
+  netContributionPercentage: number;
+}
+
+export interface AuditLogItem {
+  id: string;
+  timestamp: string;
+  actor: string;
+  action: string;
+  details: string;
+  hash: string;
 }

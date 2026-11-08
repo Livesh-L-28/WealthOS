@@ -5,20 +5,29 @@ import { theme } from '../theme';
 interface HeaderProps {
   onAddTransaction: () => void;
   onOpenReconciliation: () => void;
+  onOpenHub: () => void;
+  activeWorkspace?: string;
   isSyncing?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onAddTransaction,
   onOpenReconciliation,
+  onOpenHub,
+  activeWorkspace = 'Family Office',
   isSyncing = false,
 }) => {
   return (
     <View style={styles.header}>
-      {/* Left: Brand Identity */}
-      <View style={styles.brandRow}>
+      {/* Left: Brand Identity & Enterprise Hub Trigger */}
+      <TouchableOpacity
+        style={styles.brandRow}
+        onPress={onOpenHub}
+        activeOpacity={0.7}
+        accessibilityLabel="Open Enterprise Hub Menu"
+      >
         <View style={styles.logoBadge}>
-          <Text style={styles.logoText}>W</Text>
+          <Text style={styles.logoText}>LJ</Text>
         </View>
         <View style={styles.brandTextCol}>
           <View style={styles.titleWithPill}>
@@ -26,19 +35,22 @@ export const Header: React.FC<HeaderProps> = ({
               Wealth<Text style={styles.brandAccent}>OS</Text>
             </Text>
             <View style={styles.workspacePill}>
-              <Text style={styles.workspacePillText}>PERSONAL</Text>
+              <Text style={styles.workspacePillText}>
+                {activeWorkspace.toUpperCase()}
+              </Text>
+              <Text style={styles.workspacePillArrow}>▾</Text>
             </View>
           </View>
           <View style={styles.syncRow}>
             <View style={[styles.syncDot, isSyncing && styles.syncDotPulse]} />
             <Text style={styles.syncText}>
-              {isSyncing ? 'Synchronizing...' : 'Ledger Synced'}
+              {isSyncing ? 'Synchronizing...' : 'Double-Entry In Balance'}
             </Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
-      {/* Right: Actions */}
+      {/* Right: Actions Dock */}
       <View style={styles.actionsRow}>
         <TouchableOpacity
           style={styles.iconButton}
@@ -82,23 +94,22 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   logoBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 3,
-    elevation: 2,
+    elevation: 3,
   },
   logoText: {
     color: theme.colors.textWhite,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '800',
-    letterSpacing: -0.5,
   },
   brandTextCol: {
     justifyContent: 'center',
@@ -106,59 +117,68 @@ const styles = StyleSheet.create({
   titleWithPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   brandTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
     color: theme.colors.textPrimary,
-    letterSpacing: -0.4,
+    letterSpacing: -0.5,
   },
   brandAccent: {
     color: theme.colors.primary,
   },
   workspacePill: {
-    backgroundColor: theme.colors.primaryLightSolid,
-    paddingHorizontal: 6,
-    paddingVertical: 1.5,
-    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   workspacePillText: {
-    color: theme.colors.primaryDark,
-    fontSize: 9,
-    fontWeight: '800',
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
     letterSpacing: 0.4,
+  },
+  workspacePillArrow: {
+    fontSize: 8,
+    color: theme.colors.textTertiary,
   },
   syncRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 6,
     marginTop: 2,
   },
   syncDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: theme.colors.positive,
+    backgroundColor: theme.colors.primary,
   },
   syncDotPulse: {
-    opacity: 0.4,
+    backgroundColor: '#F59E0B',
   },
   syncText: {
-    color: theme.colors.textSecondary,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
   },
   iconButton: {
-    width: 36,
-    height: 36,
+    width: 38,
+    height: 38,
     borderRadius: 10,
-    backgroundColor: theme.colors.cardSubtle,
+    backgroundColor: theme.colors.surfaceElevated,
     borderWidth: 1,
     borderColor: theme.colors.border,
     alignItems: 'center',
@@ -166,21 +186,23 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   iconButtonText: {
-    fontSize: 15,
+    fontSize: 16,
   },
   shieldActiveDot: {
     position: 'absolute',
-    top: 5,
-    right: 5,
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: theme.colors.positive,
+    top: 6,
+    right: 6,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.danger,
+    borderWidth: 1,
+    borderColor: theme.colors.surface,
   },
   primaryActionButton: {
-    backgroundColor: theme.colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 10,
@@ -193,14 +215,13 @@ const styles = StyleSheet.create({
   },
   primaryActionPlus: {
     color: theme.colors.textWhite,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '800',
     marginTop: -1,
   },
   primaryActionText: {
     color: theme.colors.textWhite,
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
-    letterSpacing: -0.2,
   },
 });

@@ -298,3 +298,155 @@ export const INITIAL_COPILOT_MESSAGES: CopilotMessage[] = [
     ],
   },
 ];
+
+export const BALANCE_SHEET_ASSETS = [
+  { id: 'bs-a1', name: 'Liquid Depository & Savings', amount: 1327650.0, share: 14.1, category: 'Cash' },
+  { id: 'bs-a2', name: 'Direct Equity & Demat Portfolio', amount: 4522551.25, share: 47.9, category: 'Investments' },
+  { id: 'bs-a3', name: 'Fixed Term Deposits & SGB Gold', amount: 1862500.0, share: 19.7, category: 'Fixed Income' },
+  { id: 'bs-a4', name: 'Real Estate Primary Residence Equity', amount: 1717500.0, share: 18.3, category: 'Real Estate' },
+];
+
+export const BALANCE_SHEET_LIABILITIES = [
+  { id: 'bs-l1', name: 'Housing Mortgage Loan (HDFC)', amount: 1650000.0, rate: 8.4, emi: 22894.0, share: 87.2 },
+  { id: 'bs-l2', name: 'Axis Bank Magnus Revolving Card', amount: 242300.0, rate: 24.0, emi: 12500.0, share: 12.8 },
+];
+
+export const SAMPLE_AMORTIZATION_SCHEDULE = [
+  { installment: 1, dueDate: '2026-12-01', emi: 22894.0, principal: 11344.0, interest: 11550.0, remaining: 1638656.0, status: 'PAID' as const },
+  { installment: 2, dueDate: '2027-01-01', emi: 22894.0, principal: 11423.0, interest: 11471.0, remaining: 1627233.0, status: 'DUE' as const },
+  { installment: 3, dueDate: '2027-02-01', emi: 22894.0, principal: 11503.0, interest: 11391.0, remaining: 1615730.0, status: 'UPCOMING' as const },
+  { installment: 4, dueDate: '2027-03-01', emi: 22894.0, principal: 11584.0, interest: 11310.0, remaining: 1604146.0, status: 'UPCOMING' as const },
+  { installment: 5, dueDate: '2027-04-01', emi: 22894.0, principal: 11665.0, interest: 11229.0, remaining: 1592481.0, status: 'UPCOMING' as const },
+];
+
+export const INITIAL_DISCREPANCIES = [
+  {
+    id: 'disc-01',
+    sourceReference: 'HDFC-UPI-492019',
+    accountName: 'HDFC Corporate Salary',
+    expectedAmount: 4500.0,
+    postedAmount: 4000.0,
+    difference: 500.0,
+    category: 'AMOUNT_MISMATCH',
+    severity: 'MEDIUM' as const,
+    status: 'DISCREPANCY' as const,
+    reason: 'Bank feed indicates ₹4,500.00 debit; internal ledger recorded ₹4,000.00.',
+    createdAt: 'Today, 09:15',
+  },
+  {
+    id: 'disc-02',
+    sourceReference: 'POS-SWIPE-98214',
+    accountName: 'Axis Bank Magnus Card',
+    expectedAmount: 12999.0,
+    postedAmount: null,
+    difference: 12999.0,
+    category: 'UNMATCHED_EXTERNAL',
+    severity: 'HIGH' as const,
+    status: 'UNMATCHED' as const,
+    reason: 'External POS charge at Croma Electronics not mapped to an expense journal entry.',
+    createdAt: 'Yesterday, 14:30',
+  },
+  {
+    id: 'disc-03',
+    sourceReference: 'ZERODHA-DIV-098',
+    accountName: 'Zerodha Demat & Trading',
+    expectedAmount: 14500.0,
+    postedAmount: 14500.0,
+    difference: 0.0,
+    category: 'DIVIDEND_SETTLED',
+    severity: 'LOW' as const,
+    status: 'MATCHED' as const,
+    reason: 'Dividend posting reconciled against depository ledger.',
+    createdAt: '03 Nov 2026',
+  },
+];
+
+export const INITIAL_DOCUMENTS = [
+  {
+    id: 'doc-1',
+    name: 'HDFC_Bank_Statement_Oct2026.pdf',
+    mimeType: 'application/pdf',
+    size: '1.4 MB',
+    uploadDate: '07 Nov 2026, 14:22',
+    status: 'POSTED' as const,
+    confidence: 0.98,
+    journalRef: 'JE-2026-1107-001',
+    arithmeticCheck: 'VALIDATED' as const,
+  },
+  {
+    id: 'doc-2',
+    name: 'Zerodha_Tax_P&L_FY26_Q2.pdf',
+    mimeType: 'application/pdf',
+    size: '850 KB',
+    uploadDate: '06 Nov 2026, 09:15',
+    status: 'RECONCILED' as const,
+    confidence: 0.99,
+    journalRef: 'JE-2026-1106-004',
+    arithmeticCheck: 'VALIDATED' as const,
+  },
+  {
+    id: 'doc-3',
+    name: 'CAMS_Consolidated_CAS_Oct.pdf',
+    mimeType: 'application/pdf',
+    size: '2.1 MB',
+    uploadDate: '05 Nov 2026, 18:40',
+    status: 'READY_FOR_APPROVAL' as const,
+    confidence: 0.94,
+    arithmeticCheck: 'VALIDATED' as const,
+  },
+];
+
+export const INITIAL_HOUSEHOLD_MEMBERS = [
+  {
+    id: 'mem-1',
+    name: 'Livesh J (You)',
+    role: 'OWNER' as const,
+    sharedAssets: 5125350.0,
+    sharedLiabilities: 1290000.0,
+    netContributionPercentage: 68.0,
+  },
+  {
+    id: 'mem-2',
+    name: 'Priya J (Partner)',
+    role: 'ADMIN' as const,
+    sharedAssets: 2412551.25,
+    sharedLiabilities: 602300.0,
+    netContributionPercentage: 32.0,
+  },
+  {
+    id: 'mem-3',
+    name: 'Family Office Trust',
+    role: 'VIEWER' as const,
+    sharedAssets: 18900000.0,
+    sharedLiabilities: 0.0,
+    netContributionPercentage: 100.0,
+  },
+];
+
+export const INITIAL_AUDIT_LOGS = [
+  {
+    id: 'aud-1',
+    timestamp: 'Today, 10:14:22',
+    actor: 'Biometric SecureStore',
+    action: 'Hardware Token Refresh',
+    details: 'Hardware enclave verified credentials on device #WOS-PIXEL8',
+    hash: '0x8f2a...c419',
+  },
+  {
+    id: 'aud-2',
+    timestamp: 'Today, 09:15:00',
+    actor: 'Sync Engine',
+    action: 'Ledger Settlement Check',
+    details: '6 connected bank accounts queried; zero double-entry imbalance',
+    hash: '0x3c71...99ef',
+  },
+  {
+    id: 'aud-3',
+    timestamp: 'Yesterday, 18:30:11',
+    actor: 'Livesh J',
+    action: 'Transaction Reconciliation',
+    details: 'Journal Entry #JE-2026-1107-001 verified against statement OCR',
+    hash: '0x11ab...6044',
+  },
+];
+

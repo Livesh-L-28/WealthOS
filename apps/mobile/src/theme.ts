@@ -8,7 +8,9 @@ export const theme = {
   colors: {
     // Surface & Canvas
     canvas: '#F7F9F7',
+    background: '#F7F9F7',
     surface: '#FFFFFF',
+    surfaceElevated: '#FAFCFA',
     card: '#FFFFFF',
     cardHover: '#FAFCFA',
     cardSubtle: '#F0F4F1',
@@ -22,6 +24,7 @@ export const theme = {
     // Typography
     textPrimary: '#17231D',
     textSecondary: '#758078',
+    textTertiary: '#9BA39D',
     textMuted: '#9BA39D',
     textWhite: '#FFFFFF',
 
@@ -30,8 +33,9 @@ export const theme = {
     primaryDark: '#087A50',
     primaryLight: 'rgba(22, 163, 106, 0.10)',
     primaryLightSolid: '#E8F5EE',
+    primaryAlpha10: 'rgba(22, 163, 106, 0.10)',
 
-    // Semantics
+    // Semantics & Errors
     positive: '#16A36A',
     positiveDark: '#087A50',
     positiveBg: 'rgba(22, 163, 106, 0.10)',
@@ -41,6 +45,11 @@ export const theme = {
     negativeDark: '#B91C1C',
     negativeBg: 'rgba(220, 91, 91, 0.10)',
     negativeBgSolid: '#FEE2E2',
+
+    danger: '#DC5B5B',
+    dangerDark: '#B91C1C',
+    dangerBg: 'rgba(220, 91, 91, 0.10)',
+    dangerAlpha10: 'rgba(220, 91, 91, 0.10)',
 
     warning: '#D99A32',
     warningDark: '#B45309',
@@ -99,10 +108,9 @@ export const theme = {
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.08,
       shadowRadius: 16,
-      elevation: 6,
+      elevation: 4,
     },
   },
 } as const;
 
 export type Theme = typeof theme;
-
