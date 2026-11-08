@@ -158,6 +158,14 @@ async def clean_database():
     """Clean test tables before each test execution, preserving system RBAC."""
     admin_engine = get_test_admin_engine()
     tables = [
+        "household_settlements",
+        "household_contributions",
+        "household_goals",
+        "household_shared_resources",
+        "household_invitations",
+        "household_memberships",
+        "households",
+        "financial_twin_snapshots",
         "risk_alerts",
         "risk_assessments",
         "tax_computations",
@@ -217,8 +225,8 @@ async def clean_database():
         "password_reset_tokens",
         "email_verification_tokens",
         "user_credentials",
-        "tenants",
         "users",
+        "tenants",
     ]
     async with admin_engine.begin() as conn:
         await conn.execute(text("SET LOCAL wealthos.allow_audit_cleanup = 'on';"))

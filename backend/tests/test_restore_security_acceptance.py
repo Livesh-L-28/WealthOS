@@ -159,7 +159,8 @@ def test_restore_security_acceptance_valid_restore(test_encrypted_backup, pg_env
 
     assert proc.returncode == 0, f"Restore failed: {proc.stderr}\n{proc.stdout}"
     assert (
-        "Post-restore Schema Version verified: 0009_wave_3_intelligence" in proc.stdout
+        "Post-restore Schema Version verified: 0010_wave_4_intelligence" in proc.stdout
+        or "Post-restore Schema Version verified: 0009_wave_3_intelligence" in proc.stdout
         or "Post-restore Schema Version verified: 0008_wave_2_intelligence" in proc.stdout
         or "Post-restore Schema Version verified: 0007_investment_accounting" in proc.stdout
         or "Post-restore Schema Version verified: 0005_financial_foundation" in proc.stdout

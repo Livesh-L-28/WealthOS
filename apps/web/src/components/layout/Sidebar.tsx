@@ -20,6 +20,7 @@ import {
   ChevronRight,
   X,
   Sparkles,
+  Users,
 } from 'lucide-react';
 import { useNav } from './NavContext';
 
@@ -40,6 +41,7 @@ const PRIMARY_NAV_ITEMS: NavItem[] = [
   { label: 'Cash Flow', href: '/analytics', icon: Wallet },
   { label: 'Budgets', href: '/budgets', icon: PieChart },
   { label: 'Goals', href: '/goals', icon: Target },
+  { label: 'Household', href: '/household', icon: Users, badge: 'Shared' },
   { label: 'Documents', href: '/documents', icon: FileText },
   { label: 'Reports', href: '/net-worth', icon: FileSpreadsheet },
   { label: 'Financial Copilot', href: '/copilot', icon: Bot, badge: 'AI' },

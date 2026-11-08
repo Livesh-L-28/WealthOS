@@ -10,12 +10,14 @@ from app.domains.budget.router import router as budget_router
 from app.domains.cash.router import router as cash_router
 from app.domains.copilot.router import router as copilot_router
 from app.domains.documents.router import router as documents_router
+from app.domains.household.router import router as household_router
 from app.domains.investments.router import router as investments_router
 from app.domains.liabilities.router import router as liabilities_router
 from app.domains.planning.router import goals_router, planning_router
 from app.domains.reconciliation.router import router as reconciliation_router
 from app.domains.risk.router import router as risk_router
 from app.domains.tax.router import router as tax_router
+from app.domains.twin.router import router as twin_router
 
 api_v1_router = APIRouter()
 api_v1_router.include_router(health_router, prefix="/health", tags=["Health & Diagnostics"])
@@ -53,5 +55,11 @@ api_v1_router.include_router(
 )
 api_v1_router.include_router(
     risk_router, prefix="/risk", tags=["Financial Risk Intelligence"]
+)
+api_v1_router.include_router(
+    twin_router, prefix="/financial-twin", tags=["Financial Digital Twin"]
+)
+api_v1_router.include_router(
+    household_router, prefix="/households", tags=["Household Wealth Management"]
 )
 api_v1_router.include_router(copilot_router, prefix="/copilot", tags=["AI Financial Copilot"])

@@ -39,10 +39,12 @@ const INITIAL_MESSAGES: CopilotChatMsg[] = [
 const SUGGESTIONS = [
   'How much did I spend this month?',
   'What is my current net worth?',
+  'What if I cut expenses by 10%?',
+  'Show my Personal Financial Digital Twin status',
+  'What is my India tax readiness for FY 2026-27?',
+  'What is my Financial Health and Risk score?',
   'Which categories have the highest expenses?',
   'How is my investment portfolio performing?',
-  'How much do I need to save for my goal?',
-  'Show my upcoming recurring expenses.',
 ];
 
 export default function CopilotPage() {
@@ -140,6 +142,46 @@ export default function CopilotPage() {
         ];
         responseContent =
           'Upcoming recurring obligations:\n1. Mirae Asset SIP Mandate: ₹20,000.00 due on 10 Nov 2026\n2. Office Space Lease: ₹85,000.00 due on 1 Dec 2026\n3. Vehicle Loan EMI: ₹21,500.00 due on 5 Dec 2026.\nYour Primary Savings balance (₹4,85,200.50) is sufficient to cover these.';
+      } else if (lower.includes('what if') || lower.includes('simulate') || lower.includes('prepay')) {
+        tools = ['simulate_what_if'];
+        citations = [
+          {
+            source: 'what_if_simulation_engine',
+            data: { baseline_burn: '151550.00', simulated_burn: '136395.00', annual_savings_boost: '181860.00' },
+          },
+        ];
+        responseContent =
+          '### What-If Simulation: 10% Discretionary Spend Reduction\n- **Current Monthly Burn**: ₹1,51,550.00\n- **Simulated Monthly Burn**: ₹1,36,395.00 (-₹15,155.00/month)\n- **Annualized Savings Boost**: +₹1,81,860.00 per year.\nThis increases your emergency runway from 11.4 months to 12.7 months with zero state mutations or ledger changes.';
+      } else if (lower.includes('twin') || lower.includes('digital twin')) {
+        tools = ['get_digital_twin_status'];
+        citations = [
+          {
+            source: 'financial_twin_snapshots',
+            data: { status: 'CURRENT', net_worth: '7537901.25', liquid_net_worth: '1735200.50', freshness: '2026-11-08' },
+          },
+        ];
+        responseContent =
+          '### Personal Financial Digital Twin Status: CURRENT (Verified as of 08 Nov 2026)\n- **Net Worth**: ₹75,37,901.25\n- **Liquid Net Worth**: ₹17,35,200.50\n- **Monthly Outflows**: ₹1,51,550.00\n- **Monthly Debt Obligations**: ₹21,500.00\n- **Financial Health Score**: 94/100 (EXCELLENT)\nAll upstream data pipelines (Cash, Investments, Budgets, Liabilities) are reconciled and synchronized.';
+      } else if (lower.includes('tax') || lower.includes('regime')) {
+        tools = ['get_tax_readiness'];
+        citations = [
+          {
+            source: 'tax_computations',
+            data: { fy: '2026-27', ay: '2027-28', gross: '3600000.00', new_regime_tax: '468000.00', old_regime_tax: '514800.00' },
+          },
+        ];
+        responseContent =
+          '### India Tax Readiness (FY 2026-27 / AY 2027-28)\n- **Gross Total Income**: ₹36,00,000.00\n- **New Regime Tax Liability**: ₹4,68,000.00 (Standard deduction ₹75,000 applied)\n- **Old Regime Tax Liability**: ₹5,14,800.00 (with Section 80C & 80D deductions)\n- **Recommendation**: The New Tax Regime saves ₹46,800.00 for your financial profile this year.';
+      } else if (lower.includes('risk') || lower.includes('health score')) {
+        tools = ['get_risk_assessment'];
+        citations = [
+          {
+            source: 'risk_assessments',
+            data: { health_score: '94.00', grade: 'EXCELLENT', active_alerts: 0 },
+          },
+        ];
+        responseContent =
+          '### Financial Risk Intelligence Assessment\n- **Overall Health Score**: 94/100 (Grade: EXCELLENT)\n- **Liquidity Ratio**: 11.4x monthly burn (Safe threshold: >6.0x)\n- **Debt-Service Burden**: 14.2% of net income (Safe threshold: <35%)\n- **Active Vulnerability Alerts**: 0 Critical, 0 High. Your financial position demonstrates robust defensive resilience.';
       } else {
         tools = ['search_general_ledger'];
         citations = [
@@ -180,6 +222,23 @@ export default function CopilotPage() {
           <p className="text-xs text-[#717D74] mt-1">
             Grounded financial intelligence with mathematical citations, privacy containment, and zero hallucinations.
           </p>
+        </div>
+
+        {/* Digital Twin State Pill */}
+        <div className="flex items-center gap-3 bg-[#FAFBF9] border border-[#E7ECE8] px-3 py-2 rounded-xl text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-[#16A36A] animate-pulse" />
+            <span className="font-semibold text-[#17231D]">Digital Twin:</span>
+            <Badge variant="positive" size="sm">CURRENT</Badge>
+          </div>
+          <div className="h-3 w-px bg-[#E7ECE8]" />
+          <div className="text-[11px] text-[#717D74]">
+            Net Worth: <span className="font-semibold text-[#17231D]">₹75,37,901.25</span>
+          </div>
+          <div className="h-3 w-px bg-[#E7ECE8]" />
+          <div className="text-[11px] text-[#717D74]">
+            Health: <span className="font-semibold text-[#16A36A]">94/100</span>
+          </div>
         </div>
       </div>
 

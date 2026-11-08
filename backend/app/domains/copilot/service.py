@@ -31,6 +31,8 @@ ADVERSARIAL_PATTERNS = [
     re.compile(r"create\s+user", re.IGNORECASE),
     re.compile(r"grant\s+all", re.IGNORECASE),
     re.compile(r"admin\s+override", re.IGNORECASE),
+    re.compile(r"show\s+all\s+tenants", re.IGNORECASE),
+    re.compile(r"sudo\s+", re.IGNORECASE),
 ]
 
 
@@ -135,7 +137,6 @@ class CopilotService:
         try:
             CopilotService.inspect_for_prompt_injection(message_text)
         except CopilotSecurityViolationError as exc:
-            # Store user message and refusal response
             user_msg = CopilotMessage(
                 tenant_id=tenant_id,
                 conversation_id=conversation_id,
@@ -177,8 +178,23 @@ class CopilotService:
         content_parts: list[str] = []
         lower_query = message_text.lower()
 
-        # Tool 1: Net Worth
-        if any(w in lower_query for w in ["net worth", "assets", "liabilities", "wealth"]):
+        # Tool: What-If Simulation
+        if any(w in lower_query for w in ["what if", "simulate", "scenario", "prepay", "afford"]):
+            sim_data = await AVAILABLE_TOOLS["simulate_what_if"]["handler"](session, tenant_id)
+            tools_executed.append("simulate_what_if")
+            citations.append({"source": "what_if_simulation_engine", "data": sim_data})
+            baseline = sim_data["baseline"]
+            cut_scen = sim_data["simulated"]["expense_cut_scenario"]
+            content_parts.append(
+                f"### What-If Financial Simulation\n"
+                f"- **Current Baseline**: Net Worth: ₹{Decimal(baseline['current_net_worth']):,.2f}, "
+                f"Liquid Cash: ₹{Decimal(baseline['liquid_cash']):,.2f}, Monthly Burn: ₹{Decimal(baseline['monthly_burn']):,.2f}.\n"
+                f"- **10% Expense Reduction**: Monthly burn drops to ₹{Decimal(cut_scen['simulated_monthly_burn']):,.2f}, "
+                f"generating an annual savings boost of ₹{Decimal(cut_scen['annual_savings_boost']):,.2f} without taking on debt."
+            )
+
+        # Tool: Net Worth
+        if any(w in lower_query for w in ["net worth", "assets", "liabilities", "wealth"]) and "what if" not in lower_query:
             nw_data = await AVAILABLE_TOOLS["get_net_worth"]["handler"](session, tenant_id)
             tools_executed.append("get_net_worth")
             citations.append({"source": "assets_and_liabilities_ledger", "data": nw_data})
@@ -188,7 +204,7 @@ class CopilotService:
                 f"Total Liabilities: ₹{Decimal(nw_data['total_liabilities']):,.2f})."
             )
 
-        # Tool 2: Account Balances
+        # Tool: Account Balances
         if any(w in lower_query for w in ["account", "balance", "bank", "savings", "checking"]):
             bal_data = await AVAILABLE_TOOLS["get_account_balances"]["handler"](session, tenant_id)
             tools_executed.append("get_account_balances")
@@ -206,15 +222,26 @@ class CopilotService:
                 else "You currently have no registered financial accounts."
             )
 
-        # Tool 3: Budgets & Utilization
-        if any(w in lower_query for w in ["budget", "spending", "limit", "utilization"]):
+        # Tool: Cash Position & Runway
+        if any(w in lower_query for w in ["runway", "liquid cash", "burn rate", "emergency fund"]):
+            cash_data = await AVAILABLE_TOOLS["get_cash_position"]["handler"](session, tenant_id)
+            tools_executed.append("get_cash_position")
+            citations.append({"source": "cash_accounts", "data": cash_data})
+            funded_msg = "fully emergency funded (>= 6 months)" if cash_data["is_emergency_funded"] else "below recommended 6-month buffer"
+            content_parts.append(
+                f"Liquid cash is ₹{Decimal(cash_data['liquid_cash']):,.2f} with a monthly burn of "
+                f"₹{Decimal(cash_data['monthly_burn']):,.2f}, giving an estimated runway of {cash_data['runway_months']} months ({funded_msg})."
+            )
+
+        # Tool: Budgets & Utilization
+        if any(w in lower_query for w in ["budget", "spending limit", "utilization"]):
             b_data = await AVAILABLE_TOOLS["get_budget_status"]["handler"](session, tenant_id)
             tools_executed.append("get_budget_status")
             citations.append({"source": "budget_allocations", "data": b_data})
             if b_data["allocations"]:
                 b_lines = "; ".join(
                     [
-                        f"{a['category']}: ₹{Decimal(a['spent']):,.2f} spent of ₹{Decimal(a['allocated']):,.2f} ({a['utilization_pct']})"
+                        f"{a['category']}: ₹{Decimal(a['spent']):,.2f} of ₹{Decimal(a['allocated']):,.2f} ({a['utilization_pct']})"
                         for a in b_data["allocations"]
                     ]
                 )
@@ -222,7 +249,34 @@ class CopilotService:
             else:
                 content_parts.append("No active budget allocations found for this period.")
 
-        # Tool 4: Financial Goals
+        # Tool: Expense Summary & Categories
+        if any(w in lower_query for w in ["where did my money go", "spent this month", "expense summary", "top expenses"]):
+            exp_data = await AVAILABLE_TOOLS["get_expense_summary"]["handler"](session, tenant_id)
+            tools_executed.append("get_expense_summary")
+            citations.append({"source": "financial_transactions", "data": exp_data})
+            if exp_data["categories"]:
+                top_cats = ", ".join([f"{c['category']}: ₹{Decimal(c['total_spent']):,.2f}" for c in exp_data["categories"][:3]])
+                content_parts.append(
+                    f"Total expenses in the last 30 days were ₹{Decimal(exp_data['total_expense']):,.2f}. "
+                    f"Top spending categories: {top_cats}."
+                )
+            else:
+                content_parts.append("No expenses recorded in the last 30 days.")
+
+        # Tool: Liabilities & Debt
+        if any(w in lower_query for w in ["debt", "liability", "loan", "emi", "borrow"]):
+            l_data = await AVAILABLE_TOOLS["get_liability_summary"]["handler"](session, tenant_id)
+            tools_executed.append("get_liability_summary")
+            citations.append({"source": "liabilities", "data": l_data})
+            if l_data["liabilities"]:
+                content_parts.append(
+                    f"You have {l_data['count']} active liabilities with total principal outstanding of "
+                    f"₹{Decimal(l_data['total_principal']):,.2f} and monthly EMI obligations of ₹{Decimal(l_data['total_monthly_emi']):,.2f}."
+                )
+            else:
+                content_parts.append("You currently have zero active liabilities or debts.")
+
+        # Tool: Financial Goals
         if any(w in lower_query for w in ["goal", "target", "milestone", "save"]):
             g_data = await AVAILABLE_TOOLS["get_financial_goals"]["handler"](session, tenant_id)
             tools_executed.append("get_financial_goals")
@@ -238,7 +292,7 @@ class CopilotService:
             else:
                 content_parts.append("No active financial goals found.")
 
-        # Tool 5: Investments & Holdings
+        # Tool: Investments & Holdings
         if any(w in lower_query for w in ["stock", "share", "portfolio", "holding", "invest"]):
             h_data = await AVAILABLE_TOOLS["get_investment_holdings"]["handler"](session, tenant_id)
             tools_executed.append("get_investment_holdings")
@@ -251,11 +305,64 @@ class CopilotService:
             else:
                 content_parts.append("No active investment holdings currently recorded.")
 
+        # Tool: Tax Readiness
+        if any(w in lower_query for w in ["tax", "regime", "80c", "deduction", "itr"]):
+            tax_data = await AVAILABLE_TOOLS["get_tax_readiness"]["handler"](session, tenant_id)
+            tools_executed.append("get_tax_readiness")
+            citations.append({"source": "tax_computations", "data": tax_data})
+            if tax_data.get("has_tax_profile"):
+                content_parts.append(
+                    f"For FY {tax_data['financial_year']}, gross income is ₹{Decimal(tax_data['gross_income']):,.2f} with deductions of "
+                    f"₹{Decimal(tax_data['total_deductions']):,.2f}. Estimated tax liability under the {tax_data['active_regime']} regime is "
+                    f"₹{Decimal(tax_data['total_tax_liability']):,.2f}."
+                )
+            else:
+                content_parts.append("No active tax computation found for the current financial year.")
+
+        # Tool: Risk & Health
+        if any(w in lower_query for w in ["risk", "health score", "vulnerab", "alert"]):
+            r_data = await AVAILABLE_TOOLS["get_risk_assessment"]["handler"](session, tenant_id)
+            tools_executed.append("get_risk_assessment")
+            citations.append({"source": "risk_assessments", "data": r_data})
+            content_parts.append(
+                f"Your Financial Health Score is {r_data['overall_score']}/100 ({r_data['health_grade']}) with "
+                f"{r_data['active_alerts_count']} active advisory alerts."
+            )
+
+        # Tool: Retirement
+        if any(w in lower_query for w in ["retire", "pension", "provident"]):
+            ret_data = await AVAILABLE_TOOLS["get_retirement_projection"]["handler"](session, tenant_id)
+            tools_executed.append("get_retirement_projection")
+            citations.append({"source": "retirement_profiles", "data": ret_data})
+            if ret_data.get("has_profile"):
+                content_parts.append(
+                    f"Retirement target age is {ret_data['retirement_age']}. Accumulated corpus is "
+                    f"₹{Decimal(ret_data['current_corpus']):,.2f} towards a target of ₹{Decimal(ret_data['required_corpus']):,.2f} "
+                    f"({'Fully funded' if ret_data['is_funded'] else 'Funding in progress'})."
+                )
+            else:
+                content_parts.append("Retirement profile has not yet been configured.")
+
+        # Tool: Digital Twin State
+        if any(w in lower_query for w in ["twin", "financial profile", "state summary", "full picture"]):
+            twin_data = await AVAILABLE_TOOLS["get_digital_twin_status"]["handler"](session, tenant_id)
+            tools_executed.append("get_digital_twin_status")
+            citations.append({"source": "financial_twin_snapshots", "data": twin_data})
+            if twin_data.get("has_snapshot"):
+                content_parts.append(
+                    f"Personal Financial Digital Twin status: {twin_data['data_freshness_status']} (as of {twin_data['snapshot_date']}). "
+                    f"Net Worth: ₹{Decimal(twin_data['net_worth']):,.2f}, Liquid Net Worth: ₹{Decimal(twin_data['liquid_net_worth']):,.2f}, "
+                    f"Monthly Savings: ₹{Decimal(twin_data['monthly_savings']):,.2f}."
+                )
+            else:
+                content_parts.append("Digital Twin snapshot not yet generated. Visit the Digital Twin dashboard to initialize.")
+
         # Fallback if no specific financial tool matched
         if not content_parts:
             content_parts.append(
                 "I am your WealthOS Financial Copilot. I can answer inquiries regarding your "
-                "net worth, bank balances, budget utilization, financial goals, and investment holdings."
+                "net worth, cash runway, expenses, budgets, loan EMIs, investments, India tax readiness, "
+                "risk health score, retirement projections, and perform what-if simulations."
             )
 
         final_response_text = "\n\n".join(content_parts)
