@@ -18,7 +18,57 @@ export interface SecureStorageDriver {
   deleteItemAsync(key: string): Promise<void>;
 }
 
-// In-memory fallback driver for non-native / test environments
+// Lazy-resolve native module to safely coexist in Node/test environments
+let _nativeSecureStore: any = null;
+function getNativeSecureStore(): any {
+  if (!_nativeSecureStore) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      _nativeSecureStore = require('expo-secure-store');
+    } catch {
+      _nativeSecureStore = null;
+    }
+  }
+  return _nativeSecureStore;
+}
+
+/**
+ * Hardware-backed Keychain (iOS) and Keystore (Android) SecureStore driver.
+ * Configured with WHEN_UNLOCKED_THIS_DEVICE_ONLY to prevent cross-device or unauthenticated backup extraction.
+ */
+export class ExpoSecureStoreDriver implements SecureStorageDriver {
+  async setItemAsync(key: string, value: string): Promise<void> {
+    const SecureStore = getNativeSecureStore();
+    if (SecureStore && typeof SecureStore.setItemAsync === 'function') {
+      await SecureStore.setItemAsync(key, value, {
+        keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      });
+    }
+  }
+
+  async getItemAsync(key: string): Promise<string | null> {
+    const SecureStore = getNativeSecureStore();
+    if (SecureStore && typeof SecureStore.getItemAsync === 'function') {
+      return await SecureStore.getItemAsync(key, {
+        keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      });
+    }
+    return null;
+  }
+
+  async deleteItemAsync(key: string): Promise<void> {
+    const SecureStore = getNativeSecureStore();
+    if (SecureStore && typeof SecureStore.deleteItemAsync === 'function') {
+      await SecureStore.deleteItemAsync(key, {
+        keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      });
+    }
+  }
+}
+
+/**
+ * Isolated in-memory driver for unit tests and headless environments where native keychain bridge is unavailable.
+ */
 export class MemorySecureStoreDriver implements SecureStorageDriver {
   private store = new Map<string, string>();
 
@@ -37,6 +87,16 @@ export class MemorySecureStoreDriver implements SecureStorageDriver {
   clear(): void {
     this.store.clear();
   }
+}
+
+/**
+ * Factory creating the production hardware-backed driver or test fallback.
+ */
+export function createSecureStorageDriver(): SecureStorageDriver {
+  if (process.env.NODE_ENV === 'test' || typeof window !== 'undefined') {
+    return new MemorySecureStoreDriver();
+  }
+  return new ExpoSecureStoreDriver();
 }
 
 export class MobileAuthStorage {

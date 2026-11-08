@@ -179,13 +179,26 @@ def main() -> int:
     )
     results.append(res_diag)
 
-    # 4. Authenticated Endpoint (/api/v1/auth/me or /api/v1/accounting/accounts)
+    # 4. Authenticated Endpoint (/api/v1/auth/me)
     token, tenant_id = obtain_auth_token(args.base_url)
     auth_headers: dict[str, str] = {}
     if token:
         auth_headers["Authorization"] = f"Bearer {token}"
         if tenant_id:
             auth_headers["X-Tenant-ID"] = str(tenant_id)
+
+        # Ensure accounts are seeded for the tenant
+        try:
+            seed_req = urllib.request.Request(
+                f"{args.base_url}/api/v1/accounting/accounts/seed",
+                data=b"{}",
+                headers={**auth_headers, "Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(seed_req, timeout=5.0) as seed_resp:
+                seed_resp.read()
+        except Exception:
+            pass  # Already seeded or ignored
 
         res_auth = benchmark_endpoint(
             name="Authenticated User Profile (/api/v1/auth/me)",
@@ -195,6 +208,16 @@ def main() -> int:
             warmup=args.warmup,
         )
         results.append(res_auth)
+
+        # 5. Authenticated DB-Backed Query (/api/v1/accounting/accounts)
+        res_db = benchmark_endpoint(
+            name="Authenticated DB-Backed Accounts (/api/v1/accounting/accounts)",
+            url=f"{args.base_url}/api/v1/accounting/accounts",
+            headers=auth_headers,
+            iterations=args.iterations,
+            warmup=args.warmup,
+        )
+        results.append(res_db)
     else:
         # Fallback to root endpoint if JWT provision failed
         res_root = benchmark_endpoint(

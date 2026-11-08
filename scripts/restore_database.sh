@@ -140,8 +140,9 @@ rm -f "${DECRYPTED_FILE}"
 
 if [ "${RESTORE_EXIT_CODE}" -ne 0 ]; then
   # Tolerate harmless client version configuration parameter differences (e.g. transaction_timeout introduced in pg17)
-  if grep -q 'unrecognized configuration parameter "transaction_timeout"' "${RESTORE_LOG}" && \
-     [ "$(grep -c 'ERROR:' "${RESTORE_LOG}" || true)" -eq 1 ]; then
+  CLIENT_DIFF_COUNT=$(grep 'unrecognized configuration parameter "transaction_timeout"' "${RESTORE_LOG}" | wc -l | tr -d ' ')
+  TOTAL_ERROR_COUNT=$(grep 'ERROR:' "${RESTORE_LOG}" | wc -l | tr -d ' ')
+  if [ "${CLIENT_DIFF_COUNT}" -ge 1 ] && [ "${TOTAL_ERROR_COUNT}" -eq 1 ]; then
     echo "[INFO] Ignored harmless client version difference: unrecognized parameter 'transaction_timeout'."
   else
     echo "[CRITICAL ALERT] pg_restore failed with non-zero exit code: ${RESTORE_EXIT_CODE}" >&2
@@ -161,7 +162,14 @@ fi
 echo "[INFO] Archive contents loaded successfully. Starting post-restore verification..."
 
 # 6. Post-Restore Verification Gate 1: Schema Version Validation
-ALEMBIC_VERSION=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "SELECT version_num FROM alembic_version LIMIT 1;" 2>/dev/null || echo "MISSING")
+set +e
+ALEMBIC_VERSION=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "SELECT version_num FROM alembic_version LIMIT 1;" 2>&1)
+ALEMBIC_STATUS=$?
+set -e
+if [ "${ALEMBIC_STATUS}" -ne 0 ] || [ -z "${ALEMBIC_VERSION}" ]; then
+  echo "[CRITICAL FAILURE] Failed to query alembic_version post-restore: ${ALEMBIC_VERSION}" >&2
+  exit 2
+fi
 if [ "${ALEMBIC_VERSION}" != "0005_financial_foundation" ]; then
   echo "[CRITICAL FAILURE] Schema version mismatch post-restore! Expected '0005_financial_foundation', got '${ALEMBIC_VERSION}'" >&2
   exit 2
@@ -186,54 +194,236 @@ if [ "${UNBALANCED_COUNT}" -ne 0 ]; then
 fi
 echo "[INFO] Post-restore General Ledger balance verified: 0 unbalanced entries."
 
-# 8. Post-Restore Verification Gate 3: Row-Level Security Policy Enforcement & Behavioral Audit
-RLS_STATS=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "
-  SELECT 
-    COUNT(*) FILTER (WHERE relrowsecurity = true) || ':' ||
-    COUNT(*) FILTER (WHERE relforcerowsecurity = true)
-  FROM pg_class c 
-  JOIN pg_namespace n ON n.oid = c.relnamespace 
-  WHERE n.nspname = 'public' AND c.relkind = 'r';
+# 8. Post-Restore Verification Gate 3: Application Role Attributes & Row-Level Security
+# 8a. Verify Application Role Attributes (must be non-superuser, no bypassrls, can login)
+APP_ROLE_PROPS=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -F '|' -c "
+  SELECT rolsuper, rolbypassrls, rolcanlogin FROM pg_roles WHERE rolname = 'wealthos_app';
 ")
-RLS_ENABLED_COUNT=$(echo "${RLS_STATS}" | cut -d: -f1)
-RLS_FORCED_COUNT=$(echo "${RLS_STATS}" | cut -d: -f2)
-
-if [ "${RLS_ENABLED_COUNT}" -lt 40 ] || [ "${RLS_FORCED_COUNT}" -lt 40 ]; then
-  echo "[CRITICAL FAILURE] Incomplete RLS policy restoration! ${RLS_ENABLED_COUNT} enabled, ${RLS_FORCED_COUNT} forced (expected >= 40)." >&2
+if [ -z "${APP_ROLE_PROPS}" ]; then
+  echo "[CRITICAL FAILURE] Required application role 'wealthos_app' does not exist in database!" >&2
   exit 2
 fi
-echo "[INFO] Post-restore Row-Level Security verified: ${RLS_ENABLED_COUNT} enabled, ${RLS_FORCED_COUNT} forced tables."
+APP_ROLSUPER=$(echo "${APP_ROLE_PROPS}" | cut -d'|' -f1)
+APP_ROLBYPASSRLS=$(echo "${APP_ROLE_PROPS}" | cut -d'|' -f2)
+APP_ROLCANLOGIN=$(echo "${APP_ROLE_PROPS}" | cut -d'|' -f3)
 
-# Ensure standard application privileges are established post-restore
-psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -c "
+if [ "${APP_ROLSUPER}" != "f" ] || [ "${APP_ROLBYPASSRLS}" != "f" ] || [ "${APP_ROLCANLOGIN}" != "t" ]; then
+  echo "[CRITICAL FAILURE] Role 'wealthos_app' has unsafe attributes: rolsuper=${APP_ROLSUPER}, rolbypassrls=${APP_ROLBYPASSRLS}, rolcanlogin=${APP_ROLCANLOGIN} (expected f|f|t)!" >&2
+  exit 2
+fi
+echo "[INFO] Application role 'wealthos_app' verified: rolsuper=false, rolbypassrls=false, rolcanlogin=true."
+
+# 8b. Ensure standard application privileges are established post-restore (fail closed)
+if ! psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -v ON_ERROR_STOP=1 -c "
   GRANT USAGE ON SCHEMA public TO wealthos_app;
   GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO wealthos_app;
   GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO wealthos_app;
-" > /dev/null 2>&1 || true
-
-# Behavioral RLS Denial Verification under non-superuser application role
-CROSS_TENANT_COUNT=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "
-  SET ROLE wealthos_app;
-  SELECT count(*) FROM accounts;
-" 2>&1 | tail -n 1)
-
-if [ "${CROSS_TENANT_COUNT}" != "0" ]; then
-  echo "[CRITICAL FAILURE] Behavioral RLS leak! Role 'wealthos_app' read ${CROSS_TENANT_COUNT} records without tenant context." >&2
+" > /dev/null 2>&1; then
+  echo "[CRITICAL FAILURE] Failed to grant application privileges to role 'wealthos_app'!" >&2
   exit 2
 fi
-echo "[INFO] Behavioral RLS isolation verified: zero cross-tenant records exposed to 'wealthos_app'."
+echo "[INFO] Application privileges successfully granted to 'wealthos_app'."
 
-# Verification that application role cannot disable RLS or bypass policies
-CAN_DISABLE_RLS=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -c "
+# 8c. Explicit inventory of all 43 tenant tables: relrowsecurity=true and relforcerowsecurity=true
+DEFECTIVE_RLS_TABLES=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -F '|' -c "
+WITH required_tables AS (
+  SELECT unnest(ARRAY[
+    'account_transfers',
+    'accounting_idempotency_records',
+    'accounting_periods',
+    'accounts',
+    'analytics_snapshots',
+    'assets',
+    'budget_allocations',
+    'budgets',
+    'copilot_conversations',
+    'copilot_messages',
+    'financial_accounts',
+    'financial_documents',
+    'financial_goals',
+    'financial_scenarios',
+    'financial_transactions',
+    'forecast_runs',
+    'goal_contributions',
+    'investment_holding_lots',
+    'journal_entries',
+    'journal_lines',
+    'liabilities',
+    'membership_roles',
+    'notification_events',
+    'notification_preferences',
+    'notifications',
+    'passive_income_records',
+    'provider_connections',
+    'provider_consents',
+    'provider_credentials',
+    'provider_sync_cursors',
+    'reconciliation_records',
+    'reconciliation_sessions',
+    'recurring_transaction_rules',
+    'report_jobs',
+    'report_schedules',
+    'roles',
+    'security_audit_logs',
+    'system_audit_logs',
+    'tenant_invitations',
+    'tenant_memberships',
+    'tenants',
+    'transaction_categories',
+    'transaction_merchants'
+  ]) AS relname
+)
+SELECT 
+  r.relname,
+  COALESCE(c.relrowsecurity, false) AS relrowsecurity,
+  COALESCE(c.relforcerowsecurity, false) AS relforcerowsecurity,
+  CASE 
+    WHEN c.relname IS NULL THEN 'MISSING_TABLE'
+    WHEN c.relrowsecurity = false THEN 'RLS_DISABLED'
+    WHEN c.relforcerowsecurity = false THEN 'RLS_NOT_FORCED'
+    ELSE 'OK'
+  END AS status
+FROM required_tables r
+LEFT JOIN pg_class c ON c.relname = r.relname AND c.relnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'public')
+WHERE c.relname IS NULL OR c.relrowsecurity = false OR c.relforcerowsecurity = false;
+")
+
+if [ -n "${DEFECTIVE_RLS_TABLES}" ]; then
+  echo "[CRITICAL FAILURE] Table RLS audit failed! Missing or unforced RLS on tables:" >&2
+  echo "${DEFECTIVE_RLS_TABLES}" >&2
+  exit 2
+fi
+echo "[INFO] Explicit verification of all 43 tenant tables passed: all have relrowsecurity=true and relforcerowsecurity=true."
+
+# 8d. Explicit policy presence verification across all 43 tenant tables
+MISSING_POLICIES=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "
+WITH required_tables AS (
+  SELECT unnest(ARRAY[
+    'account_transfers',
+    'accounting_idempotency_records',
+    'accounting_periods',
+    'accounts',
+    'analytics_snapshots',
+    'assets',
+    'budget_allocations',
+    'budgets',
+    'copilot_conversations',
+    'copilot_messages',
+    'financial_accounts',
+    'financial_documents',
+    'financial_goals',
+    'financial_scenarios',
+    'financial_transactions',
+    'forecast_runs',
+    'goal_contributions',
+    'investment_holding_lots',
+    'journal_entries',
+    'journal_lines',
+    'liabilities',
+    'membership_roles',
+    'notification_events',
+    'notification_preferences',
+    'notifications',
+    'passive_income_records',
+    'provider_connections',
+    'provider_consents',
+    'provider_credentials',
+    'provider_sync_cursors',
+    'reconciliation_records',
+    'reconciliation_sessions',
+    'recurring_transaction_rules',
+    'report_jobs',
+    'report_schedules',
+    'roles',
+    'security_audit_logs',
+    'system_audit_logs',
+    'tenant_invitations',
+    'tenant_memberships',
+    'tenants',
+    'transaction_categories',
+    'transaction_merchants'
+  ]) AS relname
+)
+SELECT r.relname
+FROM required_tables r
+LEFT JOIN (SELECT DISTINCT tablename FROM pg_policies WHERE schemaname = 'public') p ON r.relname = p.tablename
+WHERE p.tablename IS NULL;
+")
+
+if [ -n "${MISSING_POLICIES}" ]; then
+  echo "[CRITICAL FAILURE] Tenant tables missing RLS policies in pg_policies:" >&2
+  echo "${MISSING_POLICIES}" >&2
+  exit 2
+fi
+echo "[INFO] Explicit policy presence verified on all 43 tenant tables in pg_policies."
+
+# 8e. Behavioral Cross-Tenant and Context Reset Verification under role 'wealthos_app'
+psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -v ON_ERROR_STOP=1 -c "
+DO \$\$
+DECLARE
+  v_rec_count integer;
+  v_first_tenant_id uuid;
+  v_other_tenant_id uuid := '00000000-0000-0000-0000-000000000001'::uuid;
+BEGIN
+  -- 1. Without tenant context: must return 0
+  SET ROLE wealthos_app;
+  SELECT count(*) INTO v_rec_count FROM accounts;
+  IF v_rec_count <> 0 THEN
+    RAISE EXCEPTION 'RLS Leak: wealthos_app saw % rows without tenant context', v_rec_count;
+  END IF;
+
+  -- 2. Check if any tenant exists in database
+  RESET ROLE;
+  SELECT id INTO v_first_tenant_id FROM tenants LIMIT 1;
+
+  IF v_first_tenant_id IS NOT NULL THEN
+    SET ROLE wealthos_app;
+    -- Set Tenant A context
+    PERFORM set_config('app.current_tenant_id', v_first_tenant_id::text, false);
+    SELECT count(*) INTO v_rec_count FROM accounts WHERE tenant_id <> v_first_tenant_id;
+    IF v_rec_count <> 0 THEN
+      RAISE EXCEPTION 'Cross-tenant leak: wealthos_app saw % rows belonging to other tenants', v_rec_count;
+    END IF;
+
+    -- Set Tenant B context (disjoint dummy tenant)
+    PERFORM set_config('app.current_tenant_id', v_other_tenant_id::text, false);
+    SELECT count(*) INTO v_rec_count FROM accounts WHERE tenant_id = v_first_tenant_id;
+    IF v_rec_count <> 0 THEN
+      RAISE EXCEPTION 'Cross-tenant leak: Tenant B context saw % rows belonging to Tenant A', v_rec_count;
+    END IF;
+
+    -- Reset context: must return 0
+    PERFORM set_config('app.current_tenant_id', '', false);
+    SELECT count(*) INTO v_rec_count FROM accounts;
+    IF v_rec_count <> 0 THEN
+      RAISE EXCEPTION 'RLS Leak after reset: wealthos_app saw % rows with empty tenant context', v_rec_count;
+    END IF;
+  END IF;
+
+  RESET ROLE;
+END \$\$;
+"
+echo "[INFO] Behavioral RLS isolation verified: zero cross-tenant records exposed to 'wealthos_app' across context switches and resets."
+
+# 8f. Verification that application role cannot disable RLS or bypass policies
+set +e
+CAN_DISABLE_RLS=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -v ON_ERROR_STOP=1 -c "
   SET ROLE wealthos_app;
   ALTER TABLE accounts DISABLE ROW LEVEL SECURITY;
-" 2>&1 || true)
+" 2>&1)
+CAN_DISABLE_EXIT=$?
+set -e
 
-if ! echo "${CAN_DISABLE_RLS}" | grep -qEi "must be owner|permission denied|denied"; then
+if [ "${CAN_DISABLE_EXIT}" -eq 0 ]; then
   echo "[CRITICAL FAILURE] Application role 'wealthos_app' was able to alter RLS!" >&2
   exit 2
 fi
-echo "[INFO] Defense-in-depth verified: role 'wealthos_app' cannot disable RLS."
+
+if ! echo "${CAN_DISABLE_RLS}" | grep -qEi "must be owner|permission denied|denied"; then
+  echo "[CRITICAL FAILURE] Expected permission denied when 'wealthos_app' attempts to alter RLS, got: ${CAN_DISABLE_RLS}" >&2
+  exit 2
+fi
+echo "[INFO] Defense-in-depth verified: role 'wealthos_app' cannot disable RLS (exit ${CAN_DISABLE_EXIT})."
 
 # 9. Post-Restore Verification Gate 4: Foreign-Key Referential Integrity
 FK_VIOLATIONS=$(psql -h "${POSTGRES_HOST}" -p "${POSTGRES_PORT}" -U "${POSTGRES_USER}" -d "${TARGET_DB}" -t -A -c "

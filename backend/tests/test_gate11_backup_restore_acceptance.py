@@ -5,15 +5,12 @@ Cryptographic Tamper Detection, Key Authentication, and End-to-End Restoration
 into Disposable Database ('wealthos_dr_drill').
 """
 
-import json
 import os
 import subprocess
 import sys
-import uuid
 from pathlib import Path
 
 import pytest
-from cryptography.exceptions import InvalidTag
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SCRIPTS_DIR = REPO_ROOT / "scripts"
@@ -23,7 +20,6 @@ from backup_crypto import (  # noqa: E402
     MAGIC_HEADER,
     compute_sha256,
     decrypt_file,
-    derive_key,
     encrypt_file,
 )
 
@@ -47,7 +43,9 @@ def test_gate11_backup_crypto_roundtrip(temp_backup_dir: Path, monkeypatch):
     restored_path = temp_backup_dir / "sample_ledger.restored.dump"
 
     # 1. Create simulated PostgreSQL custom dump payload
-    original_data = b"PGDMP\x01\x0f\x00\x00\x00WealthOS General Ledger Balancing Invariants Validated" * 100
+    original_data = (
+        b"PGDMP\x01\x0f\x00\x00\x00WealthOS General Ledger Balancing Invariants Validated" * 100
+    )
     plaintext_path.write_bytes(original_data)
     original_sha = compute_sha256(plaintext_path)
 
@@ -173,4 +171,3 @@ def test_gate11_full_disaster_recovery_exercise_drill():
     assert "WEALTHOS DISASTER RECOVERY DRILL: CERTIFIED ACCEPTANCE" in proc.stdout
     assert '"unbalanced_journal_entries": 0' in proc.stdout
     assert '"variance": "0.0000 INR"' in proc.stdout
-

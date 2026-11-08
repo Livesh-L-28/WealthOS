@@ -1,7 +1,9 @@
 """Regression and route uniqueness tests for WealthOS API route registration."""
 
 from collections import Counter
+
 from fastapi.routing import APIRoute, _IncludedRouter
+
 from app.main import create_app
 
 
@@ -37,7 +39,9 @@ def test_copilot_routes_registered_once():
 
     copilot_routes = [r for r in all_routes if "/api/v1/copilot" in r[1]]
 
-    assert len(copilot_routes) == 5, f"Expected 5 Copilot routes, found {len(copilot_routes)}: {copilot_routes}"
+    assert len(copilot_routes) == 5, (
+        f"Expected 5 Copilot routes, found {len(copilot_routes)}: {copilot_routes}"
+    )
     counts = Counter(copilot_routes)
     duplicates = {sig: count for sig, count in counts.items() if count > 1}
     assert not duplicates, f"Duplicate Copilot routes detected: {duplicates}"

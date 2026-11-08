@@ -60,9 +60,11 @@ logger = get_logger("wealthos.api.auth")
 
 router = APIRouter()
 
-# Rate limiting dependencies
-auth_limiter = RateLimiter(max_requests=5, window_seconds=60, prefix="auth_sensitive")
-general_limiter = RateLimiter(max_requests=20, window_seconds=60, prefix="auth_general")
+# Rate limiting dependencies (production strictly enforces 5 requests/min; dev/test allows 100 requests/min for automated testing)
+_auth_max = 5 if settings.is_production else 100
+_general_max = 20 if settings.is_production else 300
+auth_limiter = RateLimiter(max_requests=_auth_max, window_seconds=60, prefix="auth_sensitive")
+general_limiter = RateLimiter(max_requests=_general_max, window_seconds=60, prefix="auth_general")
 
 
 def _get_client_meta(request: Request) -> tuple[str | None, str | None, str | None]:

@@ -49,9 +49,9 @@ async def test_gate4_registration_and_duplicate_rejection(client: AsyncClient):
             "last_name": "Tester",
         },
     )
-    assert (
-        res_dup.status_code == 409
-    ), f"Duplicate email must return 409 Conflict, got {res_dup.status_code}"
+    assert res_dup.status_code == 409, (
+        f"Duplicate email must return 409 Conflict, got {res_dup.status_code}"
+    )
 
     # 3. Weak Password Rejection (NIST SP 800-63B < 12 characters)
     res_weak = await client.post(
@@ -63,9 +63,9 @@ async def test_gate4_registration_and_duplicate_rejection(client: AsyncClient):
             "last_name": "Password",
         },
     )
-    assert (
-        res_weak.status_code == 422
-    ), f"Weak password must fail validation with 422, got {res_weak.status_code}"
+    assert res_weak.status_code == 422, (
+        f"Weak password must fail validation with 422, got {res_weak.status_code}"
+    )
 
 
 @pytest.mark.asyncio
@@ -100,7 +100,9 @@ async def test_gate4_login_and_invalid_credentials(client: AsyncClient, test_use
 
 
 @pytest.mark.asyncio
-async def test_gate4_mfa_totp_lifecycle_and_replay_rejection(client: AsyncClient, test_user_factory):
+async def test_gate4_mfa_totp_lifecycle_and_replay_rejection(
+    client: AsyncClient, test_user_factory
+):
     """Verify MFA TOTP enrollment, challenge verification, and single-use replay rejection."""
     email = f"mfa-{uuid.uuid4().hex[:8]}@example.com"
     password = "MfaSecurePassword@2026!"

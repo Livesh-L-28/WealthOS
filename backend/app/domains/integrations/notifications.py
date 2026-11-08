@@ -170,7 +170,8 @@ class NotificationService:
         )
         res = await session.execute(stmt)
         await session.flush()
-        return res.rowcount > 0
+        rowcount = getattr(res, "rowcount", 0)
+        return bool(rowcount and rowcount > 0)
 
     @staticmethod
     async def archive_notification(
@@ -191,5 +192,5 @@ class NotificationService:
         )
         res = await session.execute(stmt)
         await session.flush()
-        return res.rowcount > 0
-
+        rowcount = getattr(res, "rowcount", 0)
+        return bool(rowcount and rowcount > 0)

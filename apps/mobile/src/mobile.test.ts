@@ -4,6 +4,8 @@ import pkgConfig from '../package.json';
 import {
   SECURE_STORE_KEYS,
   MemorySecureStoreDriver,
+  ExpoSecureStoreDriver,
+  createSecureStorageDriver,
   MobileAuthStorage,
   OfflineSyncQueue,
 } from './storage';
@@ -79,6 +81,22 @@ describe('WealthOS Mobile Application (Gate 9 & Round 2 Acceptance)', () => {
       expect(await driver.getItemAsync(SECURE_STORE_KEYS.AUTH_TOKEN)).toBeNull();
       expect(await driver.getItemAsync(SECURE_STORE_KEYS.REFRESH_TOKEN)).toBeNull();
       expect(await driver.getItemAsync(SECURE_STORE_KEYS.ACTIVE_TENANT)).toBeNull();
+    });
+
+    it('instantiates ExpoSecureStoreDriver and conforms to SecureStorageDriver interface', async () => {
+      const nativeDriver = new ExpoSecureStoreDriver();
+      expect(typeof nativeDriver.setItemAsync).toBe('function');
+      expect(typeof nativeDriver.getItemAsync).toBe('function');
+      expect(typeof nativeDriver.deleteItemAsync).toBe('function');
+
+      // In Node environment where native keychain is unavailable, fallback safely returns null
+      const val = await nativeDriver.getItemAsync('dummy_key');
+      expect(val).toBeNull();
+    });
+
+    it('returns isolated MemorySecureStoreDriver in test runtime via driver factory', () => {
+      const driverInstance = createSecureStorageDriver();
+      expect(driverInstance).toBeInstanceOf(MemorySecureStoreDriver);
     });
   });
 

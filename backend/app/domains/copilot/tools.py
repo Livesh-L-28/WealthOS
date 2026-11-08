@@ -7,8 +7,9 @@ Every tool in this module:
 """
 
 import uuid
+from collections.abc import Callable
 from decimal import Decimal
-from typing import Any
+from typing import Any, TypedDict
 
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -186,7 +187,13 @@ async def tool_get_investment_holdings(
     }
 
 
-AVAILABLE_TOOLS = {
+class ToolDefinition(TypedDict):
+    handler: Callable[..., Any]
+    description: str
+    parameters: dict[str, Any]
+
+
+AVAILABLE_TOOLS: dict[str, ToolDefinition] = {
     "get_net_worth": {
         "handler": tool_get_net_worth,
         "description": "Calculate Net Worth (Total Assets minus Total Liabilities).",

@@ -15,7 +15,6 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.core.logging import get_logger
 from app.domains.identity.crypto import _derive_master_key
 from app.domains.integrations.models import (
@@ -213,4 +212,3 @@ class FinancialProviderService:
 
         await session.flush()
         return cursor
-

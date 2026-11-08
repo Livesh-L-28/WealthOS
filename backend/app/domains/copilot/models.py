@@ -57,9 +57,7 @@ class CopilotMessage(Base):
     """Message item inside a copilot conversation thread."""
 
     __tablename__ = "copilot_messages"
-    __table_args__ = (
-        Index("idx_copilot_msg_conv", "conversation_id", "created_at"),
-    )
+    __table_args__ = (Index("idx_copilot_msg_conv", "conversation_id", "created_at"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tenant_id: Mapped[uuid.UUID] = mapped_column(

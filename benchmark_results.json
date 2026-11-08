@@ -1,0 +1,108 @@
+{
+  "timestamp": "2026-11-08T06:00:27Z",
+  "target_base_url": "http://localhost:8000",
+  "iterations": 50,
+  "warmup": 5,
+  "results": [
+    {
+      "endpoint": "Liveness Probe (/health/live)",
+      "method": "GET",
+      "url": "http://localhost:8000/health/live",
+      "iterations": 50,
+      "warmup": 5,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 518.21,
+      "latency_ms": {
+        "min": 1.5,
+        "mean": 1.91,
+        "p50": 1.88,
+        "p90": 2.18,
+        "p95": 2.42,
+        "p99": 2.67,
+        "max": 2.67,
+        "std_dev": 0.26
+      }
+    },
+    {
+      "endpoint": "Readiness Probe (/health/ready)",
+      "method": "GET",
+      "url": "http://localhost:8000/health/ready",
+      "iterations": 50,
+      "warmup": 5,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 221.32,
+      "latency_ms": {
+        "min": 3.43,
+        "mean": 4.5,
+        "p50": 4.26,
+        "p90": 5.31,
+        "p95": 6.45,
+        "p99": 7.62,
+        "max": 8.01,
+        "std_dev": 0.89
+      }
+    },
+    {
+      "endpoint": "Detailed Health Probe (/api/v1/health)",
+      "method": "GET",
+      "url": "http://localhost:8000/api/v1/health",
+      "iterations": 50,
+      "warmup": 5,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 159.97,
+      "latency_ms": {
+        "min": 5.61,
+        "mean": 6.23,
+        "p50": 6.05,
+        "p90": 6.72,
+        "p95": 7.48,
+        "p99": 8.98,
+        "max": 10.26,
+        "std_dev": 0.71
+      }
+    },
+    {
+      "endpoint": "Authenticated User Profile (/api/v1/auth/me)",
+      "method": "GET",
+      "url": "http://localhost:8000/api/v1/auth/me",
+      "iterations": 50,
+      "warmup": 5,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 149.64,
+      "latency_ms": {
+        "min": 5.78,
+        "mean": 6.66,
+        "p50": 6.44,
+        "p90": 7.42,
+        "p95": 8.19,
+        "p99": 9.41,
+        "max": 9.97,
+        "std_dev": 0.79
+      }
+    },
+    {
+      "endpoint": "Authenticated DB-Backed Accounts (/api/v1/accounting/accounts)",
+      "method": "GET",
+      "url": "http://localhost:8000/api/v1/accounting/accounts",
+      "iterations": 50,
+      "warmup": 5,
+      "error_count": 0,
+      "error_rate_pct": 0.0,
+      "throughput_rps": 81.84,
+      "latency_ms": {
+        "min": 10.19,
+        "mean": 12.19,
+        "p50": 12.11,
+        "p90": 12.99,
+        "p95": 13.31,
+        "p99": 14.01,
+        "max": 14.56,
+        "std_dev": 0.7
+      }
+    }
+  ]
+}

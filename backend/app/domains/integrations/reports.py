@@ -58,7 +58,9 @@ class FinancialReportGenerator:
         header_fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
         header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
         border_thin = Side(border_style="thin", color="CBD5E1")
-        cell_border = Border(top=border_thin, left=border_thin, right=border_thin, bottom=border_thin)
+        cell_border = Border(
+            top=border_thin, left=border_thin, right=border_thin, bottom=border_thin
+        )
 
         safe_headers = [sanitize_formula_injection(h) for h in headers]
         ws.append(safe_headers)
@@ -170,4 +172,3 @@ class FinancialReportGenerator:
         elements.append(table)
         doc.build(elements)
         return buffer.getvalue()
-

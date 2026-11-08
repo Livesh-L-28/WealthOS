@@ -16,4 +16,3 @@ api_v1_router.include_router(
     accounting_router, prefix="/accounting", tags=["Accounting & Double-Entry Ledger"]
 )
 api_v1_router.include_router(copilot_router, prefix="/copilot", tags=["AI Financial Copilot"])
-

@@ -18,7 +18,6 @@ Validates the full enterprise financial lifecycle across:
 - WF-15: Audit Trail Logging & Rate Limiting
 """
 
-import io
 import subprocess
 import sys
 import uuid
@@ -32,7 +31,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.audit.models import SecurityAuditLog
 from app.domains.copilot.service import CopilotService
-from app.domains.integrations.notifications import NotificationService
 from app.domains.integrations.providers import FinancialProviderService
 from app.domains.integrations.reports import FinancialReportGenerator
 
@@ -72,13 +70,9 @@ async def test_wf01_auth_session_lifecycle(client: AsyncClient, test_user_factor
 
 
 @pytest.mark.asyncio
-async def test_wf02_bank_account_and_transfer_neutrality(
-    client: AsyncClient, test_user_factory
-):
+async def test_wf02_bank_account_and_transfer_neutrality(client: AsyncClient, test_user_factory):
     """WF-02: Inter-account transfer preserves consolidated net worth (Zero Drift)."""
-    user, tenant, token = await test_user_factory(
-        email="wf02-user@example.com", status="active"
-    )
+    user, tenant, token = await test_user_factory(email="wf02-user@example.com", status="active")
     headers = {"Authorization": f"Bearer {token}", "X-Tenant-ID": str(tenant.id)}
 
     # Seed Chart of Accounts
@@ -117,13 +111,9 @@ async def test_wf02_bank_account_and_transfer_neutrality(
 
 
 @pytest.mark.asyncio
-async def test_wf03_investment_portfolio_and_fifo_lots(
-    db_session: AsyncSession, test_user_factory
-):
+async def test_wf03_investment_portfolio_and_fifo_lots(db_session: AsyncSession, test_user_factory):
     """WF-03: Chronological FIFO lot depletion for equity transactions with DB persistence."""
-    user, tenant, _ = await test_user_factory(
-        email="wf03-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf03-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     # 1. Create financial account (Demat)
@@ -163,9 +153,9 @@ async def test_wf03_investment_portfolio_and_fifo_lots(
     await db_session.execute(
         text(
             """
-            INSERT INTO investment_holding_lots 
+            INSERT INTO investment_holding_lots
             (id, tenant_id, account_id, instrument_id, purchase_date, quantity, purchase_price, cost_basis, remaining_quantity, currency, lot_status)
-            VALUES 
+            VALUES
             (:id1, :tid, :aid, :iid, :d1, 100.0000, 100.0000, 10000.0000, 100.0000, 'INR', 'OPEN'),
             (:id2, :tid, :aid, :iid, :d2, 100.0000, 150.0000, 15000.0000, 100.0000, 'INR', 'OPEN');
             """
@@ -191,8 +181,8 @@ async def test_wf03_investment_portfolio_and_fifo_lots(
     lots_res = await db_session.execute(
         text(
             """
-            SELECT id, remaining_quantity, purchase_price 
-            FROM investment_holding_lots 
+            SELECT id, remaining_quantity, purchase_price
+            FROM investment_holding_lots
             WHERE tenant_id = :tid AND account_id = :aid AND instrument_id = :iid AND remaining_quantity > 0
             ORDER BY purchase_date ASC;
             """
@@ -231,13 +221,17 @@ async def test_wf03_investment_portfolio_and_fifo_lots(
     # 5. Assert database state
     lot1_check = (
         await db_session.execute(
-            text("SELECT remaining_quantity, lot_status FROM investment_holding_lots WHERE id = :id;"),
+            text(
+                "SELECT remaining_quantity, lot_status FROM investment_holding_lots WHERE id = :id;"
+            ),
             {"id": lot1_id},
         )
     ).fetchone()
     lot2_check = (
         await db_session.execute(
-            text("SELECT remaining_quantity, lot_status FROM investment_holding_lots WHERE id = :id;"),
+            text(
+                "SELECT remaining_quantity, lot_status FROM investment_holding_lots WHERE id = :id;"
+            ),
             {"id": lot2_id},
         )
     ).fetchone()
@@ -258,9 +252,7 @@ async def test_wf04_passive_income_and_tax_withholding(
     client: AsyncClient, db_session: AsyncSession, test_user_factory
 ):
     """WF-04: Dividend income recognition with Tax Deducted at Source (TDS) segregation in DB."""
-    user, tenant, token = await test_user_factory(
-        email="wf04-user@example.com", status="active"
-    )
+    user, tenant, token = await test_user_factory(email="wf04-user@example.com", status="active")
     headers = {"Authorization": f"Bearer {token}", "X-Tenant-ID": str(tenant.id)}
     await bind_tenant_session(db_session, tenant.id, user.id)
 
@@ -333,7 +325,9 @@ async def test_wf04_passive_income_and_tax_withholding(
     # 4. Verify DB state
     db_passive = (
         await db_session.execute(
-            text("SELECT gross_amount, tax_withheld, net_amount, status FROM passive_income_records WHERE id = :id;"),
+            text(
+                "SELECT gross_amount, tax_withheld, net_amount, status FROM passive_income_records WHERE id = :id;"
+            ),
             {"id": passive_id},
         )
     ).fetchone()
@@ -348,9 +342,7 @@ async def test_wf05_document_extraction_and_reconciliation(
     db_session: AsyncSession, test_user_factory
 ):
     """WF-05: Document line items aggregate matches statement total before ledger posting."""
-    user, tenant, _ = await test_user_factory(
-        email="wf05-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf05-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     # 1. Create document record in PostgreSQL
@@ -358,7 +350,7 @@ async def test_wf05_document_extraction_and_reconciliation(
     await db_session.execute(
         text(
             """
-            INSERT INTO financial_documents 
+            INSERT INTO financial_documents
             (id, tenant_id, filename, file_size_bytes, mime_type, storage_path, file_hash, document_type, processing_status)
             VALUES
             (:id, :tid, 'bank_statement_nov2026.pdf', 1048576, 'application/pdf', 'docs/stmt.pdf', 'hash_abc123', 'STATEMENT', 'PENDING');
@@ -380,6 +372,7 @@ async def test_wf05_document_extraction_and_reconciliation(
 
     # Update document in DB with extracted data
     import json
+
     await db_session.execute(
         text(
             """
@@ -388,7 +381,10 @@ async def test_wf05_document_extraction_and_reconciliation(
             WHERE id = :id;
             """
         ),
-        {"data": json.dumps({"statement_total": str(statement_total), "lines": line_items}), "id": doc_id},
+        {
+            "data": json.dumps({"statement_total": str(statement_total), "lines": line_items}),
+            "id": doc_id,
+        },
     )
 
     # Create reconciliation session
@@ -409,7 +405,9 @@ async def test_wf05_document_extraction_and_reconciliation(
     # 3. Assert database state
     db_doc = (
         await db_session.execute(
-            text("SELECT processing_status, extracted_data FROM financial_documents WHERE id = :id;"),
+            text(
+                "SELECT processing_status, extracted_data FROM financial_documents WHERE id = :id;"
+            ),
             {"id": doc_id},
         )
     ).fetchone()
@@ -418,7 +416,9 @@ async def test_wf05_document_extraction_and_reconciliation(
 
     db_recon = (
         await db_session.execute(
-            text("SELECT matched_records, discrepancy_count, status FROM reconciliation_sessions WHERE id = :id;"),
+            text(
+                "SELECT matched_records, discrepancy_count, status FROM reconciliation_sessions WHERE id = :id;"
+            ),
             {"id": recon_id},
         )
     ).fetchone()
@@ -433,13 +433,9 @@ async def test_wf05_document_extraction_and_reconciliation(
 
 
 @pytest.mark.asyncio
-async def test_wf06_budgeting_and_threshold_alerts(
-    db_session: AsyncSession, test_user_factory
-):
+async def test_wf06_budgeting_and_threshold_alerts(db_session: AsyncSession, test_user_factory):
     """WF-06: Budget utilization tracking, 85% warning, and 110% overspending alert in DB."""
-    user, tenant, _ = await test_user_factory(
-        email="wf06-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf06-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     # 1. Insert transaction category
@@ -513,13 +509,9 @@ async def test_wf06_budgeting_and_threshold_alerts(
 
 
 @pytest.mark.asyncio
-async def test_wf07_financial_goals_and_milestones(
-    db_session: AsyncSession, test_user_factory
-):
+async def test_wf07_financial_goals_and_milestones(db_session: AsyncSession, test_user_factory):
     """WF-07: Financial goal progress computation capped at 100% with DB persistence."""
-    user, tenant, _ = await test_user_factory(
-        email="wf07-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf07-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     goal_id = uuid.uuid4()
@@ -547,7 +539,14 @@ async def test_wf07_financial_goals_and_milestones(
             (:c2, :tid, :gid, :d2, 250000.0000, 'INR');
             """
         ),
-        {"c1": contrib1_id, "c2": contrib2_id, "tid": tenant.id, "gid": goal_id, "d1": date.today() - timedelta(days=10), "d2": date.today()},
+        {
+            "c1": contrib1_id,
+            "c2": contrib2_id,
+            "tid": tenant.id,
+            "gid": goal_id,
+            "d1": date.today() - timedelta(days=10),
+            "d2": date.today(),
+        },
     )
     await db_session.flush()
 
@@ -569,7 +568,9 @@ async def test_wf07_financial_goals_and_milestones(
     # Assert progress in DB
     db_goal = (
         await db_session.execute(
-            text("SELECT target_amount, current_amount, status FROM financial_goals WHERE id = :gid;"),
+            text(
+                "SELECT target_amount, current_amount, status FROM financial_goals WHERE id = :gid;"
+            ),
             {"gid": goal_id},
         )
     ).fetchone()
@@ -584,13 +585,9 @@ async def test_wf07_financial_goals_and_milestones(
 
 
 @pytest.mark.asyncio
-async def test_wf08_financial_forecasting_scenarios(
-    db_session: AsyncSession, test_user_factory
-):
+async def test_wf08_financial_forecasting_scenarios(db_session: AsyncSession, test_user_factory):
     """WF-08: Cashflow simulation runs in read-only sandbox and records forecast run in DB."""
-    user, tenant, _ = await test_user_factory(
-        email="wf08-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf08-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     # 1. Establish baseline bank balance in DB
@@ -629,6 +626,7 @@ async def test_wf08_financial_forecasting_scenarios(
 
     # Persist forecast run in PostgreSQL
     import json
+
     forecast_id = uuid.uuid4()
     await db_session.execute(
         text(
@@ -665,13 +663,9 @@ async def test_wf08_financial_forecasting_scenarios(
 
 
 @pytest.mark.asyncio
-async def test_wf09_copilot_deterministic_grounding(
-    db_session: AsyncSession, test_user_factory
-):
+async def test_wf09_copilot_deterministic_grounding(db_session: AsyncSession, test_user_factory):
     """WF-09: AI Copilot deterministic responses with citations and injection rejection."""
-    user, tenant, _ = await test_user_factory(
-        email="wf09-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf09-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     conv = await CopilotService.create_conversation(db_session, tenant.id, user.id)
@@ -692,13 +686,9 @@ async def test_wf09_copilot_deterministic_grounding(
 
 
 @pytest.mark.asyncio
-async def test_wf10_enterprise_reports_export_defense(
-    db_session: AsyncSession, test_user_factory
-):
+async def test_wf10_enterprise_reports_export_defense(db_session: AsyncSession, test_user_factory):
     """WF-10: CSV formula injection defense and PDF report generation recorded in DB."""
-    user, tenant, _ = await test_user_factory(
-        email="wf10-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf10-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     # 1. Create report job in PostgreSQL
@@ -754,13 +744,9 @@ async def test_wf10_enterprise_reports_export_defense(
 
 
 @pytest.mark.asyncio
-async def test_wf11_open_banking_provider_sync(
-    db_session: AsyncSession, test_user_factory
-):
+async def test_wf11_open_banking_provider_sync(db_session: AsyncSession, test_user_factory):
     """WF-11: Provider DPDP consent, AES-256-GCM credentials, and cursor pagination."""
-    user, tenant, _ = await test_user_factory(
-        email="wf11-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf11-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     provider = await FinancialProviderService.get_or_create_provider(
@@ -771,7 +757,7 @@ async def test_wf11_open_banking_provider_sync(
     )
     assert consent.dpdp_notice_version == "1.0.0"
 
-    cred = await FinancialProviderService.store_provider_credentials(
+    await FinancialProviderService.store_provider_credentials(
         db_session, tenant.id, provider.id, {"secret": "super_confidential"}
     )
     decrypted = await FinancialProviderService.decrypt_provider_credentials(
@@ -781,13 +767,9 @@ async def test_wf11_open_banking_provider_sync(
 
 
 @pytest.mark.asyncio
-async def test_wf12_mobile_client_state_contracts(
-    client: AsyncClient, test_user_factory
-):
+async def test_wf12_mobile_client_state_contracts(client: AsyncClient, test_user_factory):
     """WF-12: Mobile client contract validation via genuine HTTP client endpoints."""
-    user, tenant, token = await test_user_factory(
-        email="wf12-mobile@example.com", status="active"
-    )
+    user, tenant, token = await test_user_factory(email="wf12-mobile@example.com", status="active")
     headers = {
         "Authorization": f"Bearer {token}",
         "X-Tenant-ID": str(tenant.id),
@@ -829,9 +811,7 @@ async def test_wf12_mobile_client_state_contracts(
 
 
 @pytest.mark.asyncio
-async def test_wf13_multi_tenant_rls_isolation(
-    client: AsyncClient, test_user_factory
-):
+async def test_wf13_multi_tenant_rls_isolation(client: AsyncClient, test_user_factory):
     """WF-13: PostgreSQL Row-Level Security ensures Tenant Beta cannot access Tenant Alpha."""
     user_alpha, tenant_alpha, token_alpha = await test_user_factory(
         email="alpha-wf13@example.com", status="active"
@@ -854,6 +834,7 @@ async def test_wf13_multi_tenant_rls_isolation(
 async def test_wf14_disaster_recovery_backup_restore():
     """WF-14: Disaster recovery validation gates (Alembic version, Ledger balance, RLS count)."""
     from pathlib import Path
+
     repo_root = Path(__file__).resolve().parent.parent.parent
 
     cmd = [
@@ -871,9 +852,7 @@ async def test_wf15_audit_trail_logging_and_rate_limiting(
     db_session: AsyncSession, test_user_factory
 ):
     """WF-15: Security audit logs recorded with immutable timestamps and event types."""
-    user, tenant, _ = await test_user_factory(
-        email="wf15-user@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="wf15-user@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     log = SecurityAuditLog(

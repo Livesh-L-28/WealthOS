@@ -7,7 +7,7 @@ AES-256-GCM Provider Credential Envelope Encryption, and Cursor Synchronization.
 
 import io
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
@@ -16,21 +16,10 @@ from openpyxl import load_workbook
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.integrations.models import (
-    FinancialProvider,
-    Notification,
-    NotificationEvent,
-    NotificationPreference,
-    ProviderConnection,
-    ProviderConsent,
-    ProviderCredential,
-    ProviderSyncCursor,
-)
 from app.domains.integrations.notifications import NotificationService
 from app.domains.integrations.providers import FinancialProviderService
 from app.domains.integrations.reports import (
     FinancialReportGenerator,
-    sanitize_formula_injection,
 )
 
 
@@ -115,9 +104,7 @@ async def test_gate10_notifications_event_bus_and_preferences(
     db_session: AsyncSession, test_user_factory
 ):
     """Verify notification preferences, event emission, inbox delivery, and read state."""
-    user, tenant, _ = await test_user_factory(
-        email="notif-gate10@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="notif-gate10@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     # 1. Configure user preferences: Disable 'MARKETING', Enable 'SECURITY' and 'BUDGET_ALERT'
@@ -169,17 +156,13 @@ async def test_gate10_notifications_event_bus_and_preferences(
     assert notif.title == "Critical Budget Overspending Detected"
 
     # 4. Check Inbox
-    inbox = await NotificationService.get_inbox(
-        db_session, tenant.id, user.id, unread_only=True
-    )
+    inbox = await NotificationService.get_inbox(db_session, tenant.id, user.id, unread_only=True)
     assert len(inbox) == 1
     assert inbox[0].id == notif.id
     assert inbox[0].read_at is None
 
     # 5. Mark as Read & Archive
-    read_success = await NotificationService.mark_as_read(
-        db_session, tenant.id, user.id, notif.id
-    )
+    read_success = await NotificationService.mark_as_read(db_session, tenant.id, user.id, notif.id)
     assert read_success is True
 
     unread_inbox = await NotificationService.get_inbox(
@@ -203,9 +186,7 @@ async def test_gate10_financial_provider_consent_and_aes_credentials(
     db_session: AsyncSession, test_user_factory
 ):
     """Verify DPDP Act consent logging, AES-256-GCM credential envelope encryption, and tamper detection."""
-    user, tenant, _ = await test_user_factory(
-        email="provider-gate10@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="provider-gate10@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     # 1. Register financial provider (Setu Account Aggregator)
@@ -276,9 +257,7 @@ async def test_gate10_provider_connection_and_sync_cursor(
     db_session: AsyncSession, test_user_factory
 ):
     """Verify provider connection lifecycle and pagination sync cursor tracking."""
-    user, tenant, _ = await test_user_factory(
-        email="cursor-gate10@example.com", status="active"
-    )
+    user, tenant, _ = await test_user_factory(email="cursor-gate10@example.com", status="active")
     await bind_tenant_session(db_session, tenant.id, user.id)
 
     provider = await FinancialProviderService.get_or_create_provider(
@@ -332,7 +311,7 @@ async def test_gate10_cross_tenant_integration_isolation(
 
     # Alpha setup
     await bind_tenant_session(db_session, tenant_alpha.id, user_alpha.id)
-    provider = await FinancialProviderService.get_or_create_provider(
+    await FinancialProviderService.get_or_create_provider(
         db_session, provider_key="sandbox_feed", name="Sandbox Feed", category="AGGREGATOR"
     )
     alpha_notif = await NotificationService.dispatch_notification(
