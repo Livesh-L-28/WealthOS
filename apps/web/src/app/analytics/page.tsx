@@ -20,6 +20,7 @@ import {
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 type TimeCadence = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
@@ -177,6 +178,7 @@ export default function AnalyticsPage() {
               <Sparkles className="w-3 h-3" />
               <span>Real-Time</span>
             </Badge>
+            <InfoTooltip termKey="cash-flow" />
           </div>
           <p className="text-xs text-[#758078] mt-1">
             Deterministic cash flow tracking across daily, weekly, monthly, and annual billing cadences.

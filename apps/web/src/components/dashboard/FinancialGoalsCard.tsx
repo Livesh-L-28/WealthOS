@@ -77,13 +77,19 @@ export function FinancialGoalsCard() {
                 />
               </div>
 
-              <div className="flex justify-between items-center text-[11px] text-[#758078] pt-1">
+              <div className="flex justify-between items-center text-[11px] text-[#717D74] pt-1">
                 <span className="font-mono">
                   ₹{goal.current.toLocaleString('en-IN')} of ₹{goal.target.toLocaleString('en-IN')}
                 </span>
-                <span className="flex items-center gap-1 text-[10px]">
-                  <Calendar className="w-3 h-3 text-[#758078]" />
-                  {goal.targetDate}
+                <span className="font-semibold text-[#16A36A] text-[10px]">
+                  ₹{(goal.target - goal.current).toLocaleString('en-IN')} remaining
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-[10px] text-[#717D74]">
+                <span>Paced at ₹{goal.monthly.toLocaleString('en-IN')}/mo</span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3 h-3 text-[#717D74]" />
+                  Target: {goal.targetDate}
                 </span>
               </div>
             </div>
@@ -93,3 +99,4 @@ export function FinancialGoalsCard() {
     </Card>
   );
 }
+

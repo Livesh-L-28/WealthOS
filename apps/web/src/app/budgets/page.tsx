@@ -15,6 +15,8 @@ import {
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { CreateBudgetModal, NewBudgetData } from '@/components/modals/CreateBudgetModal';
 
 interface BudgetCategory {
   id: string;
@@ -63,12 +65,24 @@ const BUDGET_DATA: BudgetCategory[] = [
 ];
 
 export default function BudgetsPage() {
-  const [budgets] = useState<BudgetCategory[]>(BUDGET_DATA);
+  const [budgets, setBudgets] = useState<BudgetCategory[]>(BUDGET_DATA);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const totalAllocated = budgets.reduce((sum, b) => sum + b.allocated, 0);
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
   const overallUtilization = totalAllocated > 0 ? (totalSpent / totalAllocated) * 100 : 0;
   const surplus = totalAllocated - totalSpent;
+
+  const handleBudgetCreated = (newB: NewBudgetData) => {
+    const record: BudgetCategory = {
+      id: `b-${Date.now()}`,
+      category: newB.category,
+      allocated: newB.allocated,
+      spent: 0,
+      currency: 'INR',
+    };
+    setBudgets((prev) => [...prev, record]);
+  };
 
   return (
     <div className="space-y-6">
@@ -82,12 +96,17 @@ export default function BudgetsPage() {
               November 2026
             </Badge>
           </div>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#717D74] mt-1">
             Category spend envelope allocations with real-time overspending alerts.
           </p>
         </div>
         <div className="flex items-center gap-2.5">
-          <Button variant="primary" size="sm" className="gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="gap-2"
+          >
             <PlusCircle className="w-3.5 h-3.5" />
             <span>New Budget Envelope</span>
           </Button>
@@ -223,6 +242,13 @@ export default function BudgetsPage() {
           })}
         </div>
       </Card>
+
+      {/* Create Budget Modal */}
+      <CreateBudgetModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onBudgetCreated={handleBudgetCreated}
+      />
     </div>
   );
 }

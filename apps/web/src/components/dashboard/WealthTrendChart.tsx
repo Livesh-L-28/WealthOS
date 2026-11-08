@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { TrendingUp, ArrowUpRight, Calendar, Sparkles, ShieldCheck } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { InfoTooltip } from '../ui/InfoTooltip';
 
 type TimeRange = '1M' | '3M' | '6M' | '1Y' | 'ALL';
 
@@ -93,8 +94,9 @@ export function WealthOverviewCard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E7ECE8]">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#758078]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#758078] flex items-center">
               Consolidated Net Worth
+              <InfoTooltip termKey="net-worth" />
             </span>
             <Badge variant="positive" size="sm" className="gap-1">
               <ShieldCheck className="w-3 h-3" />
@@ -202,7 +204,18 @@ export function WealthOverviewCard() {
             <span key={i}>{d.label}</span>
           ))}
         </div>
+
+        {/* Textual Narrative Summary */}
+        <div className="mt-3 pt-2 text-[11px] text-[#717D74] bg-[#FAFCFA] px-3 py-2 rounded-xl border border-[#E7ECE8]/80 flex items-center justify-between">
+          <span>
+            <strong>Summary:</strong> In this {range} window, your net worth expanded by ₹3,42,850 (+4.76%) through disciplined cash generation and mutual fund capital gains.
+          </span>
+          <span className="text-[10px] font-mono text-[#16A36A] font-semibold flex-shrink-0 ml-2">
+            Unit: ₹ INR
+          </span>
+        </div>
       </div>
     </Card>
   );
 }
+

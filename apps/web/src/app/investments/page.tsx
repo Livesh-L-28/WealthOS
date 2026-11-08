@@ -22,6 +22,8 @@ import {
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { AddInvestmentModal, NewInvestmentData } from '@/components/modals/AddInvestmentModal';
 
 type InvestmentView = 'ALL' | 'MUTUAL_FUNDS' | 'EQUITIES' | 'FIFO_LOTS';
 
@@ -245,7 +247,27 @@ const MUTUAL_FUNDS: MutualFundScheme[] = [
 export default function InvestmentsPage() {
   const [activeTab, setActiveTab] = useState<InvestmentView>('ALL');
   const [holdings] = useState<HoldingItem[]>(HOLDINGS);
-  const [mutualFunds] = useState<MutualFundScheme[]>(MUTUAL_FUNDS);
+  const [mutualFunds, setMutualFunds] = useState<MutualFundScheme[]>(MUTUAL_FUNDS);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const handleInvestmentAdded = (newInv: NewInvestmentData) => {
+    const newScheme: MutualFundScheme = {
+      folioNumber: newInv.folioNumber,
+      schemeName: newInv.schemeName,
+      category: (newInv.category as any) || 'Flexi Cap',
+      amc: 'Direct Allotment AMC',
+      plan: 'Direct - Growth',
+      units: newInv.units,
+      avgNav: newInv.nav,
+      currentNav: newInv.nav * 1.02,
+      investedValue: newInv.investedValue,
+      currentValue: newInv.investedValue * 1.02,
+      unrealizedPl: newInv.investedValue * 0.02,
+      unrealizedPlPct: 2.0,
+      xirrPct: 15.5,
+    };
+    setMutualFunds((prev) => [newScheme, ...prev]);
+  };
 
   const totalValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
   const totalCost = holdings.reduce((sum, h) => sum + h.quantity * h.avgCost, 0);
@@ -277,32 +299,44 @@ export default function InvestmentsPage() {
           </p>
         </div>
 
-        {/* View Switcher */}
-        <div className="flex items-center bg-[#F7F9F7] border border-[#E7ECE8] rounded-lg p-1">
-          <button
-            onClick={() => setActiveTab('ALL')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'ALL' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
-            }`}
+        {/* View Switcher & Actions */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <div className="flex items-center bg-[#F7F9F7] border border-[#E7ECE8] rounded-lg p-1">
+            <button
+              onClick={() => setActiveTab('ALL')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                activeTab === 'ALL' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+              }`}
+            >
+              All Securities
+            </button>
+            <button
+              onClick={() => setActiveTab('MUTUAL_FUNDS')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                activeTab === 'MUTUAL_FUNDS' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+              }`}
+            >
+              Mutual Funds & SIPs ({mutualFunds.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('EQUITIES')}
+              className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
+                activeTab === 'EQUITIES' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+              }`}
+            >
+              Direct Equities
+            </button>
+          </div>
+
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => setIsAddModalOpen(true)}
+            className="gap-1.5"
           >
-            All Securities
-          </button>
-          <button
-            onClick={() => setActiveTab('MUTUAL_FUNDS')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'MUTUAL_FUNDS' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
-            }`}
-          >
-            Mutual Funds & SIPs ({mutualFunds.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('EQUITIES')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-              activeTab === 'EQUITIES' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
-            }`}
-          >
-            Direct Equities
-          </button>
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>Add Folio</span>
+          </Button>
         </div>
       </div>
 
@@ -406,7 +440,12 @@ export default function InvestmentsPage() {
                 <h2 className="text-base font-semibold text-[#17231D]">Mutual Fund Schemes & Folios</h2>
                 <p className="text-xs text-[#758078]">Direct growth schemes with automated daily NAV synchronization</p>
               </div>
-              <Button size="sm" variant="primary" className="gap-1.5">
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => setIsAddModalOpen(true)}
+                className="gap-1.5"
+              >
                 <PlusCircle className="w-3.5 h-3.5" />
                 <span>Add Folio</span>
               </Button>
@@ -415,14 +454,20 @@ export default function InvestmentsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-[#E7ECE8] text-[#758078] uppercase tracking-wider font-semibold">
+                  <tr className="border-b border-[#E7ECE8] text-[#717D74] uppercase tracking-wider font-semibold">
                     <th className="py-3 px-4">Scheme & Folio</th>
                     <th className="py-3 px-4">Category</th>
                     <th className="py-3 px-4 text-right">Units / Balance</th>
                     <th className="py-3 px-4 text-right">Avg NAV / Current NAV</th>
-                    <th className="py-3 px-4 text-right">Invested Value</th>
+                    <th className="py-3 px-4 text-right">
+                      Invested Value
+                      <InfoTooltip termKey="cost-basis" />
+                    </th>
                     <th className="py-3 px-4 text-right">Current Value</th>
-                    <th className="py-3 px-4 text-right">Returns & XIRR</th>
+                    <th className="py-3 px-4 text-right">
+                      Returns & XIRR
+                      <InfoTooltip termKey="xirr" />
+                    </th>
                     <th className="py-3 px-4 text-center">Active SIP</th>
                   </tr>
                 </thead>
@@ -548,6 +593,13 @@ export default function InvestmentsPage() {
           </div>
         </Card>
       )}
+
+      {/* Add Investment Modal */}
+      <AddInvestmentModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onInvestmentAdded={handleInvestmentAdded}
+      />
     </div>
   );
 }

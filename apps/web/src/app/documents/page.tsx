@@ -16,6 +16,11 @@ import {
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import {
+  UploadDocumentModal,
+  ExtractedDocumentItem,
+} from '@/components/modals/UploadDocumentModal';
 
 interface DocumentItem {
   id: string;
@@ -61,7 +66,22 @@ const DOCUMENTS: DocumentItem[] = [
 ];
 
 export default function DocumentsPage() {
-  const [documents] = useState<DocumentItem[]>(DOCUMENTS);
+  const [documents, setDocuments] = useState<DocumentItem[]>(DOCUMENTS);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  const handleDocumentAdded = (newDoc: ExtractedDocumentItem) => {
+    const record: DocumentItem = {
+      id: newDoc.id,
+      name: newDoc.name,
+      mimeType: newDoc.mimeType,
+      size: newDoc.size,
+      uploadDate: newDoc.uploadDate,
+      status: newDoc.status,
+      confidence: newDoc.confidence,
+      journalRef: newDoc.journalRef,
+    };
+    setDocuments((prev) => [record, ...prev]);
+  };
 
   return (
     <div className="space-y-6">
@@ -75,25 +95,36 @@ export default function DocumentsPage() {
               MinIO S3 Encrypted
             </Badge>
           </div>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#717D74] mt-1">
             Automated financial statement parsing, MIME validation, and double-entry reconciliation.
           </p>
         </div>
       </div>
 
       {/* Upload Zone */}
-      <div className="border-2 border-dashed border-[#E7ECE8] rounded-2xl p-8 text-center bg-white hover:bg-[#F7F9F7] hover:border-[#16A36A] transition-all flex flex-col items-center justify-center shadow-xs group">
+      <div
+        onClick={() => setIsUploadModalOpen(true)}
+        className="border-2 border-dashed border-[#E7ECE8] rounded-2xl p-8 text-center bg-white hover:bg-[#F7F9F7] hover:border-[#16A36A] transition-all flex flex-col items-center justify-center shadow-xs group cursor-pointer"
+      >
         <div className="p-4 rounded-2xl bg-[#16A36A]/10 text-[#16A36A] border border-[#16A36A]/20 mb-3 group-hover:scale-105 transition-transform">
           <UploadCloud className="w-8 h-8" />
         </div>
         <h3 className="text-base font-semibold text-[#17231D]">
           Upload Financial Statements, Invoices or Receipts
         </h3>
-        <p className="text-xs text-[#758078] mt-1 max-w-md">
+        <p className="text-xs text-[#717D74] mt-1 max-w-md">
           Supported formats: PDF (%PDF-1.x), PNG, JPEG, Excel, CSV up to 50 MB. Files are quarantined in MinIO and processed via asynchronous Celery workers.
         </p>
         <div className="mt-4 flex gap-3">
-          <Button variant="primary" size="sm" className="gap-2">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsUploadModalOpen(true);
+            }}
+            className="gap-2"
+          >
             <FileText className="w-3.5 h-3.5" />
             <span>Select File to Upload</span>
           </Button>
@@ -166,6 +197,13 @@ export default function DocumentsPage() {
           </table>
         </div>
       </Card>
+
+      {/* Upload Document Modal */}
+      <UploadDocumentModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onDocumentAdded={handleDocumentAdded}
+      />
     </div>
   );
 }

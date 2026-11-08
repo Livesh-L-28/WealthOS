@@ -3,6 +3,7 @@
 import React from 'react';
 import { Card, CardHeader } from '../ui/Card';
 import { ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react';
+import { InfoTooltip } from '../ui/InfoTooltip';
 
 interface MonthlyCashFlow {
   month: string;
@@ -24,18 +25,19 @@ export function CashFlowChart() {
   return (
     <Card>
       <CardHeader
-        title="Monthly Cash Flow & Inflow/Outflow Spread"
-        subtitle="Grouped comparison of settled inflows against double-entry expenditure"
+        title="Income vs Expenses (Monthly Cash Flow)"
+        subtitle="Visual comparison of money coming in versus money going out"
         action={
           <div className="flex items-center gap-3 text-xs">
             <span className="flex items-center gap-1.5 font-medium text-[#17231D]">
               <span className="w-2.5 h-2.5 rounded-sm bg-[#16A36A] inline-block"></span>
-              Inflow
+              Inflow (Earned)
             </span>
             <span className="flex items-center gap-1.5 font-medium text-[#17231D]">
               <span className="w-2.5 h-2.5 rounded-sm bg-[#6475D8] inline-block"></span>
-              Outflow
+              Outflow (Spent)
             </span>
+            <InfoTooltip termKey="cash-flow" />
           </div>
         }
       />
@@ -43,16 +45,16 @@ export function CashFlowChart() {
       {/* Main Stats Header */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
         <div>
-          <span className="text-[11px] text-[#758078] font-medium block">Total Inflow (Nov)</span>
-          <span className="text-lg font-bold text-[#16A36A]">₹2,12,000.00</span>
+          <span className="text-[11px] text-[#717D74] font-medium block">Monthly Income</span>
+          <span className="text-lg font-bold font-mono text-[#16A36A]">₹2,12,000.00</span>
         </div>
         <div>
-          <span className="text-[11px] text-[#758078] font-medium block">Total Outflow (Nov)</span>
-          <span className="text-lg font-bold text-[#6475D8]">₹1,51,550.00</span>
+          <span className="text-[11px] text-[#717D74] font-medium block">Monthly Expenses</span>
+          <span className="text-lg font-bold font-mono text-[#6475D8]">₹1,51,550.00</span>
         </div>
         <div>
-          <span className="text-[11px] text-[#758078] font-medium block">Net Savings Surplus</span>
-          <span className="text-lg font-bold text-[#087A50] flex items-center gap-1">
+          <span className="text-[11px] text-[#717D74] font-medium block">Remaining Cash Flow</span>
+          <span className="text-lg font-bold font-mono text-[#087A50] flex items-center gap-1">
             <ArrowUpRight className="w-4 h-4" />
             +₹60,450.00 (28.5%)
           </span>
@@ -67,7 +69,10 @@ export function CashFlowChart() {
             const expenseHeight = (item.expenses / maxBarValue) * 100;
 
             return (
-              <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
+              <div
+                key={idx}
+                className="flex-1 flex flex-col items-center gap-2 h-full justify-end group"
+              >
                 <div className="flex items-end gap-1.5 w-full justify-center h-full">
                   {/* Income Bar */}
                   <div
@@ -89,16 +94,16 @@ export function CashFlowChart() {
                     </span>
                   </div>
                 </div>
-                <span className="text-xs text-[#758078] font-medium mt-1">
-                  {item.month}
-                </span>
+                <span className="text-xs text-[#717D74] font-medium mt-1">{item.month}</span>
               </div>
             );
           })}
         </div>
-        <div className="flex justify-between items-center text-xs text-[#758078]">
-          <span>Settlement Currency: INR</span>
-          <span className="font-medium text-[#16A36A]">Positive Net Cash Flow in all 4 periods</span>
+        <div className="flex justify-between items-center text-xs text-[#717D74] bg-[#FAFCFA] p-2 rounded-xl border border-[#E7ECE8]/60">
+          <span>
+            <strong>Summary:</strong> You retained 28.5% of your income this month after all settled expenses.
+          </span>
+          <span className="font-semibold text-[#16A36A] font-mono">Currency: INR</span>
         </div>
       </div>
     </Card>

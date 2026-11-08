@@ -4,9 +4,11 @@ import React from 'react';
 import { Card, CardHeader } from '../ui/Card';
 import { ShieldCheck, HeartPulse, Check, Info } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { InfoTooltip } from '../ui/InfoTooltip';
 
 interface HealthMetric {
   label: string;
+  termKey?: 'solvency-ratio' | 'diversification';
   value: string;
   status: 'EXCELLENT' | 'GOOD' | 'NEEDS_ATTENTION';
   target: string;
@@ -23,6 +25,7 @@ const HEALTH_METRICS: HealthMetric[] = [
   },
   {
     label: 'Debt-to-Asset Solvency',
+    termKey: 'solvency-ratio',
     value: '20.0%',
     status: 'EXCELLENT',
     target: '< 35.0%',
@@ -37,6 +40,7 @@ const HEALTH_METRICS: HealthMetric[] = [
   },
   {
     label: 'Asset Diversification',
+    termKey: 'diversification',
     value: 'Balanced',
     status: 'GOOD',
     target: 'Multi-Asset',
@@ -66,7 +70,10 @@ export function FinancialHealthCard() {
           >
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-[#17231D]">{m.label}</span>
+                <span className="text-xs font-semibold text-[#17231D] flex items-center">
+                  {m.label}
+                  {m.termKey && <InfoTooltip termKey={m.termKey} />}
+                </span>
                 <span
                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                     m.status === 'EXCELLENT'
@@ -80,11 +87,11 @@ export function FinancialHealthCard() {
                 </span>
               </div>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-xl font-bold text-[#17231D]">{m.value}</span>
-                <span className="text-[11px] text-[#758078]">Goal: {m.target}</span>
+                <span className="text-xl font-bold font-mono text-[#17231D]">{m.value}</span>
+                <span className="text-[11px] text-[#717D74]">Goal: {m.target}</span>
               </div>
             </div>
-            <p className="text-[11px] text-[#758078] mt-2 pt-2 border-t border-[#E7ECE8]">
+            <p className="text-[11px] text-[#717D74] mt-2 pt-2 border-t border-[#E7ECE8]">
               {m.explanation}
             </p>
           </div>

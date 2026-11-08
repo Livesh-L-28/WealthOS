@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   UploadCloud,
@@ -8,6 +10,7 @@ import {
   Calendar,
   Layers,
   ArrowRight,
+  TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -21,8 +24,69 @@ import { FinancialGoalsCard } from '@/components/dashboard/FinancialGoalsCard';
 import { RecentTransactionsTable } from '@/components/dashboard/RecentTransactionsTable';
 import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard';
 import { QuickActionsCard } from '@/components/dashboard/QuickActionsCard';
+import {
+  DashboardExecutiveSummary,
+  DashboardPeriod,
+} from '@/components/dashboard/DashboardExecutiveSummary';
+import { OnboardingChecklist } from '@/components/dashboard/OnboardingChecklist';
+import {
+  CustomizeDashboardModal,
+  DashboardCardConfig,
+} from '@/components/dashboard/CustomizeDashboardModal';
+import { AddAccountModal } from '@/components/modals/AddAccountModal';
+import { AddTransactionModal } from '@/components/modals/AddTransactionModal';
+import { AddInvestmentModal } from '@/components/modals/AddInvestmentModal';
+import { CreateBudgetModal } from '@/components/modals/CreateBudgetModal';
+import { CreateGoalModal } from '@/components/modals/CreateGoalModal';
+import { UploadDocumentModal } from '@/components/modals/UploadDocumentModal';
+
+const DEFAULT_CARD_CONFIG: DashboardCardConfig[] = [
+  { id: 'wealth-trend', label: 'Net Worth Trajectory', description: 'Consolidated area chart with historical milestones', visible: true },
+  { id: 'summary-kpis', label: 'Financial Summary Cards', description: 'Assets, liabilities, monthly inflows, and outflows', visible: true },
+  { id: 'cashflow', label: 'Monthly Cash Flow', description: 'Inflow vs outflow grouped comparison', visible: true },
+  { id: 'allocation', label: 'Portfolio Allocation', description: 'Multi-asset distribution and live unrealized returns', visible: true },
+  { id: 'budgets', label: 'Budget Envelope Tracking', description: 'Category spend limits and overspending warnings', visible: true },
+  { id: 'health', label: 'Solvency & Financial Health', description: 'Debt ratios and emergency liquidity runway', visible: true },
+  { id: 'goals', label: 'Financial Goals Progress', description: 'Milestone trajectories and monthly savings targets', visible: true },
+  { id: 'quick-actions', label: 'Quick Actions & Insights', description: 'Copilot alerts and direct entry shortcuts', visible: true },
+  { id: 'transactions', label: 'Recent Transactions Ledger', description: 'Settled general journal entries', visible: true },
+  { id: 'activity', label: 'Audit Event Log', description: 'Compliance audit trail and system events', visible: true },
+];
 
 export default function DashboardPage() {
+  const [period, setPeriod] = useState<DashboardPeriod>('1M');
+  const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
+  const [cards, setCards] = useState<DashboardCardConfig[]>(DEFAULT_CARD_CONFIG);
+
+  // Modal states
+  const [activeModal, setActiveModal] = useState<
+    'account' | 'transaction' | 'investment' | 'budget' | 'goal' | 'document' | null
+  >(null);
+
+  const handleToggleCard = (id: string) => {
+    setCards((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, visible: !c.visible } : c))
+    );
+  };
+
+  const handleResetDefaults = () => {
+    setCards(DEFAULT_CARD_CONFIG);
+  };
+
+  const isCardVisible = (id: string) => {
+    const card = cards.find((c) => c.id === id);
+    return card ? card.visible : true;
+  };
+
+  const handleTriggerAction = (key: string) => {
+    if (key === 'account') setActiveModal('account');
+    if (key === 'transaction') setActiveModal('transaction');
+    if (key === 'investment') setActiveModal('investment');
+    if (key === 'budget') setActiveModal('budget');
+    if (key === 'goal') setActiveModal('goal');
+    if (key === 'document') setActiveModal('document');
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Title & Context Header */}
@@ -37,64 +101,138 @@ export default function DashboardPage() {
               <span>Real-Time Sync</span>
             </Badge>
           </div>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#717D74] mt-1">
             Consolidated double-entry ledger state and multi-asset wealth intelligence.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E7ECE8] text-xs font-medium text-[#17231D]">
             <span>Onboarding Setup Checklist</span>
             <Badge variant="positive" size="sm">4/4 Complete</Badge>
           </div>
-          <Link href="/documents">
-            <Button variant="outline" size="sm" className="gap-2">
-              <UploadCloud className="w-3.5 h-3.5 text-[#16A36A]" />
-              <span>Import Statement</span>
-            </Button>
-          </Link>
-          <Link href="/accounts">
-            <Button variant="primary" size="sm" className="gap-2">
-              <PlusCircle className="w-3.5 h-3.5" />
-              <span>Add Account</span>
-            </Button>
-          </Link>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveModal('transaction')}
+            className="gap-1.5"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-[#16A36A]" />
+            <span>Add Transaction</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveModal('document')}
+            className="gap-2"
+          >
+            <UploadCloud className="w-3.5 h-3.5 text-[#16A36A]" />
+            <span>Import Statement</span>
+          </Button>
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setActiveModal('account')}
+            className="gap-2"
+          >
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span>Add Account</span>
+          </Button>
         </div>
       </div>
 
+      {/* 5-Question Clarity Executive Summary Bar */}
+      <DashboardExecutiveSummary
+        period={period}
+        onPeriodChange={setPeriod}
+        onCustomizeClick={() => setIsCustomizeOpen(true)}
+        lastUpdatedText="Just now"
+      />
+
+      {/* Lightweight Guided Onboarding Checklist */}
+      <OnboardingChecklist onTriggerAction={handleTriggerAction} />
+
       {/* Section 1: Wealth Overview Chart */}
-      <WealthOverviewCard />
+      {isCardVisible('wealth-trend') && <WealthOverviewCard />}
 
       {/* Section 2: Financial Summary KPI Cards (Assets, Liabilities, Inflow, Outflow) */}
-      <FinancialSummaryCards />
+      {isCardVisible('summary-kpis') && <FinancialSummaryCards />}
 
       {/* Section 3 & 4: Cash Flow Grouped Bars & Investment Portfolio Donut */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <CashFlowChart />
-        <PortfolioAllocationChart />
+        {isCardVisible('cashflow') && <CashFlowChart />}
+        {isCardVisible('allocation') && <PortfolioAllocationChart />}
       </div>
 
       {/* Section 5 & 6: Budget Envelope Tracking & Financial Health Ratios */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <BudgetProgressCard />
-        <FinancialHealthCard />
+        {isCardVisible('budgets') && <BudgetProgressCard />}
+        {isCardVisible('health') && <FinancialHealthCard />}
       </div>
 
       {/* Section 7 & 10: Financial Goals & Quick Actions with Insights */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <FinancialGoalsCard />
-        <QuickActionsCard />
+        {isCardVisible('goals') && <FinancialGoalsCard />}
+        {isCardVisible('quick-actions') && (
+          <QuickActionsCard onTriggerModal={handleTriggerAction} />
+        )}
       </div>
 
       {/* Section 8 & 9: Recent Transactions & Audit Event Log */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <RecentTransactionsTable />
-        </div>
-        <div>
-          <RecentActivityCard />
-        </div>
+        {isCardVisible('transactions') && (
+          <div className="lg:col-span-2">
+            <RecentTransactionsTable />
+          </div>
+        )}
+        {isCardVisible('activity') && (
+          <div>
+            <RecentActivityCard />
+          </div>
+        )}
       </div>
+
+      {/* Modals */}
+      <CustomizeDashboardModal
+        isOpen={isCustomizeOpen}
+        onClose={() => setIsCustomizeOpen(false)}
+        cards={cards}
+        onToggleCard={handleToggleCard}
+        onResetDefaults={handleResetDefaults}
+      />
+
+      <AddAccountModal
+        isOpen={activeModal === 'account'}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <AddTransactionModal
+        isOpen={activeModal === 'transaction'}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <AddInvestmentModal
+        isOpen={activeModal === 'investment'}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <CreateBudgetModal
+        isOpen={activeModal === 'budget'}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <CreateGoalModal
+        isOpen={activeModal === 'goal'}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <UploadDocumentModal
+        isOpen={activeModal === 'document'}
+        onClose={() => setActiveModal(null)}
+      />
     </div>
   );
 }

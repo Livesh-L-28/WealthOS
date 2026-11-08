@@ -4,6 +4,7 @@ import React from 'react';
 import { Card, CardHeader } from '../ui/Card';
 import { TrendingUp, ArrowUpRight, PieChart } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { InfoTooltip } from '../ui/InfoTooltip';
 
 interface AssetAllocationSlice {
   label: string;
@@ -27,7 +28,6 @@ export function PortfolioAllocationChart() {
   const realizedPl = 185400.0;
 
   // Compute SVG Donut Chart stroke offsets
-  // Circumference for r=70: 2 * PI * 70 ≈ 439.82
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
   let accumulatedPct = 0;
@@ -36,29 +36,46 @@ export function PortfolioAllocationChart() {
     <Card>
       <CardHeader
         title="Investment Portfolio & Asset Allocation"
-        subtitle="Mark-to-market positions, FIFO tax lot cost basis, and multi-asset distribution"
+        subtitle="Distribution across asset classes with live unrealized capital gains"
+        action={
+          <div className="flex items-center gap-1 text-xs text-[#717D74]">
+            <InfoTooltip termKey="asset-allocation" />
+          </div>
+        }
       />
 
       {/* KPI Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
         <div>
-          <span className="text-[11px] text-[#758078] font-medium block">Portfolio AUM</span>
-          <span className="text-base font-bold text-[#17231D]">₹46,23,732.00</span>
+          <span className="text-[11px] text-[#717D74] font-medium flex items-center">
+            Portfolio Value
+            <InfoTooltip termKey="portfolio" />
+          </span>
+          <span className="text-base font-bold font-mono text-[#17231D]">₹46,23,732.00</span>
         </div>
         <div>
-          <span className="text-[11px] text-[#758078] font-medium block">Invested Capital</span>
-          <span className="text-base font-bold text-[#17231D]">₹34,68,964.00</span>
+          <span className="text-[11px] text-[#717D74] font-medium flex items-center">
+            Invested Amount
+            <InfoTooltip termKey="cost-basis" />
+          </span>
+          <span className="text-base font-bold font-mono text-[#17231D]">₹34,68,964.00</span>
         </div>
         <div>
-          <span className="text-[11px] text-[#758078] font-medium block">Unrealized P&L</span>
-          <span className="text-base font-bold text-[#16A36A] flex items-center">
+          <span className="text-[11px] text-[#717D74] font-medium flex items-center">
+            Unrealized P&L
+            <InfoTooltip termKey="unrealized-profit" />
+          </span>
+          <span className="text-base font-bold font-mono text-[#16A36A] flex items-center">
             <ArrowUpRight className="w-3.5 h-3.5" />
             +₹11.54L (+33.3%)
           </span>
         </div>
         <div>
-          <span className="text-[11px] text-[#758078] font-medium block">Realized Capital Gain</span>
-          <span className="text-base font-bold text-[#087A50]">₹1,85,400.00</span>
+          <span className="text-[11px] text-[#717D74] font-medium flex items-center">
+            Realized Gains
+            <InfoTooltip termKey="realized-profit" />
+          </span>
+          <span className="text-base font-bold font-mono text-[#087A50]">₹1,85,400.00</span>
         </div>
       </div>
 
@@ -89,8 +106,10 @@ export function PortfolioAllocationChart() {
             })}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-[11px] font-semibold text-[#758078] uppercase tracking-wider">Total AUM</span>
-            <span className="text-lg font-bold text-[#17231D]">₹46.2L</span>
+            <span className="text-[11px] font-semibold text-[#717D74] uppercase tracking-wider">
+              Total Value
+            </span>
+            <span className="text-lg font-bold font-mono text-[#17231D]">₹46.2L</span>
             <span className="text-[10px] text-[#16A36A] font-semibold">+33.3% Return</span>
           </div>
         </div>
@@ -98,13 +117,19 @@ export function PortfolioAllocationChart() {
         {/* Legend */}
         <div className="space-y-3">
           {ALLOCATION_DATA.map((slice, idx) => (
-            <div key={idx} className="flex items-center justify-between text-xs p-2 rounded-lg hover:bg-[#F7F9F7] transition-colors">
+            <div
+              key={idx}
+              className="flex items-center justify-between text-xs p-2 rounded-lg hover:bg-[#F7F9F7] transition-colors"
+            >
               <div className="flex items-center gap-2.5">
-                <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: slice.color }}></span>
+                <span
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: slice.color }}
+                ></span>
                 <span className="font-medium text-[#17231D]">{slice.label}</span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-mono text-[#758078]">
+                <span className="font-mono text-[#717D74]">
                   ₹{(slice.value / 100000).toFixed(2)}L
                 </span>
                 <span className="font-semibold text-[#17231D] w-10 text-right">

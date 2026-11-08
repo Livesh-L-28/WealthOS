@@ -22,6 +22,8 @@ import {
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { CreateGoalModal, NewGoalData } from '@/components/modals/CreateGoalModal';
 
 type GoalsTab = 'MILESTONES' | 'EMERGENCY_RUNWAY' | 'DEBT_PAYOFF' | 'PASSIVE_INCOME';
 
@@ -112,9 +114,23 @@ const DEBTS_DATA: DebtItem[] = [
 
 export default function GoalsPage() {
   const [activeTab, setActiveTab] = useState<GoalsTab>('MILESTONES');
-  const [goals] = useState<GoalItem[]>(GOALS_DATA);
+  const [goals, setGoals] = useState<GoalItem[]>(GOALS_DATA);
   const [debts] = useState<DebtItem[]>(DEBTS_DATA);
   const [debtStrategy, setDebtStrategy] = useState<'AVALANCHE' | 'SNOWBALL'>('AVALANCHE');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const handleGoalCreated = (newG: NewGoalData) => {
+    const record: GoalItem = {
+      id: `g-${Date.now()}`,
+      name: newG.name,
+      targetAmount: newG.targetAmount,
+      currentAmount: newG.currentAmount,
+      targetDate: newG.targetDate,
+      monthlyContribution: newG.monthlyContribution,
+      currency: 'INR',
+    };
+    setGoals((prev) => [record, ...prev]);
+  };
 
   // Emergency runway metrics
   const monthlyBurn = 151550.0;
@@ -191,6 +207,16 @@ export default function GoalsPage() {
             Passive Income Stream
           </button>
         </div>
+
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => setIsCreateModalOpen(true)}
+          className="gap-2"
+        >
+          <PlusCircle className="w-3.5 h-3.5" />
+          <span>Add Goal</span>
+        </Button>
       </div>
 
       {/* VIEW 1: MILESTONES */}
@@ -534,6 +560,13 @@ export default function GoalsPage() {
           </Card>
         </div>
       )}
+
+      {/* Create Goal Modal */}
+      <CreateGoalModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onGoalCreated={handleGoalCreated}
+      />
     </div>
   );
 }
