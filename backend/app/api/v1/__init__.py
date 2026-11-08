@@ -6,6 +6,7 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.health import router as health_router
 from app.api.v1.tenants import router as tenants_router
 from app.domains.accounting.router import router as accounting_router
+from app.domains.analytics.api.router import router as analytics_router
 from app.domains.budget.router import router as budget_router
 from app.domains.cash.router import router as cash_router
 from app.domains.copilot.router import router as copilot_router
@@ -67,3 +68,6 @@ api_v1_router.include_router(
     integrations_router, prefix="/integrations", tags=["Enterprise Financial Integrations"]
 )
 api_v1_router.include_router(copilot_router, prefix="/copilot", tags=["AI Financial Copilot"])
+api_v1_router.include_router(
+    analytics_router, prefix="/analytics", tags=["Financial Analytics & Visualization Engine"]
+)

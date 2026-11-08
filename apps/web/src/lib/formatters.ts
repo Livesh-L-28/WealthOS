@@ -242,3 +242,4 @@ export function generateAccessibleChartSummary(
     `Ending value is ${formatCurrency(last.value, { currency })} on ${last.label}. ` +
     `Overall ${direction} by ${formatCurrency(Math.abs(delta), { currency })} (${formatPercentage(pct)}).`;
 }
+

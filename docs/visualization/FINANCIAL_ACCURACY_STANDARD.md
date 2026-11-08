@@ -28,3 +28,4 @@ $$\text{₹71,95,050.00} + \text{₹2,12,000.00} - \text{₹1,51,550.00} + \text
 ### Cash Flow Savings Rate
 $$\text{Savings Rate} = \frac{\text{Net Cash Surplus}}{\text{Operating Inflows}} \times 100$$
 $$\frac{\text{₹60,450.00}}{\text{₹2,12,000.00}} \times 100 = 28.51\%$$
+

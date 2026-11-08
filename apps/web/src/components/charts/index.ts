@@ -8,3 +8,5 @@ export * from './FinancialHorizontalBarChart';
 export * from './FinancialDonutChart';
 export * from './FinancialWaterfallChart';
 export * from './FinancialHeatmap';
+export * from './chartRegistry';
+

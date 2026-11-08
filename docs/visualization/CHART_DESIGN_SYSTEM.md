@@ -74,3 +74,4 @@ Implemented in `apps/web/src/lib/formatters.ts`:
   - Values $<$ ₹1,000 $\rightarrow$ Full amount (e.g. `₹450.00`)
 - **Percentages (`formatPercentage`)**: Explicit mathematical signs (`+4.76%`, `-1.20%`, `0.00%`).
 - **Y-Axis Ticks (`formatAxisTick`)**: Clean interval ticks (`₹1Cr`, `₹75L`, `₹50L`, `0`, `-₹10L`).
+
