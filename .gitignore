@@ -8,6 +8,8 @@ dist/
 out/
 build/
 *.tsbuildinfo
+*.apk
+*.aab
 
 # Cache & Environment
 .env
