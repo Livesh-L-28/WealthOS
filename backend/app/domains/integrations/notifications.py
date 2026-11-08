@@ -192,3 +192,4 @@ class NotificationService:
         res = await session.execute(stmt)
         await session.flush()
         return res.rowcount > 0
+

@@ -65,3 +65,4 @@ tests/test_gate11_backup_restore_acceptance.py::test_gate11_full_disaster_recove
 1. **Zero Unauthenticated Backups**: Database archives are never stored in unencrypted form on disks, object storage, or transit networks.
 2. **Deterministic Integrity Verification**: Every restore automatically executes the 4 post-restore verification gates before returning success.
 3. **Double-Entry Ledger Balancing**: Restored accounting ledgers maintain mathematical equilibrium with zero tolerance for rounding discrepancies.
+

@@ -88,3 +88,4 @@ Gate 9 validates the cross-platform mobile application (`@wealthos/mobile`) of W
 1. **Zero-Trust Device Storage**: Sensitive authentication tokens and workspace credentials are never stored in unencrypted AsyncStorage. SecureStore namespaces are strictly isolated under `wealthos.secure.*`.
 2. **Deterministic Offline Reconciliation**: Mutations created while offline must include client-generated idempotency keys (`Idempotency-Key` UUIDv4) to prevent double-charging or double-posting when network connectivity resumes.
 3. **Design System Consistency**: UI components strictly inherit color scales, padding, and font families from `@wealthos/design-tokens`.
+

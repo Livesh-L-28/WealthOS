@@ -145,3 +145,4 @@ CONSTRAINT fk_copilot_msg_conv_tenant
 ```
 
 Any attempt by a tenant to create a child record linking to another tenant's parent entity is rejected at the PostgreSQL relational engine kernel with a `foreign_key_violation` exception.
+

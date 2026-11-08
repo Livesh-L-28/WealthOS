@@ -72,3 +72,4 @@ tests/test_gate10_reports_integrations_acceptance.py::test_gate10_cross_tenant_i
 1. **Defense-in-Depth Spreadsheet Sanitization**: All tabular exports pass through `sanitize_formula_injection`, completely eliminating formula injection risks without corrupting numerical data.
 2. **Authenticated AEAD Ciphertexts**: Third-party provider tokens never reside in plaintext on disk or in database columns. Decryption requires valid AES-GCM tag verification.
 3. **Statutory Consent Preservation**: Consents recorded under `provider_consents` are immutable; revoking a consent sets `revoked_at` while preserving historical auditability.
+

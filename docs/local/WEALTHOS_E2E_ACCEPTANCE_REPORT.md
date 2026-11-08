@@ -83,3 +83,4 @@ tests/test_gate12_e2e_acceptance.py::test_wf15_audit_trail_logging_and_rate_limi
 2. **Fixed-Point Precision**: Binary float representations are rejected across all accounting boundaries.
 3. **Defense-in-Depth RLS Enforcement**: Row-Level Security operates unconditionally on all multi-tenant tables, preventing data exposure even in the event of application-level bugs.
 4. **Resilient Recovery Guarantee**: The platform can recover from total database loss in under 2 seconds while preserving full ledger integrity.
+

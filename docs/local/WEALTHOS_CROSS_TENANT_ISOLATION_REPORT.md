@@ -53,3 +53,4 @@ SELECT set_config('app.current_tenant_id', :tenant_id, true);
 The third parameter `true` guarantees that the variable is strictly transaction-scoped (`is_local = true`). When the transaction commits, rolls back, or connection is returned to the pool, the tenant context resets to empty.
 
 Empirical verification proves that unauthenticated queries or pooled connections without an active tenant context fail closed, returning exactly 0 rows.
+

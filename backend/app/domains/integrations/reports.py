@@ -170,3 +170,4 @@ class FinancialReportGenerator:
         elements.append(table)
         doc.build(elements)
         return buffer.getvalue()
+

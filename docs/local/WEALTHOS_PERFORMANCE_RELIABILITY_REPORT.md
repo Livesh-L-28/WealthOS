@@ -69,3 +69,4 @@ Measurements taken from active Docker daemon via `docker stats --no-stream`:
 1. **Deterministic Resource Boundaries**: Dedicated Celery workers prevent CPU-heavy OCR tasks from starving default application notifications or market data ingestion.
 2. **Sub-Millisecond Cache Responses**: Redis response times ($0.48\text{ ms}$ average) ensure rate limiting and session validation introduce negligible latency overhead.
 3. **Connection Leak Prevention**: All database sessions execute under strict async context managers (`async with factory() as session`) with automatic rollback on unhandled exceptions.
+

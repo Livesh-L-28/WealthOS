@@ -245,3 +245,4 @@ class ProviderSyncCursor(Base):
         onupdate=lambda: datetime.now(UTC),
         nullable=False,
     )
+

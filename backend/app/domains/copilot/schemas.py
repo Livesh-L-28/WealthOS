@@ -78,3 +78,4 @@ class CopilotToolSpec(BaseModel):
     description: str
     parameters: dict[str, Any]
     is_read_only: bool = True
+

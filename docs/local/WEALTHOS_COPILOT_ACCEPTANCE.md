@@ -63,3 +63,4 @@ tests/test_gate7_copilot_acceptance.py::test_gate7_cross_tenant_copilot_isolatio
 2. **Immutable Read-Only Principle**: The Copilot cannot initiate transactions, modify accounts, adjust budgets, or mutate user data under any circumstance.
 3. **Audit Trail Preservation**: All user inquiries and assistant responses (including citations, executed tool IDs, and blocked adversarial attempts) are persisted to `copilot_messages` for compliance auditability.
 4. **Tenant Isolation via PostgreSQL RLS**: Sessions execute with `SET LOCAL app.current_tenant_id`, guaranteeing cross-tenant data boundaries at the database engine level.
+

@@ -173,3 +173,4 @@ def test_gate11_full_disaster_recovery_exercise_drill():
     assert "WEALTHOS DISASTER RECOVERY DRILL: CERTIFIED ACCEPTANCE" in proc.stdout
     assert '"unbalanced_journal_entries": 0' in proc.stdout
     assert '"variance": "0.0000 INR"' in proc.stdout
+

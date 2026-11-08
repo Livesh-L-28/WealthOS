@@ -94,3 +94,4 @@ Route (app)                              Size     First Load JS
 1. **Strict Design Token Adherence**: All pages utilize `@wealthos/design-tokens` palette (`#0B0F17` dark background, `#1E293B` card surface, Slate typography, Indigo accent).
 2. **Client-Side State Security**: Auth tokens and active tenant IDs are stored in isolated browser storage and automatically forwarded via `X-Tenant-ID` and `Authorization: Bearer` headers by `@wealthos/api-client`.
 3. **Double-Entry Visual Integrity**: Debit and credit indicators are displayed with balanced general journal reference keys (`JE-YYYY-MMDD-XXX`).
+
