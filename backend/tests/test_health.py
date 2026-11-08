@@ -38,17 +38,20 @@ async def test_health_ready_probe_healthy(client):
     with (
         patch("app.api.v1.health.check_database_health", new_callable=AsyncMock) as mock_db,
         patch("app.api.v1.health.check_redis_health", new_callable=AsyncMock) as mock_redis,
+        patch("app.api.v1.health.check_storage_health") as mock_storage,
     ):
         mock_db.return_value = {"status": "healthy"}
         mock_redis.return_value = {"status": "healthy"}
+        mock_storage.return_value = {"status": "healthy"}
 
         # Test /health/ready
         response = await client.get("/health/ready")
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ready"
-        assert data["database"] == "healthy"
-        assert data["redis"] == "healthy"
+        assert data["subsystems"]["database"]["status"] == "healthy"
+        assert data["subsystems"]["redis"]["status"] == "healthy"
+        assert data["subsystems"]["storage"]["status"] == "healthy"
 
         # Test legacy /readyz
         response_z = await client.get("/readyz")
@@ -56,19 +59,63 @@ async def test_health_ready_probe_healthy(client):
 
 
 @pytest.mark.asyncio
-async def test_health_ready_probe_degraded(client):
+async def test_health_ready_probe_degraded_db(client):
     with (
         patch("app.api.v1.health.check_database_health", new_callable=AsyncMock) as mock_db,
         patch("app.api.v1.health.check_redis_health", new_callable=AsyncMock) as mock_redis,
+        patch("app.api.v1.health.check_storage_health") as mock_storage,
     ):
         mock_db.return_value = {"status": "unhealthy", "error": "Connection refused"}
         mock_redis.return_value = {"status": "healthy"}
+        mock_storage.return_value = {"status": "healthy"}
 
         response = await client.get("/health/ready")
         assert response.status_code == 503
         data = response.json()
         assert data["status"] == "not_ready"
-        assert data["database"] == "unhealthy"
+        assert data["subsystems"]["database"]["status"] == "unhealthy"
+
+
+@pytest.mark.asyncio
+async def test_health_ready_probe_degraded_storage(client):
+    with (
+        patch("app.api.v1.health.check_database_health", new_callable=AsyncMock) as mock_db,
+        patch("app.api.v1.health.check_redis_health", new_callable=AsyncMock) as mock_redis,
+        patch("app.api.v1.health.check_storage_health") as mock_storage,
+    ):
+        mock_db.return_value = {"status": "healthy"}
+        mock_redis.return_value = {"status": "healthy"}
+        mock_storage.return_value = {"status": "unhealthy", "error": "S3 connection failed"}
+
+        response = await client.get("/health/ready")
+        assert response.status_code == 503
+        data = response.json()
+        assert data["status"] == "not_ready"
+        assert data["subsystems"]["storage"]["status"] == "unhealthy"
+
+
+@pytest.mark.asyncio
+async def test_health_ready_probe_minimal_profile_ignores_optional(client):
+    with (
+        patch("app.api.v1.health.check_database_health", new_callable=AsyncMock) as mock_db,
+        patch("app.api.v1.health.check_redis_health", new_callable=AsyncMock) as mock_redis,
+        patch("app.api.v1.health.check_storage_health") as mock_storage,
+        patch("app.core.config.settings.RUNTIME_PROFILE", "minimal"),
+        patch("app.core.config.settings.REQUIRE_REDIS", False),
+        patch("app.core.config.settings.REQUIRE_STORAGE", False),
+    ):
+        mock_db.return_value = {"status": "healthy"}
+        mock_redis.return_value = {"status": "unhealthy", "error": "Redis optional"}
+        mock_storage.return_value = {"status": "unhealthy", "error": "Storage optional"}
+
+        response = await client.get("/health/ready")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "ready"
+        assert data["profile"] == "minimal"
+        assert data["subsystems"]["database"]["status"] == "healthy"
+        assert data["subsystems"]["redis"]["mandatory"] is False
+        assert data["subsystems"]["storage"]["mandatory"] is False
 
 
 @pytest.mark.asyncio

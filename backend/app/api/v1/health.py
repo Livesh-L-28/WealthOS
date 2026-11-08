@@ -88,24 +88,47 @@ async def liveness_probe():
 @router.get("/ready", summary="Readiness Probe (/health/ready)")
 @router.get("/readiness", summary="Readiness Probe")
 async def readiness_probe(response: Response):
-    """Kubernetes/Container readiness probe verifying operational availability of backing dependencies."""
+    """Kubernetes/Container readiness probe verifying operational availability of backing dependencies.
+
+    Fails closed (HTTP 503) if any mandatory dependency (PostgreSQL, or Redis/Storage
+    depending on the active RUNTIME_PROFILE) is unhealthy.
+    """
     db = await check_database_health()
     redis = await check_redis_health()
+    storage = check_storage_health()
 
-    is_ready = db.get("status") == "healthy" and redis.get("status") == "healthy"
+    db_healthy = db.get("status") == "healthy"
+    redis_healthy = redis.get("status") == "healthy"
+    storage_healthy = storage.get("status") == "healthy"
+
+    redis_required = settings.is_redis_mandatory()
+    storage_required = settings.is_storage_mandatory()
+
+    # PostgreSQL is unconditionally mandatory for all profiles
+    is_ready = db_healthy
+    if redis_required and not redis_healthy:
+        is_ready = False
+    if storage_required and not storage_healthy:
+        is_ready = False
+
+    subsystem_details = {
+        "database": {"status": db.get("status"), "mandatory": True},
+        "redis": {"status": redis.get("status"), "mandatory": redis_required},
+        "storage": {"status": storage.get("status"), "mandatory": storage_required},
+    }
 
     if not is_ready:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return {
             "status": "not_ready",
-            "database": db.get("status"),
-            "redis": redis.get("status"),
+            "profile": settings.RUNTIME_PROFILE,
+            "subsystems": subsystem_details,
             "timestamp": datetime.now(UTC).isoformat(),
         }
 
     return {
         "status": "ready",
-        "database": "healthy",
-        "redis": "healthy",
+        "profile": settings.RUNTIME_PROFILE,
+        "subsystems": subsystem_details,
         "timestamp": datetime.now(UTC).isoformat(),
     }

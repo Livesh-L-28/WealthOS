@@ -36,22 +36,50 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan context manager for startup and shutdown routines."""
     # --- Startup ---
     setup_logging(level=settings.LOG_LEVEL, environment=settings.ENVIRONMENT)
-    logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION} [{settings.ENVIRONMENT}]...")
+    logger.info(
+        f"Starting {settings.APP_NAME} v{settings.APP_VERSION} [{settings.ENVIRONMENT}] "
+        f"profile={settings.RUNTIME_PROFILE}..."
+    )
 
+    # 1. Database Initialization (Always Mandatory)
     try:
         await init_db()
     except Exception as exc:
-        logger.warning(f"Database connection pool initialization deferred: {exc}")
+        logger.error(f"Database connection pool initialization failed: {exc}")
+        if settings.is_production:
+            raise RuntimeError(
+                f"Mandatory database initialization failed in production: {exc}"
+            ) from exc
 
+    # 2. Redis Initialization (Mandatory if profile requires it)
     try:
         await init_redis()
     except Exception as exc:
-        logger.warning(f"Redis initialization deferred: {exc}")
+        if settings.is_redis_mandatory():
+            logger.error(f"Mandatory Redis initialization failed: {exc}")
+            if settings.is_production:
+                raise RuntimeError(
+                    f"Mandatory Redis initialization failed in production: {exc}"
+                ) from exc
+        else:
+            logger.warning(
+                f"Optional Redis initialization deferred for profile '{settings.RUNTIME_PROFILE}': {exc}"
+            )
 
+    # 3. Object Storage Initialization (Mandatory if profile requires it)
     try:
         init_storage()
     except Exception as exc:
-        logger.warning(f"Storage initialization deferred: {exc}")
+        if settings.is_storage_mandatory():
+            logger.error(f"Mandatory Object Storage initialization failed: {exc}")
+            if settings.is_production:
+                raise RuntimeError(
+                    f"Mandatory Storage initialization failed in production: {exc}"
+                ) from exc
+        else:
+            logger.warning(
+                f"Optional Object Storage initialization deferred for profile '{settings.RUNTIME_PROFILE}': {exc}"
+            )
 
     logger.info("Application startup sequence completed")
     yield

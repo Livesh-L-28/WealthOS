@@ -1,51 +1,71 @@
 {
   "policy": "WealthOS Supply-Chain & Dependency Security Policy",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "last_audit_date": "2026-11-08",
   "exceptions": [
     {
       "package": "vitest",
+      "advisory": "GHSA-5xrq-8626-4rwp",
       "vulnerability_id": "GHSA-5xrq-8626-4rwp",
       "severity": "critical",
+      "owner": "QA Lead & Security Engineering",
       "cwe": "CWE-22, CWE-862",
+      "justification": "Vitest UI server is never started in production or staging; vitest is used exclusively in headless runner mode ('vitest run') in isolated CI and test environments.",
       "exposure": "Vitest UI server is never started in production or staging; vitest is used exclusively in headless runner mode ('vitest run') in isolated CI and test environments.",
       "mitigation": "No public or network-exposed Vitest server. Scheduled for upgrade to Vitest 3.3+ in post-v1.0.0 framework maintenance.",
+      "expiry": "2026-12-31",
       "review_expiry_date": "2026-12-31"
     },
     {
       "package": "tar",
+      "advisory": "GHSA-23hp-3jrh-7fpw",
       "vulnerability_id": "GHSA-23hp-3jrh-7fpw",
       "severity": "critical",
+      "owner": "Mobile Lead & DevSecOps",
       "cwe": "CWE-400",
+      "justification": "Transitive development dependency required by @expo/cli for unpacking native mobile templates at build time; completely absent from production Next.js runtime bundles and Docker backend containers.",
       "exposure": "Transitive development dependency required by @expo/cli for unpacking native mobile templates at build time; completely absent from production Next.js runtime bundles and Docker backend containers.",
       "mitigation": "Isolated to developer build workstations and CI runner; upgrade scheduled with Expo SDK 52.",
+      "expiry": "2026-12-31",
       "review_expiry_date": "2026-12-31"
     },
     {
       "package": "next",
+      "advisory": "GHSA-p293-qw3h-jr36",
       "vulnerability_id": "GHSA-p293-qw3h-jr36",
       "severity": "critical",
+      "owner": "Frontend Architecture & Application Security",
       "cwe": "CWE-22",
+      "justification": "Advisory affects Windows-hosted Next.js servers only. WealthOS is containerized and deployed strictly on Linux (Ubuntu / Alpine) and macOS.",
       "exposure": "Advisory affects Windows-hosted Next.js servers only. WealthOS is containerized and deployed strictly on Linux (Ubuntu / Alpine) and macOS.",
       "mitigation": "OS platform constraint (Linux container runtime). Upgrade scheduled with Next.js 15+ post-v1.0.0.",
+      "expiry": "2026-12-31",
       "review_expiry_date": "2026-12-31"
     },
     {
       "package": "next",
+      "advisory": "GHSA-2xp9-vwfh-vxw4",
       "vulnerability_id": "GHSA-2xp9-vwfh-vxw4",
       "severity": "critical",
+      "owner": "Frontend Architecture & Application Security",
       "cwe": "CWE-787",
+      "justification": "Affects Next.js Image Optimization API when AVIF files are dynamically processed from untrusted remotes.",
       "exposure": "Affects Next.js Image Optimization API when AVIF files are dynamically processed from untrusted remotes.",
       "mitigation": "next/image remote optimization disabled; assets served statically via CDN. Upgrade scheduled with Next.js 15+ post-v1.0.0.",
+      "expiry": "2026-12-31",
       "review_expiry_date": "2026-12-31"
     },
     {
       "package": "next",
+      "advisory": "GHSA-2464-fhr4-w9xw",
       "vulnerability_id": "GHSA-2464-fhr4-w9xw",
       "severity": "critical",
+      "owner": "Frontend Architecture & Application Security",
       "cwe": "CWE-787",
+      "justification": "Affects Next.js Image Optimization API with untrusted remote SVG files.",
       "exposure": "Affects Next.js Image Optimization API with untrusted remote SVG files.",
       "mitigation": "Remote SVG optimization disabled; static internal SVGs only. Upgrade scheduled with Next.js 15+ post-v1.0.0.",
+      "expiry": "2026-12-31",
       "review_expiry_date": "2026-12-31"
     }
   ]

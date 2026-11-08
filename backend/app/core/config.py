@@ -32,6 +32,18 @@ class Settings(BaseSettings):
         default="WealthOS Backend API", description="Human-readable application name"
     )
     APP_VERSION: str = Field(default="0.2.0", description="Semantic version of the application")
+    RUNTIME_PROFILE: str = Field(
+        default="full",
+        description="Runtime profile: 'full' (Postgres, Redis, Storage), 'minimal' (Postgres only), or 'api' (Postgres & Redis)",
+    )
+    REQUIRE_REDIS: bool | None = Field(
+        default=None,
+        description="Explicit override for whether Redis is mandatory for readiness. Defaults based on RUNTIME_PROFILE.",
+    )
+    REQUIRE_STORAGE: bool | None = Field(
+        default=None,
+        description="Explicit override for whether Object Storage is mandatory for readiness. Defaults based on RUNTIME_PROFILE.",
+    )
 
     # API Configuration
     API_HOST: str = Field(default="0.0.0.0", description="API server host")
@@ -335,6 +347,18 @@ class Settings(BaseSettings):
             return self.CELERY_RESULT_BACKEND
         auth_part = f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else ""
         return f"redis://{auth_part}{self.REDIS_HOST}:{self.REDIS_PORT}/2"
+
+    def is_redis_mandatory(self) -> bool:
+        """Determine if Redis is mandatory for service readiness under the active profile."""
+        if self.REQUIRE_REDIS is not None:
+            return self.REQUIRE_REDIS
+        return self.RUNTIME_PROFILE in ("full", "api", "production")
+
+    def is_storage_mandatory(self) -> bool:
+        """Determine if Object Storage is mandatory for service readiness under the active profile."""
+        if self.REQUIRE_STORAGE is not None:
+            return self.REQUIRE_STORAGE
+        return self.RUNTIME_PROFILE in ("full", "production")
 
     @property
     def is_production(self) -> bool:
