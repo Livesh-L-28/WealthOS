@@ -197,3 +197,4 @@ async def get_risk_overview_analytics(
     """Retrieve composite solvency health score (88/100) and risk containment benchmarks."""
     service = AnalyticsService(session)
     return await service.risk_service.get_risk_overview_analytics(context.tenant.id, currency)
+

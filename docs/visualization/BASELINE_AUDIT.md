@@ -74,3 +74,4 @@ This baseline audit inventories all existing frontend chart implementations, bac
    - Write backend unit, integration, and financial invariant tests.
    - Write security tests verifying cross-tenant isolation and household sharing rules.
    - Verify visual rendering via Playwright screenshot automation.
+

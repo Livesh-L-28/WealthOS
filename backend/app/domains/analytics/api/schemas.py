@@ -97,3 +97,4 @@ class AnalyticsFilterParams(BaseModel):
     comparison_period: str | None = None
     household_id: str | None = None
     include_projected: bool = True
+

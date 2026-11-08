@@ -46,3 +46,4 @@ describe('Financial Chart Registry & Formatters', () => {
     expect(formatAnalyticalValue('invalid', 'score')).toBe('—');
   });
 });
+

@@ -14,3 +14,4 @@
 | `CHART-RSK-01` | Risk Intelligence | `FinancialHealthCard` | 4-Pillar Score Bars | `FinancialTableFallback` | `/api/v1/analytics/risks/overview` |
 | `CHART-GOL-01` | Financial Planning | `FinancialGoalsCard` | Progress Bar Tracks | Milestone Status Badges | `/api/v1/analytics/planning/forecast` |
 | `CHART-HOU-01` | Household Wealth | `HouseholdPage` | Collaborative Split Donut | Member Contribution Breakdown | `/api/v1/analytics/overview` |
+

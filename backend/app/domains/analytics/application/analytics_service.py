@@ -74,3 +74,4 @@ class AnalyticsService:
     def get_registered_metrics() -> dict[str, MetricDefinition]:
         """Return registered metric specifications."""
         return METRIC_REGISTRY
+

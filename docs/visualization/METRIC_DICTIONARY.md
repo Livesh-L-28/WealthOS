@@ -19,3 +19,4 @@ This dictionary registers all 13 financial metrics computed by the WealthOS Anal
 | `financial_health` | Solvency & Risk Health Score | Risk | Score (0-100) | Weighted Index | Point-in-time | 5-pillar risk evaluation | Weighted multi-signal index |
 | `tax_liability` | India Income Tax Liability | Tax | Currency (INR) | Sum | Financial Year | Salary, LTCG/STCG, Sec 115BAC | Finance Act 2024 tax slabs + cess |
 | `household_net_worth` | Collaborative Household Wealth | Household | Currency (INR) | Point-in-time | Month, Year | Shared accounts, ownership shares | $\sum (\text{Shared Assets} \times \text{Share \%}) - \text{Debts}$ |
+

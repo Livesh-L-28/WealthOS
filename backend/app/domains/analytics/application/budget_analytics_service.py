@@ -89,3 +89,4 @@ class BudgetAnalyticsService:
             ),
             warnings=["Category 'Technology & Cloud Hosting' is overspent by ₹2,800.00 (+14%)"],
         )
+

@@ -53,3 +53,4 @@ class FreshnessStatus(str, Enum):
     STALE = "stale"
     DELAYED = "delayed"
     MISSING = "missing"
+

@@ -50,3 +50,4 @@ The Playwright test suite (`apps/web/e2e/visualization-standard.spec.ts`) verifi
 **Status**: WCAG 2.1 AA COMPLIANT  
 **Critical Blockers**: 0  
 **Audit Result**: Certified for enterprise production deployment.
+

@@ -90,3 +90,4 @@ class InvestmentAnalyticsService:
             ),
             warnings=[],
         )
+

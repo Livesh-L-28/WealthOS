@@ -90,3 +90,4 @@ class PlanningAnalyticsService:
             ),
             warnings=["Projected values depend on market returns and scheduled SIP continuity."],
         )
+

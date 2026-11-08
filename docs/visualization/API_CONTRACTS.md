@@ -134,3 +134,4 @@ Every visualization endpoint adheres to the following JSON schema:
 - **Route**: `GET /api/v1/analytics/risks/overview`
 - **Query Params**: `currency`.
 - **Response**: Composite financial health score (0-100) and 5-pillar radar distribution (Emergency Liquidity, Debt Burden, Cash Flow Margin, Concentration, Verification).
+

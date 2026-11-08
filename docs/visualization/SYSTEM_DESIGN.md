@@ -86,3 +86,4 @@ flowchart TB
    - "View as Table" toggle providing a semantic HTML data table with exact figures.
    - Client-side CSV export.
    - Screen-reader aria-labels.
+

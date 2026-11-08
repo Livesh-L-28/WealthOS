@@ -197,3 +197,4 @@ METRIC_REGISTRY: dict[str, MetricDefinition] = {
         missing_data_strategy="preserve_null",
     ),
 }
+
