@@ -15,11 +15,11 @@
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0F17"
       },
       "package": "com.wealthos.app",
       "versionCode": 1,
-      "usesCleartextTraffic": false,
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
