@@ -32,24 +32,51 @@ interface NavItem {
   description?: string;
 }
 
-const PRIMARY_NAV_ITEMS: NavItem[] = [
-  { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Accounts', href: '/accounts', icon: Landmark },
-  { label: 'Control Centre', href: '/reconciliation', icon: ShieldCheck, badge: 'Recon' },
-  { label: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
-  { label: 'Investments', href: '/investments', icon: TrendingUp },
-  { label: 'Cash Flow', href: '/analytics', icon: Wallet },
-  { label: 'Budgets', href: '/budgets', icon: PieChart },
-  { label: 'Goals', href: '/goals', icon: Target },
-  { label: 'Household', href: '/household', icon: Users, badge: 'Shared' },
-  { label: 'Documents', href: '/documents', icon: FileText },
-  { label: 'Reports', href: '/net-worth', icon: FileSpreadsheet },
-  { label: 'Financial Copilot', href: '/copilot', icon: Bot, badge: 'AI' },
-];
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
 
-const SETTINGS_NAV_ITEMS: NavItem[] = [
-  { label: 'Security & Audit', href: '/settings/security', icon: ShieldCheck },
-  { label: 'Workspace Settings', href: '/settings/workspaces', icon: Settings },
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: 'Cockpit & Control',
+    items: [
+      { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+      { label: 'Control Centre', href: '/reconciliation', icon: ShieldCheck, badge: 'Recon' },
+    ],
+  },
+  {
+    title: 'Cash & Money',
+    items: [
+      { label: 'Accounts', href: '/accounts', icon: Landmark },
+      { label: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
+      { label: 'Cash Flow', href: '/analytics', icon: Wallet },
+      { label: 'Budgets', href: '/budgets', icon: PieChart },
+    ],
+  },
+  {
+    title: 'Investments & Reports',
+    items: [
+      { label: 'Investments', href: '/investments', icon: TrendingUp },
+      { label: 'Reports', href: '/net-worth', icon: FileSpreadsheet },
+    ],
+  },
+  {
+    title: 'Planning & Intelligence',
+    items: [
+      { label: 'Goals', href: '/goals', icon: Target },
+      { label: 'Financial Copilot', href: '/copilot', icon: Bot, badge: 'AI' },
+      { label: 'Household', href: '/household', icon: Users, badge: 'Shared' },
+      { label: 'Documents', href: '/documents', icon: FileText },
+    ],
+  },
+  {
+    title: 'Preferences',
+    items: [
+      { label: 'Security & Audit', href: '/settings/security', icon: ShieldCheck },
+      { label: 'Workspace Settings', href: '/settings/workspaces', icon: Settings },
+    ],
+  },
 ];
 
 export function Sidebar() {
@@ -134,24 +161,17 @@ export function Sidebar() {
         </div>
 
         {/* Primary Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
-          <div>
-            {!collapsed && (
-              <h4 className="px-3 text-[10px] font-semibold uppercase tracking-wider text-[#717D74] mb-2">
-                Main Menu
-              </h4>
-            )}
-            {renderNavLinks(PRIMARY_NAV_ITEMS)}
-          </div>
-
-          <div>
-            {!collapsed && (
-              <h4 className="px-3 text-[10px] font-semibold uppercase tracking-wider text-[#717D74] mb-2">
-                Preferences
-              </h4>
-            )}
-            {renderNavLinks(SETTINGS_NAV_ITEMS)}
-          </div>
+        <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.title} className="space-y-1">
+              {!collapsed && (
+                <h4 className="px-3 text-[10px] font-semibold uppercase tracking-wider text-[#717D74] mb-1.5">
+                  {section.title}
+                </h4>
+              )}
+              {renderNavLinks(section.items)}
+            </div>
+          ))}
         </nav>
 
         {/* Bottom Status Indicator */}
@@ -212,20 +232,15 @@ export function Sidebar() {
             </div>
 
             {/* Nav Links */}
-            <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
-              <div>
-                <h4 className="px-3 text-[10px] font-semibold uppercase tracking-wider text-[#717D74] mb-2">
-                  Navigation
-                </h4>
-                {renderNavLinks(PRIMARY_NAV_ITEMS, true)}
-              </div>
-
-              <div>
-                <h4 className="px-3 text-[10px] font-semibold uppercase tracking-wider text-[#717D74] mb-2">
-                  Preferences
-                </h4>
-                {renderNavLinks(SETTINGS_NAV_ITEMS, true)}
-              </div>
+            <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
+              {NAV_SECTIONS.map((section) => (
+                <div key={section.title} className="space-y-1">
+                  <h4 className="px-3 text-[10px] font-semibold uppercase tracking-wider text-[#717D74] mb-1.5">
+                    {section.title}
+                  </h4>
+                  {renderNavLinks(section.items, true)}
+                </div>
+              ))}
             </nav>
 
             {/* Mobile Bottom Footer */}

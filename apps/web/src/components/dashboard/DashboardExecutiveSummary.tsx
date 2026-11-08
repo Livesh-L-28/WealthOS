@@ -117,8 +117,13 @@ export function DashboardExecutiveSummary({
               1. Total Net Worth
               <InfoTooltip termKey="net-worth" />
             </span>
-            <div className="w-7 h-7 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
-              <Scale className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-[#16A36A]/15 text-[#087A50] tracking-wider">
+                ACTUAL
+              </span>
+              <div className="w-7 h-7 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
+                <Scale className="w-3.5 h-3.5" />
+              </div>
             </div>
           </div>
           <p className="text-xl font-bold font-mono text-[#17231D] mt-2">
@@ -140,8 +145,13 @@ export function DashboardExecutiveSummary({
               2. What I Own (Assets)
               <InfoTooltip termKey="assets" />
             </span>
-            <div className="w-7 h-7 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
-              <Wallet className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-[#16A36A]/15 text-[#087A50] tracking-wider">
+                ACTUAL
+              </span>
+              <div className="w-7 h-7 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
+                <Wallet className="w-3.5 h-3.5" />
+              </div>
             </div>
           </div>
           <p className="text-xl font-bold font-mono text-[#17231D] mt-2">
@@ -162,8 +172,13 @@ export function DashboardExecutiveSummary({
               3. What I Owe (Debts)
               <InfoTooltip termKey="liabilities" />
             </span>
-            <div className="w-7 h-7 rounded-xl bg-[#DC5B5B]/10 text-[#DC5B5B] flex items-center justify-center">
-              <ShieldCheck className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-[#16A36A]/15 text-[#087A50] tracking-wider">
+                ACTUAL
+              </span>
+              <div className="w-7 h-7 rounded-xl bg-[#DC5B5B]/10 text-[#DC5B5B] flex items-center justify-center">
+                <ShieldCheck className="w-3.5 h-3.5" />
+              </div>
             </div>
           </div>
           <p className="text-xl font-bold font-mono text-[#DC5B5B] mt-2">
@@ -185,8 +200,13 @@ export function DashboardExecutiveSummary({
               4. Net Cash Flow
               <InfoTooltip termKey="cash-flow" />
             </span>
-            <div className="w-7 h-7 rounded-xl bg-[#6475D8]/10 text-[#6475D8] flex items-center justify-center">
-              <TrendingUp className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-[#16A36A]/15 text-[#087A50] tracking-wider">
+                ACTUAL
+              </span>
+              <div className="w-7 h-7 rounded-xl bg-[#6475D8]/10 text-[#6475D8] flex items-center justify-center">
+                <TrendingUp className="w-3.5 h-3.5" />
+              </div>
             </div>
           </div>
           <p className="text-xl font-bold font-mono text-[#16A36A] mt-2">
@@ -207,8 +227,13 @@ export function DashboardExecutiveSummary({
               5. Goals Progress
               <InfoTooltip content="Percentage of active milestone targets currently funded across your wealth accounts." />
             </span>
-            <div className="w-7 h-7 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
-              <Target className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-[#3B82F6]/15 text-[#1D4ED8] tracking-wider">
+                PROJECTED
+              </span>
+              <div className="w-7 h-7 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
+                <Target className="w-3.5 h-3.5" />
+              </div>
             </div>
           </div>
           <p className="text-xl font-bold font-mono text-[#17231D] mt-2">
