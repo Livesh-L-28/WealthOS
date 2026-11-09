@@ -25,6 +25,7 @@ const GOAL_PRESETS = [
   { title: 'Global Vacation', target: '750000', year: '2027', icon: '🏖️', color: '#F59E0B' },
   { title: 'Child Higher Education', target: '5000000', year: '2030', icon: '🎓', color: '#8B5CF6' },
   { title: 'Beach Villa Downpayment', target: '8000000', year: '2029', icon: '🏡', color: '#EC4899' },
+  { title: 'Other / Custom Goal', target: '1000000', year: '2030', icon: '✨', color: '#16A36A' },
 ];
 
 export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
@@ -40,7 +41,7 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
 
   const handleSelectPreset = (p: typeof GOAL_PRESETS[0]) => {
     setSelectedPreset(p);
-    setGoalTitle(p.title);
+    setGoalTitle(p.title === 'Other / Custom Goal' ? '' : p.title);
     setTargetAmount(p.target);
     setTargetYear(p.year);
   };
