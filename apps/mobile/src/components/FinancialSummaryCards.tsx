@@ -20,7 +20,9 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
   onPressInflows,
   onPressOutflows,
 }) => {
-  const budgetUtilization = budgetAllocated > 0 ? ((monthlyOutflows / budgetAllocated) * 100).toFixed(0) : '84';
+  const budgetUtilization = budgetAllocated > 0 ? ((monthlyOutflows / budgetAllocated) * 100).toFixed(0) : '0';
+  const hasInflows = monthlyInflows > 0;
+  const hasOutflows = monthlyOutflows > 0;
 
   return (
     <View style={styles.container}>
@@ -40,9 +42,9 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
           </View>
           <Text style={styles.valueGreen}>{formatINR(monthlyInflows)}</Text>
           <View style={styles.footerRow}>
-            <Text style={styles.subtitle}>Salary & Yield</Text>
+            <Text style={styles.subtitle}>{hasInflows ? 'Salary & Yield' : 'Awaiting Inflow'}</Text>
             <View style={styles.badgeGreen}>
-              <Text style={styles.badgeTextGreen}>+12.4%</Text>
+              <Text style={styles.badgeTextGreen}>{hasInflows ? '+12.4%' : 'Fresh'}</Text>
             </View>
           </View>
         </TouchableOpacity>
@@ -62,9 +64,9 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
           </View>
           <Text style={styles.valueRed}>{formatINR(monthlyOutflows)}</Text>
           <View style={styles.footerRow}>
-            <Text style={styles.subtitle}>{budgetUtilization}% of budget</Text>
+            <Text style={styles.subtitle}>{hasOutflows ? `${budgetUtilization}% of budget` : '0% of budget'}</Text>
             <View style={styles.badgeGreen}>
-              <Text style={styles.badgeTextGreen}>-9.9%</Text>
+              <Text style={styles.badgeTextGreen}>{hasOutflows ? '-9.9%' : '0% Burn'}</Text>
             </View>
           </View>
         </TouchableOpacity>

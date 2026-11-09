@@ -76,80 +76,90 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
       </View>
 
       {/* Donut and Center Metric Row */}
-      <View style={styles.donutRow}>
-        {/* SVG Donut */}
-        <View style={[styles.donutWrapper, { width: size, height: size }]}>
-          <Svg width={size} height={size}>
-            <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
-              {ALLOCATION_SLICES.map((slice) => {
-                const strokeDasharray = `${(slice.pct / 100) * circumference} ${circumference}`;
-                const strokeDashoffset = -((accumulatedPct / 100) * circumference);
-                accumulatedPct += slice.pct;
+      {totalValue === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyEmoji}>📈</Text>
+          <Text style={styles.emptyTitle}>No Investment Holdings Tracked</Text>
+          <Text style={styles.emptySubtitle}>
+            Add equities, mutual funds, or gold to track asset allocation and unrealized gains.
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.donutRow}>
+          {/* SVG Donut */}
+          <View style={[styles.donutWrapper, { width: size, height: size }]}>
+            <Svg width={size} height={size}>
+              <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
+                {ALLOCATION_SLICES.map((slice) => {
+                  const strokeDasharray = `${(slice.pct / 100) * circumference} ${circumference}`;
+                  const strokeDashoffset = -((accumulatedPct / 100) * circumference);
+                  accumulatedPct += slice.pct;
 
-                const isSelected = selectedId === slice.id;
+                  const isSelected = selectedId === slice.id;
 
-                return (
-                  <Circle
-                    key={slice.id}
-                    cx={size / 2}
-                    cy={size / 2}
-                    r={radius}
-                    fill="none"
-                    stroke={slice.color}
-                    strokeWidth={isSelected ? strokeWidth + 4 : strokeWidth}
-                    strokeDasharray={strokeDasharray}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    opacity={selectedId ? (isSelected ? 1 : 0.4) : 1}
-                  />
-                );
-              })}
-            </G>
-          </Svg>
+                  return (
+                    <Circle
+                      key={slice.id}
+                      cx={size / 2}
+                      cy={size / 2}
+                      r={radius}
+                      fill="none"
+                      stroke={slice.color}
+                      strokeWidth={isSelected ? strokeWidth + 4 : strokeWidth}
+                      strokeDasharray={strokeDasharray}
+                      strokeDashoffset={strokeDashoffset}
+                      strokeLinecap="round"
+                      opacity={selectedId ? (isSelected ? 1 : 0.4) : 1}
+                    />
+                  );
+                })}
+              </G>
+            </Svg>
 
-          {/* Central Cutout Info */}
-          <View style={styles.centerHole} pointerEvents="none">
-            <Text style={styles.centerLabel}>
-              {activeSlice ? activeSlice.label.toUpperCase() : 'PORTFOLIO'}
-            </Text>
-            <Text style={styles.centerValue}>
-              {activeSlice ? `${activeSlice.pct}%` : formatINR(totalValue)}
-            </Text>
-            <Text style={styles.centerSub}>
-              {activeSlice
-                ? formatINR(activeSlice.amount)
-                : `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}% Gain`}
-            </Text>
+            {/* Central Cutout Info */}
+            <View style={styles.centerHole} pointerEvents="none">
+              <Text style={styles.centerLabel}>
+                {activeSlice ? activeSlice.label.toUpperCase() : 'PORTFOLIO'}
+              </Text>
+              <Text style={styles.centerValue}>
+                {activeSlice ? `${activeSlice.pct}%` : formatINR(totalValue)}
+              </Text>
+              <Text style={styles.centerSub}>
+                {activeSlice
+                  ? formatINR(activeSlice.amount)
+                  : `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}% Gain`}
+              </Text>
+            </View>
+          </View>
+
+          {/* Right Asset Breakdown List */}
+          <View style={styles.assetList}>
+            {ALLOCATION_SLICES.map((slice) => {
+              const isSelected = selectedId === slice.id;
+              return (
+                <TouchableOpacity
+                  key={slice.id}
+                  style={[styles.assetItem, isSelected && styles.assetItemActive]}
+                  onPress={() => setSelectedId(isSelected ? null : slice.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.assetItemLeft}>
+                    <View style={[styles.assetDot, { backgroundColor: slice.color }]} />
+                    <View>
+                      <Text style={styles.assetName}>{slice.label}</Text>
+                      <Text style={styles.assetValue}>{formatINR(slice.amount)}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.assetItemRight}>
+                    <Text style={styles.assetPct}>{slice.pct}%</Text>
+                    <Text style={styles.assetGain}>+{slice.pnlPct}%</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
-
-        {/* Right Asset Breakdown List */}
-        <View style={styles.assetList}>
-          {ALLOCATION_SLICES.map((slice) => {
-            const isSelected = selectedId === slice.id;
-            return (
-              <TouchableOpacity
-                key={slice.id}
-                style={[styles.assetItem, isSelected && styles.assetItemActive]}
-                onPress={() => setSelectedId(isSelected ? null : slice.id)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.assetItemLeft}>
-                  <View style={[styles.assetDot, { backgroundColor: slice.color }]} />
-                  <View>
-                    <Text style={styles.assetName}>{slice.label}</Text>
-                    <Text style={styles.assetValue}>{formatINR(slice.amount)}</Text>
-                  </View>
-                </View>
-                <View style={styles.assetItemRight}>
-                  <Text style={styles.assetPct}>{slice.pct}%</Text>
-                  <Text style={styles.assetGain}>+{slice.pnlPct}%</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
+      )}
 
       {/* Footer Shortcut to Holdings */}
       {onOpenPortfolio && (
@@ -325,5 +335,29 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     fontWeight: '700',
     color: theme.colors.primaryDark,
+  },
+  emptyContainer: {
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyEmoji: {
+    fontSize: 26,
+    marginBottom: 6,
+  },
+  emptyTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 16,
+    maxWidth: 260,
   },
 });

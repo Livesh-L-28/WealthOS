@@ -130,15 +130,51 @@ function WealthOSContent() {
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
 
-  // Core Financial State
-  const [accounts, setAccounts] = useState<BankAccount[]>(INITIAL_ACCOUNTS);
-  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
-  const [holdings, setHoldings] = useState<InvestmentHolding[]>(INITIAL_HOLDINGS);
-  const [budgets, setBudgets] = useState<BudgetEnvelope[]>(INITIAL_BUDGETS);
-  const [goals, setGoals] = useState<FinancialGoal[]>(INITIAL_GOALS);
-  const [documents] = useState<DocumentItem[]>(INITIAL_DOCUMENTS);
-  const [copilotMessages, setCopilotMessages] = useState<CopilotMessage[]>(INITIAL_COPILOT_MESSAGES);
+  // Core Financial State - Clean Production Ledger by default
+  const [accounts, setAccounts] = useState<BankAccount[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [holdings, setHoldings] = useState<InvestmentHolding[]>([]);
+  const [budgets, setBudgets] = useState<BudgetEnvelope[]>([]);
+  const [goals, setGoals] = useState<FinancialGoal[]>([]);
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
+  const [copilotMessages, setCopilotMessages] = useState<CopilotMessage[]>([
+    {
+      id: 'welcome-copilot-fresh',
+      sender: 'copilot',
+      text: 'Welcome to WealthOS. Connect your bank accounts or enter a transaction to initialize your double-entry financial ledger and receive personalized insights.',
+      timestamp: 'Just now',
+    },
+  ]);
   const [chatInput, setChatInput] = useState('');
+
+  const handleResetToFresh = () => {
+    setAccounts([]);
+    setTransactions([]);
+    setHoldings([]);
+    setBudgets([]);
+    setGoals([]);
+    setDocuments([]);
+    setCopilotMessages([
+      {
+        id: 'welcome-copilot-fresh',
+        sender: 'copilot',
+        text: 'Welcome to WealthOS. Connect your bank accounts or enter a transaction to initialize your double-entry financial ledger and receive personalized insights.',
+        timestamp: 'Just now',
+      },
+    ]);
+    showNotification('Reset to fresh production ledger');
+  };
+
+  const handleLoadDemoData = () => {
+    setAccounts(INITIAL_ACCOUNTS);
+    setTransactions(INITIAL_TRANSACTIONS);
+    setHoldings(INITIAL_HOLDINGS);
+    setBudgets(INITIAL_BUDGETS);
+    setGoals(INITIAL_GOALS);
+    setDocuments(INITIAL_DOCUMENTS);
+    setCopilotMessages(INITIAL_COPILOT_MESSAGES);
+    showNotification('Loaded demo financial portfolio');
+  };
 
   // Modals & Drawer
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -687,6 +723,8 @@ function WealthOSContent() {
           setActiveWorkspace(ws);
           showNotification(`Active tenant switched to ${ws}`);
         }}
+        onResetToFresh={handleResetToFresh}
+        onLoadSampleData={handleLoadDemoData}
       />
 
       {/* Contextual Quick Financial Action Modal Sheet */}

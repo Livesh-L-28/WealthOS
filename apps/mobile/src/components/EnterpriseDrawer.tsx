@@ -19,6 +19,8 @@ interface EnterpriseDrawerProps {
   onSelectScreen: (screen: ActiveScreen) => void;
   activeWorkspace: string;
   onSelectWorkspace: (workspace: string) => void;
+  onResetToFresh?: () => void;
+  onLoadSampleData?: () => void;
 }
 
 interface MenuItem {
@@ -201,6 +203,8 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
   onSelectScreen,
   activeWorkspace,
   onSelectWorkspace,
+  onResetToFresh,
+  onLoadSampleData,
 }) => {
   return (
     <Modal visible={isOpen} animationType="slide" transparent={true} onRequestClose={onClose}>
@@ -328,6 +332,48 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
                 </View>
               </View>
             ))}
+
+            {/* Ledger Mode & Data Controls */}
+            {(onResetToFresh || onLoadSampleData) && (
+              <View style={styles.dataControlsContainer}>
+                <Text style={styles.sectionLabel}>LEDGER STATE & DATA CONTROLS</Text>
+                <View style={styles.dataControlsRow}>
+                  {onResetToFresh && (
+                    <TouchableOpacity
+                      style={styles.dataControlBtnFresh}
+                      onPress={() => {
+                        onResetToFresh();
+                        onClose();
+                      }}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={styles.dataControlBtnIcon}>🌱</Text>
+                      <View style={styles.dataControlBtnTexts}>
+                        <Text style={styles.dataControlBtnTitleFresh}>Reset to Fresh Ledger</Text>
+                        <Text style={styles.dataControlBtnSubFresh}>Clear all dummy records</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+
+                  {onLoadSampleData && (
+                    <TouchableOpacity
+                      style={styles.dataControlBtnSample}
+                      onPress={() => {
+                        onLoadSampleData();
+                        onClose();
+                      }}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={styles.dataControlBtnIcon}>📋</Text>
+                      <View style={styles.dataControlBtnTexts}>
+                        <Text style={styles.dataControlBtnTitleSample}>Load Demo Portfolio</Text>
+                        <Text style={styles.dataControlBtnSubSample}>Populate demo records</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            )}
 
             {/* System Security / Ledger Assurance Strip */}
             <View style={styles.assuranceCard}>
@@ -628,6 +674,63 @@ const styles = StyleSheet.create({
     color: '#15803D',
     marginTop: 2,
     lineHeight: 14,
+  },
+  dataControlsContainer: {
+    marginBottom: 20,
+    marginTop: 4,
+  },
+  dataControlsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 8,
+  },
+  dataControlBtnFresh: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 10,
+  },
+  dataControlBtnSample: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#DBEAFE',
+    borderRadius: 12,
+    padding: 10,
+  },
+  dataControlBtnIcon: {
+    fontSize: 18,
+  },
+  dataControlBtnTexts: {
+    flex: 1,
+  },
+  dataControlBtnTitleFresh: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  dataControlBtnSubFresh: {
+    fontSize: 9,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  dataControlBtnTitleSample: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#1D4ED8',
+  },
+  dataControlBtnSubSample: {
+    fontSize: 9,
+    color: '#3B82F6',
+    marginTop: 1,
   },
 });
 

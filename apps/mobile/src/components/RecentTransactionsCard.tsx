@@ -28,63 +28,73 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
           </TouchableOpacity>
         </View>
 
-        <View style={styles.txList}>
-          {transactions.slice(0, 4).map((tx, idx) => {
-            const isCredit = tx.type === 'CREDIT';
-            const isLast = idx === Math.min(3, transactions.length - 1);
-            return (
-              <TouchableOpacity
-                key={tx.id}
-                style={[styles.txRow, !isLast && styles.txRowBorder]}
-                onPress={() => setSelectedTx(tx)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.txLeft}>
-                  <View
-                    style={[
-                      styles.txIconBadge,
-                      isCredit ? styles.iconBadgeCredit : styles.iconBadgeDebit,
-                    ]}
-                  >
-                    <Text
+        {transactions.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyEmoji}>📝</Text>
+            <Text style={styles.emptyTitle}>No Transactions Recorded</Text>
+            <Text style={styles.emptySubtitle}>
+              Tap + below to record an income or expense to begin building your general journal.
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.txList}>
+            {transactions.slice(0, 4).map((tx, idx) => {
+              const isCredit = tx.type === 'CREDIT';
+              const isLast = idx === Math.min(3, transactions.length - 1);
+              return (
+                <TouchableOpacity
+                  key={tx.id}
+                  style={[styles.txRow, !isLast && styles.txRowBorder]}
+                  onPress={() => setSelectedTx(tx)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.txLeft}>
+                    <View
                       style={[
-                        styles.txIconText,
-                        isCredit ? styles.iconTextCredit : styles.iconTextDebit,
+                        styles.txIconBadge,
+                        isCredit ? styles.iconBadgeCredit : styles.iconBadgeDebit,
                       ]}
                     >
-                      {isCredit ? '↓' : '↑'}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.txIconText,
+                          isCredit ? styles.iconTextCredit : styles.iconTextDebit,
+                        ]}
+                      >
+                        {isCredit ? '↓' : '↑'}
+                      </Text>
+                    </View>
+                    <View style={styles.txMeta}>
+                      <Text style={styles.txTitle} numberOfLines={1}>
+                        {tx.title}
+                      </Text>
+                      <Text style={styles.txSubtitle}>
+                        {tx.category} · {tx.date}
+                      </Text>
+                    </View>
                   </View>
-                  <View style={styles.txMeta}>
-                    <Text style={styles.txTitle} numberOfLines={1}>
-                      {tx.title}
-                    </Text>
-                    <Text style={styles.txSubtitle}>
-                      {tx.category} · {tx.date}
-                    </Text>
-                  </View>
-                </View>
 
-                <View style={styles.txRight}>
-                  <Text
-                    style={[
-                      styles.txAmount,
-                      isCredit ? styles.amountCredit : styles.amountDebit,
-                    ]}
-                  >
-                    {isCredit ? '+' : '-'}
-                    {formatINR(tx.amount)}
-                  </Text>
-                  <View style={styles.reconciledPill}>
-                    <Text style={styles.reconciledText}>
-                      {tx.status === 'RECONCILED' ? '✓ RECON' : 'SETTLED'}
+                  <View style={styles.txRight}>
+                    <Text
+                      style={[
+                        styles.txAmount,
+                        isCredit ? styles.amountCredit : styles.amountDebit,
+                      ]}
+                    >
+                      {isCredit ? '+' : '-'}
+                      {formatINR(tx.amount)}
                     </Text>
+                    <View style={styles.reconciledPill}>
+                      <Text style={styles.reconciledText}>
+                        {tx.status === 'RECONCILED' ? '✓ RECON' : 'SETTLED'}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
       </View>
 
       {/* Transaction Detail Modal */}
@@ -407,5 +417,28 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '700',
+  },
+  emptyContainer: {
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyEmoji: {
+    fontSize: 26,
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  emptySubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 16,
+    maxWidth: 260,
   },
 });

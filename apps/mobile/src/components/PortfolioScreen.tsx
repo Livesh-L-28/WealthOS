@@ -103,50 +103,69 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
       </View>
 
       {/* Holdings List */}
-      <View style={styles.holdingsList}>
-        {filteredHoldings.map((h) => {
-          const isProfit = h.pnl >= 0;
-          return (
+      {filteredHoldings.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyEmoji}>📈</Text>
+          <Text style={styles.emptyTitle}>No Investment Holdings</Text>
+          <Text style={styles.emptySubtitle}>
+            Track direct equities, mutual funds, or gold to monitor consolidated unrealized returns.
+          </Text>
+          {onAddInvestment && (
             <TouchableOpacity
-              key={h.id}
-              style={styles.holdingCard}
-              onPress={() => setSelectedHolding(h)}
+              style={styles.emptyActionBtn}
+              onPress={onAddInvestment}
               activeOpacity={0.8}
             >
-              <View style={styles.holdingTopRow}>
-                <View style={styles.holdingTitleCol}>
-                  <Text style={styles.holdingSymbol}>{h.symbol}</Text>
-                  <Text style={styles.holdingName} numberOfLines={1}>
-                    {h.name}
-                  </Text>
-                </View>
-
-                <View style={styles.holdingValueCol}>
-                  <Text style={styles.holdingValue}>{formatINR(h.currentValue)}</Text>
-                  <Text
-                    style={[
-                      styles.holdingPnl,
-                      isProfit ? styles.pnlProfit : styles.pnlLoss,
-                    ]}
-                  >
-                    {isProfit ? '+' : ''}
-                    {formatINR(h.pnl)} ({h.pnlPercentage.toFixed(1)}%)
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.holdingDetailsRow}>
-                <Text style={styles.holdingDetailsText}>
-                  Qty: {h.quantity} · Avg: ₹{h.avgBuyPrice.toFixed(1)} · LTP: ₹{h.currentPrice.toFixed(1)}
-                </Text>
-                <View style={styles.taxLotPill}>
-                  <Text style={styles.taxLotText}>{h.fifoLotAge}</Text>
-                </View>
-              </View>
+              <Text style={styles.emptyActionBtnText}>+ Add First Holding</Text>
             </TouchableOpacity>
-          );
-        })}
-      </View>
+          )}
+        </View>
+      ) : (
+        <View style={styles.holdingsList}>
+          {filteredHoldings.map((h) => {
+            const isProfit = h.pnl >= 0;
+            return (
+              <TouchableOpacity
+                key={h.id}
+                style={styles.holdingCard}
+                onPress={() => setSelectedHolding(h)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.holdingTopRow}>
+                  <View style={styles.holdingTitleCol}>
+                    <Text style={styles.holdingSymbol}>{h.symbol}</Text>
+                    <Text style={styles.holdingName} numberOfLines={1}>
+                      {h.name}
+                    </Text>
+                  </View>
+
+                  <View style={styles.holdingValueCol}>
+                    <Text style={styles.holdingValue}>{formatINR(h.currentValue)}</Text>
+                    <Text
+                      style={[
+                        styles.holdingPnl,
+                        isProfit ? styles.pnlProfit : styles.pnlLoss,
+                      ]}
+                    >
+                      {isProfit ? '+' : ''}
+                      {formatINR(h.pnl)} ({h.pnlPercentage.toFixed(1)}%)
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.holdingDetailsRow}>
+                  <Text style={styles.holdingDetailsText}>
+                    Qty: {h.quantity} · Avg: ₹{h.avgBuyPrice.toFixed(1)} · LTP: ₹{h.currentPrice.toFixed(1)}
+                  </Text>
+                  <View style={styles.taxLotPill}>
+                    <Text style={styles.taxLotText}>{h.fifoLotAge}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
 
       {/* Holding Detail Modal */}
       {selectedHolding && (
@@ -536,5 +555,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: theme.colors.textSecondary,
+  },
+  emptyContainer: {
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  emptyEmoji: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 18,
+    maxWidth: 280,
+    marginBottom: 16,
+  },
+  emptyActionBtn: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

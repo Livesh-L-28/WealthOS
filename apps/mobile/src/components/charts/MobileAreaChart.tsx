@@ -226,7 +226,17 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
       </View>
 
       {/* View Mode 1: Interactive SVG Area Chart */}
-      {viewMode === 'trend' && (
+      {currentNetWorth === 0 ? (
+        <View style={styles.freshZeroContainer}>
+          <View style={styles.freshZeroIconBox}>
+            <Text style={styles.freshZeroIcon}>🌱</Text>
+          </View>
+          <Text style={styles.freshZeroTitle}>Fresh Financial Ledger Initialized</Text>
+          <Text style={styles.freshZeroDesc}>
+            Your double-entry general journal is ready. Connect a bank account or record your first transaction to begin plotting your net worth trajectory.
+          </Text>
+        </View>
+      ) : viewMode === 'trend' ? (
         <>
           <View style={styles.svgContainer}>
             <Svg width={chartWidth} height={height}>
@@ -365,10 +375,8 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
             })}
           </View>
         </>
-      )}
-
-      {/* View Mode 2: Waterfall Attribution Bridge */}
-      {viewMode === 'waterfall' && (
+      ) : (
+        /* View Mode 2: Waterfall Attribution Bridge */
         <View style={styles.waterfallContainer}>
           <Text style={styles.waterfallTitle}>MoM Net Worth Movement Attribution</Text>
           {WATERFALL_STEPS.map((step, idx) => {
@@ -622,5 +630,43 @@ const styles = StyleSheet.create({
   },
   waterfallNeg: {
     color: '#DC2626',
+  },
+  freshZeroContainer: {
+    paddingVertical: 28,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  freshZeroIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#EFF6FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  freshZeroIcon: {
+    fontSize: 24,
+  },
+  freshZeroTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  freshZeroDesc: {
+    fontSize: 11.5,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 17,
+    maxWidth: 290,
   },
 });

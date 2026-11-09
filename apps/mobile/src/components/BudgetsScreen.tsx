@@ -196,91 +196,110 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
         </View>
       </View>
 
-      <View style={styles.envelopesList}>
-        {budgets.map((env) => {
-          const pct = Math.min(100, (env.spent / env.budgeted) * 100);
-          const isOver = env.spent >= env.budgeted;
-          const isWarning = !isOver && pct >= 85;
-          const remaining = Math.max(0, env.budgeted - env.spent);
-          const emoji = CATEGORY_EMOJIS[env.category] || '📦';
-
-          return (
+      {budgets.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyEmoji}>🎯</Text>
+          <Text style={styles.emptyTitle}>No Budgets Configured</Text>
+          <Text style={styles.emptySubtitle}>
+            Create category spending envelopes to control monthly burn rate and track remaining buffer.
+          </Text>
+          {onAddEnvelope && (
             <TouchableOpacity
-              key={env.id}
-              style={[styles.envelopeCard, isOver && styles.envelopeCardOver]}
-              onPress={() => setSelectedEnv(env)}
+              style={styles.emptyActionBtn}
+              onPress={onAddEnvelope}
               activeOpacity={0.8}
             >
-              <View style={styles.envelopeTop}>
-                {/* Category Avatar & Title */}
-                <View style={styles.categoryTitleRow}>
-                  <View style={[styles.categoryAvatar, { backgroundColor: `${env.color}18` }]}>
-                    <Text style={styles.categoryAvatarEmoji}>{emoji}</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.categoryName}>{env.category}</Text>
-                    <Text style={styles.envelopeSubtext}>
-                      {isOver ? 'Limit reached' : `${formatINR(remaining)} buffer`}
-                    </Text>
-                  </View>
-                </View>
+              <Text style={styles.emptyActionBtnText}>+ Create First Budget</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      ) : (
+        <View style={styles.envelopesList}>
+          {budgets.map((env) => {
+            const pct = Math.min(100, (env.spent / env.budgeted) * 100);
+            const isOver = env.spent >= env.budgeted;
+            const isWarning = !isOver && pct >= 85;
+            const remaining = Math.max(0, env.budgeted - env.spent);
+            const emoji = CATEGORY_EMOJIS[env.category] || '📦';
 
-                {/* Amounts Ratio */}
-                <View style={styles.ratioCol}>
-                  <Text style={styles.envelopeRatio}>
-                    {formatINR(env.spent)}
-                    <Text style={styles.envelopeAllocated}> / {formatINR(env.budgeted)}</Text>
-                  </Text>
-                  <View
-                    style={[
-                      styles.envPctBadge,
-                      isOver
-                        ? styles.envPctBadgeDanger
-                        : isWarning
-                        ? styles.envPctBadgeWarning
-                        : styles.envPctBadgeNormal,
-                    ]}
-                  >
-                    <Text
+            return (
+              <TouchableOpacity
+                key={env.id}
+                style={[styles.envelopeCard, isOver && styles.envelopeCardOver]}
+                onPress={() => setSelectedEnv(env)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.envelopeTop}>
+                  {/* Category Avatar & Title */}
+                  <View style={styles.categoryTitleRow}>
+                    <View style={[styles.categoryAvatar, { backgroundColor: `${env.color}18` }]}>
+                      <Text style={styles.categoryAvatarEmoji}>{emoji}</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.categoryName}>{env.category}</Text>
+                      <Text style={styles.envelopeSubtext}>
+                        {isOver ? 'Limit reached' : `${formatINR(remaining)} buffer`}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Amounts Ratio */}
+                  <View style={styles.ratioCol}>
+                    <Text style={styles.envelopeRatio}>
+                      {formatINR(env.spent)}
+                      <Text style={styles.envelopeAllocated}> / {formatINR(env.budgeted)}</Text>
+                    </Text>
+                    <View
                       style={[
-                        styles.envPctBadgeText,
+                        styles.envPctBadge,
                         isOver
-                          ? styles.pctTextDanger
+                          ? styles.envPctBadgeDanger
                           : isWarning
-                          ? styles.pctTextWarning
-                          : styles.pctTextNormal,
+                          ? styles.envPctBadgeWarning
+                          : styles.envPctBadgeNormal,
                       ]}
                     >
-                      {pct.toFixed(0)}%
-                    </Text>
+                      <Text
+                        style={[
+                          styles.envPctBadgeText,
+                          isOver
+                            ? styles.pctTextDanger
+                            : isWarning
+                            ? styles.pctTextWarning
+                            : styles.pctTextNormal,
+                        ]}
+                      >
+                        {pct.toFixed(0)}%
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              {/* Progress Bar Capsule */}
-              <View style={styles.envelopeProgressTrack}>
-                <View
-                  style={[
-                    styles.envelopeProgressFill,
-                    {
-                      width: `${pct}%`,
-                      backgroundColor: isOver ? '#DC2626' : isWarning ? '#F59E0B' : env.color,
-                    },
-                  ]}
-                />
-              </View>
+                {/* Progress Bar Capsule */}
+                <View style={styles.envelopeProgressTrack}>
+                  <View
+                    style={[
+                      styles.envelopeProgressFill,
+                      {
+                        width: `${pct}%`,
+                        backgroundColor: isOver ? '#DC2626' : isWarning ? '#F59E0B' : env.color,
+                      },
+                    ]}
+                  />
+                </View>
 
-              {/* Envelope Footer */}
-              <View style={styles.envelopeFooter}>
-                <Text style={[styles.envelopeRemText, isOver && styles.envelopeRemTextOver]}>
-                  {isOver ? '⚠️ 100% budget consumed' : `${formatINR(remaining)} remaining safe spend`}
-                </Text>
-                <Text style={styles.envelopeActionText}>Details ›</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+                {/* Envelope Footer */}
+                <View style={styles.envelopeFooter}>
+                  <Text style={[styles.envelopeRemText, isOver && styles.envelopeRemTextOver]}>
+                    {isOver ? '⚠️ 100% budget consumed' : `${formatINR(remaining)} remaining safe spend`}
+                  </Text>
+                  <Text style={styles.envelopeActionText}>Details ›</Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      )}
     </>
   )}
 
@@ -1022,5 +1041,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: theme.colors.textSecondary,
+  },
+  emptyContainer: {
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  emptyEmoji: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 18,
+    maxWidth: 280,
+    marginBottom: 16,
+  },
+  emptyActionBtn: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

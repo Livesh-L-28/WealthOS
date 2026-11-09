@@ -151,77 +151,94 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
           </View>
 
           {/* Accounts List */}
-          <View style={styles.accountList}>
-            {filteredAccounts.map((acc) => {
-              const isAsset = acc.category === 'ASSET';
-              return (
-                <TouchableOpacity
-                  key={acc.id}
-                  style={styles.accountCard}
-                  onPress={() => setSelectedAccount(acc)}
-                  activeOpacity={0.75}
-                >
-                  <View style={styles.cardTopRow}>
-                    <View style={styles.bankAvatar}>
-                      <Text style={styles.bankEmoji}>
-                        {acc.type === 'CREDIT_CARD' ? '💳' : acc.type === 'DEMAT' ? '📈' : '🏛️'}
-                      </Text>
-                    </View>
-
-                    <View style={styles.accountMeta}>
-                      <Text style={styles.accountName}>{acc.name}</Text>
-                      <Text style={styles.accountInstitution}>
-                        {acc.institution} · {acc.accountNumberMask}
-                      </Text>
-                    </View>
-
-                    <View
-                      style={[
-                        styles.typeBadge,
-                        isAsset ? styles.typeBadgeAsset : styles.typeBadgeLiability,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.typeBadgeText,
-                          isAsset ? styles.typeTextAsset : styles.typeTextLiability,
-                        ]}
-                      >
-                        {acc.type}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.cardMidRow}>
-                    <View>
-                      <Text style={styles.balanceLabel}>LEDGER BALANCE</Text>
-                      <Text
-                        style={[
-                          styles.accountBalance,
-                          isAsset ? styles.balanceAsset : styles.balanceLiability,
-                        ]}
-                      >
-                        {formatINR(acc.balance)}
-                      </Text>
-                    </View>
-                    {acc.interestRate && (
-                      <View style={styles.rateBadge}>
-                        <Text style={styles.rateText}>{acc.interestRate}% p.a.</Text>
+          {filteredAccounts.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyEmoji}>🏛️</Text>
+              <Text style={styles.emptyTitle}>No Accounts Linked Yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Link your bank accounts, demat holdings, or credit cards to monitor unified net worth.
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyActionBtn}
+                onPress={onConnectAccount}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.emptyActionBtnText}>+ Connect Account</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.accountList}>
+              {filteredAccounts.map((acc) => {
+                const isAsset = acc.category === 'ASSET';
+                return (
+                  <TouchableOpacity
+                    key={acc.id}
+                    style={styles.accountCard}
+                    onPress={() => setSelectedAccount(acc)}
+                    activeOpacity={0.75}
+                  >
+                    <View style={styles.cardTopRow}>
+                      <View style={styles.bankAvatar}>
+                        <Text style={styles.bankEmoji}>
+                          {acc.type === 'CREDIT_CARD' ? '💳' : acc.type === 'DEMAT' ? '📈' : '🏛️'}
+                        </Text>
                       </View>
-                    )}
-                  </View>
 
-                  <View style={styles.cardFooter}>
-                    <Text style={styles.syncStatusText}>Synced: {acc.lastSynced}</Text>
-                    <View style={styles.verifiedRow}>
-                      <Text style={styles.verifiedDot}>●</Text>
-                      <Text style={styles.verifiedText}>Double-Entry Verified</Text>
+                      <View style={styles.accountMeta}>
+                        <Text style={styles.accountName}>{acc.name}</Text>
+                        <Text style={styles.accountInstitution}>
+                          {acc.institution} · {acc.accountNumberMask}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={[
+                          styles.typeBadge,
+                          isAsset ? styles.typeBadgeAsset : styles.typeBadgeLiability,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.typeBadgeText,
+                            isAsset ? styles.typeTextAsset : styles.typeTextLiability,
+                          ]}
+                        >
+                          {acc.type}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+
+                    <View style={styles.cardMidRow}>
+                      <View>
+                        <Text style={styles.balanceLabel}>LEDGER BALANCE</Text>
+                        <Text
+                          style={[
+                            styles.accountBalance,
+                            isAsset ? styles.balanceAsset : styles.balanceLiability,
+                          ]}
+                        >
+                          {formatINR(acc.balance)}
+                        </Text>
+                      </View>
+                      {acc.interestRate && (
+                        <View style={styles.rateBadge}>
+                          <Text style={styles.rateText}>{acc.interestRate}% p.a.</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    <View style={styles.cardFooter}>
+                      <Text style={styles.syncStatusText}>Synced: {acc.lastSynced}</Text>
+                      <View style={styles.verifiedRow}>
+                        <Text style={styles.verifiedDot}>●</Text>
+                        <Text style={styles.verifiedText}>Double-Entry Verified</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
 
           {/* Add Account Button */}
           <TouchableOpacity
@@ -307,54 +324,71 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
           </View>
 
           {/* Transactions List */}
-          <View style={styles.txList}>
-            {filteredTransactions.map((tx) => {
-              const isCredit = tx.type === 'CREDIT';
-              return (
-                <TouchableOpacity
-                  key={tx.id}
-                  style={styles.txCard}
-                  onPress={() => setSelectedTx(tx)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.txRow}>
-                    <View
-                      style={[
-                        styles.txIconBox,
-                        isCredit ? styles.txIconCredit : styles.txIconDebit,
-                      ]}
-                    >
-                      <Text style={styles.txIconText}>{isCredit ? '↓' : '↑'}</Text>
-                    </View>
-
-                    <View style={styles.txInfoCol}>
-                      <View style={styles.txTitleRow}>
-                        <Text style={styles.txTitle} numberOfLines={1}>
-                          {tx.title}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.txAmount,
-                            isCredit ? styles.txAmountCredit : styles.txAmountDebit,
-                          ]}
-                        >
-                          {isCredit ? '+' : '-'}{formatINR(tx.amount)}
-                        </Text>
+          {filteredTransactions.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyEmoji}>📝</Text>
+              <Text style={styles.emptyTitle}>No Transactions Recorded</Text>
+              <Text style={styles.emptySubtitle}>
+                Add your first expense or income to populate your general ledger.
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyActionBtn}
+                onPress={onAddTransaction}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.emptyActionBtnText}>+ Record Transaction</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.txList}>
+              {filteredTransactions.map((tx) => {
+                const isCredit = tx.type === 'CREDIT';
+                return (
+                  <TouchableOpacity
+                    key={tx.id}
+                    style={styles.txCard}
+                    onPress={() => setSelectedTx(tx)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.txRow}>
+                      <View
+                        style={[
+                          styles.txIconBox,
+                          isCredit ? styles.txIconCredit : styles.txIconDebit,
+                        ]}
+                      >
+                        <Text style={styles.txIconText}>{isCredit ? '↓' : '↑'}</Text>
                       </View>
-                      <View style={styles.txSubRow}>
-                        <Text style={styles.txMeta}>
-                          {tx.category} • {tx.accountName}
-                        </Text>
-                        <View style={styles.txStatusPill}>
-                          <Text style={styles.txStatusText}>{tx.status}</Text>
+
+                      <View style={styles.txInfoCol}>
+                        <View style={styles.txTitleRow}>
+                          <Text style={styles.txTitle} numberOfLines={1}>
+                            {tx.title}
+                          </Text>
+                          <Text
+                            style={[
+                              styles.txAmount,
+                              isCredit ? styles.txAmountCredit : styles.txAmountDebit,
+                            ]}
+                          >
+                            {isCredit ? '+' : '-'}{formatINR(tx.amount)}
+                          </Text>
+                        </View>
+                        <View style={styles.txSubRow}>
+                          <Text style={styles.txMeta}>
+                            {tx.category} • {tx.accountName}
+                          </Text>
+                          <View style={styles.txStatusPill}>
+                            <Text style={styles.txStatusText}>{tx.status}</Text>
+                          </View>
                         </View>
                       </View>
                     </View>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
 
           {/* Add Entry Button */}
           <TouchableOpacity
@@ -1167,5 +1201,49 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: theme.colors.primary,
     fontWeight: '500',
+  },
+  emptyContainer: {
+    paddingVertical: 36,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+  },
+  emptyEmoji: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 18,
+    maxWidth: 280,
+    marginBottom: 16,
+  },
+  emptyActionBtn: {
+    backgroundColor: '#2563EB',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
