@@ -354,7 +354,13 @@ function WealthOSContent() {
   const isPrimaryTab = ['overview', 'accounts', 'investments', 'budgets', 'copilot'].includes(
     activeScreen
   );
-  const activeTab: TabType = isPrimaryTab ? (activeScreen as TabType) : 'overview';
+  const activeTab: TabType = isPrimaryTab
+    ? (activeScreen as TabType)
+    : activeScreen === 'transactions'
+    ? 'accounts'
+    : activeScreen === 'goals'
+    ? 'budgets'
+    : 'overview';
 
   return (
     <View style={[styles.safeContainer, { paddingTop: topPadding }]}>
@@ -384,7 +390,7 @@ function WealthOSContent() {
       {/* Main Content Router */}
       <View style={styles.mainContent}>
         {/* Enterprise Dedicated Screens */}
-        {activeScreen === 'net-worth' && (
+        {(activeScreen === 'net-worth' || activeScreen === 'reports') && (
           <NetWorthScreen onBack={() => setActiveScreen('overview')} />
         )}
 
@@ -414,7 +420,7 @@ function WealthOSContent() {
           />
         )}
 
-        {activeScreen === 'settings' && (
+        {(activeScreen === 'settings' || activeScreen === 'security') && (
           <SettingsScreen
             onBack={() => setActiveScreen('overview')}
             activeWorkspace={activeWorkspace}
@@ -470,7 +476,7 @@ function WealthOSContent() {
           </ScrollView>
         )}
 
-        {activeScreen === 'accounts' && (
+        {(activeScreen === 'accounts' || activeScreen === 'transactions') && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -514,7 +520,7 @@ function WealthOSContent() {
           </ScrollView>
         )}
 
-        {activeScreen === 'budgets' && (
+        {(activeScreen === 'budgets' || activeScreen === 'goals') && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}

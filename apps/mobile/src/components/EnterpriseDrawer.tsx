@@ -10,19 +10,19 @@ import {
   Platform,
 } from 'react-native';
 import { theme } from '../theme';
-import { HubViewType } from '../types';
+import { ActiveScreen } from '../types';
 
 interface EnterpriseDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   activeScreen: string;
-  onSelectScreen: (screen: HubViewType) => void;
+  onSelectScreen: (screen: ActiveScreen) => void;
   activeWorkspace: string;
   onSelectWorkspace: (workspace: string) => void;
 }
 
 interface MenuItem {
-  id: HubViewType;
+  id: ActiveScreen;
   title: string;
   subtitle: string;
   icon: string;
@@ -30,51 +30,131 @@ interface MenuItem {
   badgeType?: 'default' | 'alert' | 'success';
 }
 
-const MENU_ITEMS: MenuItem[] = [
+interface NavSection {
+  title: string;
+  items: MenuItem[];
+}
+
+const NAV_SECTIONS: NavSection[] = [
   {
-    id: 'net-worth',
-    title: 'Net Worth & Balance Sheet',
-    subtitle: 'Assets, liabilities, debt avalanche & amortization',
-    icon: '📑',
-    badge: '₹75.38L',
-    badgeType: 'success',
+    title: 'COCKPIT & CONTROL',
+    items: [
+      {
+        id: 'overview',
+        title: 'Overview',
+        subtitle: 'Executive cockpit & net worth trajectory',
+        icon: '📊',
+      },
+      {
+        id: 'reconciliation',
+        title: 'Control Centre',
+        subtitle: 'Double-entry settlement & ledger audit',
+        icon: '🛡️',
+        badge: 'Recon',
+        badgeType: 'success',
+      },
+    ],
   },
   {
-    id: 'analytics',
-    title: 'Cash Flow & Spend Analytics',
-    subtitle: '50/30/20 rule, burn rate & recurring outflows',
-    icon: '📊',
-    badge: 'Cadence',
+    title: 'CASH & MONEY',
+    items: [
+      {
+        id: 'accounts',
+        title: 'Accounts',
+        subtitle: '6 Connected institutions & live balances',
+        icon: '🏛️',
+      },
+      {
+        id: 'transactions',
+        title: 'Transactions',
+        subtitle: 'Reconciled double-entry general journal',
+        icon: '⇄',
+      },
+      {
+        id: 'analytics',
+        title: 'Cash Flow',
+        subtitle: '50/30/20 burn rate & monthly surplus',
+        icon: '👛',
+      },
+      {
+        id: 'budgets',
+        title: 'Budgets',
+        subtitle: 'Category spending envelopes & daily caps',
+        icon: '◔',
+      },
+    ],
   },
   {
-    id: 'reconciliation',
-    title: 'Control Centre & Reconciliation',
-    subtitle: 'Discrepancy queue, settlement & Merkle audit',
-    icon: '⚖️',
-    badge: '2 Discrepancies',
-    badgeType: 'alert',
+    title: 'INVESTMENTS & REPORTS',
+    items: [
+      {
+        id: 'investments',
+        title: 'Investments',
+        subtitle: 'Multi-asset portfolio & allocation lots',
+        icon: '📈',
+      },
+      {
+        id: 'reports',
+        title: 'Reports',
+        subtitle: 'Balance sheet, assets vs liabilities & P&L',
+        icon: '📄',
+        badge: '₹75.38L',
+        badgeType: 'success',
+      },
+    ],
   },
   {
-    id: 'documents',
-    title: 'Document Vault & OCR Parser',
-    subtitle: 'CAMS CAS, bank statements & arithmetic proofs',
-    icon: '📁',
-    badge: '3 Statements',
+    title: 'PLANNING & INTELLIGENCE',
+    items: [
+      {
+        id: 'goals',
+        title: 'Goals',
+        subtitle: 'Strategic milestone trackers & projections',
+        icon: '🎯',
+      },
+      {
+        id: 'copilot',
+        title: 'Financial Copilot',
+        subtitle: 'Autonomous advisory & scenario simulation',
+        icon: '✨',
+        badge: 'AI',
+        badgeType: 'success',
+      },
+      {
+        id: 'household',
+        title: 'Household',
+        subtitle: 'Multi-member envelopes & family wealth',
+        icon: '👥',
+        badge: 'Shared',
+        badgeType: 'success',
+      },
+      {
+        id: 'documents',
+        title: 'Documents',
+        subtitle: 'Statement OCR parser & audit vault',
+        icon: '📁',
+        badge: '3 Stmts',
+      },
+    ],
   },
   {
-    id: 'household',
-    title: 'Household & Shared Wealth',
-    subtitle: 'Multi-member envelopes, shared goals & allocations',
-    icon: '👥',
-    badge: '3 Members',
-  },
-  {
-    id: 'settings',
-    title: 'Security & Hardware Custody',
-    subtitle: 'Biometric KeyStore, active sessions & audit log',
-    icon: '🛡️',
-    badge: 'Hardware Lock',
-    badgeType: 'success',
+    title: 'PREFERENCES',
+    items: [
+      {
+        id: 'settings',
+        title: 'Security & Audit',
+        subtitle: 'Hardware Enclave & immutable audit trails',
+        icon: '🔒',
+        badge: 'KeyStore',
+        badgeType: 'success',
+      },
+      {
+        id: 'settings',
+        title: 'Workspace Settings',
+        subtitle: 'Tenant configuration & entity switching',
+        icon: '⚙️',
+      },
+    ],
   },
 ];
 
@@ -159,61 +239,65 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
               })}
             </View>
 
-            {/* Enterprise Modules Navigation */}
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionLabel}>ENTERPRISE FINANCIAL MODULES</Text>
-            </View>
+            {/* All Categorized Navigation Sections (Matching Web Sidebar) */}
+            {NAV_SECTIONS.map((section, sIdx) => (
+              <View key={section.title} style={sIdx > 0 ? styles.sectionSpacing : undefined}>
+                <View style={styles.sectionHeaderRow}>
+                  <Text style={styles.sectionLabel}>{section.title}</Text>
+                </View>
 
-            <View style={styles.menuContainer}>
-              {MENU_ITEMS.map((item) => {
-                const isActive = activeScreen === item.id;
-                return (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[styles.menuItemRow, isActive && styles.menuItemRowActive]}
-                    onPress={() => {
-                      onSelectScreen(item.id);
-                      onClose();
-                    }}
-                    activeOpacity={0.7}
-                  >
-                    <View style={styles.menuIconBox}>
-                      <Text style={styles.menuIconText}>{item.icon}</Text>
-                    </View>
+                <View style={styles.menuContainer}>
+                  {section.items.map((item, iIdx) => {
+                    const isActive = activeScreen === item.id;
+                    return (
+                      <TouchableOpacity
+                        key={`${item.id}-${iIdx}`}
+                        style={[styles.menuItemRow, isActive && styles.menuItemRowActive]}
+                        onPress={() => {
+                          onSelectScreen(item.id);
+                          onClose();
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.menuIconBox}>
+                          <Text style={styles.menuIconText}>{item.icon}</Text>
+                        </View>
 
-                    <View style={styles.menuContentCol}>
-                      <View style={styles.menuTitleRow}>
-                        <Text style={[styles.menuTitle, isActive && styles.menuTitleActive]}>
-                          {item.title}
-                        </Text>
-                        {item.badge && (
-                          <View
-                            style={[
-                              styles.menuBadge,
-                              item.badgeType === 'alert' && styles.menuBadgeAlert,
-                              item.badgeType === 'success' && styles.menuBadgeSuccess,
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.menuBadgeText,
-                                item.badgeType === 'alert' && styles.menuBadgeTextAlert,
-                                item.badgeType === 'success' && styles.menuBadgeTextSuccess,
-                              ]}
-                            >
-                              {item.badge}
+                        <View style={styles.menuContentCol}>
+                          <View style={styles.menuTitleRow}>
+                            <Text style={[styles.menuTitle, isActive && styles.menuTitleActive]}>
+                              {item.title}
                             </Text>
+                            {item.badge && (
+                              <View
+                                style={[
+                                  styles.menuBadge,
+                                  item.badgeType === 'alert' && styles.menuBadgeAlert,
+                                  item.badgeType === 'success' && styles.menuBadgeSuccess,
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.menuBadgeText,
+                                    item.badgeType === 'alert' && styles.menuBadgeTextAlert,
+                                    item.badgeType === 'success' && styles.menuBadgeTextSuccess,
+                                  ]}
+                                >
+                                  {item.badge}
+                                </Text>
+                              </View>
+                            )}
                           </View>
-                        )}
-                      </View>
-                      <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
-                    </View>
+                          <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
+                        </View>
 
-                    <Text style={styles.menuChevron}>›</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+                        <Text style={styles.menuChevron}>›</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
 
             {/* System Security / Ledger Assurance Strip */}
             <View style={styles.assuranceCard}>
@@ -347,6 +431,9 @@ const styles = StyleSheet.create({
   },
   sectionHeaderRow: {
     marginBottom: 10,
+  },
+  sectionSpacing: {
+    marginTop: 18,
   },
   sectionLabel: {
     fontSize: 11,

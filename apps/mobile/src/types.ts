@@ -2,11 +2,15 @@ export type TabType = 'overview' | 'accounts' | 'investments' | 'budgets' | 'cop
 
 export type HubViewType =
   | 'net-worth'
+  | 'reports'
   | 'analytics'
   | 'reconciliation'
   | 'documents'
   | 'household'
-  | 'settings';
+  | 'settings'
+  | 'transactions'
+  | 'goals'
+  | 'security';
 
 export type ActiveScreen = TabType | HubViewType;
 
