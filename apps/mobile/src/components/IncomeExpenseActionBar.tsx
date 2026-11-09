@@ -62,7 +62,7 @@ export const IncomeExpenseActionBar: React.FC<IncomeExpenseActionBarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     marginTop: 14,
   },
   actionRow: {

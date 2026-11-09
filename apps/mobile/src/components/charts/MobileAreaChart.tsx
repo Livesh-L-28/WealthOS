@@ -18,7 +18,6 @@ import Svg, {
 } from 'react-native-svg';
 import { theme } from '../../theme';
 import { formatINR } from '../../formatters';
-import { DashboardPeriod } from '../../types';
 
 export interface AreaPoint {
   label: string;
@@ -76,7 +75,7 @@ const HISTORICAL_SERIES: Record<string, AreaPoint[]> = {
 const WATERFALL_STEPS: WaterfallStep[] = [
   { label: 'Oct 10 Net', sublabel: 'Starting Net Worth', amount: 7195050, isTotal: true, color: '#475569' },
   { label: 'Income', sublabel: 'Salary & Inflows', amount: 212000, color: '#16A36A' },
-  { label: 'Expenses', sublabel: 'Living Costs & Burn', amount: -151550, color: '#DC5B5B' },
+  { label: 'Expenses', sublabel: 'Living Costs & Burn', amount: -151550, color: '#DC2626' },
   { label: 'Market Gains', sublabel: 'Unrealized MF/Equity Gains', amount: 324401.25, color: '#16A36A' },
   { label: 'Debt EMI', sublabel: 'Principal Amortization', amount: -42000, color: '#D99A32' },
   { label: 'Nov 08 Net', sublabel: 'Current Reconciled Net', amount: 7537901.25, isTotal: true, color: '#087A50' },
@@ -100,7 +99,9 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
 }) => {
   const [period, setPeriod] = useState<string>('1M');
   const [viewMode, setViewMode] = useState<'trend' | 'waterfall'>('trend');
-  const [chartWidth, setChartWidth] = useState<number>(Dimensions.get('window').width - 32);
+  const [chartWidth, setChartWidth] = useState<number>(
+    Math.max(280, Dimensions.get('window').width - 64)
+  );
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const series = HISTORICAL_SERIES[period] || HISTORICAL_SERIES['1M'];
@@ -110,16 +111,16 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
   const growthPct = (growth / startVal) * 100;
 
   const onLayout = (e: LayoutChangeEvent) => {
-    const w = e.nativeEvent.layout.width;
-    if (w > 0 && Math.abs(w - chartWidth) > 5) {
-      setChartWidth(w);
+    const cardContentW = e.nativeEvent.layout.width - 32; // account for card padding
+    if (cardContentW > 0 && Math.abs(cardContentW - chartWidth) > 5) {
+      setChartWidth(cardContentW);
     }
   };
 
-  // Dimensions
+  // Geometry
   const height = 180;
-  const paddingLeft = 46;
-  const paddingRight = 14;
+  const paddingLeft = 44;
+  const paddingRight = 12;
   const paddingTop = 16;
   const paddingBottom = 26;
 
@@ -166,10 +167,10 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
           <View style={styles.titleWithBadge}>
             <Text style={styles.title}>NET WORTH TRAJECTORY</Text>
             <View style={styles.actualBadge}>
-              <Text style={styles.actualText}>ACTUAL</Text>
+              <Text style={styles.actualText}>DOUBLE-ENTRY</Text>
             </View>
           </View>
-          <Text style={styles.subtitle}>Grounded in Double-Entry General Journal</Text>
+          <Text style={styles.subtitle}>Verified Against General Journal</Text>
         </View>
 
         <View style={styles.modeToggleGroup}>
@@ -231,8 +232,8 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
             <Svg width={chartWidth} height={height}>
               <Defs>
                 <LinearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0%" stopColor="#16A36A" stopOpacity="0.32" />
-                  <Stop offset="70%" stopColor="#16A36A" stopOpacity="0.08" />
+                  <Stop offset="0%" stopColor="#16A36A" stopOpacity="0.35" />
+                  <Stop offset="65%" stopColor="#16A36A" stopOpacity="0.09" />
                   <Stop offset="100%" stopColor="#16A36A" stopOpacity="0.0" />
                 </LinearGradient>
               </Defs>
@@ -253,7 +254,7 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
                     />
                     <SvgText
                       x={paddingLeft - 6}
-                      y={y + 3}
+                      y={y + 3.5}
                       fill="#758078"
                       fontSize={9.5}
                       fontWeight="600"
@@ -274,22 +275,36 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
                   d={curvePath}
                   fill="none"
                   stroke="#16A36A"
-                  strokeWidth={2.5}
+                  strokeWidth={2.8}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               ) : null}
 
+              {/* Crosshair when item selected */}
+              {selectedIndex !== null && (
+                <Line
+                  x1={getX(selectedIndex)}
+                  y1={paddingTop}
+                  x2={getX(selectedIndex)}
+                  y2={areaBottom}
+                  stroke="#16A36A"
+                  strokeWidth={1.5}
+                  strokeDasharray="3 3"
+                />
+              )}
+
               {/* Data Points */}
               {points.map((pt, idx) => {
                 const isSelected = selectedIndex === idx;
+                const isLatest = idx === points.length - 1;
                 return (
                   <Circle
                     key={idx}
                     cx={pt.x}
                     cy={pt.y}
-                    r={isSelected ? 5.5 : 3}
-                    fill="#FFFFFF"
+                    r={isSelected ? 6 : isLatest ? 4.5 : 3.2}
+                    fill={isLatest ? '#16A36A' : '#FFFFFF'}
                     stroke="#16A36A"
                     strokeWidth={isSelected ? 3 : 2}
                   />
@@ -306,7 +321,7 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
                     y={height - 6}
                     fill={selectedIndex === idx ? '#16A36A' : '#758078'}
                     fontSize={9.5}
-                    fontWeight={selectedIndex === idx ? '700' : '500'}
+                    fontWeight={selectedIndex === idx ? '800' : '600'}
                     textAnchor="middle"
                   >
                     {s.label}
@@ -355,7 +370,7 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
       {/* View Mode 2: Waterfall Attribution Bridge */}
       {viewMode === 'waterfall' && (
         <View style={styles.waterfallContainer}>
-          <Text style={styles.waterfallTitle}>MoM Net Worth Attribution Bridge</Text>
+          <Text style={styles.waterfallTitle}>MoM Net Worth Movement Attribution</Text>
           {WATERFALL_STEPS.map((step, idx) => {
             const isPos = step.amount >= 0;
             return (
@@ -392,17 +407,17 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 16,
     marginHorizontal: 16,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: 'rgba(22, 163, 106, 0.25)',
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.05,
     shadowRadius: 6,
-    elevation: 2,
+    elevation: 3,
   },
   headerRow: {
     flexDirection: 'row',
@@ -427,7 +442,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   actualText: {
-    fontSize: 9,
+    fontSize: 8.5,
     fontWeight: '800',
     color: theme.colors.primaryDark,
   },
@@ -473,11 +488,10 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   kpiAmount: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 25,
+    fontWeight: '900',
     color: theme.colors.textPrimary,
-    fontFamily: theme.typography.monoFont,
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
   },
   growthRow: {
     flexDirection: 'row',
@@ -510,12 +524,12 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceElevated,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 7,
+    paddingHorizontal: 9,
+    paddingVertical: 4.5,
+    borderRadius: 8,
   },
   sheetBtnText: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '700',
     color: theme.colors.primaryDark,
   },
@@ -599,7 +613,6 @@ const styles = StyleSheet.create({
   waterfallAmount: {
     fontSize: 12,
     fontWeight: '800',
-    fontFamily: theme.typography.monoFont,
   },
   waterfallTotal: {
     color: theme.colors.textPrimary,
@@ -608,6 +621,6 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryDark,
   },
   waterfallNeg: {
-    color: theme.colors.danger,
+    color: '#DC2626',
   },
 });

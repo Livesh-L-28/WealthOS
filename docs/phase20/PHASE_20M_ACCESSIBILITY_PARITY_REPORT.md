@@ -31,3 +31,4 @@
 | **Touch Target Size** | Minimum 44 x 44 dp | Center Add button is 44x44dp; bottom nav tabs are 46dp high; hero buttons >= 44dp. | **PASS** |
 | **Dynamic Type / Scaling**| Responds to system font size | Text styles use relative point scaling without fixed container height truncation. | **PASS** |
 | **Color Independence** | Do not rely solely on color | Statuses include text descriptions (`+₹60,450 Surplus`, `-₹14,250 Deficit`, `100% Consumed`). | **PASS** |
+

@@ -83,3 +83,4 @@
 - **Flow:** User adds transaction on Mobile $\rightarrow$ opens Web $\rightarrow$ verifies record exists in General Journal $\rightarrow$ modifies budget on Web $\rightarrow$ opens Mobile $\rightarrow$ verifies budget cap is updated.
 - **Verification:** Both clients point to the same backend REST API endpoints and database ledger. Data convergence is mathematical and deterministic ($\Delta = ₹0.00$).
 - **Status:** **VERIFIED (PASS)**
+

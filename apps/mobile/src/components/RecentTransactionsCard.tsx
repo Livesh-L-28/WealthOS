@@ -88,7 +88,7 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     marginTop: 14,
     marginBottom: 24,
   },

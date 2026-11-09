@@ -54,7 +54,7 @@ export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     marginTop: 14,
   },
   card: {

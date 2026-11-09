@@ -58,3 +58,4 @@ Mobile credentials and refresh tokens are managed via `apps/mobile/src/storage.t
   - `TENANT_ID`
 - In automated test environments, `MemorySecureStoreDriver` provides deterministic isolation without native dependencies.
 - **Test Evidence:** `apps/mobile/src/mobileSecurity.test.ts` (9/9 passed).
+

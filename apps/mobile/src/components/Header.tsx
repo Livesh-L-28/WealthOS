@@ -25,15 +25,15 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <View style={styles.header}>
-      {/* Left: Brand Identity & Enterprise Hub Trigger */}
+      {/* Left: Brand Identity & Enterprise Workspace Dropdown Trigger */}
       <TouchableOpacity
         style={styles.brandRow}
         onPress={onOpenHub}
-        activeOpacity={0.7}
-        accessibilityLabel="Open Enterprise Hub Menu"
+        activeOpacity={0.75}
+        accessibilityLabel="Open Workspace and Enterprise Menu"
       >
         <View style={styles.logoBadge}>
-          <Text style={styles.logoText}>LJ</Text>
+          <Text style={styles.logoText}>W</Text>
         </View>
         <View style={styles.brandTextCol}>
           <View style={styles.titleWithPill}>
@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
           <View style={styles.syncRow}>
             <View style={[styles.syncDot, isSyncing && styles.syncDotPulse]} />
             <Text style={styles.syncText}>
-              {isSyncing ? 'Synchronizing...' : 'Double-Entry In Balance'}
+              {isSyncing ? 'Synchronizing...' : 'Ledger In Balance'}
             </Text>
           </View>
         </View>
@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
             accessibilityLabel="Open AI Copilot"
           >
             <Text style={styles.copilotHeaderIcon}>✨</Text>
-            <Text style={styles.copilotHeaderText}>AI</Text>
+            <Text style={styles.copilotHeaderText}>Copilot</Text>
           </TouchableOpacity>
         )}
 
@@ -97,23 +97,24 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: theme.colors.surface,
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 12,
+    paddingTop: 8,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 56,
   },
   brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   logoBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 11,
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -125,8 +126,9 @@ const styles = StyleSheet.create({
   },
   logoText: {
     color: theme.colors.textWhite,
-    fontSize: 14,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
   brandTextCol: {
     justifyContent: 'center',
@@ -134,13 +136,13 @@ const styles = StyleSheet.create({
   titleWithPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   brandTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
     color: theme.colors.textPrimary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
   },
   brandAccent: {
     color: theme.colors.primary,
@@ -152,15 +154,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceElevated,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: 7,
   },
   workspacePillText: {
-    fontSize: 9.5,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: '800',
     color: theme.colors.textSecondary,
-    letterSpacing: 0.4,
+    letterSpacing: 0.3,
   },
   workspacePillArrow: {
     fontSize: 8,
@@ -169,7 +171,7 @@ const styles = StyleSheet.create({
   syncRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     marginTop: 2,
   },
   syncDot: {
@@ -182,25 +184,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#F59E0B',
   },
   syncText: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '600',
     color: theme.colors.textSecondary,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 7,
   },
   copilotHeaderBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    backgroundColor: theme.colors.surfaceElevated,
+    gap: 4,
+    backgroundColor: '#F0FDF4',
     borderWidth: 1,
-    borderColor: 'rgba(22, 163, 106, 0.35)',
-    paddingHorizontal: 8,
+    borderColor: 'rgba(22, 163, 106, 0.4)',
+    paddingHorizontal: 9,
     paddingVertical: 6,
     borderRadius: 10,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
   copilotHeaderIcon: {
     fontSize: 12,
@@ -231,7 +238,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: theme.colors.danger,
+    backgroundColor: theme.colors.primary,
     borderWidth: 1,
     borderColor: theme.colors.surface,
   },

@@ -47,3 +47,4 @@ Evaluated on Android Standalone Build (Expo SDK 52 / React Native 0.76.9):
   - FIFO lot reconciliation (`/api/v1/investments/lots`): `< 32ms`
 - **Database Connection Pooling:** Async pooling via `asyncpg` with zero leaked connections.
 - **Query Optimization:** All tenant lookups utilize indexed foreign keys (`tenant_id`, `created_at`, `account_id`) with zero unindexed table scans on large tables.
+

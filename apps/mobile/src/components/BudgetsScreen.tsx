@@ -12,6 +12,25 @@ interface BudgetsScreenProps {
   onAddGoal?: () => void;
 }
 
+const CATEGORY_EMOJIS: Record<string, string> = {
+  'Housing & EMI': '🏠',
+  'Food & Groceries': '🛒',
+  'Transportation & Fuel': '⛽',
+  'Utilities & Telecom': '⚡',
+  'Discretionary & Dining': '🍽️',
+  'Investments & SIPs': '📈',
+  'Healthcare': '💊',
+  'Travel': '✈️',
+  'Shopping': '🛍️',
+};
+
+const GOAL_EMOJIS: Record<string, string> = {
+  'Villa Down Payment Fund': '🏡',
+  'Emergency Liquid Reserve': '🛡️',
+  'Child Higher Education': '🎓',
+  'Retirement Freedom Corpus': '🏖️',
+};
+
 export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   budgets,
   goals,
@@ -26,23 +45,50 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
   const remainingBuffer = totalBudgeted - totalSpent;
   const utilizationPct = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
+  const daysRemainingInMonth = 21; // MTD cycle projection
+  const safeDailySpend = remainingBuffer > 0 ? Math.round(remainingBuffer / daysRemainingInMonth) : 0;
 
   return (
     <View style={styles.container}>
-      {/* Monthly Utilization Hero */}
+      {/* 1. Monthly Budget Cockpit Utilization Card */}
       <View style={styles.utilizationCard}>
         <View style={styles.cardHeaderRow}>
-          <Text style={styles.cardLabel}>MONTHLY BUDGET UTILIZATION</Text>
-          <View style={styles.pctBadge}>
-            <Text style={styles.pctBadgeText}>{utilizationPct.toFixed(0)}% USED</Text>
+          <View style={styles.cardHeaderLeft}>
+            <Text style={styles.cardLabel}>MONTHLY BUDGET UTILIZATION</Text>
+            <Text style={styles.cycleSubtext}>Cycle: Nov 01 – Nov 30 (21 days left)</Text>
+          </View>
+          <View
+            style={[
+              styles.pctBadge,
+              utilizationPct > 95
+                ? styles.pctBadgeDanger
+                : utilizationPct > 80
+                ? styles.pctBadgeWarning
+                : styles.pctBadgeNormal,
+            ]}
+          >
+            <Text
+              style={[
+                styles.pctBadgeText,
+                utilizationPct > 95
+                  ? styles.pctTextDanger
+                  : utilizationPct > 80
+                  ? styles.pctTextWarning
+                  : styles.pctTextNormal,
+              ]}
+            >
+              {utilizationPct.toFixed(1)}% USED
+            </Text>
           </View>
         </View>
 
-        <Text style={styles.bigSpentVal}>
-          {formatINR(totalSpent)}
+        {/* Big Consumed Value */}
+        <View style={styles.amountDisplayRow}>
+          <Text style={styles.bigSpentVal}>{formatINR(totalSpent)}</Text>
           <Text style={styles.totalBudgetedText}> / {formatINR(totalBudgeted)}</Text>
-        </Text>
+        </View>
 
+        {/* Dual-Tone Capsule Progress Track */}
         <View style={styles.mainProgressTrack}>
           <View
             style={[
@@ -51,31 +97,47 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                 width: `${Math.min(100, utilizationPct)}%`,
                 backgroundColor:
                   utilizationPct > 95
-                    ? theme.colors.negative
+                    ? '#DC2626'
                     : utilizationPct > 80
-                    ? theme.colors.warning
-                    : theme.colors.primary,
+                    ? '#F59E0B'
+                    : '#16A36A',
               },
             ]}
           />
         </View>
 
-        <Text style={styles.bufferHelpText}>
-          {formatINR(remainingBuffer)} safe remaining spend for this monthly cycle.
-        </Text>
+        {/* Safe Remaining Metrics Strip */}
+        <View style={styles.safeStrip}>
+          <View style={styles.safeStripItem}>
+            <Text style={styles.safeStripLabel}>Safe Remaining Spend</Text>
+            <Text style={styles.safeStripValue}>
+              {formatINR(Math.max(0, remainingBuffer))}
+            </Text>
+          </View>
+          <View style={styles.safeStripDivider} />
+          <View style={styles.safeStripItem}>
+            <Text style={styles.safeStripLabel}>Recommended Daily Cap</Text>
+            <Text style={styles.safeStripDaily}>
+              {formatINR(safeDailySpend)} / day
+            </Text>
+          </View>
+        </View>
       </View>
 
-      {/* Spending Envelopes Section */}
+      {/* 2. Monthly Spending Envelopes Section */}
       <View style={styles.sectionHeaderRow}>
-        <Text style={styles.sectionHeaderTitle}>MONTHLY SPENDING ENVELOPES</Text>
-        <View style={{ flexDirection: 'row', gap: 6 }}>
+        <View>
+          <Text style={styles.sectionHeaderTitle}>MONTHLY SPENDING ENVELOPES</Text>
+          <Text style={styles.sectionHeaderSub}>Zero-based envelope accounting with live burn</Text>
+        </View>
+        <View style={styles.headerButtonsRow}>
           {onAddEnvelope && (
             <TouchableOpacity
               style={styles.addSmallPillSecondary}
               onPress={onAddEnvelope}
               activeOpacity={0.7}
             >
-              <Text style={styles.addSmallPillSecondaryText}>+ New Envelope</Text>
+              <Text style={styles.addSmallPillSecondaryText}>+ Envelope</Text>
             </TouchableOpacity>
           )}
           {onAddTransaction && (
@@ -84,7 +146,7 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
               onPress={onAddTransaction}
               activeOpacity={0.7}
             >
-              <Text style={styles.addSmallPillText}>+ Log Expense</Text>
+              <Text style={styles.addSmallPillText}>+ Log Spend</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -93,56 +155,95 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
       <View style={styles.envelopesList}>
         {budgets.map((env) => {
           const pct = Math.min(100, (env.spent / env.budgeted) * 100);
-          const isWarning = pct > 90;
+          const isOver = env.spent >= env.budgeted;
+          const isWarning = !isOver && pct >= 85;
+          const remaining = Math.max(0, env.budgeted - env.spent);
+          const emoji = CATEGORY_EMOJIS[env.category] || '📦';
+
           return (
             <TouchableOpacity
               key={env.id}
-              style={styles.envelopeCard}
+              style={[styles.envelopeCard, isOver && styles.envelopeCardOver]}
               onPress={() => setSelectedEnv(env)}
               activeOpacity={0.8}
             >
               <View style={styles.envelopeTop}>
+                {/* Category Avatar & Title */}
                 <View style={styles.categoryTitleRow}>
-                  <View style={[styles.categoryColorDot, { backgroundColor: env.color }]} />
-                  <Text style={styles.categoryName}>{env.category}</Text>
+                  <View style={[styles.categoryAvatar, { backgroundColor: `${env.color}18` }]}>
+                    <Text style={styles.categoryAvatarEmoji}>{emoji}</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.categoryName}>{env.category}</Text>
+                    <Text style={styles.envelopeSubtext}>
+                      {isOver ? 'Limit reached' : `${formatINR(remaining)} buffer`}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={styles.envelopeRatio}>
-                  {formatINR(env.spent)}
-                  <Text style={styles.envelopeAllocated}> / {formatINR(env.budgeted)}</Text>
-                </Text>
+
+                {/* Amounts Ratio */}
+                <View style={styles.ratioCol}>
+                  <Text style={styles.envelopeRatio}>
+                    {formatINR(env.spent)}
+                    <Text style={styles.envelopeAllocated}> / {formatINR(env.budgeted)}</Text>
+                  </Text>
+                  <View
+                    style={[
+                      styles.envPctBadge,
+                      isOver
+                        ? styles.envPctBadgeDanger
+                        : isWarning
+                        ? styles.envPctBadgeWarning
+                        : styles.envPctBadgeNormal,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.envPctBadgeText,
+                        isOver
+                          ? styles.pctTextDanger
+                          : isWarning
+                          ? styles.pctTextWarning
+                          : styles.pctTextNormal,
+                      ]}
+                    >
+                      {pct.toFixed(0)}%
+                    </Text>
+                  </View>
+                </View>
               </View>
 
+              {/* Progress Bar Capsule */}
               <View style={styles.envelopeProgressTrack}>
                 <View
                   style={[
                     styles.envelopeProgressFill,
                     {
                       width: `${pct}%`,
-                      backgroundColor:
-                        pct >= 100
-                          ? theme.colors.negative
-                          : isWarning
-                          ? theme.colors.warning
-                          : theme.colors.primary,
+                      backgroundColor: isOver ? '#DC2626' : isWarning ? '#F59E0B' : env.color,
                     },
                   ]}
                 />
               </View>
 
+              {/* Envelope Footer */}
               <View style={styles.envelopeFooter}>
-                <Text style={styles.envelopePctText}>{pct.toFixed(0)}% consumed</Text>
-                <Text style={styles.envelopeRemText}>
-                  {formatINR(Math.max(0, env.budgeted - env.spent))} left ›
+                <Text style={[styles.envelopeRemText, isOver && styles.envelopeRemTextOver]}>
+                  {isOver ? '⚠️ 100% budget consumed' : `${formatINR(remaining)} remaining safe spend`}
                 </Text>
+                <Text style={styles.envelopeActionText}>Details ›</Text>
               </View>
             </TouchableOpacity>
           );
         })}
       </View>
 
-      {/* Strategic Financial Goals */}
+      {/* 3. Strategic Financial Goals */}
       <View style={styles.sectionHeaderRow}>
-        <Text style={styles.sectionHeaderTitle}>STRATEGIC FINANCIAL GOALS</Text>
+        <View>
+          <Text style={styles.sectionHeaderTitle}>STRATEGIC FINANCIAL GOALS</Text>
+          <Text style={styles.sectionHeaderSub}>Target wealth milestones & capital allocation</Text>
+        </View>
         {onAddGoal && (
           <TouchableOpacity
             style={styles.addSmallPill}
@@ -157,6 +258,9 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
       <View style={styles.goalsList}>
         {goals.map((goal) => {
           const goalPct = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
+          const shortfall = Math.max(0, goal.targetAmount - goal.currentAmount);
+          const emoji = GOAL_EMOJIS[goal.title] || '🎯';
+
           return (
             <TouchableOpacity
               key={goal.id}
@@ -165,7 +269,15 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
               activeOpacity={0.8}
             >
               <View style={styles.goalTopRow}>
-                <Text style={styles.goalTitle}>{goal.title}</Text>
+                <View style={styles.goalTitleWrap}>
+                  <View style={styles.goalAvatar}>
+                    <Text style={styles.goalAvatarEmoji}>{emoji}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.goalTitle} numberOfLines={1}>{goal.title}</Text>
+                    <Text style={styles.goalShortfallText}>Shortfall: {formatINR(shortfall)}</Text>
+                  </View>
+                </View>
                 <View style={styles.targetYearBadge}>
                   <Text style={styles.targetYearText}>Target: {goal.targetYear}</Text>
                 </View>
@@ -175,15 +287,16 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                 <Text style={styles.goalCurrentVal}>{formatINR(goal.currentAmount)}</Text>
                 <Text style={styles.goalTargetVal}>of {formatINR(goal.targetAmount)}</Text>
                 <View style={styles.goalPctPill}>
-                  <Text style={styles.goalPctPillText}>{goalPct.toFixed(0)}%</Text>
+                  <Text style={styles.goalPctPillText}>{goalPct.toFixed(0)}% FUNDED</Text>
                 </View>
               </View>
 
+              {/* Goal Progress Capsule */}
               <View style={styles.goalProgressTrack}>
                 <View
                   style={[
                     styles.goalProgressFill,
-                    { width: `${goalPct}%`, backgroundColor: theme.colors.primary },
+                    { width: `${goalPct}%`, backgroundColor: '#16A36A' },
                   ]}
                 />
               </View>
@@ -204,8 +317,15 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
             <View style={styles.detailModalBox}>
               <View style={styles.modalBar} />
               <View style={styles.modalHeaderRow}>
-                <View style={[styles.categoryColorDotLarge, { backgroundColor: selectedEnv.color }]} />
-                <Text style={styles.detailModalTitle}>{selectedEnv.category} Envelope</Text>
+                <View style={[styles.categoryAvatarLarge, { backgroundColor: `${selectedEnv.color}20` }]}>
+                  <Text style={styles.categoryAvatarLargeEmoji}>
+                    {CATEGORY_EMOJIS[selectedEnv.category] || '📦'}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={styles.detailModalTitle}>{selectedEnv.category}</Text>
+                  <Text style={styles.detailModalSub}>Monthly Budget Envelope</Text>
+                </View>
               </View>
 
               <View style={styles.detailMetricGrid}>
@@ -215,14 +335,14 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                 </View>
                 <View style={styles.detailMetricCol}>
                   <Text style={styles.detailMetricLabel}>ACTUAL SPENT</Text>
-                  <Text style={[styles.detailMetricValue, { color: theme.colors.danger }]}>
+                  <Text style={[styles.detailMetricValue, { color: '#DC2626' }]}>
                     {formatINR(selectedEnv.spent)}
                   </Text>
                 </View>
               </View>
 
               <View style={styles.safeRemainingBox}>
-                <Text style={styles.safeRemainingLabel}>Remaining Safe Spend:</Text>
+                <Text style={styles.safeRemainingLabel}>Safe Remaining Spend:</Text>
                 <Text style={styles.safeRemainingValue}>
                   {formatINR(Math.max(0, selectedEnv.budgeted - selectedEnv.spent))}
                 </Text>
@@ -272,7 +392,7 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
               <View style={styles.detailMetricGrid}>
                 <View style={styles.detailMetricCol}>
                   <Text style={styles.detailMetricLabel}>SAVED SO FAR</Text>
-                  <Text style={[styles.detailMetricValue, { color: theme.colors.primary }]}>
+                  <Text style={[styles.detailMetricValue, { color: '#16A36A' }]}>
                     {formatINR(selectedGoal.currentAmount)}
                   </Text>
                 </View>
@@ -308,84 +428,188 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 24,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 28,
   },
   utilizationCard: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: 20,
+    padding: 18,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: 'rgba(22, 163, 106, 0.25)',
     shadowColor: theme.colors.textPrimary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
     marginBottom: 16,
   },
   cardHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 10,
+  },
+  cardHeaderLeft: {
+    flex: 1,
   },
   cardLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  pctBadge: {
-    backgroundColor: theme.colors.primaryLightSolid,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 5,
-  },
-  pctBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: theme.colors.primaryDark,
-  },
-  bigSpentVal: {
-    fontSize: 22,
+    fontSize: 11,
     fontWeight: '800',
     color: theme.colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  cycleSubtext: {
+    fontSize: 10,
+    color: theme.colors.textTertiary,
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  pctBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 7,
+  },
+  pctBadgeNormal: {
+    backgroundColor: '#DCFCE7',
+  },
+  pctBadgeWarning: {
+    backgroundColor: '#FEF3C7',
+  },
+  pctBadgeDanger: {
+    backgroundColor: '#FEE2E2',
+  },
+  pctBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  pctTextNormal: {
+    color: '#15803D',
+  },
+  pctTextWarning: {
+    color: '#B45309',
+  },
+  pctTextDanger: {
+    color: '#B91C1C',
+  },
+  amountDisplayRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 12,
+  },
+  bigSpentVal: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: theme.colors.textPrimary,
     fontVariant: ['tabular-nums'],
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
   },
   totalBudgetedText: {
-    fontSize: 14,
+    fontSize: 15,
     color: theme.colors.textSecondary,
     fontWeight: '600',
   },
   mainProgressTrack: {
-    height: 7,
-    backgroundColor: theme.colors.borderLight,
-    borderRadius: 3.5,
-    marginVertical: 10,
+    height: 10,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 5,
     overflow: 'hidden',
+    marginBottom: 14,
   },
   mainProgressFill: {
     height: '100%',
-    borderRadius: 3.5,
+    borderRadius: 5,
   },
-  bufferHelpText: {
-    fontSize: 11,
+  safeStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAF9',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+  },
+  safeStripItem: {
+    flex: 1,
+  },
+  safeStripLabel: {
+    fontSize: 9.5,
     color: theme.colors.textSecondary,
+    fontWeight: '600',
+  },
+  safeStripValue: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#087A50',
+    fontVariant: ['tabular-nums'],
+    marginTop: 2,
+  },
+  safeStripDaily: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    fontVariant: ['tabular-nums'],
+    marginTop: 2,
+  },
+  safeStripDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: theme.colors.border,
+    marginHorizontal: 12,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    marginTop: 6,
   },
   sectionHeaderTitle: {
-    fontSize: 10.5,
+    fontSize: 11,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  sectionHeaderSub: {
+    fontSize: 10,
+    color: theme.colors.textTertiary,
+    marginTop: 1,
+  },
+  headerButtonsRow: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  addSmallPill: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(22, 163, 106, 0.35)',
+  },
+  addSmallPillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#087A50',
+  },
+  addSmallPillSecondary: {
+    backgroundColor: theme.colors.surfaceElevated,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  addSmallPillSecondaryText: {
+    fontSize: 10,
     fontWeight: '700',
     color: theme.colors.textSecondary,
-    letterSpacing: 0.5,
-    marginBottom: 10,
-    marginTop: 4,
   },
   envelopesList: {
     gap: 10,
-    marginBottom: 16,
+    marginBottom: 18,
   },
   envelopeCard: {
     backgroundColor: theme.colors.surface,
@@ -393,63 +617,109 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    shadowColor: theme.colors.textPrimary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  envelopeCardOver: {
+    borderColor: 'rgba(220, 38, 38, 0.3)',
+    backgroundColor: '#FFFAFA',
   },
   envelopeTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   categoryTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 10,
+    flex: 1,
   },
-  categoryColorDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  categoryAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryAvatarEmoji: {
+    fontSize: 17,
   },
   categoryName: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
     color: theme.colors.textPrimary,
   },
+  envelopeSubtext: {
+    fontSize: 10,
+    color: theme.colors.textTertiary,
+    marginTop: 1,
+  },
+  ratioCol: {
+    alignItems: 'flex-end',
+    gap: 3,
+  },
   envelopeRatio: {
-    fontSize: 11.5,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
     color: theme.colors.textPrimary,
     fontVariant: ['tabular-nums'],
   },
   envelopeAllocated: {
-    color: theme.colors.textSecondary,
+    color: theme.colors.textTertiary,
     fontWeight: '500',
   },
+  envPctBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 5,
+  },
+  envPctBadgeNormal: {
+    backgroundColor: '#DCFCE7',
+  },
+  envPctBadgeWarning: {
+    backgroundColor: '#FEF3C7',
+  },
+  envPctBadgeDanger: {
+    backgroundColor: '#FEE2E2',
+  },
+  envPctBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+  },
   envelopeProgressTrack: {
-    height: 5,
-    backgroundColor: theme.colors.borderLight,
-    borderRadius: 2.5,
+    height: 7,
+    backgroundColor: '#EEF2EF',
+    borderRadius: 3.5,
     overflow: 'hidden',
-    marginVertical: 5,
+    marginVertical: 4,
   },
   envelopeProgressFill: {
     height: '100%',
-    borderRadius: 2.5,
+    borderRadius: 3.5,
   },
   envelopeFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 2,
-  },
-  envelopePctText: {
-    fontSize: 9.5,
-    color: theme.colors.textSecondary,
-    fontWeight: '600',
+    marginTop: 4,
   },
   envelopeRemText: {
-    fontSize: 9.5,
-    color: theme.colors.primaryDark,
+    fontSize: 10.5,
+    color: '#087A50',
+    fontWeight: '600',
+  },
+  envelopeRemTextOver: {
+    color: '#DC2626',
+    fontWeight: '700',
+  },
+  envelopeActionText: {
+    fontSize: 10,
+    color: theme.colors.textTertiary,
     fontWeight: '600',
   },
   goalsList: {
@@ -461,27 +731,54 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    shadowColor: theme.colors.textPrimary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
   },
   goalTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 8,
+  },
+  goalTitleWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    marginRight: 8,
+  },
+  goalAvatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: '#F0FDF4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  goalAvatarEmoji: {
+    fontSize: 16,
   },
   goalTitle: {
-    fontSize: 12.5,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
     color: theme.colors.textPrimary,
-    flex: 1,
+  },
+  goalShortfallText: {
+    fontSize: 10,
+    color: theme.colors.textTertiary,
+    marginTop: 1,
   },
   targetYearBadge: {
-    backgroundColor: '#F0F4F1',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
   targetYearText: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '700',
     color: theme.colors.textSecondary,
   },
@@ -492,73 +789,41 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   goalCurrentVal: {
-    fontSize: 14,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '900',
     color: theme.colors.textPrimary,
     fontVariant: ['tabular-nums'],
   },
   goalTargetVal: {
     fontSize: 11,
     color: theme.colors.textSecondary,
+    fontWeight: '500',
   },
   goalPctPill: {
-    backgroundColor: theme.colors.primaryLightSolid,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    borderRadius: 4,
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
     marginLeft: 'auto',
   },
   goalPctPillText: {
     fontSize: 9,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
+    color: '#087A50',
   },
   goalProgressTrack: {
-    height: 5,
-    backgroundColor: theme.colors.borderLight,
-    borderRadius: 2.5,
+    height: 7,
+    backgroundColor: '#EEF2EF',
+    borderRadius: 3.5,
     overflow: 'hidden',
   },
   goalProgressFill: {
     height: '100%',
-    borderRadius: 2.5,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-    marginTop: 4,
-  },
-  addSmallPill: {
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(22, 163, 106, 0.3)',
-  },
-  addSmallPillText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.primaryDark,
-  },
-  addSmallPillSecondary: {
-    backgroundColor: theme.colors.surfaceElevated,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  addSmallPillSecondaryText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
+    borderRadius: 3.5,
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(23, 35, 29, 0.55)',
+    backgroundColor: 'rgba(15, 23, 20, 0.55)',
     justifyContent: 'flex-end',
   },
   detailModalBox: {
@@ -579,18 +844,28 @@ const styles = StyleSheet.create({
   modalHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
+    gap: 12,
+    marginBottom: 12,
   },
-  categoryColorDotLarge: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+  categoryAvatarLarge: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  categoryAvatarLargeEmoji: {
+    fontSize: 22,
   },
   detailModalTitle: {
     fontSize: 18,
     fontWeight: '800',
     color: theme.colors.textPrimary,
+  },
+  detailModalSub: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    marginTop: 1,
   },
   detailModalSubtitle: {
     fontSize: 12,
@@ -641,7 +916,7 @@ const styles = StyleSheet.create({
   safeRemainingValue: {
     fontSize: 14,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
+    color: '#087A50',
   },
   modalPrimaryBtn: {
     backgroundColor: theme.colors.primary,

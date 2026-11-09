@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { theme } from '../../theme';
 import { formatINR } from '../../formatters';
@@ -15,8 +15,8 @@ export interface AssetAllocationSlice {
 
 const ALLOCATION_SLICES: AssetAllocationSlice[] = [
   { id: 'equity', label: 'Equities', pct: 42, amount: 1982400, color: '#16A36A', pnlPct: 24.2 },
-  { id: 'mf', label: 'Mutual Funds', pct: 36, amount: 1699200, color: '#6475D8', pnlPct: 15.8 },
-  { id: 'gold', label: 'Gold (SGB)', pct: 12, amount: 566400, color: '#D99A32', pnlPct: 11.4 },
+  { id: 'mf', label: 'Mutual Funds', pct: 36, amount: 1699200, color: '#6366F1', pnlPct: 15.8 },
+  { id: 'gold', label: 'Gold (SGB)', pct: 12, amount: 566400, color: '#F59E0B', pnlPct: 11.4 },
   { id: 'fixed', label: 'Fixed Income', pct: 10, amount: 472000, color: '#0D9488', pnlPct: 7.2 },
 ];
 
@@ -38,9 +38,10 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
 
   const activeSlice = ALLOCATION_SLICES.find((s) => s.id === selectedId) || null;
 
-  // Donut geometry
-  const size = 150;
-  const strokeWidth = 18;
+  // Responsive donut geometry
+  const windowW = Dimensions.get('window').width;
+  const size = Math.min(136, windowW * 0.35);
+  const strokeWidth = 16;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
@@ -66,7 +67,7 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
       {/* Donut and Center Metric Row */}
       <View style={styles.donutRow}>
         {/* SVG Donut */}
-        <View style={styles.donutWrapper}>
+        <View style={[styles.donutWrapper, { width: size, height: size }]}>
           <Svg width={size} height={size}>
             <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
               {ALLOCATION_SLICES.map((slice) => {
@@ -88,7 +89,7 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
                     strokeDasharray={strokeDasharray}
                     strokeDashoffset={strokeDashoffset}
                     strokeLinecap="round"
-                    opacity={selectedId ? (isSelected ? 1 : 0.45) : 1}
+                    opacity={selectedId ? (isSelected ? 1 : 0.4) : 1}
                   />
                 );
               })}
@@ -158,17 +159,17 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 16,
     marginHorizontal: 16,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: 'rgba(22, 163, 106, 0.25)',
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
-    elevation: 2,
+    elevation: 3,
   },
   headerRow: {
     flexDirection: 'row',
@@ -188,7 +189,7 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   pnlBadge: {
-    backgroundColor: theme.colors.primaryLightSolid,
+    backgroundColor: '#DCFCE7',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 7,
@@ -196,16 +197,14 @@ const styles = StyleSheet.create({
   pnlText: {
     fontSize: 10,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
+    color: '#087A50',
   },
   donutRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 12,
   },
   donutWrapper: {
-    width: 150,
-    height: 150,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
@@ -214,26 +213,25 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 90,
+    width: 84,
   },
   centerLabel: {
-    fontSize: 8.5,
+    fontSize: 8,
     fontWeight: '700',
     color: theme.colors.textTertiary,
     letterSpacing: 0.3,
   },
   centerValue: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: theme.colors.textPrimary,
-    fontFamily: theme.typography.monoFont,
     textAlign: 'center',
     marginTop: 1,
   },
   centerSub: {
-    fontSize: 8.5,
+    fontSize: 8,
     fontWeight: '700',
-    color: theme.colors.primaryDark,
+    color: '#087A50',
     marginTop: 1,
   },
   assetList: {
@@ -274,7 +272,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '600',
     color: theme.colors.textTertiary,
-    fontFamily: theme.typography.monoFont,
   },
   assetItemRight: {
     alignItems: 'flex-end',
@@ -283,12 +280,12 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     color: theme.colors.textPrimary,
-    fontFamily: theme.typography.monoFont,
+    fontVariant: ['tabular-nums'],
   },
   assetGain: {
     fontSize: 8.5,
     fontWeight: '700',
-    color: theme.colors.primaryDark,
+    color: '#087A50',
   },
   portfolioFooter: {
     marginTop: 12,

@@ -10,205 +10,184 @@ interface BottomNavProps {
   onAddEntry: () => void;
 }
 
-interface NavTabItem {
-  key: TabType;
-  label: string;
-  icon: string;
-  badge?: string;
-}
-
-const LEFT_TABS: NavTabItem[] = [
-  { key: 'overview', label: 'Overview', icon: '📊' },
-  { key: 'accounts', label: 'Accounts', icon: '🏦' },
-  { key: 'investments', label: 'Portfolio', icon: '📈' },
-];
-
-const RIGHT_TABS: NavTabItem[] = [
-  { key: 'budgets', label: 'Budgets', icon: '🎯' },
-  { key: 'copilot', label: 'Copilot', icon: '✨', badge: 'AI' },
-];
-
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeTab,
   onTabChange,
   onAddEntry,
 }) => {
   const insets = useSafeAreaInsets();
-  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 20 : 10);
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 22 : 12);
 
   return (
-    <View style={[styles.navBar, { paddingBottom: bottomInset }]}>
-      <View style={styles.navInner}>
-        {/* Left Tabs: Overview & Accounts */}
-        {LEFT_TABS.map((item) => {
-          const isActive = activeTab === item.key;
-          return (
-            <TouchableOpacity
-              key={item.key}
-              style={styles.navItem}
-              onPress={() => onTabChange(item.key)}
-              activeOpacity={0.7}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              accessibilityLabel={`${item.label} Tab`}
-            >
-              <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
-                <Text style={styles.navIcon}>{item.icon}</Text>
-                {item.badge && (
-                  <View style={styles.badgePill}>
-                    <Text style={styles.badgeText}>{item.badge}</Text>
-                  </View>
-                )}
-              </View>
-              <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
-                {item.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-
-        {/* Center Prominent Add Entry Action Button */}
+    <View style={[styles.navContainer, { paddingBottom: bottomInset }]}>
+      <View style={styles.dockRow}>
+        {/* Slot 1: Overview */}
         <TouchableOpacity
-          style={styles.centerAddWrap}
+          style={styles.navSlot}
+          onPress={() => onTabChange('overview')}
+          activeOpacity={0.7}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === 'overview' }}
+          accessibilityLabel="Overview Tab"
+        >
+          <View style={[styles.iconPill, activeTab === 'overview' && styles.iconPillActive]}>
+            <Text style={styles.iconEmoji}>📊</Text>
+          </View>
+          <Text style={[styles.navLabel, activeTab === 'overview' && styles.navLabelActive]}>
+            Overview
+          </Text>
+        </TouchableOpacity>
+
+        {/* Slot 2: Accounts & Ledger */}
+        <TouchableOpacity
+          style={styles.navSlot}
+          onPress={() => onTabChange('accounts')}
+          activeOpacity={0.7}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === 'accounts' }}
+          accessibilityLabel="Accounts Tab"
+        >
+          <View style={[styles.iconPill, activeTab === 'accounts' && styles.iconPillActive]}>
+            <Text style={styles.iconEmoji}>🏦</Text>
+          </View>
+          <Text style={[styles.navLabel, activeTab === 'accounts' && styles.navLabelActive]}>
+            Accounts
+          </Text>
+        </TouchableOpacity>
+
+        {/* Slot 3: Center Elevated Add Entry FAB */}
+        <TouchableOpacity
+          style={styles.centerFabSlot}
           onPress={onAddEntry}
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel="Add Entry"
+          accessibilityLabel="Add New Entry or Transaction"
         >
-          <View style={styles.centerAddButton}>
-            <Text style={styles.centerAddPlus}>+</Text>
+          <View style={styles.centerFabCircle}>
+            <Text style={styles.centerFabPlus}>+</Text>
           </View>
-          <Text style={styles.centerAddLabel}>Add Entry</Text>
+          <Text style={styles.centerFabLabel}>Add Entry</Text>
         </TouchableOpacity>
 
-        {/* Right Tabs: Budgets & Copilot */}
-        {RIGHT_TABS.map((item) => {
-          const isActive = activeTab === item.key;
-          return (
-            <TouchableOpacity
-              key={item.key}
-              style={styles.navItem}
-              onPress={() => onTabChange(item.key)}
-              activeOpacity={0.7}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              accessibilityLabel={`${item.label} Tab`}
-            >
-              <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
-                <Text style={styles.navIcon}>{item.icon}</Text>
-                {item.badge && (
-                  <View style={styles.badgePill}>
-                    <Text style={styles.badgeText}>{item.badge}</Text>
-                  </View>
-                )}
-              </View>
-              <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
-                {item.label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+        {/* Slot 4: Portfolio */}
+        <TouchableOpacity
+          style={styles.navSlot}
+          onPress={() => onTabChange('investments')}
+          activeOpacity={0.7}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === 'investments' }}
+          accessibilityLabel="Portfolio Tab"
+        >
+          <View style={[styles.iconPill, activeTab === 'investments' && styles.iconPillActive]}>
+            <Text style={styles.iconEmoji}>📈</Text>
+          </View>
+          <Text style={[styles.navLabel, activeTab === 'investments' && styles.navLabelActive]}>
+            Portfolio
+          </Text>
+        </TouchableOpacity>
+
+        {/* Slot 5: Budgets & Goals */}
+        <TouchableOpacity
+          style={styles.navSlot}
+          onPress={() => onTabChange('budgets')}
+          activeOpacity={0.7}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activeTab === 'budgets' }}
+          accessibilityLabel="Budgets Tab"
+        >
+          <View style={[styles.iconPill, activeTab === 'budgets' && styles.iconPillActive]}>
+            <Text style={styles.iconEmoji}>🎯</Text>
+          </View>
+          <Text style={[styles.navLabel, activeTab === 'budgets' && styles.navLabelActive]}>
+            Budgets
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  navBar: {
+  navContainer: {
     backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     paddingTop: 6,
     shadowColor: theme.colors.textPrimary,
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 8,
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 10,
   },
-  navInner: {
+  dockRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: 4,
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
   },
-  navItem: {
+  navSlot: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 2,
     minHeight: 46,
   },
-  iconWrap: {
-    width: 38,
-    height: 26,
-    borderRadius: 13,
+  iconPill: {
+    width: 40,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
     marginBottom: 2,
   },
-  iconWrapActive: {
+  iconPillActive: {
     backgroundColor: theme.colors.primaryLightSolid,
   },
-  navIcon: {
+  iconEmoji: {
     fontSize: 16,
   },
-  badgePill: {
-    position: 'absolute',
-    top: -3,
-    right: 0,
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 3.5,
-    paddingVertical: 1,
-    borderRadius: 6,
-  },
-  badgeText: {
-    color: theme.colors.textWhite,
-    fontSize: 7,
-    fontWeight: '800',
-  },
   navLabel: {
-    fontSize: 9.5,
+    fontSize: 10,
     fontWeight: '600',
     color: theme.colors.textSecondary,
     letterSpacing: -0.2,
   },
   navLabelActive: {
     color: theme.colors.primaryDark,
-    fontWeight: '700',
+    fontWeight: '800',
   },
-  centerAddWrap: {
-    flex: 1,
+  centerFabSlot: {
+    flex: 1.1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -12,
+    marginTop: -16,
     paddingVertical: 0,
   },
-  centerAddButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  centerFabCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: theme.colors.primaryDark,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.38,
     shadowRadius: 6,
-    elevation: 6,
-    borderWidth: 2.5,
+    elevation: 8,
+    borderWidth: 3,
     borderColor: theme.colors.surface,
   },
-  centerAddPlus: {
-    fontSize: 24,
-    fontWeight: '800',
+  centerFabPlus: {
+    fontSize: 26,
+    fontWeight: '900',
     color: theme.colors.textWhite,
-    lineHeight: 26,
+    lineHeight: 28,
     marginTop: -2,
   },
-  centerAddLabel: {
-    fontSize: 9.5,
-    fontWeight: '700',
+  centerFabLabel: {
+    fontSize: 10,
+    fontWeight: '800',
     color: theme.colors.primaryDark,
     marginTop: 2,
     letterSpacing: -0.2,

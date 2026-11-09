@@ -153,3 +153,4 @@ Primary Bottom Navigation Dock (5 Primary Tabs + Center Elevated Action) + Enter
 2. **Recurring Transaction Presentation:** Web displays recurring transaction rules; Mobile displays upcoming commitments on the overview screen. Both should reference the same recurring rule definitions.
 3. **Data Export:** Web has CSV export; Mobile should provide a clean transaction export summary action.
 4. **Offline Feedback:** Mobile requires explicit network status indicator pills so users know when data is being served from local cache.
+

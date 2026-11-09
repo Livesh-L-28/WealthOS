@@ -64,3 +64,4 @@ Both the Web charts (Recharts / SVG) and Mobile charts (`react-native-svg`) use 
 - **Cards:** `borderRadius: 16px` to `18px` with subtle shadow (`shadowOpacity: 0.04`, `elevation: 2`) and 1px border `#E7ECE8`.
 - **Buttons & Pills:** `borderRadius: 10px` to `12px`.
 - **Badges & Chips:** `borderRadius: 6px` to `8px`.
+

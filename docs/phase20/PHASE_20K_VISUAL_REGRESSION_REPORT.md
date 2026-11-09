@@ -40,3 +40,4 @@ To optimize for desktop widescreen space vs mobile touch ergonomics, the followi
    - **Web:** Multi-column responsive grid (3–4 columns on widescreen displays).
    - **Mobile:** Single-column scrollable feed with 16px horizontal margins.
    - *Rationale:* Eliminates horizontal scrolling and awkward line wrapping on narrow portrait displays.
+

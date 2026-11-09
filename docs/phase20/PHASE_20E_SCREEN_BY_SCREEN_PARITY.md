@@ -87,3 +87,4 @@
 | **Security Settings** | Password update, TOTP MFA enrollment, active session list | App lock PIN / Biometrics configuration | **PARITY_VERIFIED** |
 | **Audit Logs** | Filterable system audit logs with event type & IP address | Compliance assurance row with zero-variance balance checks | **PARITY_VERIFIED** |
 | **Account Deletion** | Dedicated `/delete-account` portal with confirmation | `Delete Account & Erase Personal Data` self-service action | **PARITY_VERIFIED** |
+

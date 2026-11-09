@@ -40,3 +40,4 @@ A dedicated parity verification suite compares values between Web and Mobile fix
    - Both Web and Mobile list the same 4 primary institutional accounts (Operating Savings, Demat, Tax Reserve, Magnus Card).
    - Both display identical transaction items (AWS Cloud `₹14,250.00`, TCS Dividend `₹32,000.00`, Lease `₹85,000.00`, Advisory `₹1,80,000.00`).
 4. **Result:** Both clients converge on identical financial facts and accounting invariants.
+

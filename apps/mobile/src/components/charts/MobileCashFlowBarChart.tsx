@@ -40,22 +40,24 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
   onOpenAnalytics,
 }) => {
   const [selectedIdx, setSelectedIdx] = useState<number>(CASH_FLOW_HISTORY.length - 1);
-  const [containerWidth, setContainerWidth] = useState<number>(Dimensions.get('window').width - 32);
+  const [containerWidth, setContainerWidth] = useState<number>(
+    Math.max(280, Dimensions.get('window').width - 64)
+  );
 
   const activeMonth = CASH_FLOW_HISTORY[selectedIdx];
   const savingsRate = ((activeMonth.net / activeMonth.inflow) * 100).toFixed(1);
 
   const onLayout = (e: LayoutChangeEvent) => {
-    const w = e.nativeEvent.layout.width;
-    if (w > 0 && Math.abs(w - containerWidth) > 5) {
-      setContainerWidth(w);
+    const cardContentW = e.nativeEvent.layout.width - 32;
+    if (cardContentW > 0 && Math.abs(cardContentW - containerWidth) > 5) {
+      setContainerWidth(cardContentW);
     }
   };
 
   const chartHeight = 150;
   const paddingLeft = 44;
-  const paddingRight = 14;
-  const paddingTop = 14;
+  const paddingRight = 12;
+  const paddingTop = 16;
   const paddingBottom = 26;
 
   const plotW = Math.max(10, containerWidth - paddingLeft - paddingRight);
@@ -69,8 +71,8 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
 
   const numGroups = CASH_FLOW_HISTORY.length;
   const groupSlot = plotW / numGroups;
-  const barW = Math.min(18, groupSlot * 0.32);
-  const barGap = 3;
+  const barW = Math.min(20, groupSlot * 0.34);
+  const barGap = 4;
 
   return (
     <View style={styles.card} onLayout={onLayout}>
@@ -104,7 +106,7 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
         </View>
 
         <View style={styles.surplusBadge}>
-          <Text style={styles.surplusLabel}>Net Surplus</Text>
+          <Text style={styles.surplusLabel}>Net Cash Surplus</Text>
           <Text style={styles.surplusVal}>+{formatINR(activeMonth.net)}</Text>
           <Text style={styles.savingsRateText}>{savingsRate}% saved</Text>
         </View>
@@ -114,11 +116,11 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
       <View style={styles.legendRow}>
         <View style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: '#16A36A' }]} />
-          <Text style={styles.legendText}>Inflow (Salary/Dividends)</Text>
+          <Text style={styles.legendText}>Inflows (Salary/Yield)</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#6475D8' }]} />
-          <Text style={styles.legendText}>Outflow (Living/EMIs)</Text>
+          <View style={[styles.legendDot, { backgroundColor: '#6366F1' }]} />
+          <Text style={styles.legendText}>Outflows (Living/EMIs)</Text>
         </View>
       </View>
 
@@ -160,10 +162,10 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
             const outflowX = groupCenterX + barGap / 2;
 
             const inflowY = getY(item.inflow);
-            const inflowH = Math.max(2, getY(0) - inflowY);
+            const inflowH = Math.max(3, getY(0) - inflowY);
 
             const outflowY = getY(item.outflow);
-            const outflowH = Math.max(2, getY(0) - outflowY);
+            const outflowH = Math.max(3, getY(0) - outflowY);
 
             const isSelected = selectedIdx === idx;
 
@@ -176,12 +178,12 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
                     y={paddingTop}
                     width={groupSlot - 4}
                     height={plotH}
-                    fill="rgba(22, 163, 106, 0.06)"
-                    rx={6}
+                    fill="rgba(22, 163, 106, 0.08)"
+                    rx={8}
                   />
                 )}
 
-                {/* Inflow Bar (Green) */}
+                {/* Inflow Bar (Emerald) */}
                 <Rect
                   x={inflowX}
                   y={inflowY}
@@ -189,18 +191,18 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
                   height={inflowH}
                   fill="#16A36A"
                   rx={4}
-                  opacity={isSelected ? 1 : 0.85}
+                  opacity={isSelected ? 1 : 0.8}
                 />
 
-                {/* Outflow Bar (Purple/Slate) */}
+                {/* Outflow Bar (Indigo) */}
                 <Rect
                   x={outflowX}
                   y={outflowY}
                   width={barW}
                   height={outflowH}
-                  fill="#6475D8"
+                  fill="#6366F1"
                   rx={4}
-                  opacity={isSelected ? 1 : 0.85}
+                  opacity={isSelected ? 1 : 0.8}
                 />
 
                 {/* Month Label */}
@@ -238,17 +240,17 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 16,
     marginHorizontal: 16,
     marginTop: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: 'rgba(22, 163, 106, 0.25)',
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
-    elevation: 2,
+    elevation: 3,
   },
   headerRow: {
     flexDirection: 'row',
@@ -295,7 +297,7 @@ const styles = StyleSheet.create({
   },
   kpiLabel: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
     color: theme.colors.textPrimary,
   },
   inflowOutflowRow: {
@@ -305,20 +307,20 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   inflowText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
-    fontFamily: theme.typography.monoFont,
+    color: '#087A50',
+    fontVariant: ['tabular-nums'],
   },
   vsText: {
     fontSize: 10,
     color: theme.colors.textTertiary,
   },
   outflowText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '800',
-    color: '#6475D8',
-    fontFamily: theme.typography.monoFont,
+    color: '#4F46E5',
+    fontVariant: ['tabular-nums'],
   },
   surplusBadge: {
     alignItems: 'flex-end',
@@ -331,13 +333,13 @@ const styles = StyleSheet.create({
   surplusVal: {
     fontSize: 13,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
-    fontFamily: theme.typography.monoFont,
+    color: '#087A50',
+    fontVariant: ['tabular-nums'],
   },
   savingsRateText: {
     fontSize: 9.5,
-    fontWeight: '700',
-    color: theme.colors.primary,
+    fontWeight: '800',
+    color: '#16A36A',
   },
   legendRow: {
     flexDirection: 'row',
@@ -349,15 +351,15 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
   },
   legendDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   legendText: {
-    fontSize: 9.5,
+    fontSize: 10,
     fontWeight: '600',
     color: theme.colors.textSecondary,
   },

@@ -66,3 +66,4 @@ export class WealthOSClient {
 | **Error Envelopes** | Standardized `{ error: { code, message, details } }` | Centralized toast handling | Centralized toast banner | **CONSISTENT** |
 | **Idempotency Keys** | `X-Idempotency-Key` on financial write mutations | Injected on posting calls | Handled on offline transaction queue| **CONSISTENT** |
 | **Session Lifecycle** | Refresh token rotation with family revocation | Cookie-based rotation | SecureStore bearer rotation | **CONSISTENT** |
+

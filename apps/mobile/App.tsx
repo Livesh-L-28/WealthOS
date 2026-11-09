@@ -7,9 +7,14 @@ import {
   Text,
   Platform,
   StatusBar as RNStatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+  initialWindowMetrics,
+} from 'react-native-safe-area-context';
 
 import { theme } from './src/theme';
 import {
@@ -53,17 +58,63 @@ import { ImportStatementModal } from './src/components/ImportStatementModal';
 import { CreateBudgetModal } from './src/components/CreateBudgetModal';
 import { CreateGoalModal } from './src/components/CreateGoalModal';
 import { AddInvestmentModal } from './src/components/AddInvestmentModal';
+import { QuickAddModal } from './src/components/QuickAddModal';
 import { formatINR } from './src/formatters';
 
 export { formatINR };
 
+// Class ErrorBoundary for resilient native error trapping
+interface ErrorBoundaryState {
+  hasError: boolean;
+  errorText: string;
+}
+
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, ErrorBoundaryState> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, errorText: '' };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, errorText: error?.message || 'Unknown runtime render error' };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.warn('WealthOS Native Exception Caught:', error, errorInfo);
+  }
+
+  handleReset = () => {
+    this.setState({ hasError: false, errorText: '' });
+  };
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorIcon}>⚠️</Text>
+          <Text style={styles.errorTitle}>WealthOS Runtime Recovery</Text>
+          <Text style={styles.errorSubtitle}>
+            An unexpected render issue was safely caught. Your local financial ledger remains intact.
+          </Text>
+          <Text style={styles.errorDetail}>{this.state.errorText}</Text>
+          <TouchableOpacity style={styles.resetButton} onPress={this.handleReset} activeOpacity={0.8}>
+            <Text style={styles.resetButtonText}>Reload Application</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function WealthOSContent() {
   const insets = useSafeAreaInsets();
-  const topPadding = Platform.select({
-    ios: Math.max(insets.top, 44),
-    android: Math.max(insets.top, (RNStatusBar.currentHeight || 0) + 8, 38),
-    default: Math.max(insets.top, 24),
-  });
+  const androidStatusBarHeight = RNStatusBar.currentHeight || 28;
+  const topPadding = Math.max(
+    insets.top,
+    Platform.OS === 'android' ? androidStatusBarHeight + 14 : 48,
+    52
+  );
 
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('overview');
   const [activeWorkspace, setActiveWorkspace] = useState('Family Office');
@@ -81,6 +132,7 @@ function WealthOSContent() {
   const [chatInput, setChatInput] = useState('');
 
   // Modals & Drawer
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isEnterpriseDrawerOpen, setIsEnterpriseDrawerOpen] = useState(false);
   const [isReconModalOpen, setIsReconModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
@@ -169,6 +221,21 @@ function WealthOSContent() {
         return acc;
       })
     );
+
+    // If expense, advance matching budget envelope in real-time
+    if (data.type === 'DEBIT') {
+      setBudgets((prevBudgets) =>
+        prevBudgets.map((env) => {
+          if (
+            env.category.toLowerCase().includes(data.category.toLowerCase()) ||
+            data.category.toLowerCase().includes(env.category.toLowerCase())
+          ) {
+            return { ...env, spent: env.spent + data.amount };
+          }
+          return env;
+        })
+      );
+    }
 
     setTransactions([newTx, ...transactions]);
     setIsAddTxModalOpen(false);
@@ -291,7 +358,7 @@ function WealthOSContent() {
 
   return (
     <View style={[styles.safeContainer, { paddingTop: topPadding }]}>
-      <ExpoStatusBar style="dark" backgroundColor={theme.colors.surface} />
+      <ExpoStatusBar style="dark" backgroundColor={theme.colors.surface} translucent={true} />
 
       {/* Top Header */}
       <Header
@@ -480,11 +547,11 @@ function WealthOSContent() {
         )}
       </View>
 
-      {/* Bottom Navigation */}
+      {/* Symmetrical 5-Slot Bottom Dock with Center Elevated Add Entry FAB */}
       <BottomNav
         activeTab={activeTab}
         onTabChange={(tab) => setActiveScreen(tab)}
-        onAddEntry={handleOpenAddExpense}
+        onAddEntry={() => setIsQuickAddOpen(true)}
       />
 
       {/* Enterprise Drawer Hub */}
@@ -498,6 +565,19 @@ function WealthOSContent() {
           setActiveWorkspace(ws);
           showNotification(`Active tenant switched to ${ws}`);
         }}
+      />
+
+      {/* Quick Financial Action Modal Sheet */}
+      <QuickAddModal
+        visible={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+        onSelectExpense={handleOpenAddExpense}
+        onSelectIncome={handleOpenAddIncome}
+        onSelectConnectBank={() => setIsConnectModalOpen(true)}
+        onSelectImportStatement={() => setIsImportModalOpen(true)}
+        onSelectAddInvestment={() => setIsAddInvestmentModalOpen(true)}
+        onSelectCreateBudget={() => setIsCreateBudgetModalOpen(true)}
+        onSelectCopilot={() => setActiveScreen('copilot')}
       />
 
       {/* Modals */}
@@ -553,8 +633,10 @@ function WealthOSContent() {
 
 export default function App() {
   return (
-    <SafeAreaProvider>
-      <WealthOSContent />
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <ErrorBoundary>
+        <WealthOSContent />
+      </ErrorBoundary>
     </SafeAreaProvider>
   );
 }
@@ -611,5 +693,51 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.textPrimary,
     lineHeight: 16,
+  },
+  errorContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  errorIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#17231D',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  errorSubtitle: {
+    fontSize: 13,
+    color: '#758078',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  errorDetail: {
+    fontSize: 11,
+    color: '#DC2626',
+    backgroundColor: '#FEE2E2',
+    padding: 10,
+    borderRadius: 8,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    marginBottom: 20,
+    maxWidth: '90%',
+  },
+  resetButton: {
+    backgroundColor: '#16A36A',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  resetButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

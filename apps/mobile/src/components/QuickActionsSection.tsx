@@ -8,6 +8,7 @@ interface QuickActionsSectionProps {
   onAddTransaction: () => void;
   onAddExpense?: () => void;
   onAddIncome?: () => void;
+  onAddInvestment?: () => void;
   onAskCopilot: () => void;
 }
 
@@ -17,69 +18,39 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
   onAddTransaction,
   onAddExpense,
   onAddIncome,
+  onAddInvestment,
   onAskCopilot,
 }) => {
-  const actions = onAddExpense && onAddIncome
-    ? [
-        {
-          id: 'expense',
-          label: '− Expense',
-          icon: '↑',
-          onPress: onAddExpense,
-          variant: 'expense',
-        },
-        {
-          id: 'income',
-          label: '+ Income',
-          icon: '↓',
-          onPress: onAddIncome,
-          variant: 'income',
-        },
-        {
-          id: 'connect',
-          label: 'Link Bank',
-          icon: '🏛️',
-          onPress: onConnectBank,
-          variant: 'default',
-        },
-        {
-          id: 'import',
-          label: 'Import CAS',
-          icon: '📄',
-          onPress: onImportStatement,
-          variant: 'default',
-        },
-      ]
-    : [
-        {
-          id: 'add',
-          label: 'Add Entry',
-          icon: '➕',
-          onPress: onAddTransaction,
-          variant: 'income',
-        },
-        {
-          id: 'connect',
-          label: 'Link Bank',
-          icon: '🏛️',
-          onPress: onConnectBank,
-          variant: 'default',
-        },
-        {
-          id: 'import',
-          label: 'Import CAS',
-          icon: '📄',
-          onPress: onImportStatement,
-          variant: 'default',
-        },
-        {
-          id: 'copilot',
-          label: 'Copilot',
-          icon: '✨',
-          onPress: onAskCopilot,
-          variant: 'default',
-        },
-      ];
+  const actions = [
+    {
+      id: 'connect',
+      label: 'Link Bank',
+      icon: '🏛️',
+      sublabel: '6 Connected',
+      onPress: onConnectBank,
+    },
+    {
+      id: 'import',
+      label: 'Import CAS',
+      icon: '📄',
+      sublabel: 'CAMS / KFin',
+      onPress: onImportStatement,
+    },
+    {
+      id: 'invest',
+      label: 'Add Asset',
+      icon: '📈',
+      sublabel: 'MF / Equity',
+      onPress: onAddInvestment || onAddTransaction,
+    },
+    {
+      id: 'copilot',
+      label: 'Copilot AI',
+      icon: '✨',
+      sublabel: 'Live Twin',
+      onPress: onAskCopilot,
+    },
+  ];
 
   return (
     <View style={styles.container}>
@@ -91,33 +62,11 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
             onPress={act.onPress}
             activeOpacity={0.7}
           >
-            <View
-              style={[
-                styles.iconBox,
-                act.variant === 'expense' && styles.iconBoxExpense,
-                act.variant === 'income' && styles.iconBoxIncome,
-                act.variant === 'default' && styles.iconBoxSecondary,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.iconText,
-                  act.variant === 'expense' && styles.iconTextExpense,
-                  act.variant === 'income' && styles.iconTextIncome,
-                ]}
-              >
-                {act.icon}
-              </Text>
+            <View style={styles.iconBox}>
+              <Text style={styles.iconText}>{act.icon}</Text>
             </View>
-            <Text
-              style={[
-                styles.actionLabel,
-                act.variant === 'expense' && styles.actionLabelExpense,
-                act.variant === 'income' && styles.actionLabelIncome,
-              ]}
-            >
-              {act.label}
-            </Text>
+            <Text style={styles.actionLabel}>{act.label}</Text>
+            <Text style={styles.actionSublabel}>{act.sublabel}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -127,23 +76,23 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     marginTop: 14,
   },
   dock: {
     backgroundColor: theme.colors.surface,
-    borderRadius: 18,
+    borderRadius: 20,
     paddingVertical: 14,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: 'rgba(22, 163, 106, 0.2)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
     shadowColor: theme.colors.textPrimary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
     elevation: 2,
   },
   actionItem: {
@@ -154,49 +103,26 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
+    backgroundColor: '#F8FAF9',
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 6,
   },
-  iconBoxExpense: {
-    backgroundColor: '#FEE2E2',
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  iconBoxIncome: {
-    backgroundColor: '#DCFCE7',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-  },
-  iconBoxSecondary: {
-    backgroundColor: theme.colors.cardSubtle,
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
-  },
   iconText: {
-    fontSize: 18,
-  },
-  iconTextExpense: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#DC2626',
-    marginTop: -2,
-  },
-  iconTextIncome: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#16A36A',
-    marginTop: -2,
+    fontSize: 20,
   },
   actionLabel: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 11.5,
+    fontWeight: '800',
     color: theme.colors.textPrimary,
+    textAlign: 'center',
   },
-  actionLabelExpense: {
-    color: '#991B1B',
-  },
-  actionLabelIncome: {
-    color: '#087A50',
+  actionSublabel: {
+    fontSize: 9,
+    color: theme.colors.textTertiary,
+    marginTop: 1,
+    textAlign: 'center',
   },
 });

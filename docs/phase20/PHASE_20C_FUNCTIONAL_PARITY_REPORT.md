@@ -76,3 +76,4 @@ Both the Web Application and the Android Mobile Application are grounded in the 
 | **Data Export** | Download CSV on `/transactions` | Statement summary download in Settings | **100% PARITY** |
 | **AI Copilot Querying** | Natural language input on `/copilot` | Conversational interface on `CopilotScreen.tsx` | **100% PARITY** |
 | **Data Deletion** | Self-service portal at `/delete-account` | Self-service deletion workflow in Settings | **100% PARITY** |
+

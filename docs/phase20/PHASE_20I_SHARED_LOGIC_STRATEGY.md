@@ -39,3 +39,4 @@ packages/
 - **Non-Negotiable Rule:** Client applications (both Web and Mobile) are strictly presentation and input collection layers.
 - Authoritative financial calculations (Ledger balance reconciliation, FIFO lot disposal matching, Capital Gains exemptions, reducing balance amortization, and 5-pillar health scores) are computed **exclusively by backend domain services** with Python `Decimal` and database constraints.
 - Neither client contains competing or divergent financial calculation engines.
+

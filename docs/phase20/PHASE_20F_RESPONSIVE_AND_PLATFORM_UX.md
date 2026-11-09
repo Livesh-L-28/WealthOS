@@ -46,3 +46,4 @@ The Android application was evaluated against representative device specificatio
 ### 2.4 Tabular Number Alignment & Precision Display
 - `fontVariant: ['tabular-nums']` and `font-mono` are applied to all currency amounts.
 - Even in dense tables (such as the Loan Amortization Schedule on `NetWorthScreen.tsx` or the Transaction Ledger on `AccountsScreen.tsx`), decimal points align vertically, preventing text clipping or wrapping.
+
