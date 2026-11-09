@@ -7,6 +7,7 @@ import {
   RefreshControl,
   Text,
   Platform,
+  StatusBar as RNStatusBar,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 
@@ -263,9 +264,7 @@ export default function App() {
 
       {/* Top Header */}
       <Header
-        onAddTransaction={() => handleOpenAddExpense()}
-        onAddExpense={handleOpenAddExpense}
-        onAddIncome={handleOpenAddIncome}
+        onOpenCopilot={() => setActiveScreen('copilot')}
         onOpenReconciliation={() => setActiveScreen('reconciliation')}
         onOpenHub={() => setIsEnterpriseDrawerOpen(true)}
         activeWorkspace={activeWorkspace}
@@ -423,7 +422,11 @@ export default function App() {
               />
             }
           >
-            <BudgetsScreen budgets={budgets} goals={goals} />
+            <BudgetsScreen
+              budgets={budgets}
+              goals={goals}
+              onAddTransaction={handleOpenAddExpense}
+            />
           </ScrollView>
         )}
 
@@ -441,6 +444,7 @@ export default function App() {
       <BottomNav
         activeTab={activeTab}
         onTabChange={(tab) => setActiveScreen(tab)}
+        onAddEntry={handleOpenAddExpense}
       />
 
       {/* Enterprise Drawer Hub */}
@@ -493,6 +497,7 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
     backgroundColor: theme.colors.surface,
+    paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 36) : 0,
   },
   mainContent: {
     flex: 1,

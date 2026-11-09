@@ -6,28 +6,36 @@ import { TabType } from '../types';
 interface BottomNavProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
+  onAddEntry: () => void;
 }
 
-interface NavItemConfig {
+interface NavTabItem {
   key: TabType;
   label: string;
   icon: string;
   badge?: string;
 }
 
-const NAV_ITEMS: NavItemConfig[] = [
+const LEFT_TABS: NavTabItem[] = [
   { key: 'overview', label: 'Overview', icon: '📊' },
   { key: 'accounts', label: 'Accounts', icon: '🏦' },
-  { key: 'investments', label: 'Portfolio', icon: '📈' },
+];
+
+const RIGHT_TABS: NavTabItem[] = [
   { key: 'budgets', label: 'Budgets', icon: '🎯' },
   { key: 'copilot', label: 'Copilot', icon: '✨', badge: 'AI' },
 ];
 
-export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) => {
+export const BottomNav: React.FC<BottomNavProps> = ({
+  activeTab,
+  onTabChange,
+  onAddEntry,
+}) => {
   return (
     <View style={styles.navBar}>
       <View style={styles.navInner}>
-        {NAV_ITEMS.map((item) => {
+        {/* Left Tabs: Overview & Accounts */}
+        {LEFT_TABS.map((item) => {
           const isActive = activeTab === item.key;
           return (
             <TouchableOpacity
@@ -37,6 +45,49 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange }) 
               activeOpacity={0.7}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
+              accessibilityLabel={`${item.label} Tab`}
+            >
+              <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
+                <Text style={styles.navIcon}>{item.icon}</Text>
+                {item.badge && (
+                  <View style={styles.badgePill}>
+                    <Text style={styles.badgeText}>{item.badge}</Text>
+                  </View>
+                )}
+              </View>
+              <Text style={[styles.navLabel, isActive && styles.navLabelActive]}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+
+        {/* Center Prominent Add Entry Action Button */}
+        <TouchableOpacity
+          style={styles.centerAddWrap}
+          onPress={onAddEntry}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Add Entry"
+        >
+          <View style={styles.centerAddButton}>
+            <Text style={styles.centerAddPlus}>+</Text>
+          </View>
+          <Text style={styles.centerAddLabel}>Add Entry</Text>
+        </TouchableOpacity>
+
+        {/* Right Tabs: Budgets & Copilot */}
+        {RIGHT_TABS.map((item) => {
+          const isActive = activeTab === item.key;
+          return (
+            <TouchableOpacity
+              key={item.key}
+              style={styles.navItem}
+              onPress={() => onTabChange(item.key)}
+              activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+              accessibilityLabel={`${item.label} Tab`}
             >
               <View style={[styles.iconWrap, isActive && styles.iconWrapActive]}>
                 <Text style={styles.navIcon}>{item.icon}</Text>
@@ -121,5 +172,41 @@ const styles = StyleSheet.create({
   navLabelActive: {
     color: theme.colors.primaryDark,
     fontWeight: '700',
+  },
+  centerAddWrap: {
+    flex: 1.1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -14,
+    paddingVertical: 0,
+  },
+  centerAddButton: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: theme.colors.primaryDark,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 6,
+    borderWidth: 3,
+    borderColor: theme.colors.surface,
+  },
+  centerAddPlus: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: theme.colors.textWhite,
+    lineHeight: 28,
+    marginTop: -2,
+  },
+  centerAddLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+    marginTop: 2,
+    letterSpacing: -0.2,
   },
 });

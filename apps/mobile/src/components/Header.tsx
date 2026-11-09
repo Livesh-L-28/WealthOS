@@ -3,11 +3,12 @@ import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native
 import { theme } from '../theme';
 
 interface HeaderProps {
-  onAddTransaction: () => void;
+  onAddTransaction?: () => void;
   onAddIncome?: () => void;
   onAddExpense?: () => void;
   onOpenReconciliation: () => void;
   onOpenHub: () => void;
+  onOpenCopilot?: () => void;
   activeWorkspace?: string;
   isSyncing?: boolean;
 }
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
   onAddExpense,
   onOpenReconciliation,
   onOpenHub,
+  onOpenCopilot,
   activeWorkspace = 'Family Office',
   isSyncing = false,
 }) => {
@@ -54,39 +56,17 @@ export const Header: React.FC<HeaderProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Right: Quick Inflow / Outflow Actions Dock */}
+      {/* Right: Sleek Action Dock: Copilot, Reconciliation Shield & Enterprise Menu */}
       <View style={styles.actionsRow}>
-        {onAddExpense && onAddIncome ? (
-          <>
-            <TouchableOpacity
-              style={styles.expenseQuickBtn}
-              onPress={onAddExpense}
-              activeOpacity={0.8}
-              accessibilityLabel="Quick Add Expense"
-            >
-              <Text style={styles.expenseQuickMinus}>−</Text>
-              <Text style={styles.expenseQuickText}>Exp</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.incomeQuickBtn}
-              onPress={onAddIncome}
-              activeOpacity={0.8}
-              accessibilityLabel="Quick Add Income"
-            >
-              <Text style={styles.incomeQuickPlus}>+</Text>
-              <Text style={styles.incomeQuickText}>Inc</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
+        {onOpenCopilot && (
           <TouchableOpacity
-            style={styles.primaryActionButton}
-            onPress={onAddTransaction}
+            style={styles.copilotHeaderBtn}
+            onPress={onOpenCopilot}
             activeOpacity={0.8}
-            accessibilityLabel="Add New Transaction"
+            accessibilityLabel="Open AI Copilot"
           >
-            <Text style={styles.primaryActionPlus}>+</Text>
-            <Text style={styles.primaryActionText}>Entry</Text>
+            <Text style={styles.copilotHeaderIcon}>✨</Text>
+            <Text style={styles.copilotHeaderText}>AI</Text>
           </TouchableOpacity>
         )}
 
@@ -99,6 +79,15 @@ export const Header: React.FC<HeaderProps> = ({
           <Text style={styles.iconButtonText}>🛡️</Text>
           <View style={styles.shieldActiveDot} />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={onOpenHub}
+          activeOpacity={0.7}
+          accessibilityLabel="Open Full Menu"
+        >
+          <Text style={styles.menuButtonText}>☰</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -107,8 +96,8 @@ export const Header: React.FC<HeaderProps> = ({
 const styles = StyleSheet.create({
   header: {
     backgroundColor: theme.colors.surface,
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 6 : 10,
+    paddingHorizontal: 16,
+    paddingTop: 10,
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
@@ -202,49 +191,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  expenseQuickBtn: {
+  copilotHeaderBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEE2E2',
-    borderWidth: 1,
-    borderColor: '#FECACA',
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-    borderRadius: 8,
     gap: 3,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: 'rgba(22, 163, 106, 0.35)',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 10,
   },
-  expenseQuickMinus: {
-    color: '#DC2626',
-    fontSize: 14,
-    fontWeight: '900',
-    marginTop: -2,
+  copilotHeaderIcon: {
+    fontSize: 12,
   },
-  expenseQuickText: {
-    color: '#991B1B',
+  copilotHeaderText: {
     fontSize: 11,
     fontWeight: '800',
-  },
-  incomeQuickBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#DCFCE7',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    paddingHorizontal: 9,
-    paddingVertical: 6,
-    borderRadius: 8,
-    gap: 3,
-  },
-  incomeQuickPlus: {
-    color: '#15803D',
-    fontSize: 14,
-    fontWeight: '900',
-    marginTop: -1,
-  },
-  incomeQuickText: {
-    color: '#15803D',
-    fontSize: 11,
-    fontWeight: '800',
+    color: theme.colors.primaryDark,
   },
   iconButton: {
     width: 36,
@@ -271,29 +235,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.surface,
   },
-  primaryActionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+  menuButton: {
+    width: 36,
+    height: 36,
     borderRadius: 10,
-    gap: 4,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  primaryActionPlus: {
-    color: theme.colors.textWhite,
-    fontSize: 15,
-    fontWeight: '800',
-    marginTop: -1,
-  },
-  primaryActionText: {
-    color: theme.colors.textWhite,
-    fontSize: 12.5,
+  menuButtonText: {
+    fontSize: 16,
     fontWeight: '700',
+    color: theme.colors.textPrimary,
   },
 });

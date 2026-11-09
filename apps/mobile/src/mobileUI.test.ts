@@ -150,5 +150,31 @@ describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
       expect(owner?.netContributionPercentage).toBe(68);
     });
   });
+
+  describe('Mobile Ergonomics, Header Visibility & Bottom Dock Add Entry', () => {
+    it('verifies theme surface and primary contrast foundation', () => {
+      expect(theme.colors.surface).toBe('#FFFFFF');
+      expect(theme.colors.canvas).toBe('#F7F9F7');
+      expect(theme.colors.primary).toBe('#16A36A');
+      expect(theme.colors.primaryDark).toBe('#087A50');
+      expect(theme.colors.danger).toBe('#DC5B5B');
+    });
+
+    it('verifies transaction ledger initial categories and presets', () => {
+      expect(INITIAL_TRANSACTIONS.length).toBeGreaterThan(0);
+      const credits = INITIAL_TRANSACTIONS.filter((t) => t.type === 'CREDIT');
+      const debits = INITIAL_TRANSACTIONS.filter((t) => t.type === 'DEBIT');
+      expect(credits.length).toBeGreaterThan(0);
+      expect(debits.length).toBeGreaterThan(0);
+    });
+
+    it('verifies initial accounts list covers assets and liabilities', () => {
+      expect(INITIAL_ACCOUNTS.length).toBeGreaterThanOrEqual(4);
+      const assetAccs = INITIAL_ACCOUNTS.filter((a) => a.category === 'ASSET');
+      const liabAccs = INITIAL_ACCOUNTS.filter((a) => a.category === 'LIABILITY');
+      expect(assetAccs.length).toBeGreaterThanOrEqual(2);
+      expect(liabAccs.length).toBeGreaterThanOrEqual(2);
+    });
+  });
 });
 

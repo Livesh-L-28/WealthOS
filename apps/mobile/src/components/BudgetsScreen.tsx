@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
 import { theme } from '../theme';
 import { BudgetEnvelope, FinancialGoal } from '../types';
 import { formatINR } from '../formatters';
@@ -7,9 +7,17 @@ import { formatINR } from '../formatters';
 interface BudgetsScreenProps {
   budgets: BudgetEnvelope[];
   goals: FinancialGoal[];
+  onAddTransaction?: () => void;
 }
 
-export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({ budgets, goals }) => {
+export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
+  budgets,
+  goals,
+  onAddTransaction,
+}) => {
+  const [selectedEnv, setSelectedEnv] = useState<BudgetEnvelope | null>(null);
+  const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
+
   const totalBudgeted = budgets.reduce((s, b) => s + b.budgeted, 0);
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
   const remainingBuffer = totalBudgeted - totalSpent;
@@ -54,13 +62,30 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({ budgets, goals }) 
       </View>
 
       {/* Spending Envelopes Section */}
-      <Text style={styles.sectionHeaderTitle}>MONTHLY SPENDING ENVELOPES</Text>
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionHeaderTitle}>MONTHLY SPENDING ENVELOPES</Text>
+        {onAddTransaction && (
+          <TouchableOpacity
+            style={styles.addSmallPill}
+            onPress={onAddTransaction}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.addSmallPillText}>+ Add Expense</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       <View style={styles.envelopesList}>
         {budgets.map((env) => {
           const pct = Math.min(100, (env.spent / env.budgeted) * 100);
           const isWarning = pct > 90;
           return (
-            <View key={env.id} style={styles.envelopeCard}>
+            <TouchableOpacity
+              key={env.id}
+              style={styles.envelopeCard}
+              onPress={() => setSelectedEnv(env)}
+              activeOpacity={0.8}
+            >
               <View style={styles.envelopeTop}>
                 <View style={styles.categoryTitleRow}>
                   <View style={[styles.categoryColorDot, { backgroundColor: env.color }]} />
@@ -92,21 +117,29 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({ budgets, goals }) 
               <View style={styles.envelopeFooter}>
                 <Text style={styles.envelopePctText}>{pct.toFixed(0)}% consumed</Text>
                 <Text style={styles.envelopeRemText}>
-                  {formatINR(Math.max(0, env.budgeted - env.spent))} left
+                  {formatINR(Math.max(0, env.budgeted - env.spent))} left ›
                 </Text>
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
 
       {/* Strategic Financial Goals */}
-      <Text style={styles.sectionHeaderTitle}>STRATEGIC FINANCIAL GOALS</Text>
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionHeaderTitle}>STRATEGIC FINANCIAL GOALS</Text>
+      </View>
+
       <View style={styles.goalsList}>
         {goals.map((goal) => {
           const goalPct = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
           return (
-            <View key={goal.id} style={styles.goalCard}>
+            <TouchableOpacity
+              key={goal.id}
+              style={styles.goalCard}
+              onPress={() => setSelectedGoal(goal)}
+              activeOpacity={0.8}
+            >
               <View style={styles.goalTopRow}>
                 <Text style={styles.goalTitle}>{goal.title}</Text>
                 <View style={styles.targetYearBadge}>
@@ -130,10 +163,121 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({ budgets, goals }) 
                   ]}
                 />
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
+
+      {/* Envelope Detail Modal */}
+      {selectedEnv && (
+        <Modal
+          visible={!!selectedEnv}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSelectedEnv(null)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.detailModalBox}>
+              <View style={styles.modalBar} />
+              <View style={styles.modalHeaderRow}>
+                <View style={[styles.categoryColorDotLarge, { backgroundColor: selectedEnv.color }]} />
+                <Text style={styles.detailModalTitle}>{selectedEnv.category} Envelope</Text>
+              </View>
+
+              <View style={styles.detailMetricGrid}>
+                <View style={styles.detailMetricCol}>
+                  <Text style={styles.detailMetricLabel}>BUDGET ALLOCATED</Text>
+                  <Text style={styles.detailMetricValue}>{formatINR(selectedEnv.budgeted)}</Text>
+                </View>
+                <View style={styles.detailMetricCol}>
+                  <Text style={styles.detailMetricLabel}>ACTUAL SPENT</Text>
+                  <Text style={[styles.detailMetricValue, { color: theme.colors.danger }]}>
+                    {formatINR(selectedEnv.spent)}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.safeRemainingBox}>
+                <Text style={styles.safeRemainingLabel}>Remaining Safe Spend:</Text>
+                <Text style={styles.safeRemainingValue}>
+                  {formatINR(Math.max(0, selectedEnv.budgeted - selectedEnv.spent))}
+                </Text>
+              </View>
+
+              {onAddTransaction && (
+                <TouchableOpacity
+                  style={styles.modalPrimaryBtn}
+                  onPress={() => {
+                    setSelectedEnv(null);
+                    onAddTransaction();
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.modalPrimaryBtnText}>+ Log Expense to this Category</Text>
+                </TouchableOpacity>
+              )}
+
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setSelectedEnv(null)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalCloseBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Goal Detail Modal */}
+      {selectedGoal && (
+        <Modal
+          visible={!!selectedGoal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSelectedGoal(null)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.detailModalBox}>
+              <View style={styles.modalBar} />
+              <Text style={styles.detailModalTitle}>{selectedGoal.title}</Text>
+              <Text style={styles.detailModalSubtitle}>
+                Target Year: {selectedGoal.targetYear} · Double-Entry Backed Asset
+              </Text>
+
+              <View style={styles.detailMetricGrid}>
+                <View style={styles.detailMetricCol}>
+                  <Text style={styles.detailMetricLabel}>SAVED SO FAR</Text>
+                  <Text style={[styles.detailMetricValue, { color: theme.colors.primary }]}>
+                    {formatINR(selectedGoal.currentAmount)}
+                  </Text>
+                </View>
+                <View style={styles.detailMetricCol}>
+                  <Text style={styles.detailMetricLabel}>TARGET GOAL</Text>
+                  <Text style={styles.detailMetricValue}>
+                    {formatINR(selectedGoal.targetAmount)}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.safeRemainingBox}>
+                <Text style={styles.safeRemainingLabel}>Capital Shortfall:</Text>
+                <Text style={styles.safeRemainingValue}>
+                  {formatINR(Math.max(0, selectedGoal.targetAmount - selectedGoal.currentAmount))}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setSelectedGoal(null)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalCloseBtnText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -354,5 +498,135 @@ const styles = StyleSheet.create({
   goalProgressFill: {
     height: '100%',
     borderRadius: 2.5,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    marginTop: 4,
+  },
+  addSmallPill: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(22, 163, 106, 0.3)',
+  },
+  addSmallPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(23, 35, 29, 0.55)',
+    justifyContent: 'flex-end',
+  },
+  detailModalBox: {
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 34,
+  },
+  modalBar: {
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.border,
+    alignSelf: 'center',
+    marginBottom: 14,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  categoryColorDotLarge: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+  },
+  detailModalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+  },
+  detailModalSubtitle: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginBottom: 14,
+  },
+  detailMetricGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginVertical: 14,
+  },
+  detailMetricCol: {
+    flex: 1,
+    backgroundColor: theme.colors.surfaceElevated,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+  },
+  detailMetricLabel: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+    marginBottom: 4,
+  },
+  detailMetricValue: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    fontVariant: ['tabular-nums'],
+  },
+  safeRemainingBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(22, 163, 106, 0.25)',
+  },
+  safeRemainingLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#065F46',
+  },
+  safeRemainingValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: theme.colors.primaryDark,
+  },
+  modalPrimaryBtn: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  modalPrimaryBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textWhite,
+  },
+  modalCloseBtn: {
+    backgroundColor: theme.colors.surfaceElevated,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCloseBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
   },
 });

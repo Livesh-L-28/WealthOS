@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
 import { theme } from '../theme';
 import { InvestmentHolding } from '../types';
 import { formatINR } from '../formatters';
 
 interface PortfolioScreenProps {
   holdings: InvestmentHolding[];
+  onBack?: () => void;
 }
 
-export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings }) => {
+export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings, onBack }) => {
   const [filter, setFilter] = useState<'ALL' | 'EQUITY' | 'MUTUAL_FUND' | 'GOLD'>('ALL');
+  const [selectedHolding, setSelectedHolding] = useState<InvestmentHolding | null>(null);
 
   const filteredHoldings = holdings.filter(
     (h) => filter === 'ALL' || h.type === filter
@@ -82,7 +84,12 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings }) =>
         {filteredHoldings.map((h) => {
           const isProfit = h.pnl >= 0;
           return (
-            <View key={h.id} style={styles.holdingCard}>
+            <TouchableOpacity
+              key={h.id}
+              style={styles.holdingCard}
+              onPress={() => setSelectedHolding(h)}
+              activeOpacity={0.8}
+            >
               <View style={styles.holdingTopRow}>
                 <View style={styles.holdingTitleCol}>
                   <Text style={styles.holdingSymbol}>{h.symbol}</Text>
@@ -113,10 +120,85 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings }) =>
                   <Text style={styles.taxLotText}>{h.fifoLotAge}</Text>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
+
+      {/* Holding Detail Modal */}
+      {selectedHolding && (
+        <Modal
+          visible={!!selectedHolding}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSelectedHolding(null)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.detailModalBox}>
+              <View style={styles.modalBar} />
+              <View style={styles.holdingModalHeader}>
+                <View>
+                  <Text style={styles.holdingModalSymbol}>{selectedHolding.symbol}</Text>
+                  <Text style={styles.holdingModalName}>{selectedHolding.name}</Text>
+                </View>
+                <View style={styles.holdingTypeBadge}>
+                  <Text style={styles.holdingTypeBadgeText}>{selectedHolding.type}</Text>
+                </View>
+              </View>
+
+              <View style={styles.holdingModalGrid}>
+                <View style={styles.holdingModalCol}>
+                  <Text style={styles.holdingModalColLabel}>CURRENT VALUE</Text>
+                  <Text style={styles.holdingModalColVal}>
+                    {formatINR(selectedHolding.currentValue)}
+                  </Text>
+                </View>
+                <View style={styles.holdingModalCol}>
+                  <Text style={styles.holdingModalColLabel}>INVESTED CAPITAL</Text>
+                  <Text style={styles.holdingModalColVal}>
+                    {formatINR(selectedHolding.investedValue)}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.holdingModalGrid}>
+                <View style={styles.holdingModalCol}>
+                  <Text style={styles.holdingModalColLabel}>UNREALIZED P&L</Text>
+                  <Text
+                    style={[
+                      styles.holdingModalColVal,
+                      { color: selectedHolding.pnl >= 0 ? theme.colors.primary : theme.colors.danger },
+                    ]}
+                  >
+                    {selectedHolding.pnl >= 0 ? '+' : ''}
+                    {formatINR(selectedHolding.pnl)} ({selectedHolding.pnlPercentage.toFixed(2)}%)
+                  </Text>
+                </View>
+                <View style={styles.holdingModalCol}>
+                  <Text style={styles.holdingModalColLabel}>FIFO TAX LOT STATUS</Text>
+                  <Text style={[styles.holdingModalColVal, { color: theme.colors.primaryDark }]}>
+                    {selectedHolding.fifoLotAge}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.quoteRow}>
+                <Text style={styles.quoteText}>
+                  Shares: {selectedHolding.quantity} · Avg Buy: ₹{selectedHolding.avgBuyPrice.toFixed(2)} · LTP: ₹{selectedHolding.currentPrice.toFixed(2)}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setSelectedHolding(null)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.modalCloseBtnText}>Close Holding Detail</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -316,6 +398,103 @@ const styles = StyleSheet.create({
   },
   taxLotText: {
     fontSize: 9,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(23, 35, 29, 0.55)',
+    justifyContent: 'flex-end',
+  },
+  detailModalBox: {
+    backgroundColor: theme.colors.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 34,
+  },
+  modalBar: {
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: theme.colors.border,
+    alignSelf: 'center',
+    marginBottom: 14,
+  },
+  holdingModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  holdingModalSymbol: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+  },
+  holdingModalName: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  holdingTypeBadge: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  holdingTypeBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.primaryDark,
+  },
+  holdingModalGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
+  holdingModalCol: {
+    flex: 1,
+    backgroundColor: theme.colors.surfaceElevated,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+  },
+  holdingModalColLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+    marginBottom: 4,
+  },
+  holdingModalColVal: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    fontVariant: ['tabular-nums'],
+  },
+  quoteRow: {
+    backgroundColor: '#FAFCFA',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    marginBottom: 16,
+  },
+  quoteText: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  modalCloseBtn: {
+    backgroundColor: theme.colors.surfaceElevated,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCloseBtnText: {
+    fontSize: 13,
     fontWeight: '700',
     color: theme.colors.textSecondary,
   },
