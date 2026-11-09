@@ -93,24 +93,24 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         onPressOutflows={onAddExpense}
       />
 
-      {/* 5. Professional 4-Month Inflow vs Outflow Dual-Bar Chart */}
-      <MobileCashFlowBarChart onOpenAnalytics={onOpenAnalytics} />
-
-      {/* 6. Multi-Asset Portfolio Asset Allocation Donut Ring Chart */}
+      {/* 4. Multi-Asset Portfolio Asset Allocation Donut Ring Chart */}
       <MobileDonutAllocationChart
         totalValue={totalPortfolioValue}
         totalInvested={totalInvestedValue}
         onOpenPortfolio={onOpenPortfolio}
       />
 
-      {/* 7. Solvency & Financial Health Rating */}
+      {/* 5. Solvency & Financial Health Rating */}
       <FinancialHealthCard onPress={onOpenAnalytics} />
 
-      {/* 8. Recent Transactions General Journal */}
+      {/* 6. Recent Transactions General Journal */}
       <RecentTransactionsCard
         transactions={transactions}
         onViewAll={onViewAllTransactions}
       />
+
+      {/* 7. Comprehensive Cash Flow Inflow vs Outflow & Trajectory Graph (In the Last) */}
+      <MobileCashFlowBarChart onOpenAnalytics={onOpenAnalytics} />
     </View>
   );
 };
