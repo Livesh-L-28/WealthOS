@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
-  SafeAreaView,
   ScrollView,
   RefreshControl,
   Text,
@@ -10,6 +9,7 @@ import {
   StatusBar as RNStatusBar,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { theme } from './src/theme';
 import {
@@ -54,7 +54,13 @@ import { formatINR } from './src/formatters';
 
 export { formatINR };
 
-export default function App() {
+function WealthOSContent() {
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(
+    insets.top,
+    Platform.OS === 'android' ? (RNStatusBar.currentHeight || 28) : 0
+  );
+
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('overview');
   const [activeWorkspace, setActiveWorkspace] = useState('Family Office');
   const [period, setPeriod] = useState<DashboardPeriod>('1M');
@@ -259,7 +265,7 @@ export default function App() {
   const activeTab: TabType = isPrimaryTab ? (activeScreen as TabType) : 'overview';
 
   return (
-    <SafeAreaView style={styles.safeContainer}>
+    <View style={[styles.safeContainer, { paddingTop: topPadding }]}>
       <ExpoStatusBar style="dark" backgroundColor={theme.colors.surface} />
 
       {/* Top Header */}
@@ -489,7 +495,15 @@ export default function App() {
         onClose={() => setIsImportModalOpen(false)}
         onImportSuccess={handleSimulateImport}
       />
-    </SafeAreaView>
+    </View>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <WealthOSContent />
+    </SafeAreaProvider>
   );
 }
 
@@ -497,7 +511,6 @@ const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
     backgroundColor: theme.colors.surface,
-    paddingTop: Platform.OS === 'android' ? (RNStatusBar.currentHeight || 36) : 0,
   },
   mainContent: {
     flex: 1,

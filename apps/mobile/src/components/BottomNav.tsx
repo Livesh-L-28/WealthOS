@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../theme';
 import { TabType } from '../types';
 
@@ -31,8 +32,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onTabChange,
   onAddEntry,
 }) => {
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 20 : 10);
+
   return (
-    <View style={styles.navBar}>
+    <View style={[styles.navBar, { paddingBottom: bottomInset }]}>
       <View style={styles.navInner}>
         {/* Left Tabs: Overview & Accounts */}
         {LEFT_TABS.map((item) => {
@@ -114,7 +118,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     paddingTop: 6,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 10,
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.03,
