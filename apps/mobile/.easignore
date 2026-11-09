@@ -1,0 +1,13 @@
+# EAS Build Ignore
+node_modules/
+.expo/
+*.apk
+*.aab
+dist/
+build/
+.next/
+.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+

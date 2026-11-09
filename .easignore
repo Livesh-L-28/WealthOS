@@ -1,0 +1,17 @@
+# EAS Monorepo Build Ignore
+node_modules/
+.expo/
+apps/mobile/node_modules/
+apps/web/node_modules/
+apps/mobile/wealthos-preview.apk
+*.apk
+*.aab
+dist/
+build/
+.next/
+.cache/
+backend/
+docs/
+artifacts/
+npm-debug.log*
+
