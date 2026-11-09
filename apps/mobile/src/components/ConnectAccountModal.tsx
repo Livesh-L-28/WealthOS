@@ -26,6 +26,7 @@ const BANKS = [
   'Axis Bank',
   'Kotak Mahindra',
   'Zerodha Broking',
+  'Manual / Custom',
 ];
 
 const ACCOUNT_TYPES: Array<'SAVINGS' | 'TERM_DEPOSIT' | 'DEMAT' | 'CREDIT_CARD' | 'LOAN'> = [
@@ -42,6 +43,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
   onSubmit,
 }) => {
   const [bank, setBank] = useState(BANKS[0]);
+  const [customName, setCustomName] = useState('');
   const [type, setType] = useState<'SAVINGS' | 'TERM_DEPOSIT' | 'DEMAT' | 'CREDIT_CARD' | 'LOAN'>('SAVINGS');
   const [balance, setBalance] = useState('');
   const [mask, setMask] = useState('•••• 6720');
@@ -49,11 +51,15 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
   const handleConnect = () => {
     const bal = parseFloat(balance) || 50000;
     const isLiability = type === 'LOAN' || type === 'CREDIT_CARD';
+    const isManual = bank === 'Manual / Custom';
+    const accName = isManual
+      ? (customName.trim() || 'Custom Ledger Account')
+      : `${bank} ${type === 'SAVINGS' ? 'Savings' : type.replace('_', ' ')}`;
 
     const newAcc: BankAccount = {
       id: `acc-${Date.now()}`,
-      name: `${bank} ${type === 'SAVINGS' ? 'Savings' : type.replace('_', ' ')}`,
-      institution: bank,
+      name: accName,
+      institution: isManual ? 'Custom Ledger' : bank,
       accountNumberMask: mask || '•••• 0000',
       type,
       category: isLiability ? 'LIABILITY' : 'ASSET',
@@ -65,6 +71,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
 
     onSubmit(newAcc);
     setBalance('');
+    setCustomName('');
   };
 
   return (
@@ -107,6 +114,20 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
                 );
               })}
             </View>
+
+            {/* Custom Account Name Input when Manual / Custom is selected */}
+            {bank === 'Manual / Custom' && (
+              <View style={styles.customFieldContainer}>
+                <Text style={styles.label}>CUSTOM ACCOUNT NAME</Text>
+                <TextInput
+                  style={styles.maskInput}
+                  placeholder="e.g. Kotak 811, Petty Cash, or Demat"
+                  placeholderTextColor={theme.colors.textMuted}
+                  value={customName}
+                  onChangeText={setCustomName}
+                />
+              </View>
+            )}
 
             {/* Account Category */}
             <Text style={styles.label}>ACCOUNT TYPE & CLASSIFICATION</Text>
@@ -356,5 +377,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: theme.colors.textWhite,
+  },
+  customFieldContainer: {
+    marginBottom: 4,
   },
 });
