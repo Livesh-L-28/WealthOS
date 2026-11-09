@@ -129,6 +129,36 @@ describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
       expect(customGoal.monthlySavingsTarget).toBeGreaterThan(100000);
     });
 
+    it('verifies updating goal savings with incremental deposit contributions', () => {
+      const goal = {
+        id: 'goal-bike',
+        title: 'Bike',
+        targetAmount: 2345678,
+        currentAmount: 0,
+        targetYear: 2030,
+        category: 'Vehicle',
+        monthlySavingsTarget: 48000,
+      };
+
+      // Initial state: 0% funded
+      expect(goal.currentAmount).toBe(0);
+      expect((goal.currentAmount / goal.targetAmount) * 100).toBe(0);
+
+      // Deposit ₹50,000 contribution
+      const deposit1 = 50000;
+      const updated1 = { ...goal, currentAmount: goal.currentAmount + deposit1 };
+      expect(updated1.currentAmount).toBe(50000);
+      expect(updated1.targetAmount - updated1.currentAmount).toBe(2295678);
+
+      // Deposit additional ₹2,00,000 contribution
+      const deposit2 = 200000;
+      const updated2 = { ...updated1, currentAmount: updated1.currentAmount + deposit2 };
+      expect(updated2.currentAmount).toBe(250000);
+      const newPct = Math.round((updated2.currentAmount / updated2.targetAmount) * 100);
+      expect(newPct).toBe(11); // 11% funded
+      expect(updated2.targetAmount - updated2.currentAmount).toBe(2095678);
+    });
+
     it('verifies balance sheet assets and liabilities accounting equation', () => {
       const totalAssets = BALANCE_SHEET_ASSETS.reduce((s, a) => s + a.amount, 0);
       const totalLiabilities = BALANCE_SHEET_LIABILITIES.reduce((s, l) => s + l.amount, 0);

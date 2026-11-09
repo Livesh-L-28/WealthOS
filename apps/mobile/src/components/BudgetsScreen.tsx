@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import { theme } from '../theme';
 import { BudgetEnvelope, FinancialGoal, Transaction } from '../types';
@@ -178,6 +179,7 @@ interface BudgetsScreenProps {
   onAddTransaction?: () => void;
   onAddEnvelope?: () => void;
   onAddGoal?: () => void;
+  onUpdateGoal?: (updatedGoal: FinancialGoal) => void;
   initialSubTab?: 'BUDGETS' | 'GOALS' | 'ALL';
 }
 
@@ -207,6 +209,7 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   onAddTransaction,
   onAddEnvelope,
   onAddGoal,
+  onUpdateGoal,
   initialSubTab,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'BUDGETS' | 'GOALS' | 'ALL'>(
@@ -214,6 +217,7 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   );
   const [selectedEnv, setSelectedEnv] = useState<BudgetEnvelope | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
+  const [depositAmount, setDepositAmount] = useState('25000');
 
   React.useEffect(() => {
     if (initialSubTab) {
@@ -576,14 +580,26 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                   </View>
                 </View>
 
-                {/* Completion Milestone Sub-Info */}
-                <View style={styles.goalProgressMetaRow}>
-                  <Text style={styles.goalProgressMetaLeft}>
-                    {isCompleted ? '🎉 Milestone Complete' : `${formatINR(goal.currentAmount)} accumulated`}
-                  </Text>
-                  <Text style={styles.goalProgressMetaRight}>
-                    {isCompleted ? 'Target corpus achieved' : `${formatINR(shortfall)} to go`}
-                  </Text>
+                {/* Completion Milestone Sub-Info & Add Savings Action */}
+                <View style={styles.goalActionRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.goalProgressMetaLeft}>
+                      {isCompleted ? '🎉 Milestone Complete' : `${formatINR(goal.currentAmount)} accumulated`}
+                    </Text>
+                    <Text style={styles.goalProgressMetaRight}>
+                      {isCompleted ? 'Target corpus achieved' : `${formatINR(shortfall)} to go`}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={styles.goalAddSavingsBtn}
+                    onPress={() => {
+                      setSelectedGoal(goal);
+                      setDepositAmount('25000');
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.goalAddSavingsBtnText}>💰 + Add Savings</Text>
+                  </TouchableOpacity>
                 </View>
               </TouchableOpacity>
             );
@@ -804,12 +820,73 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                 </Text>
               </View>
 
+              {/* Deposit / Add Savings Section */}
+              <View style={styles.goalDepositSection}>
+                <Text style={styles.goalDepositSectionTitle}>DEPOSIT SAVINGS TO GOAL</Text>
+                <View style={styles.goalQuickChipRow}>
+                  {['5000', '25000', '50000', '100000'].map((amt) => (
+                    <TouchableOpacity
+                      key={amt}
+                      style={[
+                        styles.goalQuickChip,
+                        depositAmount === amt && styles.goalQuickChipActive,
+                      ]}
+                      onPress={() => setDepositAmount(amt)}
+                      activeOpacity={0.8}
+                    >
+                      <Text
+                        style={[
+                          styles.goalQuickChipText,
+                          depositAmount === amt && styles.goalQuickChipTextActive,
+                        ]}
+                      >
+                        +₹{Number(amt) >= 100000 ? `${Number(amt) / 100000}L` : `${Number(amt) / 1000}k`}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <View style={styles.goalDepositInputRow}>
+                  <Text style={styles.goalDepositCurrencyPrefix}>₹</Text>
+                  <TextInput
+                    style={styles.goalDepositInput}
+                    keyboardType="numeric"
+                    value={depositAmount}
+                    onChangeText={setDepositAmount}
+                    placeholder="Enter deposit amount"
+                    placeholderTextColor="#A0AEC0"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.goalDepositSubmitBtn}
+                  onPress={() => {
+                    const add = parseFloat(depositAmount) || 0;
+                    if (add > 0 && selectedGoal) {
+                      const updated: FinancialGoal = {
+                        ...selectedGoal,
+                        currentAmount: selectedGoal.currentAmount + add,
+                      };
+                      if (onUpdateGoal) {
+                        onUpdateGoal(updated);
+                      }
+                      setSelectedGoal(updated);
+                    }
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.goalDepositSubmitBtnText}>
+                    💰 Deposit +{formatINR(parseFloat(depositAmount) || 0)} to Goal
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
               <TouchableOpacity
                 style={styles.modalCloseBtn}
                 onPress={() => setSelectedGoal(null)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.modalCloseBtnText}>Close</Text>
+                <Text style={styles.modalCloseBtnText}>Done</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1719,5 +1796,105 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
+  },
+  goalActionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F4F1',
+  },
+  goalAddSavingsBtn: {
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(8, 122, 80, 0.2)',
+  },
+  goalAddSavingsBtnText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#087A50',
+  },
+  goalDepositSection: {
+    marginTop: 14,
+    marginBottom: 10,
+    padding: 12,
+    backgroundColor: '#F8FAF9',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  goalDepositSectionTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#64748B',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  goalQuickChipRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 10,
+  },
+  goalQuickChip: {
+    flex: 1,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+  },
+  goalQuickChipActive: {
+    backgroundColor: '#E8F5EE',
+    borderColor: '#087A50',
+  },
+  goalQuickChipText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  goalQuickChipTextActive: {
+    color: '#087A50',
+    fontWeight: '800',
+  },
+  goalDepositInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  goalDepositCurrencyPrefix: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#64748B',
+    marginRight: 6,
+  },
+  goalDepositInput: {
+    flex: 1,
+    paddingVertical: 8,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  goalDepositSubmitBtn: {
+    backgroundColor: '#087A50',
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  goalDepositSubmitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });

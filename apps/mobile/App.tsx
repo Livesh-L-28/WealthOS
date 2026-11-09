@@ -379,6 +379,11 @@ function WealthOSContent() {
     showNotification(`Strategic goal established: ${newGoal.title}`);
   };
 
+  const handleUpdateGoal = (updatedGoal: FinancialGoal) => {
+    setGoals(prev => prev.map(g => g.id === updatedGoal.id ? updatedGoal : g));
+    showNotification(`Updated savings for ${updatedGoal.title}: ${formatINR(updatedGoal.currentAmount)}`);
+  };
+
   const handleAddInvestment = (newHolding: InvestmentHolding) => {
     setHoldings([...holdings, newHolding]);
     setIsAddInvestmentModalOpen(false);
@@ -758,6 +763,7 @@ function WealthOSContent() {
               onAddTransaction={handleOpenAddExpense}
               onAddEnvelope={() => setIsCreateBudgetModalOpen(true)}
               onAddGoal={() => setIsCreateGoalModalOpen(true)}
+              onUpdateGoal={handleUpdateGoal}
               initialSubTab={activeScreen === 'goals' ? 'GOALS' : 'ALL'}
             />
           </ScrollView>
