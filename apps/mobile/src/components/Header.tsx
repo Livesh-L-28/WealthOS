@@ -34,37 +34,26 @@ export const Header: React.FC<HeaderProps> = ({
         },
       ]}
     >
-      {/* Left: Brand Identity & Enterprise Workspace Dropdown Trigger */}
+      {/* Left: Clean Brand Identity & Trust Indicator */}
       <TouchableOpacity
         style={styles.brandRow}
         onPress={onOpenHub}
         activeOpacity={0.75}
-        accessibilityLabel="Open Workspace and Enterprise Menu"
+        accessibilityLabel="Open Enterprise Menu"
       >
         <View style={[styles.logoBadge, { backgroundColor: theme.colors.primary }]}>
           <Text style={styles.logoText}>W</Text>
         </View>
         <View style={styles.brandTextCol}>
-          <View style={styles.titleWithPill}>
-            <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
-              Wealth<Text style={[styles.brandAccent, { color: theme.colors.primary }]}>OS</Text>
-            </Text>
-            <View
-              style={[
-                styles.workspacePill,
-                {
-                  backgroundColor: theme.colors.primaryLightSolid,
-                  borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(37, 99, 235, 0.2)',
-                },
-              ]}
-            >
-              <Text style={[styles.workspacePillText, { color: theme.colors.primary }]}>
-                {activeWorkspace.toUpperCase()}
-              </Text>
-              <Text style={[styles.workspacePillArrow, { color: theme.colors.primary }]}>▾</Text>
-            </View>
-          </View>
-          <View style={styles.syncRow}>
+          <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
+            Wealth<Text style={[styles.brandAccent, { color: theme.colors.primary }]}>OS</Text>
+          </Text>
+          <TouchableOpacity
+            style={styles.syncRow}
+            onPress={onOpenReconciliation}
+            activeOpacity={0.7}
+            accessibilityLabel="Ledger Status - Tap to Open Control Centre"
+          >
             <View
               style={[
                 styles.syncDot,
@@ -75,11 +64,11 @@ export const Header: React.FC<HeaderProps> = ({
             <Text style={[styles.syncText, { color: theme.colors.textSecondary }]}>
               {isSyncing ? 'Synchronizing...' : 'Ledger In Balance'}
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
 
-      {/* Right: Sleek Action Dock: Search, Theme Toggle, Copilot, Reconciliation Shield & Enterprise Menu */}
+      {/* Right: Clean Header Actions */}
       <View style={styles.actionsRow}>
         {onOpenSearch && (
           <TouchableOpacity
@@ -100,34 +89,6 @@ export const Header: React.FC<HeaderProps> = ({
           accessibilityLabel="Toggle Dark Mode"
         >
           <Text style={styles.actionIconSmall}>{isDark ? '☀️' : '🌙'}</Text>
-        </TouchableOpacity>
-
-        {onOpenCopilot && (
-          <TouchableOpacity
-            style={[
-              styles.copilotHeaderBtn,
-              {
-                backgroundColor: theme.colors.primaryLightSolid,
-                borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(37, 99, 235, 0.25)',
-              },
-            ]}
-            onPress={onOpenCopilot}
-            activeOpacity={0.8}
-            accessibilityLabel="Open AI Copilot"
-          >
-            <Text style={styles.copilotHeaderIcon}>✨</Text>
-            <Text style={[styles.copilotHeaderText, { color: theme.colors.primary }]}>Copilot</Text>
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
-          onPress={onOpenReconciliation}
-          activeOpacity={0.7}
-          accessibilityLabel="Open Ledger Control Centre"
-        >
-          <Text style={styles.iconButtonText}>🛡️</Text>
-          <View style={[styles.shieldActiveDot, { backgroundColor: theme.colors.positive }]} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -193,24 +154,6 @@ const styles = StyleSheet.create({
   brandAccent: {
     fontWeight: '800',
   },
-  workspacePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  workspacePillText: {
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.2,
-  },
-  workspacePillArrow: {
-    fontSize: 8,
-    fontWeight: '800',
-  },
   syncRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -235,22 +178,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  copilotHeaderBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  copilotHeaderIcon: {
-    fontSize: 12,
-  },
-  copilotHeaderText: {
-    fontSize: 11,
-    fontWeight: '700',
-  },
   iconButton: {
     width: 34,
     height: 34,
@@ -258,21 +185,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    position: 'relative',
-  },
-  iconButtonText: {
-    fontSize: 14,
   },
   actionIconSmall: {
     fontSize: 13,
-  },
-  shieldActiveDot: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
   },
   menuButton: {
     width: 34,
