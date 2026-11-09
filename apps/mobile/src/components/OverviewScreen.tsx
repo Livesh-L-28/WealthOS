@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { DashboardPeriod, Transaction, BudgetEnvelope, FinancialGoal } from '../types';
 import { MobileAreaChart } from './charts/MobileAreaChart';
 import { IncomeExpenseActionBar } from './IncomeExpenseActionBar';
@@ -68,6 +68,28 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
 
   return (
     <View style={styles.container}>
+      {/* 0. Top Period Switcher */}
+      <View style={styles.periodRow}>
+        {(['1M', '3M', 'YTD', 'ALL'] as DashboardPeriod[]).map((p) => {
+          const isActive = period === p;
+          const label = p === '1M' ? '1M (Nov)' : p;
+          return (
+            <TouchableOpacity
+              key={p}
+              style={[styles.periodTab, isActive && styles.periodTabActive]}
+              onPress={() => onPeriodChange(p)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Select period ${label}`}
+            >
+              <Text style={[styles.periodTabText, isActive && styles.periodTabTextActive]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
       {/* 1. Hero Net Worth Interactive Bezier Area Chart with Trajectory & Attribution */}
       <MobileAreaChart
         currentNetWorth={netWorth}
@@ -118,5 +140,40 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 24,
+  },
+  periodRow: {
+    flexDirection: 'row',
+    backgroundColor: '#EEF2EF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E7ECE8',
+    padding: 3,
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  periodTab: {
+    flex: 1,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  periodTabActive: {
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  periodTabText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#758078',
+  },
+  periodTabTextActive: {
+    fontWeight: '700',
+    color: '#17231D',
   },
 });
