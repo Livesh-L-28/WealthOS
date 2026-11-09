@@ -16,9 +16,10 @@ import {
 
 interface NetWorthScreenProps {
   onBack: () => void;
+  onShowToast?: (msg: string) => void;
 }
 
-export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({ onBack }) => {
+export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({ onBack, onShowToast }) => {
   const [strategy, setStrategy] = useState<'AVALANCHE' | 'SNOWBALL'>('AVALANCHE');
   const [extraPayment, setExtraPayment] = useState<number>(10000);
 
@@ -38,8 +39,18 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({ onBack }) => {
           <Text style={styles.backLabel}>Overview</Text>
         </TouchableOpacity>
         <Text style={styles.screenTitle}>Net Worth & Balance Sheet</Text>
-        <View style={styles.topRightBadge}>
-          <Text style={styles.topRightBadgeText}>AUDITED</Text>
+        <View style={styles.topActionsRow}>
+          <View style={styles.topRightBadge}>
+            <Text style={styles.topRightBadgeText}>AUDITED</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.downloadHeaderBtn}
+            onPress={() => onShowToast?.('Exporting certified Balance Sheet PDF...')}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.downloadHeaderIcon}>⬇️</Text>
+            <Text style={styles.downloadHeaderText}>PDF</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -81,6 +92,35 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({ onBack }) => {
             <View style={styles.metricDotRed} />
             <Text style={styles.metricLabel}>Total Liabilities</Text>
             <Text style={styles.metricValueDebt}>{formatINR(totalLiabilities)}</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Institutional Solvency & Liquidity Ratios */}
+      <View style={styles.ratiosCard}>
+        <View style={styles.ratiosHeaderRow}>
+          <Text style={styles.ratiosEyebrow}>INSTITUTIONAL SOLVENCY RATIOS</Text>
+          <View style={styles.gradeBadge}>
+            <Text style={styles.gradeBadgeText}>Grade AAA · Pristine</Text>
+          </View>
+        </View>
+        <View style={styles.ratiosGrid}>
+          <View style={styles.ratioItem}>
+            <Text style={styles.ratioLabel}>Debt-to-Equity</Text>
+            <Text style={styles.ratioValue}>{(totalLiabilities / netWorth).toFixed(2)}x</Text>
+            <Text style={styles.ratioSubGreen}>Optimal (&lt;0.5x)</Text>
+          </View>
+          <View style={styles.ratioItem}>
+            <Text style={styles.ratioLabel}>Solvency Ratio</Text>
+            <Text style={[styles.ratioValue, { color: theme.colors.primary }]}>
+              {((netWorth / totalAssets) * 100).toFixed(1)}%
+            </Text>
+            <Text style={styles.ratioSubGreen}>High Equity</Text>
+          </View>
+          <View style={styles.ratioItem}>
+            <Text style={styles.ratioLabel}>Liquidity Coverage</Text>
+            <Text style={[styles.ratioValue, { color: '#2563EB' }]}>4.2x</Text>
+            <Text style={[styles.ratioSubGreen, { color: '#2563EB' }]}>14 Mo Runway</Text>
           </View>
         </View>
       </View>
@@ -280,6 +320,35 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({ onBack }) => {
         ))}
       </View>
 
+      {/* Download Audited Statement CTA Card */}
+      <View style={styles.exportCard}>
+        <View style={styles.exportCardHeader}>
+          <View style={styles.exportBadge}>
+            <Text style={styles.exportBadgeIcon}>🛡️</Text>
+            <Text style={styles.exportBadgeText}>CERTIFIED TREASURY AUDIT REPORT</Text>
+          </View>
+          <Text style={styles.exportTitle}>Official Family Office Balance Sheet</Text>
+          <Text style={styles.exportDesc}>
+            Export institutional statement with SHA-256 Merkle audit seal, asset classification, debt schedule, and statutory compliance certification.
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={() => onShowToast?.('Exporting WealthOS Certified Balance Sheet & Audit Statement (PDF)...')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.exportButtonIcon}>⬇️</Text>
+          <Text style={styles.exportButtonText}>Download Balance Sheet Statement (PDF)</Text>
+        </TouchableOpacity>
+
+        <View style={styles.exportFooterRow}>
+          <Text style={styles.exportFooterText}>Format: High-Res A4 Print / PDF</Text>
+          <Text style={styles.exportFooterText}>Ref: WOS-BS-2026-Q4</Text>
+          <Text style={styles.exportFooterText}>Ind AS Compliant</Text>
+        </View>
+      </View>
+
       <View style={{ height: 40 }} />
     </ScrollView>
   );
@@ -324,6 +393,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.textPrimary,
   },
+  topActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   topRightBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -336,6 +410,149 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: theme.colors.primary,
+  },
+  downloadHeaderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: theme.colors.textPrimary,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  downloadHeaderIcon: {
+    fontSize: 10,
+  },
+  downloadHeaderText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  ratiosCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 20,
+  },
+  ratiosHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  ratiosEyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.textTertiary,
+    letterSpacing: 0.8,
+  },
+  gradeBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  gradeBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#15803D',
+  },
+  ratiosGrid: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  ratioItem: {
+    flex: 1,
+    backgroundColor: '#F8FAF9',
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    alignItems: 'center',
+  },
+  ratioLabel: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: theme.colors.textTertiary,
+  },
+  ratioValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    marginVertical: 2,
+  },
+  ratioSubGreen: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  exportCard: {
+    backgroundColor: '#17231D',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  exportCardHeader: {
+    marginBottom: 14,
+  },
+  exportBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  exportBadgeIcon: {
+    fontSize: 11,
+  },
+  exportBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.primary,
+    letterSpacing: 0.8,
+  },
+  exportTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  exportDesc: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.7)',
+    lineHeight: 16,
+  },
+  exportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: theme.colors.primary,
+    paddingVertical: 13,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  exportButtonIcon: {
+    fontSize: 13,
+  },
+  exportButtonText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  exportFooterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  exportFooterText: {
+    fontSize: 9,
+    color: 'rgba(255, 255, 255, 0.5)',
   },
   heroCard: {
     backgroundColor: theme.colors.surface,

@@ -535,7 +535,10 @@ function WealthOSContent() {
         )}
 
         {(activeScreen === 'net-worth' || activeScreen === 'reports') && (
-          <NetWorthScreen onBack={() => setActiveScreen('overview')} />
+          <NetWorthScreen
+            onBack={() => setActiveScreen('overview')}
+            onShowToast={showNotification}
+          />
         )}
 
         {activeScreen === 'analytics' && (
