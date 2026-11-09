@@ -27,6 +27,7 @@ const CATEGORY_PRESETS = [
   { name: 'Fitness & Wellness', icon: '🏃', color: '#14B8A6', defaultCap: '10000' },
   { name: 'Travel & Vacation', icon: '✈️', color: '#F59E0B', defaultCap: '35000' },
   { name: 'Home Repairs', icon: '🛠️', color: '#6366F1', defaultCap: '12000' },
+  { name: 'Other / Custom', icon: '✨', color: '#16A36A', defaultCap: '10000' },
 ];
 
 export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
