@@ -215,17 +215,19 @@ describe('WealthOS Master Mobile Functions & Interactive Integrity Suite', () =>
       expect(updatedTotalAssets).toBe(initialTotalAssets);
     });
 
-    it('verifies 5-pillar modern fintech navigation mapping', () => {
+    it('verifies balanced modern fintech navigation dock mapping with money mapped to home ledger', () => {
       const mapPillar = (screen: string): string => {
-        if (screen === 'home' || screen === 'overview' || screen === 'net-worth') return 'home';
         if (
+          screen === 'home' ||
+          screen === 'overview' ||
+          screen === 'net-worth' ||
           screen === 'money' ||
           screen === 'accounts' ||
           screen === 'transactions' ||
           screen === 'transfers' ||
           screen === 'analytics'
         ) {
-          return 'money';
+          return 'home';
         }
         if (
           screen === 'invest' ||
@@ -249,9 +251,9 @@ describe('WealthOS Master Mobile Functions & Interactive Integrity Suite', () =>
 
       expect(mapPillar('home')).toBe('home');
       expect(mapPillar('overview')).toBe('home');
-      expect(mapPillar('accounts')).toBe('money');
-      expect(mapPillar('transfers')).toBe('money');
-      expect(mapPillar('transactions')).toBe('money');
+      expect(mapPillar('accounts')).toBe('home');
+      expect(mapPillar('transfers')).toBe('home');
+      expect(mapPillar('transactions')).toBe('home');
       expect(mapPillar('investments')).toBe('invest');
       expect(mapPillar('dividends')).toBe('invest');
       expect(mapPillar('budgets')).toBe('plan');
