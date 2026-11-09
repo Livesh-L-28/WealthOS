@@ -590,56 +590,6 @@ function WealthOSContent() {
               />
             }
           >
-            {/* Contextual Workspace & Intelligence Strip (Moved out of cramped header) */}
-            <View
-              style={[
-                styles.workspaceQuickStrip,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.border,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                style={styles.workspaceQuickBtn}
-                onPress={() => setIsEnterpriseDrawerOpen(true)}
-                activeOpacity={0.75}
-                accessibilityLabel="Switch Tenant Workspace"
-              >
-                <Text style={styles.workspaceQuickIcon}>🏢</Text>
-                <View>
-                  <Text style={[styles.workspaceQuickTitle, { color: theme.colors.textPrimary }]}>
-                    {activeWorkspace} ▾
-                  </Text>
-                  <Text style={[styles.workspaceQuickSub, { color: theme.colors.textSecondary }]}>
-                    Multi-entity family ledger
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              <View style={styles.workspaceQuickActions}>
-                <TouchableOpacity
-                  style={[styles.quickBadgeBtn, { backgroundColor: theme.colors.primaryAlpha10 }]}
-                  onPress={() => setActiveScreen('reconciliation')}
-                  activeOpacity={0.75}
-                  accessibilityLabel="Open Control Centre"
-                >
-                  <Text style={styles.quickBadgeIcon}>🛡️</Text>
-                  <Text style={[styles.quickBadgeText, { color: theme.colors.primaryDark }]}>Recon</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.quickBadgeBtn, { backgroundColor: theme.colors.primaryLightSolid }]}
-                  onPress={() => setActiveScreen('copilot')}
-                  activeOpacity={0.75}
-                  accessibilityLabel="Ask AI Copilot"
-                >
-                  <Text style={styles.quickBadgeIcon}>✨</Text>
-                  <Text style={[styles.quickBadgeText, { color: theme.colors.primary }]}>Copilot</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
             <OverviewScreen
               period={period}
               onPeriodChange={setPeriod}
@@ -965,56 +915,6 @@ const styles = StyleSheet.create({
   resetButtonText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '700',
-  },
-  workspaceQuickStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 6,
-    borderRadius: 14,
-    borderWidth: 1,
-  },
-  workspaceQuickBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  workspaceQuickIcon: {
-    fontSize: 18,
-  },
-  workspaceQuickTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  workspaceQuickSub: {
-    fontSize: 10,
-    marginTop: 1,
-  },
-  workspaceQuickActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  quickBadgeBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 5,
-    borderRadius: 8,
-  },
-  quickBadgeIcon: {
-    fontSize: 12,
-  },
-  quickBadgeText: {
-    fontSize: 11,
     fontWeight: '700',
   },
 });
