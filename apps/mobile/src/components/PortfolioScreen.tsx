@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { theme } from '../theme';
 import { InvestmentHolding } from '../types';
+import { INITIAL_DIVIDENDS } from '../data';
 import { formatINR } from '../formatters';
 import { MobileDonutAllocationChart } from './charts';
 
@@ -11,12 +12,48 @@ interface PortfolioScreenProps {
   onAddInvestment?: () => void;
 }
 
+interface ActiveSIP {
+  id: string;
+  fundName: string;
+  amount: number;
+  frequency: string;
+  debitDate: string;
+  nextDebit: string;
+  sourceAccount: string;
+  status: 'ACTIVE' | 'PAUSED';
+}
+
+const ACTIVE_SIPS: ActiveSIP[] = [
+  {
+    id: 'sip-1',
+    fundName: 'Parag Parikh Flexi Cap Fund - Direct-G',
+    amount: 50000,
+    frequency: 'Monthly',
+    debitDate: '01st of each month',
+    nextDebit: '01 Dec 2026',
+    sourceAccount: 'ICICI Privileged Savings •••• 9921',
+    status: 'ACTIVE',
+  },
+  {
+    id: 'sip-2',
+    fundName: 'Mirae Asset Large Cap Fund - Direct-G',
+    amount: 25000,
+    frequency: 'Monthly',
+    debitDate: '10th of each month',
+    nextDebit: '10 Nov 2026',
+    sourceAccount: 'HDFC Corporate Salary •••• 4921',
+    status: 'ACTIVE',
+  },
+];
+
+type PortfolioFilter = 'ALL' | 'EQUITY' | 'MUTUAL_FUND' | 'SIPS' | 'DIVIDENDS' | 'GOLD';
+
 export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
   holdings,
   onBack,
   onAddInvestment,
 }) => {
-  const [filter, setFilter] = useState<'ALL' | 'EQUITY' | 'MUTUAL_FUND' | 'GOLD'>('ALL');
+  const [filter, setFilter] = useState<PortfolioFilter>('ALL');
   const [selectedHolding, setSelectedHolding] = useState<InvestmentHolding | null>(null);
 
   const filteredHoldings = holdings.filter(
@@ -30,6 +67,27 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
 
   return (
     <View style={styles.container}>
+      {/* 1. Header with Add Button */}
+      <View style={styles.sectionHeaderRow}>
+        <View style={{ flex: 1, marginRight: 8 }}>
+          <Text style={styles.sectionHeaderTitle}>Investments & Demat</Text>
+          <Text style={styles.sectionHeaderPnl}>
+            Total P&L: {totalPnl >= 0 ? '+' : ''}{formatINR(totalPnl)} ({pnlPct.toFixed(1)}%)
+          </Text>
+        </View>
+        {onAddInvestment && (
+          <TouchableOpacity
+            style={styles.headerAddBtn}
+            onPress={onAddInvestment}
+            activeOpacity={0.8}
+            accessibilityLabel="Add New Investment or SIP"
+          >
+            <Text style={styles.headerAddBtnIcon}>+</Text>
+            <Text style={styles.headerAddBtnText}>Add Asset</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
       {/* Portfolio Hero Card */}
       <View style={styles.heroCard}>
         <View style={styles.heroTopRow}>
@@ -77,12 +135,18 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
       />
 
       {/* Segmented Filter Control */}
-      <View style={styles.segmentedControl}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.segmentedScroll}
+      >
         {(
           [
             { id: 'ALL', label: `All (${holdings.length})` },
             { id: 'EQUITY', label: 'Equities' },
-            { id: 'MUTUAL_FUND', label: 'Funds' },
+            { id: 'MUTUAL_FUND', label: 'Mutual Funds' },
+            { id: 'SIPS', label: `SIPs (${ACTIVE_SIPS.length})` },
+            { id: 'DIVIDENDS', label: `Dividends (${INITIAL_DIVIDENDS.length})` },
             { id: 'GOLD', label: 'Gold' },
           ] as const
         ).map((f) => {
@@ -100,10 +164,112 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
 
-      {/* Holdings List */}
-      {filteredHoldings.length === 0 ? (
+      {/* Active SIPs View */}
+      {filter === 'SIPS' && (
+        <View style={styles.holdingsList}>
+          <View style={styles.summaryBar}>
+            <View>
+              <Text style={styles.summaryBarLabel}>TOTAL MONTHLY SIP COMMITMENT</Text>
+              <Text style={styles.summaryBarVal}>₹75,000.00 / month</Text>
+            </View>
+            {onAddInvestment && (
+              <TouchableOpacity
+                style={styles.subActionBtn}
+                onPress={onAddInvestment}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.subActionBtnText}>+ New SIP</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          {ACTIVE_SIPS.map((sip) => (
+            <View key={sip.id} style={styles.holdingCard}>
+              <View style={styles.holdingTopRow}>
+                <View style={styles.holdingTitleCol}>
+                  <Text style={styles.holdingSymbol}>{sip.fundName}</Text>
+                  <Text style={styles.holdingName}>Auto-debit: {sip.sourceAccount}</Text>
+                </View>
+                <View style={styles.holdingValueCol}>
+                  <Text style={styles.holdingValue}>{formatINR(sip.amount)}/mo</Text>
+                  <View style={styles.activePill}>
+                    <Text style={styles.activePillText}>● {sip.status}</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={styles.holdingDetailsRow}>
+                <Text style={styles.holdingDetailsText}>
+                  Schedule: {sip.debitDate} · Next: {sip.nextDebit}
+                </Text>
+                <View style={styles.taxLotPill}>
+                  <Text style={styles.taxLotText}>NACH Verified</Text>
+                </View>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Dividends View */}
+      {filter === 'DIVIDENDS' && (
+        <View style={styles.holdingsList}>
+          <View style={styles.summaryBar}>
+            <View>
+              <Text style={styles.summaryBarLabel}>ANNUAL DIVIDEND CASH FLOW</Text>
+              <Text style={styles.summaryBarVal}>₹23,337.50 (Settled: ₹14,500.00)</Text>
+            </View>
+            <View style={styles.taxLotPill}>
+              <Text style={styles.taxLotText}>TDS 10% Deducted</Text>
+            </View>
+          </View>
+          {INITIAL_DIVIDENDS.map((div) => {
+            const isSettled = div.status === 'RECEIVED';
+            return (
+              <View key={div.id} style={styles.holdingCard}>
+                <View style={styles.holdingTopRow}>
+                  <View style={styles.holdingTitleCol}>
+                    <Text style={styles.holdingSymbol}>{div.symbol}</Text>
+                    <Text style={styles.holdingName}>{div.company}</Text>
+                  </View>
+                  <View style={styles.holdingValueCol}>
+                    <Text style={[styles.holdingValue, { color: '#087A50' }]}>
+                      +{formatINR(div.totalPayout)}
+                    </Text>
+                    <View
+                      style={[
+                        styles.statusPillBadge,
+                        { backgroundColor: isSettled ? '#E8F5EE' : '#EFF6FF' },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.statusPillBadgeText,
+                          { color: isSettled ? '#087A50' : '#2563EB' },
+                        ]}
+                      >
+                        {isSettled ? '✓ SETTLED' : '● PROJECTED'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.holdingDetailsRow}>
+                  <Text style={styles.holdingDetailsText}>
+                    Date: {div.payoutDate} · Rate: ₹{div.amountPerShare.toFixed(2)}/unit
+                  </Text>
+                  <View style={styles.taxLotPill}>
+                    <Text style={styles.taxLotText}>Bank ECS</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      )}
+
+      {/* Holdings List (All, Equity, Mutual Fund, Gold) */}
+      {filter !== 'SIPS' && filter !== 'DIVIDENDS' && (
+        filteredHoldings.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📈</Text>
           <Text style={styles.emptyTitle}>No Investment Holdings</Text>
@@ -165,7 +331,7 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
             );
           })}
         </View>
-      )}
+      ))}
 
       {/* Holding Detail Modal */}
       {selectedHolding && (
@@ -250,6 +416,110 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 24,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  sectionHeaderTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+  },
+  sectionHeaderPnl: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#087A50',
+    marginTop: 2,
+  },
+  headerAddBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#087A50',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    shadowColor: '#087A50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  headerAddBtnIcon: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  headerAddBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  segmentedScroll: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 14,
+    paddingVertical: 2,
+  },
+  summaryBar: {
+    backgroundColor: '#F8FAF9',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E7ECE8',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  summaryBarLabel: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: theme.colors.textSecondary,
+    letterSpacing: 0.5,
+  },
+  summaryBarVal: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    marginTop: 2,
+    fontVariant: ['tabular-nums'],
+  },
+  subActionBtn: {
+    backgroundColor: '#087A50',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  subActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  activePill: {
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 2,
+  },
+  activePillText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#087A50',
+  },
+  statusPillBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 2,
+  },
+  statusPillBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
   },
   heroCard: {
     backgroundColor: theme.colors.surface,
