@@ -4,6 +4,8 @@ import { theme } from '../theme';
 
 interface HeaderProps {
   onAddTransaction: () => void;
+  onAddIncome?: () => void;
+  onAddExpense?: () => void;
   onOpenReconciliation: () => void;
   onOpenHub: () => void;
   activeWorkspace?: string;
@@ -12,6 +14,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   onAddTransaction,
+  onAddIncome,
+  onAddExpense,
   onOpenReconciliation,
   onOpenHub,
   activeWorkspace = 'Family Office',
@@ -50,8 +54,42 @@ export const Header: React.FC<HeaderProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Right: Actions Dock */}
+      {/* Right: Quick Inflow / Outflow Actions Dock */}
       <View style={styles.actionsRow}>
+        {onAddExpense && onAddIncome ? (
+          <>
+            <TouchableOpacity
+              style={styles.expenseQuickBtn}
+              onPress={onAddExpense}
+              activeOpacity={0.8}
+              accessibilityLabel="Quick Add Expense"
+            >
+              <Text style={styles.expenseQuickMinus}>−</Text>
+              <Text style={styles.expenseQuickText}>Exp</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.incomeQuickBtn}
+              onPress={onAddIncome}
+              activeOpacity={0.8}
+              accessibilityLabel="Quick Add Income"
+            >
+              <Text style={styles.incomeQuickPlus}>+</Text>
+              <Text style={styles.incomeQuickText}>Inc</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity
+            style={styles.primaryActionButton}
+            onPress={onAddTransaction}
+            activeOpacity={0.8}
+            accessibilityLabel="Add New Transaction"
+          >
+            <Text style={styles.primaryActionPlus}>+</Text>
+            <Text style={styles.primaryActionText}>Entry</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           style={styles.iconButton}
           onPress={onOpenReconciliation}
@@ -60,16 +98,6 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Text style={styles.iconButtonText}>🛡️</Text>
           <View style={styles.shieldActiveDot} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.primaryActionButton}
-          onPress={onAddTransaction}
-          activeOpacity={0.8}
-          accessibilityLabel="Add New Transaction"
-        >
-          <Text style={styles.primaryActionPlus}>+</Text>
-          <Text style={styles.primaryActionText}>Entry</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -172,11 +200,55 @@ const styles = StyleSheet.create({
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+  },
+  expenseQuickBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 3,
+  },
+  expenseQuickMinus: {
+    color: '#DC2626',
+    fontSize: 14,
+    fontWeight: '900',
+    marginTop: -2,
+  },
+  expenseQuickText: {
+    color: '#991B1B',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  incomeQuickBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 3,
+  },
+  incomeQuickPlus: {
+    color: '#15803D',
+    fontSize: 14,
+    fontWeight: '900',
+    marginTop: -1,
+  },
+  incomeQuickText: {
+    color: '#15803D',
+    fontSize: 11,
+    fontWeight: '800',
   },
   iconButton: {
-    width: 38,
-    height: 38,
+    width: 36,
+    height: 36,
     borderRadius: 10,
     backgroundColor: theme.colors.surfaceElevated,
     borderWidth: 1,
@@ -186,12 +258,12 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   iconButtonText: {
-    fontSize: 16,
+    fontSize: 15,
   },
   shieldActiveDot: {
     position: 'absolute',
-    top: 6,
-    right: 6,
+    top: 5,
+    right: 5,
     width: 6,
     height: 6,
     borderRadius: 3,

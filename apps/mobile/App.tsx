@@ -73,8 +73,19 @@ export default function App() {
   const [isEnterpriseDrawerOpen, setIsEnterpriseDrawerOpen] = useState(false);
   const [isReconModalOpen, setIsReconModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
+  const [txModalType, setTxModalType] = useState<'DEBIT' | 'CREDIT'>('DEBIT');
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  const handleOpenAddExpense = () => {
+    setTxModalType('DEBIT');
+    setIsAddTxModalOpen(true);
+  };
+
+  const handleOpenAddIncome = () => {
+    setTxModalType('CREDIT');
+    setIsAddTxModalOpen(true);
+  };
 
   // Computed Financial Totals
   const totalAssets = accounts
@@ -252,7 +263,9 @@ export default function App() {
 
       {/* Top Header */}
       <Header
-        onAddTransaction={() => setIsAddTxModalOpen(true)}
+        onAddTransaction={() => handleOpenAddExpense()}
+        onAddExpense={handleOpenAddExpense}
+        onAddIncome={handleOpenAddIncome}
         onOpenReconciliation={() => setActiveScreen('reconciliation')}
         onOpenHub={() => setIsEnterpriseDrawerOpen(true)}
         activeWorkspace={activeWorkspace}
@@ -345,7 +358,9 @@ export default function App() {
               transactions={transactions}
               onConnectBank={() => setIsConnectModalOpen(true)}
               onImportStatement={() => setIsImportModalOpen(true)}
-              onAddTransaction={() => setIsAddTxModalOpen(true)}
+              onAddTransaction={() => handleOpenAddExpense()}
+              onAddExpense={handleOpenAddExpense}
+              onAddIncome={handleOpenAddIncome}
               onAskCopilot={() => setActiveScreen('copilot')}
               onViewAllTransactions={() => setActiveScreen('accounts')}
               onOpenNetWorth={() => setActiveScreen('net-worth')}
@@ -371,7 +386,9 @@ export default function App() {
               accounts={accounts}
               transactions={transactions}
               onConnectAccount={() => setIsConnectModalOpen(true)}
-              onAddTransaction={() => setIsAddTxModalOpen(true)}
+              onAddTransaction={() => handleOpenAddExpense()}
+              onAddExpense={handleOpenAddExpense}
+              onAddIncome={handleOpenAddIncome}
             />
           </ScrollView>
         )}
@@ -454,6 +471,7 @@ export default function App() {
         onClose={() => setIsAddTxModalOpen(false)}
         accounts={accounts}
         onSubmit={handleAddTransaction}
+        initialType={txModalType}
       />
 
       <ConnectAccountModal

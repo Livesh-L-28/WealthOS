@@ -38,6 +38,9 @@
         "projectId": "62f74c56-a23c-4f15-8c48-e99957a6709d"
       }
     },
-    "owner": "livesh28"
+    "owner": "livesh28",
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }

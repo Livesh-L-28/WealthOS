@@ -6,6 +6,8 @@ interface QuickActionsSectionProps {
   onConnectBank: () => void;
   onImportStatement: () => void;
   onAddTransaction: () => void;
+  onAddExpense?: () => void;
+  onAddIncome?: () => void;
   onAskCopilot: () => void;
 }
 
@@ -13,35 +15,71 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
   onConnectBank,
   onImportStatement,
   onAddTransaction,
+  onAddExpense,
+  onAddIncome,
   onAskCopilot,
 }) => {
-  const actions = [
-    {
-      id: 'add',
-      label: 'Add Entry',
-      icon: '➕',
-      onPress: onAddTransaction,
-      isPrimary: true,
-    },
-    {
-      id: 'connect',
-      label: 'Link Bank',
-      icon: '🏛️',
-      onPress: onConnectBank,
-    },
-    {
-      id: 'import',
-      label: 'Import CAS',
-      icon: '📄',
-      onPress: onImportStatement,
-    },
-    {
-      id: 'copilot',
-      label: 'Copilot',
-      icon: '✨',
-      onPress: onAskCopilot,
-    },
-  ];
+  const actions = onAddExpense && onAddIncome
+    ? [
+        {
+          id: 'expense',
+          label: '− Expense',
+          icon: '↑',
+          onPress: onAddExpense,
+          variant: 'expense',
+        },
+        {
+          id: 'income',
+          label: '+ Income',
+          icon: '↓',
+          onPress: onAddIncome,
+          variant: 'income',
+        },
+        {
+          id: 'connect',
+          label: 'Link Bank',
+          icon: '🏛️',
+          onPress: onConnectBank,
+          variant: 'default',
+        },
+        {
+          id: 'import',
+          label: 'Import CAS',
+          icon: '📄',
+          onPress: onImportStatement,
+          variant: 'default',
+        },
+      ]
+    : [
+        {
+          id: 'add',
+          label: 'Add Entry',
+          icon: '➕',
+          onPress: onAddTransaction,
+          variant: 'income',
+        },
+        {
+          id: 'connect',
+          label: 'Link Bank',
+          icon: '🏛️',
+          onPress: onConnectBank,
+          variant: 'default',
+        },
+        {
+          id: 'import',
+          label: 'Import CAS',
+          icon: '📄',
+          onPress: onImportStatement,
+          variant: 'default',
+        },
+        {
+          id: 'copilot',
+          label: 'Copilot',
+          icon: '✨',
+          onPress: onAskCopilot,
+          variant: 'default',
+        },
+      ];
 
   return (
     <View style={styles.container}>
@@ -56,19 +94,28 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
             <View
               style={[
                 styles.iconBox,
-                act.isPrimary ? styles.iconBoxPrimary : styles.iconBoxSecondary,
+                act.variant === 'expense' && styles.iconBoxExpense,
+                act.variant === 'income' && styles.iconBoxIncome,
+                act.variant === 'default' && styles.iconBoxSecondary,
               ]}
             >
               <Text
                 style={[
                   styles.iconText,
-                  act.isPrimary && styles.iconTextPrimary,
+                  act.variant === 'expense' && styles.iconTextExpense,
+                  act.variant === 'income' && styles.iconTextIncome,
                 ]}
               >
                 {act.icon}
               </Text>
             </View>
-            <Text style={[styles.actionLabel, act.isPrimary && styles.actionLabelPrimary]}>
+            <Text
+              style={[
+                styles.actionLabel,
+                act.variant === 'expense' && styles.actionLabelExpense,
+                act.variant === 'income' && styles.actionLabelIncome,
+              ]}
+            >
               {act.label}
             </Text>
           </TouchableOpacity>
@@ -101,8 +148,7 @@ const styles = StyleSheet.create({
   },
   actionItem: {
     alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 64,
+    flex: 1,
   },
   iconBox: {
     width: 44,
@@ -112,32 +158,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 6,
   },
-  iconBoxPrimary: {
-    backgroundColor: theme.colors.primary,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
+  iconBoxExpense: {
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  iconBoxIncome: {
+    backgroundColor: '#DCFCE7',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
   },
   iconBoxSecondary: {
-    backgroundColor: '#F0F4F1',
+    backgroundColor: theme.colors.cardSubtle,
     borderWidth: 1,
     borderColor: theme.colors.borderLight,
   },
   iconText: {
     fontSize: 18,
   },
-  iconTextPrimary: {
-    color: theme.colors.textWhite,
+  iconTextExpense: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#DC2626',
+    marginTop: -2,
+  },
+  iconTextIncome: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#16A36A',
+    marginTop: -2,
   },
   actionLabel: {
     fontSize: 11,
     fontWeight: '700',
     color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
   },
-  actionLabelPrimary: {
-    color: theme.colors.primaryDark,
+  actionLabelExpense: {
+    color: '#991B1B',
+  },
+  actionLabelIncome: {
+    color: '#087A50',
   },
 });

@@ -16,6 +16,8 @@ interface AccountsScreenProps {
   transactions: Transaction[];
   onConnectAccount: () => void;
   onAddTransaction: () => void;
+  onAddExpense?: () => void;
+  onAddIncome?: () => void;
 }
 
 export const AccountsScreen: React.FC<AccountsScreenProps> = ({
@@ -23,6 +25,8 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
   transactions,
   onConnectAccount,
   onAddTransaction,
+  onAddExpense,
+  onAddIncome,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'ACCOUNTS' | 'TRANSACTIONS'>('ACCOUNTS');
   const [accountFilter, setAccountFilter] = useState<'ALL' | 'ASSET' | 'LIABILITY'>('ALL');
@@ -214,6 +218,37 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
         </>
       ) : (
         <>
+          {/* Quick Ledger Action Strip: Add Expense & Add Income */}
+          <View style={styles.ledgerActionsRow}>
+            <TouchableOpacity
+              style={[styles.ledgerActionBtn, styles.ledgerExpenseBtn]}
+              onPress={onAddExpense || onAddTransaction}
+              activeOpacity={0.85}
+            >
+              <View style={styles.ledgerActionIconCircleExpense}>
+                <Text style={styles.ledgerActionIconExpense}>−</Text>
+              </View>
+              <View style={styles.ledgerActionTexts}>
+                <Text style={styles.ledgerExpenseBtnTitle}>Add Expense</Text>
+                <Text style={styles.ledgerExpenseBtnSub}>Record outflow</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.ledgerActionBtn, styles.ledgerIncomeBtn]}
+              onPress={onAddIncome || onAddTransaction}
+              activeOpacity={0.85}
+            >
+              <View style={styles.ledgerActionIconCircleIncome}>
+                <Text style={styles.ledgerActionIconIncome}>+</Text>
+              </View>
+              <View style={styles.ledgerActionTexts}>
+                <Text style={styles.ledgerIncomeBtnTitle}>Add Income</Text>
+                <Text style={styles.ledgerIncomeBtnSub}>Record inflow</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
           {/* Transactions Ledger Search & Filter Bar */}
           <View style={styles.searchContainer}>
             <Text style={styles.searchIcon}>🔍</Text>
@@ -924,5 +959,79 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: theme.colors.textWhite,
+  },
+  ledgerActionsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  ledgerActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  ledgerExpenseBtn: {
+    backgroundColor: '#FEF2F2',
+    borderColor: 'rgba(220, 91, 91, 0.25)',
+  },
+  ledgerIncomeBtn: {
+    backgroundColor: '#ECFDF5',
+    borderColor: 'rgba(22, 163, 106, 0.25)',
+  },
+  ledgerActionIconCircleExpense: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: theme.colors.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ledgerActionIconExpense: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: theme.colors.textWhite,
+    lineHeight: 18,
+  },
+  ledgerActionIconCircleIncome: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ledgerActionIconIncome: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: theme.colors.textWhite,
+    lineHeight: 18,
+  },
+  ledgerActionTexts: {
+    flex: 1,
+  },
+  ledgerExpenseBtnTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.danger,
+  },
+  ledgerExpenseBtnSub: {
+    fontSize: 10,
+    color: '#991B1B',
+    fontWeight: '500',
+  },
+  ledgerIncomeBtnTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.primaryDark,
+  },
+  ledgerIncomeBtnSub: {
+    fontSize: 10,
+    color: theme.colors.primary,
+    fontWeight: '500',
   },
 });

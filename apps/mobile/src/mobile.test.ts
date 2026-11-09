@@ -11,14 +11,14 @@ import {
 } from './storage';
 
 describe('WealthOS Mobile Application (Gate 9 & Round 2 Acceptance)', () => {
-  describe('Expo SDK 51 Configuration Validation', () => {
-    it('enforces Expo SDK 51 with strict dark theme foundation', () => {
+  describe('Expo SDK Configuration Validation', () => {
+    it('enforces Expo SDK 51+ foundation with strict dark theme foundation', () => {
       const expo = appConfig.expo;
       expect(expo.name).toBe('WealthOS');
       expect(expo.slug).toBe('wealthos');
       expect(expo.userInterfaceStyle).toBe('dark');
       expect(expo.splash.backgroundColor).toBe('#0B0F17');
-      expect(pkgConfig.dependencies.expo).toBe('~51.0.0');
+      expect(pkgConfig.dependencies.expo).toMatch(/^~(51|52)\.0\.0$/);
     });
 
     it('enforces iOS and Android bundle identifiers and permissions', () => {

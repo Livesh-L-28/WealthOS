@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { DashboardPeriod, Transaction, BudgetEnvelope, FinancialGoal } from '../types';
 import { ExecutiveClarityBar } from './ExecutiveClarityBar';
+import { IncomeExpenseActionBar } from './IncomeExpenseActionBar';
 import { FinancialSummaryCards } from './FinancialSummaryCards';
 import { QuickActionsSection } from './QuickActionsSection';
 import { CashFlowCard } from './CashFlowCard';
@@ -25,6 +26,8 @@ interface OverviewScreenProps {
   onConnectBank: () => void;
   onImportStatement: () => void;
   onAddTransaction: () => void;
+  onAddExpense?: () => void;
+  onAddIncome?: () => void;
   onAskCopilot: () => void;
   onViewAllTransactions: () => void;
   onOpenNetWorth?: () => void;
@@ -47,6 +50,8 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
   onConnectBank,
   onImportStatement,
   onAddTransaction,
+  onAddExpense,
+  onAddIncome,
   onAskCopilot,
   onViewAllTransactions,
   onOpenNetWorth,
@@ -72,15 +77,25 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         onOpenNetWorth={onOpenNetWorth}
       />
 
-      {/* 2. Quick Actions Dock */}
+      {/* 2. Primary Add Expense & Add Income Action Bar */}
+      {onAddExpense && onAddIncome && (
+        <IncomeExpenseActionBar
+          onAddExpense={onAddExpense}
+          onAddIncome={onAddIncome}
+        />
+      )}
+
+      {/* 3. Quick Actions Dock */}
       <QuickActionsSection
         onConnectBank={onConnectBank}
         onImportStatement={onImportStatement}
         onAddTransaction={onAddTransaction}
+        onAddExpense={onAddExpense}
+        onAddIncome={onAddIncome}
         onAskCopilot={onAskCopilot}
       />
 
-      {/* 3. Inflow vs Outflow KPI Cards */}
+      {/* 4. Inflow vs Outflow KPI Cards */}
       <FinancialSummaryCards
         totalAssets={totalAssets}
         totalLiabilities={totalLiabilities}
@@ -89,23 +104,23 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         budgetAllocated={totalBudgeted}
       />
 
-      {/* 4. Cash Flow & Surplus Pulse */}
+      {/* 5. Cash Flow & Surplus Pulse */}
       <CashFlowCard
         monthlyInflows={monthlyInflows}
         monthlyOutflows={monthlyOutflows}
         onOpenAnalytics={onOpenAnalytics}
       />
 
-      {/* 5. Multi-Asset Portfolio Distribution */}
+      {/* 6. Multi-Asset Portfolio Distribution */}
       <PortfolioAllocationCard
         totalValue={totalPortfolioValue}
         totalInvested={totalInvestedValue}
       />
 
-      {/* 6. Solvency & Financial Health */}
+      {/* 7. Solvency & Financial Health */}
       <FinancialHealthCard />
 
-      {/* 7. Recent Transactions General Journal */}
+      {/* 8. Recent Transactions General Journal */}
       <RecentTransactionsCard
         transactions={transactions}
         onViewAll={onViewAllTransactions}
