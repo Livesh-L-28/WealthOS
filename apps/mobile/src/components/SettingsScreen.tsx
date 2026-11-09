@@ -15,6 +15,7 @@ interface SettingsScreenProps {
   activeWorkspace: string;
   onSelectWorkspace: (ws: string) => void;
   onShowToast: (msg: string) => void;
+  onLogout?: () => void;
 }
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
@@ -22,6 +23,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   activeWorkspace,
   onSelectWorkspace,
   onShowToast,
+  onLogout,
 }) => {
   const [biometricsEnabled, setBiometricsEnabled] = useState(true);
   const [offlineSync, setOfflineSync] = useState(true);
@@ -219,6 +221,36 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             <Text style={styles.auditHashText}>Hash: {item.hash}</Text>
           </View>
         ))}
+      </View>
+
+      {/* Account & Session Security / Logout */}
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionHeading}>ACCOUNT & ACTIVE SESSION</Text>
+      </View>
+
+      <View style={styles.sessionLogoutCard}>
+        <View style={styles.sessionUserRow}>
+          <View style={styles.sessionAvatar}>
+            <Text style={styles.sessionAvatarText}>LS</Text>
+          </View>
+          <View style={styles.sessionInfoCol}>
+            <Text style={styles.sessionUserName}>Livesh Sharma</Text>
+            <Text style={styles.sessionUserEmail}>livesh.test@wealthos.internal</Text>
+            <Text style={styles.sessionUserRole}>Role: Owner &bull; {activeWorkspace}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.sessionLogoutBtn}
+          onPress={() => {
+            onLogout?.();
+            onShowToast('Session revoked. Logged out securely.');
+          }}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.sessionLogoutBtnIcon}>🚪</Text>
+          <Text style={styles.sessionLogoutBtnText}>Log Out / Lock Session</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={{ height: 40 }} />
@@ -515,6 +547,70 @@ const styles = StyleSheet.create({
     fontFamily: 'Courier',
     color: theme.colors.textTertiary,
     marginTop: 4,
+  },
+  sessionLogoutCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 20,
+  },
+  sessionUserRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+  },
+  sessionAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: theme.colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sessionAvatarText: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  sessionInfoCol: {
+    flex: 1,
+  },
+  sessionUserName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+  },
+  sessionUserEmail: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    marginVertical: 1,
+  },
+  sessionUserRole: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  sessionLogoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  sessionLogoutBtnIcon: {
+    fontSize: 14,
+  },
+  sessionLogoutBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#DC2626',
   },
 });
 

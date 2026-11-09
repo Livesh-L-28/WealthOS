@@ -53,6 +53,7 @@ import { ReconciliationScreen } from './src/components/ReconciliationScreen';
 import { DocumentsScreen } from './src/components/DocumentsScreen';
 import { HouseholdScreen } from './src/components/HouseholdScreen';
 import { SettingsScreen } from './src/components/SettingsScreen';
+import { AuthScreen } from './src/components/AuthScreen';
 import { FinancialCalendarScreen } from './src/components/FinancialCalendarScreen';
 import { DividendsScreen } from './src/components/DividendsScreen';
 import { LiabilitiesScreen } from './src/components/LiabilitiesScreen';
@@ -129,6 +130,7 @@ function WealthOSContent() {
   const [period, setPeriod] = useState<DashboardPeriod>('1M');
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
 
   // Core Financial State - Clean Production Ledger by default
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
@@ -456,6 +458,67 @@ function WealthOSContent() {
     }
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setIsEnterpriseDrawerOpen(false);
+    showNotification('Session revoked. Logged out securely.');
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <View
+        style={[
+          styles.safeContainer,
+          {
+            paddingTop: topPadding,
+            backgroundColor: theme.colors.surface,
+          },
+        ]}
+      >
+        <ExpoStatusBar
+          style={isDark ? 'light' : 'dark'}
+          backgroundColor={theme.colors.surface}
+          translucent={true}
+        />
+        {notification && (
+          <View
+            style={[
+              styles.notificationToast,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(37, 99, 235, 0.4)',
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.notifIconCircle,
+                { backgroundColor: theme.colors.primaryLightSolid },
+              ]}
+            >
+              <Text style={[styles.notifIconText, { color: theme.colors.primary }]}>✓</Text>
+            </View>
+            <Text
+              style={[styles.notificationText, { color: theme.colors.textPrimary }]}
+              numberOfLines={2}
+            >
+              {notification}
+            </Text>
+          </View>
+        )}
+        <AuthScreen
+          onUnlock={() => {
+            setIsAuthenticated(true);
+            showNotification('Welcome back! Session authenticated.');
+          }}
+          activeWorkspace={activeWorkspace}
+          onSelectWorkspace={setActiveWorkspace}
+          onShowToast={showNotification}
+        />
+      </View>
+    );
+  }
+
   return (
     <View
       style={[
@@ -576,6 +639,7 @@ function WealthOSContent() {
               showNotification(`Switched tenant workspace to ${ws}`);
             }}
             onShowToast={showNotification}
+            onLogout={handleLogout}
           />
         )}
 
@@ -729,6 +793,7 @@ function WealthOSContent() {
         }}
         onResetToFresh={handleResetToFresh}
         onLoadSampleData={handleLoadDemoData}
+        onLogout={handleLogout}
       />
 
       {/* Contextual Quick Financial Action Modal Sheet */}

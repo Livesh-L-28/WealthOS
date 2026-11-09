@@ -21,6 +21,7 @@ interface EnterpriseDrawerProps {
   onSelectWorkspace: (workspace: string) => void;
   onResetToFresh?: () => void;
   onLoadSampleData?: () => void;
+  onLogout?: () => void;
 }
 
 interface MenuItem {
@@ -155,6 +156,7 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
   onSelectWorkspace,
   onResetToFresh,
   onLoadSampleData,
+  onLogout,
 }) => {
   return (
     <Modal visible={isOpen} animationType="slide" transparent={true} onRequestClose={onClose}>
@@ -321,6 +323,21 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
                 </Text>
               </View>
             </View>
+
+            {/* Log Out Session Button */}
+            {onLogout && (
+              <TouchableOpacity
+                style={styles.logoutDrawerBtn}
+                onPress={() => {
+                  onLogout();
+                  onClose();
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.logoutDrawerBtnIcon}>🚪</Text>
+                <Text style={styles.logoutDrawerBtnText}>Log Out / Lock Session</Text>
+              </TouchableOpacity>
+            )}
           </ScrollView>
         </SafeAreaView>
       </View>
@@ -634,6 +651,27 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: '#3B82F6',
     marginTop: 1,
+  },
+  logoutDrawerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  logoutDrawerBtnIcon: {
+    fontSize: 16,
+  },
+  logoutDrawerBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#DC2626',
   },
 });
 
