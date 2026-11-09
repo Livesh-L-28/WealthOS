@@ -5,6 +5,10 @@
  */
 
 export const theme = {
+  typography: {
+    fontFamily: 'System',
+    monoFont: 'monospace',
+  },
   colors: {
     // Surface & Canvas
     canvas: '#F7F9F7',

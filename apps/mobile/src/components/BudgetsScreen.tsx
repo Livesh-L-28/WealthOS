@@ -8,12 +8,16 @@ interface BudgetsScreenProps {
   budgets: BudgetEnvelope[];
   goals: FinancialGoal[];
   onAddTransaction?: () => void;
+  onAddEnvelope?: () => void;
+  onAddGoal?: () => void;
 }
 
 export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   budgets,
   goals,
   onAddTransaction,
+  onAddEnvelope,
+  onAddGoal,
 }) => {
   const [selectedEnv, setSelectedEnv] = useState<BudgetEnvelope | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
@@ -64,15 +68,26 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
       {/* Spending Envelopes Section */}
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionHeaderTitle}>MONTHLY SPENDING ENVELOPES</Text>
-        {onAddTransaction && (
-          <TouchableOpacity
-            style={styles.addSmallPill}
-            onPress={onAddTransaction}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.addSmallPillText}>+ Add Expense</Text>
-          </TouchableOpacity>
-        )}
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          {onAddEnvelope && (
+            <TouchableOpacity
+              style={styles.addSmallPillSecondary}
+              onPress={onAddEnvelope}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.addSmallPillSecondaryText}>+ New Envelope</Text>
+            </TouchableOpacity>
+          )}
+          {onAddTransaction && (
+            <TouchableOpacity
+              style={styles.addSmallPill}
+              onPress={onAddTransaction}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.addSmallPillText}>+ Log Expense</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <View style={styles.envelopesList}>
@@ -128,6 +143,15 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
       {/* Strategic Financial Goals */}
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionHeaderTitle}>STRATEGIC FINANCIAL GOALS</Text>
+        {onAddGoal && (
+          <TouchableOpacity
+            style={styles.addSmallPill}
+            onPress={onAddGoal}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.addSmallPillText}>+ Set Goal</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.goalsList}>
@@ -518,6 +542,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     color: theme.colors.primaryDark,
+  },
+  addSmallPillSecondary: {
+    backgroundColor: theme.colors.surfaceElevated,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  addSmallPillSecondaryText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
   },
   modalBackdrop: {
     flex: 1,

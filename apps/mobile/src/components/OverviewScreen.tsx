@@ -1,12 +1,12 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { DashboardPeriod, Transaction, BudgetEnvelope, FinancialGoal } from '../types';
-import { ExecutiveClarityBar } from './ExecutiveClarityBar';
+import { MobileAreaChart } from './charts/MobileAreaChart';
 import { IncomeExpenseActionBar } from './IncomeExpenseActionBar';
-import { FinancialSummaryCards } from './FinancialSummaryCards';
 import { QuickActionsSection } from './QuickActionsSection';
-import { CashFlowCard } from './CashFlowCard';
-import { PortfolioAllocationCard } from './PortfolioAllocationCard';
+import { FinancialSummaryCards } from './FinancialSummaryCards';
+import { MobileCashFlowBarChart } from './charts/MobileCashFlowBarChart';
+import { MobileDonutAllocationChart } from './charts/MobileDonutAllocationChart';
 import { FinancialHealthCard } from './FinancialHealthCard';
 import { RecentTransactionsCard } from './RecentTransactionsCard';
 
@@ -28,10 +28,14 @@ interface OverviewScreenProps {
   onAddTransaction: () => void;
   onAddExpense?: () => void;
   onAddIncome?: () => void;
+  onAddBudget?: () => void;
+  onAddGoal?: () => void;
+  onAddInvestment?: () => void;
   onAskCopilot: () => void;
   onViewAllTransactions: () => void;
   onOpenNetWorth?: () => void;
   onOpenAnalytics?: () => void;
+  onOpenPortfolio?: () => void;
 }
 
 export const OverviewScreen: React.FC<OverviewScreenProps> = ({
@@ -52,28 +56,22 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
   onAddTransaction,
   onAddExpense,
   onAddIncome,
+  onAddBudget,
+  onAddGoal,
+  onAddInvestment,
   onAskCopilot,
   onViewAllTransactions,
   onOpenNetWorth,
   onOpenAnalytics,
+  onOpenPortfolio,
 }) => {
   const totalBudgeted = budgets.reduce((s, b) => s + b.budgeted, 0);
-  const totalTargetGoals = goals.reduce((s, g) => s + g.targetAmount, 0);
-  const totalCurrentGoals = goals.reduce((s, g) => s + g.currentAmount, 0);
-  const goalsFundedPct = totalTargetGoals > 0 ? (totalCurrentGoals / totalTargetGoals) * 100 : 42.6;
 
   return (
     <View style={styles.container}>
-      {/* 1. Hero Net Worth & Accounting Clarity */}
-      <ExecutiveClarityBar
-        period={period}
-        onPeriodChange={onPeriodChange}
-        netWorth={netWorth}
-        totalAssets={totalAssets}
-        totalLiabilities={totalLiabilities}
-        monthlyInflows={monthlyInflows}
-        monthlyOutflows={monthlyOutflows}
-        goalsFundedPct={goalsFundedPct}
+      {/* 1. Hero Net Worth Interactive Bezier Area Chart with Trajectory & Attribution */}
+      <MobileAreaChart
+        currentNetWorth={netWorth}
         onOpenNetWorth={onOpenNetWorth}
       />
 
@@ -95,7 +93,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         onAskCopilot={onAskCopilot}
       />
 
-      {/* 4. Inflow vs Outflow KPI Cards */}
+      {/* 4. Inflow vs Outflow KPI Summary Cards */}
       <FinancialSummaryCards
         totalAssets={totalAssets}
         totalLiabilities={totalLiabilities}
@@ -104,20 +102,17 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         budgetAllocated={totalBudgeted}
       />
 
-      {/* 5. Cash Flow & Surplus Pulse */}
-      <CashFlowCard
-        monthlyInflows={monthlyInflows}
-        monthlyOutflows={monthlyOutflows}
-        onOpenAnalytics={onOpenAnalytics}
-      />
+      {/* 5. Professional 4-Month Inflow vs Outflow Dual-Bar Chart */}
+      <MobileCashFlowBarChart onOpenAnalytics={onOpenAnalytics} />
 
-      {/* 6. Multi-Asset Portfolio Distribution */}
-      <PortfolioAllocationCard
+      {/* 6. Multi-Asset Portfolio Asset Allocation Donut Ring Chart */}
+      <MobileDonutAllocationChart
         totalValue={totalPortfolioValue}
         totalInvested={totalInvestedValue}
+        onOpenPortfolio={onOpenPortfolio}
       />
 
-      {/* 7. Solvency & Financial Health */}
+      {/* 7. Solvency & Financial Health Rating */}
       <FinancialHealthCard />
 
       {/* 8. Recent Transactions General Journal */}
@@ -131,6 +126,6 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
 });

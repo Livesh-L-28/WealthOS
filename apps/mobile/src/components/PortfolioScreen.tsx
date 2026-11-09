@@ -3,13 +3,19 @@ import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
 import { theme } from '../theme';
 import { InvestmentHolding } from '../types';
 import { formatINR } from '../formatters';
+import { MobileDonutAllocationChart } from './charts';
 
 interface PortfolioScreenProps {
   holdings: InvestmentHolding[];
   onBack?: () => void;
+  onAddInvestment?: () => void;
 }
 
-export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings, onBack }) => {
+export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
+  holdings,
+  onBack,
+  onAddInvestment,
+}) => {
   const [filter, setFilter] = useState<'ALL' | 'EQUITY' | 'MUTUAL_FUND' | 'GOLD'>('ALL');
   const [selectedHolding, setSelectedHolding] = useState<InvestmentHolding | null>(null);
 
@@ -27,10 +33,21 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings, onBa
       {/* Portfolio Hero Card */}
       <View style={styles.heroCard}>
         <View style={styles.heroTopRow}>
-          <Text style={styles.heroLabel}>INVESTMENT PORTFOLIO</Text>
-          <View style={styles.realtimePill}>
-            <Text style={styles.realtimeText}>● Live Market Quotes</Text>
+          <View>
+            <Text style={styles.heroLabel}>INVESTMENT PORTFOLIO</Text>
+            <View style={styles.realtimePill}>
+              <Text style={styles.realtimeText}>● Live Market Quotes</Text>
+            </View>
           </View>
+          {onAddInvestment && (
+            <TouchableOpacity
+              style={styles.addAssetBtn}
+              onPress={onAddInvestment}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.addAssetBtnText}>+ Add Holding</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <Text style={styles.heroValue}>{formatINR(totalValue)}</Text>
@@ -52,6 +69,12 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings, onBa
           </View>
         </View>
       </View>
+
+      {/* Interactive Wall-Street SVG Donut Allocation Chart */}
+      <MobileDonutAllocationChart
+        totalValue={totalValue}
+        totalInvested={totalInvested}
+      />
 
       {/* Segmented Filter Control */}
       <View style={styles.segmentedControl}>
@@ -205,7 +228,7 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({ holdings, onBa
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 24,
   },
@@ -227,6 +250,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 8,
+  },
+  addAssetBtn: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  addAssetBtnText: {
+    color: theme.colors.textWhite,
+    fontSize: 11,
+    fontWeight: '700',
   },
   heroLabel: {
     fontSize: 10,

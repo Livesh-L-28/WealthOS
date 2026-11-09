@@ -50,16 +50,20 @@ import { ReconciliationModal } from './src/components/ReconciliationModal';
 import { AddTransactionModal } from './src/components/AddTransactionModal';
 import { ConnectAccountModal } from './src/components/ConnectAccountModal';
 import { ImportStatementModal } from './src/components/ImportStatementModal';
+import { CreateBudgetModal } from './src/components/CreateBudgetModal';
+import { CreateGoalModal } from './src/components/CreateGoalModal';
+import { AddInvestmentModal } from './src/components/AddInvestmentModal';
 import { formatINR } from './src/formatters';
 
 export { formatINR };
 
 function WealthOSContent() {
   const insets = useSafeAreaInsets();
-  const topPadding = Math.max(
-    insets.top,
-    Platform.OS === 'android' ? (RNStatusBar.currentHeight || 28) : 0
-  );
+  const topPadding = Platform.select({
+    ios: Math.max(insets.top, 44),
+    android: Math.max(insets.top, (RNStatusBar.currentHeight || 0) + 8, 38),
+    default: Math.max(insets.top, 24),
+  });
 
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('overview');
   const [activeWorkspace, setActiveWorkspace] = useState('Family Office');
@@ -83,6 +87,9 @@ function WealthOSContent() {
   const [txModalType, setTxModalType] = useState<'DEBIT' | 'CREDIT'>('DEBIT');
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isCreateBudgetModalOpen, setIsCreateBudgetModalOpen] = useState(false);
+  const [isCreateGoalModalOpen, setIsCreateGoalModalOpen] = useState(false);
+  const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
 
   const handleOpenAddExpense = () => {
     setTxModalType('DEBIT');
@@ -195,6 +202,24 @@ function WealthOSContent() {
 
     setTransactions([parsedTx1, parsedTx2, ...transactions]);
     showNotification('Statement Parsed: 2 transactions reconciled into ledger (+₹8,750, -₹2,450)');
+  };
+
+  const handleCreateBudget = (newEnv: BudgetEnvelope) => {
+    setBudgets((prev) => [newEnv, ...prev]);
+    setIsCreateBudgetModalOpen(false);
+    showNotification(`Created envelope "${newEnv.category}" (${formatINR(newEnv.budgeted)})`);
+  };
+
+  const handleCreateGoal = (newGoal: FinancialGoal) => {
+    setGoals((prev) => [newGoal, ...prev]);
+    setIsCreateGoalModalOpen(false);
+    showNotification(`Goal Created: "${newGoal.title}" Target ${formatINR(newGoal.targetAmount)}`);
+  };
+
+  const handleAddInvestment = (newHolding: InvestmentHolding) => {
+    setHoldings((prev) => [newHolding, ...prev]);
+    setIsAddInvestmentModalOpen(false);
+    showNotification(`Added ${newHolding.symbol} (${formatINR(newHolding.currentValue)}) to Portfolio`);
   };
 
   const handleSendCopilotMessage = (promptText?: string) => {
@@ -370,6 +395,10 @@ function WealthOSContent() {
               onViewAllTransactions={() => setActiveScreen('accounts')}
               onOpenNetWorth={() => setActiveScreen('net-worth')}
               onOpenAnalytics={() => setActiveScreen('analytics')}
+              onOpenPortfolio={() => setActiveScreen('investments')}
+              onAddBudget={() => setIsCreateBudgetModalOpen(true)}
+              onAddGoal={() => setIsCreateGoalModalOpen(true)}
+              onAddInvestment={() => setIsAddInvestmentModalOpen(true)}
             />
           </ScrollView>
         )}
@@ -411,7 +440,10 @@ function WealthOSContent() {
               />
             }
           >
-            <PortfolioScreen holdings={holdings} />
+            <PortfolioScreen
+              holdings={holdings}
+              onAddInvestment={() => setIsAddInvestmentModalOpen(true)}
+            />
           </ScrollView>
         )}
 
@@ -432,6 +464,8 @@ function WealthOSContent() {
               budgets={budgets}
               goals={goals}
               onAddTransaction={handleOpenAddExpense}
+              onAddEnvelope={() => setIsCreateBudgetModalOpen(true)}
+              onAddGoal={() => setIsCreateGoalModalOpen(true)}
             />
           </ScrollView>
         )}
@@ -494,6 +528,24 @@ function WealthOSContent() {
         visible={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onImportSuccess={handleSimulateImport}
+      />
+
+      <CreateBudgetModal
+        visible={isCreateBudgetModalOpen}
+        onClose={() => setIsCreateBudgetModalOpen(false)}
+        onSubmit={handleCreateBudget}
+      />
+
+      <CreateGoalModal
+        visible={isCreateGoalModalOpen}
+        onClose={() => setIsCreateGoalModalOpen(false)}
+        onSubmit={handleCreateGoal}
+      />
+
+      <AddInvestmentModal
+        visible={isAddInvestmentModalOpen}
+        onClose={() => setIsAddInvestmentModalOpen(false)}
+        onSubmit={handleAddInvestment}
       />
     </View>
   );
