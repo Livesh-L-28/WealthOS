@@ -732,6 +732,7 @@ function WealthOSContent() {
             <PortfolioScreen
               holdings={holdings}
               onAddInvestment={() => setIsAddInvestmentModalOpen(true)}
+              onShowToast={showNotification}
             />
           </ScrollView>
         )}
