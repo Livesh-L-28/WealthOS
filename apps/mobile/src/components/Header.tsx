@@ -7,7 +7,7 @@ interface HeaderProps {
   onAddIncome?: () => void;
   onAddExpense?: () => void;
   onOpenReconciliation: () => void;
-  onOpenHub: () => void;
+  onOpenHub?: () => void;
   onOpenCopilot?: () => void;
   onOpenSearch?: () => void;
   activeWorkspace?: string;
@@ -89,15 +89,6 @@ export const Header: React.FC<HeaderProps> = ({
           accessibilityLabel="Toggle Dark Mode"
         >
           <Text style={styles.actionIconSmall}>{isDark ? '☀️' : '🌙'}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.menuButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
-          onPress={onOpenHub}
-          activeOpacity={0.7}
-          accessibilityLabel="Open Full Menu"
-        >
-          <Text style={[styles.menuButtonText, { color: theme.colors.textPrimary }]}>☰</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -188,18 +179,5 @@ const styles = StyleSheet.create({
   },
   actionIconSmall: {
     fontSize: 13,
-  },
-  menuButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  menuButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 18,
   },
 });
