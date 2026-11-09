@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '../theme';
 import { formatINR } from '../formatters';
 
@@ -9,12 +9,16 @@ interface FinancialSummaryCardsProps {
   monthlyInflows: number;
   monthlyOutflows: number;
   budgetAllocated: number;
+  onPressInflows?: () => void;
+  onPressOutflows?: () => void;
 }
 
 export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
   monthlyInflows,
   monthlyOutflows,
   budgetAllocated,
+  onPressInflows,
+  onPressOutflows,
 }) => {
   const budgetUtilization = budgetAllocated > 0 ? ((monthlyOutflows / budgetAllocated) * 100).toFixed(0) : '84';
 
@@ -22,7 +26,12 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
     <View style={styles.container}>
       <View style={styles.row}>
         {/* Inflows Card */}
-        <View style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={onPressInflows}
+          activeOpacity={onPressInflows ? 0.75 : 1}
+          disabled={!onPressInflows}
+        >
           <View style={styles.cardHeader}>
             <Text style={styles.label}>MONTHLY INFLOWS</Text>
             <View style={styles.iconCircleGreen}>
@@ -36,10 +45,15 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
               <Text style={styles.badgeTextGreen}>+12.4%</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Outflows Card */}
-        <View style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={onPressOutflows}
+          activeOpacity={onPressOutflows ? 0.75 : 1}
+          disabled={!onPressOutflows}
+        >
           <View style={styles.cardHeader}>
             <Text style={styles.label}>MONTHLY OUTFLOWS</Text>
             <View style={styles.iconCircleRed}>
@@ -53,7 +67,7 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
               <Text style={styles.badgeTextGreen}>-9.9%</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );

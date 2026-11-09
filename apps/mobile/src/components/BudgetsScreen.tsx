@@ -10,6 +10,7 @@ interface BudgetsScreenProps {
   onAddTransaction?: () => void;
   onAddEnvelope?: () => void;
   onAddGoal?: () => void;
+  initialSubTab?: 'BUDGETS' | 'GOALS' | 'ALL';
 }
 
 const CATEGORY_EMOJIS: Record<string, string> = {
@@ -37,9 +38,19 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   onAddTransaction,
   onAddEnvelope,
   onAddGoal,
+  initialSubTab,
 }) => {
+  const [activeSubTab, setActiveSubTab] = useState<'BUDGETS' | 'GOALS' | 'ALL'>(
+    initialSubTab || 'ALL'
+  );
   const [selectedEnv, setSelectedEnv] = useState<BudgetEnvelope | null>(null);
   const [selectedGoal, setSelectedGoal] = useState<FinancialGoal | null>(null);
+
+  React.useEffect(() => {
+    if (initialSubTab) {
+      setActiveSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
 
   const totalBudgeted = budgets.reduce((s, b) => s + b.budgeted, 0);
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
@@ -50,8 +61,41 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
 
   return (
     <View style={styles.container}>
-      {/* 1. Monthly Budget Cockpit Utilization Card */}
-      <View style={styles.utilizationCard}>
+      {/* Top Segmented Mode Switcher */}
+      <View style={styles.modeTabs}>
+        <TouchableOpacity
+          style={[styles.modeTab, activeSubTab === 'ALL' && styles.modeTabActive]}
+          onPress={() => setActiveSubTab('ALL')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.modeTabText, activeSubTab === 'ALL' && styles.modeTabTextActive]}>
+            All
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modeTab, activeSubTab === 'BUDGETS' && styles.modeTabActive]}
+          onPress={() => setActiveSubTab('BUDGETS')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.modeTabText, activeSubTab === 'BUDGETS' && styles.modeTabTextActive]}>
+            Envelopes ({budgets.length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.modeTab, activeSubTab === 'GOALS' && styles.modeTabActive]}
+          onPress={() => setActiveSubTab('GOALS')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.modeTabText, activeSubTab === 'GOALS' && styles.modeTabTextActive]}>
+            Goals ({goals.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* 1. Monthly Budget Cockpit Utilization Card (Show when ALL or BUDGETS) */}
+      {(activeSubTab === 'ALL' || activeSubTab === 'BUDGETS') && (
+        <>
+          <View style={styles.utilizationCard}>
         <View style={styles.cardHeaderRow}>
           <View style={styles.cardHeaderLeft}>
             <Text style={styles.cardLabel}>MONTHLY BUDGET UTILIZATION</Text>
@@ -237,8 +281,12 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
           );
         })}
       </View>
+    </>
+  )}
 
-      {/* 3. Strategic Financial Goals */}
+  {/* 3. Strategic Financial Goals (Show when ALL or GOALS) */}
+  {(activeSubTab === 'ALL' || activeSubTab === 'GOALS') && (
+    <>
       <View style={styles.sectionHeaderRow}>
         <View>
           <Text style={styles.sectionHeaderTitle}>STRATEGIC FINANCIAL GOALS</Text>
@@ -304,6 +352,8 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
           );
         })}
       </View>
+    </>
+  )}
 
       {/* Envelope Detail Modal */}
       {selectedEnv && (
@@ -431,6 +481,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 28,
+  },
+  modeTabs: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  modeTab: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 9,
+  },
+  modeTabActive: {
+    backgroundColor: theme.colors.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  modeTabText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+  },
+  modeTabTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '700',
   },
   utilizationCard: {
     backgroundColor: theme.colors.surface,

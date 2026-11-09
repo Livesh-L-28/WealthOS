@@ -141,7 +141,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'PREFERENCES',
     items: [
       {
-        id: 'settings',
+        id: 'security',
         title: 'Security & Audit',
         subtitle: 'Hardware Enclave & immutable audit trails',
         icon: '🔒',

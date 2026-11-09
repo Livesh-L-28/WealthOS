@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '../theme';
 
 interface FinancialHealthCardProps {
@@ -7,6 +7,7 @@ interface FinancialHealthCardProps {
   emergencyRunwayMonths?: number;
   debtToIncomePct?: number;
   solvencyRatio?: number;
+  onPress?: () => void;
 }
 
 export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({
@@ -14,17 +15,23 @@ export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({
   emergencyRunwayMonths = 6.2,
   debtToIncomePct = 18.2,
   solvencyRatio = 79.9,
+  onPress,
 }) => {
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={onPress}
+        activeOpacity={onPress ? 0.75 : 1}
+        disabled={!onPress}
+      >
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.title}>FINANCIAL HEALTH & SOLVENCY</Text>
             <Text style={styles.subtitle}>Autonomous Risk & Solvency Engine</Text>
           </View>
           <View style={styles.scorePill}>
-            <Text style={styles.scoreText}>{score} / 100 · EXCELLENT</Text>
+            <Text style={styles.scoreText}>{score} / 100 · EXCELLENT ›</Text>
           </View>
         </View>
 
@@ -47,7 +54,7 @@ export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({
             <Text style={styles.metricStatus}>5x Buffer</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };

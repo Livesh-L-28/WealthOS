@@ -496,6 +496,7 @@ function WealthOSContent() {
               onAddTransaction={() => handleOpenAddExpense()}
               onAddExpense={handleOpenAddExpense}
               onAddIncome={handleOpenAddIncome}
+              initialSubTab={activeScreen === 'transactions' ? 'TRANSACTIONS' : 'ACCOUNTS'}
             />
           </ScrollView>
         )}
@@ -539,6 +540,7 @@ function WealthOSContent() {
               onAddTransaction={handleOpenAddExpense}
               onAddEnvelope={() => setIsCreateBudgetModalOpen(true)}
               onAddGoal={() => setIsCreateGoalModalOpen(true)}
+              initialSubTab={activeScreen === 'goals' ? 'GOALS' : 'ALL'}
             />
           </ScrollView>
         )}

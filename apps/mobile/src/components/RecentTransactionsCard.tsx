@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
 import { theme } from '../theme';
 import { Transaction } from '../types';
 import { formatINR } from '../formatters';
@@ -13,6 +13,8 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
   transactions,
   onViewAll,
 }) => {
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -31,9 +33,11 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
             const isCredit = tx.type === 'CREDIT';
             const isLast = idx === Math.min(3, transactions.length - 1);
             return (
-              <View
+              <TouchableOpacity
                 key={tx.id}
                 style={[styles.txRow, !isLast && styles.txRowBorder]}
+                onPress={() => setSelectedTx(tx)}
+                activeOpacity={0.7}
               >
                 <View style={styles.txLeft}>
                   <View
@@ -77,11 +81,83 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                     </Text>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
       </View>
+
+      {/* Transaction Detail Modal */}
+      {selectedTx && (
+        <Modal
+          visible={!!selectedTx}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setSelectedTx(null)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.detailBox}>
+              <View style={styles.modalBar} />
+              <View style={styles.modalHeader}>
+                <View>
+                  <Text style={styles.modalTitle}>{selectedTx.title}</Text>
+                  <Text style={styles.modalSub}>{selectedTx.category} • {selectedTx.date}</Text>
+                </View>
+                <View
+                  style={[
+                    styles.modalBadge,
+                    selectedTx.type === 'CREDIT' ? styles.badgeCredit : styles.badgeDebit,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.modalBadgeText,
+                      selectedTx.type === 'CREDIT' ? styles.badgeTextCredit : styles.badgeTextDebit,
+                    ]}
+                  >
+                    {selectedTx.type === 'CREDIT' ? 'INFLOW' : 'OUTFLOW'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.modalAmountBox}>
+                <Text style={styles.modalAmountLabel}>POSTED LEDGER AMOUNT</Text>
+                <Text
+                  style={[
+                    styles.modalAmountVal,
+                    { color: selectedTx.type === 'CREDIT' ? theme.colors.primary : '#DC2626' },
+                  ]}
+                >
+                  {selectedTx.type === 'CREDIT' ? '+' : '-'}{formatINR(selectedTx.amount)}
+                </Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Settlement Account</Text>
+                <Text style={styles.detailValue}>{selectedTx.accountName}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Reconciliation Status</Text>
+                <Text style={styles.detailValueGreen}>● {selectedTx.status}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>General Journal ID</Text>
+                <Text style={styles.detailValueMono}>{selectedTx.id}</Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.closeBtn}
+                onPress={() => setSelectedTx(null)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.closeBtnText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -209,5 +285,127 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: theme.colors.textSecondary,
     letterSpacing: 0.3,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 20, 0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  detailBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
+    width: '100%',
+    maxWidth: 380,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  modalBar: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E7ECE8',
+    alignSelf: 'center',
+    marginBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#17231D',
+  },
+  modalSub: {
+    fontSize: 11,
+    color: '#758078',
+    marginTop: 2,
+  },
+  modalBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  badgeCredit: {
+    backgroundColor: '#DCFCE7',
+  },
+  badgeDebit: {
+    backgroundColor: '#FEE2E2',
+  },
+  modalBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  badgeTextCredit: {
+    color: '#087A50',
+  },
+  badgeTextDebit: {
+    color: '#991B1B',
+  },
+  modalAmountBox: {
+    backgroundColor: '#F7F9F7',
+    borderRadius: 14,
+    padding: 14,
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E7ECE8',
+  },
+  modalAmountLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#758078',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  modalAmountVal: {
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F4F1',
+  },
+  detailLabel: {
+    fontSize: 11,
+    color: '#758078',
+  },
+  detailValue: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#17231D',
+  },
+  detailValueGreen: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#087A50',
+  },
+  detailValueMono: {
+    fontSize: 10,
+    fontFamily: 'monospace',
+    color: '#758078',
+  },
+  closeBtn: {
+    backgroundColor: '#16A36A',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 18,
+  },
+  closeBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

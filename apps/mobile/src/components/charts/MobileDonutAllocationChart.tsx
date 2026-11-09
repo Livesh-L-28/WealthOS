@@ -56,11 +56,22 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
           <Text style={styles.subtitle}>Multi-Asset Distribution & Returns</Text>
         </View>
 
-        <View style={styles.pnlBadge}>
-          <Text style={styles.pnlText}>
-            {totalPnl >= 0 ? '+' : ''}
-            {pnlPct.toFixed(1)}% All-Time
-          </Text>
+        <View style={styles.headerActions}>
+          <View style={styles.pnlBadge}>
+            <Text style={styles.pnlText}>
+              {totalPnl >= 0 ? '+' : ''}
+              {pnlPct.toFixed(1)}%
+            </Text>
+          </View>
+          {onOpenPortfolio && (
+            <TouchableOpacity
+              style={styles.portfolioBtn}
+              onPress={onOpenPortfolio}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.portfolioBtnText}>Portfolio ›</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -187,6 +198,22 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: theme.colors.textTertiary,
     marginTop: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  portfolioBtn: {
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 7,
+  },
+  portfolioBtnText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#087A50',
   },
   pnlBadge: {
     backgroundColor: '#DCFCE7',

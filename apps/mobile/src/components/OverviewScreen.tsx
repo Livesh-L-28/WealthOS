@@ -90,6 +90,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         onAddTransaction={onAddTransaction}
         onAddExpense={onAddExpense}
         onAddIncome={onAddIncome}
+        onAddInvestment={onAddInvestment}
         onAskCopilot={onAskCopilot}
       />
 
@@ -100,6 +101,8 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         monthlyInflows={monthlyInflows}
         monthlyOutflows={monthlyOutflows}
         budgetAllocated={totalBudgeted}
+        onPressInflows={onAddIncome}
+        onPressOutflows={onAddExpense}
       />
 
       {/* 5. Professional 4-Month Inflow vs Outflow Dual-Bar Chart */}
@@ -113,7 +116,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
       />
 
       {/* 7. Solvency & Financial Health Rating */}
-      <FinancialHealthCard />
+      <FinancialHealthCard onPress={onOpenAnalytics} />
 
       {/* 8. Recent Transactions General Journal */}
       <RecentTransactionsCard

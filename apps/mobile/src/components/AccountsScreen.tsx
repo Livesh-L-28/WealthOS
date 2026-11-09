@@ -18,6 +18,7 @@ interface AccountsScreenProps {
   onAddTransaction: () => void;
   onAddExpense?: () => void;
   onAddIncome?: () => void;
+  initialSubTab?: 'ACCOUNTS' | 'TRANSACTIONS';
 }
 
 export const AccountsScreen: React.FC<AccountsScreenProps> = ({
@@ -27,12 +28,22 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
   onAddTransaction,
   onAddExpense,
   onAddIncome,
+  initialSubTab,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'ACCOUNTS' | 'TRANSACTIONS'>('ACCOUNTS');
+  const [activeSubTab, setActiveSubTab] = useState<'ACCOUNTS' | 'TRANSACTIONS'>(
+    initialSubTab || 'ACCOUNTS'
+  );
+  const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
   const [accountFilter, setAccountFilter] = useState<'ALL' | 'ASSET' | 'LIABILITY'>('ALL');
   const [txTypeFilter, setTxTypeFilter] = useState<'ALL' | 'DEBIT' | 'CREDIT'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  React.useEffect(() => {
+    if (initialSubTab) {
+      setActiveSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
 
   const filteredAccounts = accounts.filter(
     (a) => accountFilter === 'ALL' || a.category === accountFilter
@@ -144,7 +155,12 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
             {filteredAccounts.map((acc) => {
               const isAsset = acc.category === 'ASSET';
               return (
-                <View key={acc.id} style={styles.accountCard}>
+                <TouchableOpacity
+                  key={acc.id}
+                  style={styles.accountCard}
+                  onPress={() => setSelectedAccount(acc)}
+                  activeOpacity={0.75}
+                >
                   <View style={styles.cardTopRow}>
                     <View style={styles.bankAvatar}>
                       <Text style={styles.bankEmoji}>
@@ -202,7 +218,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                       <Text style={styles.verifiedText}>Double-Entry Verified</Text>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -430,6 +446,84 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
           </View>
         </View>
       </Modal>
+      {/* Account Detail Modal */}
+      {selectedAccount && (
+        <Modal
+          visible={!!selectedAccount}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setSelectedAccount(null)}
+        >
+          <View style={styles.modalOverlay}>
+            <TouchableOpacity
+              style={styles.modalBackdrop}
+              activeOpacity={1}
+              onPress={() => setSelectedAccount(null)}
+            />
+            <View style={styles.txModalSheet}>
+              <View style={styles.modalDragPill} />
+              <View style={styles.txModalHeader}>
+                <Text style={styles.txModalEyebrow}>INSTITUTION ACCOUNT AUDIT</Text>
+                <Text style={styles.txModalTitle}>{selectedAccount.name}</Text>
+                <Text style={styles.accountModalSub}>
+                  {selectedAccount.institution} • {selectedAccount.accountNumberMask}
+                </Text>
+              </View>
+
+              <View style={styles.accountBalanceHeroBox}>
+                <Text style={styles.accountBalanceHeroLabel}>VERIFIED RECONCILED BALANCE</Text>
+                <Text
+                  style={[
+                    styles.accountBalanceHeroVal,
+                    { color: selectedAccount.category === 'ASSET' ? theme.colors.primary : '#DC2626' },
+                  ]}
+                >
+                  {formatINR(selectedAccount.balance)}
+                </Text>
+              </View>
+
+              <View style={styles.auditAttributes}>
+                <View style={styles.attrRow}>
+                  <Text style={styles.attrLabel}>Account Classification</Text>
+                  <Text style={styles.attrVal}>{selectedAccount.type} ({selectedAccount.category})</Text>
+                </View>
+                <View style={styles.attrRow}>
+                  <Text style={styles.attrLabel}>Interest / Annualized Yield</Text>
+                  <Text style={styles.attrVal}>{selectedAccount.interestRate ? `${selectedAccount.interestRate}% p.a.` : 'N/A'}</Text>
+                </View>
+                <View style={styles.attrRow}>
+                  <Text style={styles.attrLabel}>Last Synchronized</Text>
+                  <Text style={styles.attrVal}>{selectedAccount.lastSynced}</Text>
+                </View>
+                <View style={styles.attrRow}>
+                  <Text style={styles.attrLabel}>Audit Verification</Text>
+                  <Text style={styles.attrValGreen}>● Merkle Verified In Balance</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                style={styles.filterTxBtn}
+                onPress={() => {
+                  setSearchQuery(selectedAccount.name);
+                  setActiveSubTab('TRANSACTIONS');
+                  setSelectedAccount(null);
+                }}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.filterTxBtnText}>View Transactions for this Account →</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.closeModalBtn}
+                onPress={() => setSelectedAccount(null)}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.closeModalBtnText}>Close Account Audit</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -959,6 +1053,46 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: theme.colors.textWhite,
+  },
+  accountModalSub: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  accountBalanceHeroBox: {
+    backgroundColor: '#F7F9F7',
+    borderRadius: 14,
+    padding: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E7ECE8',
+  },
+  accountBalanceHeroLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#758078',
+    letterSpacing: 0.6,
+    marginBottom: 4,
+  },
+  accountBalanceHeroVal: {
+    fontSize: 26,
+    fontWeight: '900',
+  },
+  filterTxBtn: {
+    backgroundColor: '#E8F5EE',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(22, 163, 106, 0.3)',
+  },
+  filterTxBtnText: {
+    color: '#087A50',
+    fontSize: 12,
+    fontWeight: '700',
   },
   ledgerActionsRow: {
     flexDirection: 'row',
