@@ -26,31 +26,28 @@ interface EnterpriseDrawerProps {
 interface MenuItem {
   id: ActiveScreen;
   title: string;
-  subtitle: string;
   icon: string;
   badge?: string;
   badgeType?: 'default' | 'alert' | 'success';
 }
 
 interface NavSection {
-  title: string;
+  title?: string;
   items: MenuItem[];
 }
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    title: 'COCKPIT & CONTROL',
+    // Cockpit & Control items at top without a header (Matching Web Sidebar)
     items: [
       {
         id: 'overview',
         title: 'Overview',
-        subtitle: 'Executive cockpit & net worth trajectory',
-        icon: '📊',
+        icon: '⊞',
       },
       {
         id: 'reconciliation',
         title: 'Control Centre',
-        subtitle: 'Double-entry settlement & ledger audit',
         icon: '🛡️',
         badge: 'Recon',
         badgeType: 'success',
@@ -63,31 +60,21 @@ const NAV_SECTIONS: NavSection[] = [
       {
         id: 'accounts',
         title: 'Accounts',
-        subtitle: '6 Connected institutions & live balances',
         icon: '🏛️',
       },
       {
         id: 'transactions',
         title: 'Transactions',
-        subtitle: 'Reconciled double-entry general journal',
         icon: '⇄',
-      },
-      {
-        id: 'transfers',
-        title: 'Transfers',
-        subtitle: 'Balanced account-to-account treasury transfer',
-        icon: '↔️',
       },
       {
         id: 'analytics',
         title: 'Cash Flow',
-        subtitle: '50/30/20 burn rate & monthly surplus',
         icon: '👛',
       },
       {
         id: 'budgets',
         title: 'Budgets',
-        subtitle: 'Category spending envelopes & daily caps',
         icon: '◔',
       },
     ],
@@ -98,22 +85,12 @@ const NAV_SECTIONS: NavSection[] = [
       {
         id: 'investments',
         title: 'Investments',
-        subtitle: 'Multi-asset portfolio & allocation lots',
         icon: '📈',
-      },
-      {
-        id: 'dividends',
-        title: 'Dividends & Yield',
-        subtitle: 'Passive cash flow & payout calendar',
-        icon: '💰',
       },
       {
         id: 'reports',
         title: 'Reports',
-        subtitle: 'Balance sheet, assets vs liabilities & P&L',
         icon: '📄',
-        badge: '₹75.38L',
-        badgeType: 'success',
       },
     ],
   },
@@ -123,33 +100,18 @@ const NAV_SECTIONS: NavSection[] = [
       {
         id: 'goals',
         title: 'Goals',
-        subtitle: 'Strategic milestone trackers & projections',
         icon: '🎯',
-      },
-      {
-        id: 'calendar',
-        title: 'Financial Calendar',
-        subtitle: 'Upcoming obligations, EMIs, SIPs & salary',
-        icon: '📅',
-      },
-      {
-        id: 'liabilities',
-        title: 'Liabilities & EMIs',
-        subtitle: 'Debt snowball / avalanche payoff simulator',
-        icon: '💳',
       },
       {
         id: 'copilot',
         title: 'Financial Copilot',
-        subtitle: 'Autonomous advisory & scenario simulation',
-        icon: '✨',
+        icon: '🤖',
         badge: 'AI',
         badgeType: 'success',
       },
       {
         id: 'household',
         title: 'Household',
-        subtitle: 'Multi-member envelopes & family wealth',
         icon: '👥',
         badge: 'Shared',
         badgeType: 'success',
@@ -157,9 +119,7 @@ const NAV_SECTIONS: NavSection[] = [
       {
         id: 'documents',
         title: 'Documents',
-        subtitle: 'Statement OCR parser & audit vault',
-        icon: '📁',
-        badge: '3 Stmts',
+        icon: '📄',
       },
     ],
   },
@@ -167,23 +127,13 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'PREFERENCES',
     items: [
       {
-        id: 'search',
-        title: 'Global Search',
-        subtitle: 'Instant query across transactions, accounts & lots',
-        icon: '🔍',
-      },
-      {
         id: 'security',
         title: 'Security & Audit',
-        subtitle: 'Hardware Enclave & immutable audit trails',
-        icon: '🔒',
-        badge: 'KeyStore',
-        badgeType: 'success',
+        icon: '🛡️',
       },
       {
         id: 'settings',
         title: 'Workspace Settings',
-        subtitle: 'Tenant configuration & entity switching',
         icon: '⚙️',
       },
     ],
@@ -273,12 +223,14 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
               })}
             </View>
 
-            {/* All Categorized Navigation Sections (Matching Web Sidebar) */}
+            {/* All Categorized Navigation Sections (Matching Web Sidebar 1:1) */}
             {NAV_SECTIONS.map((section, sIdx) => (
-              <View key={section.title} style={sIdx > 0 ? styles.sectionSpacing : undefined}>
-                <View style={styles.sectionHeaderRow}>
-                  <Text style={styles.sectionLabel}>{section.title}</Text>
-                </View>
+              <View key={section.title || `sec-${sIdx}`} style={sIdx > 0 ? styles.sectionSpacing : undefined}>
+                {section.title && (
+                  <View style={styles.sectionHeaderRow}>
+                    <Text style={styles.sectionLabel}>{section.title}</Text>
+                  </View>
+                )}
 
                 <View style={styles.menuContainer}>
                   {section.items.map((item, iIdx) => {
@@ -293,39 +245,21 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
                         }}
                         activeOpacity={0.7}
                       >
-                        <View style={styles.menuIconBox}>
-                          <Text style={styles.menuIconText}>{item.icon}</Text>
+                        <View style={[styles.menuIconBox, isActive && styles.menuIconBoxActive]}>
+                          <Text style={[styles.menuIconText, isActive && styles.menuIconTextActive]}>
+                            {item.icon}
+                          </Text>
                         </View>
 
-                        <View style={styles.menuContentCol}>
-                          <View style={styles.menuTitleRow}>
-                            <Text style={[styles.menuTitle, isActive && styles.menuTitleActive]}>
-                              {item.title}
-                            </Text>
-                            {item.badge && (
-                              <View
-                                style={[
-                                  styles.menuBadge,
-                                  item.badgeType === 'alert' && styles.menuBadgeAlert,
-                                  item.badgeType === 'success' && styles.menuBadgeSuccess,
-                                ]}
-                              >
-                                <Text
-                                  style={[
-                                    styles.menuBadgeText,
-                                    item.badgeType === 'alert' && styles.menuBadgeTextAlert,
-                                    item.badgeType === 'success' && styles.menuBadgeTextSuccess,
-                                  ]}
-                                >
-                                  {item.badge}
-                                </Text>
-                              </View>
-                            )}
+                        <Text style={[styles.menuTitle, isActive && styles.menuTitleActive]}>
+                          {item.title}
+                        </Text>
+
+                        {item.badge && (
+                          <View style={styles.menuBadgeSuccess}>
+                            <Text style={styles.menuBadgeTextSuccess}>{item.badge}</Text>
                           </View>
-                          <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
-                        </View>
-
-                        <Text style={styles.menuChevron}>›</Text>
+                        )}
                       </TouchableOpacity>
                     );
                   })}
@@ -554,90 +488,59 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   menuContainer: {
-    gap: 10,
-    marginBottom: 20,
+    gap: 2,
+    marginBottom: 8,
   },
   menuItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: 'transparent',
+    borderLeftWidth: 3,
+    borderLeftColor: 'transparent',
+    minHeight: 44,
   },
   menuItemRowActive: {
     backgroundColor: theme.colors.primaryAlpha10,
-    borderColor: theme.colors.primary,
+    borderLeftColor: theme.colors.primary,
   },
   menuIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
+    width: 26,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 10,
   },
+  menuIconBoxActive: {},
   menuIconText: {
-    fontSize: 18,
+    fontSize: 16,
+    color: theme.colors.textSecondary,
   },
-  menuContentCol: {
-    flex: 1,
-  },
-  menuTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
+  menuIconTextActive: {
+    color: theme.colors.primary,
   },
   menuTitle: {
-    fontSize: 14,
-    fontWeight: '700',
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500',
     color: theme.colors.textPrimary,
+    letterSpacing: -0.1,
   },
   menuTitleActive: {
     color: theme.colors.primaryDark,
-  },
-  menuSubtitle: {
-    fontSize: 11,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-    lineHeight: 15,
-  },
-  menuBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  menuBadgeAlert: {
-    backgroundColor: theme.colors.dangerAlpha10,
-    borderColor: theme.colors.danger,
+    fontWeight: '700',
   },
   menuBadgeSuccess: {
     backgroundColor: theme.colors.primaryAlpha10,
-    borderColor: theme.colors.primary,
-  },
-  menuBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-  },
-  menuBadgeTextAlert: {
-    color: theme.colors.danger,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   menuBadgeTextSuccess: {
+    fontSize: 10,
+    fontWeight: '800',
     color: theme.colors.primary,
-  },
-  menuChevron: {
-    fontSize: 18,
-    color: theme.colors.textTertiary,
-    fontWeight: '600',
   },
   assuranceCard: {
     flexDirection: 'row',
