@@ -3,7 +3,6 @@ import { StyleSheet, View } from 'react-native';
 import { DashboardPeriod, Transaction, BudgetEnvelope, FinancialGoal } from '../types';
 import { MobileAreaChart } from './charts/MobileAreaChart';
 import { IncomeExpenseActionBar } from './IncomeExpenseActionBar';
-import { QuickActionsSection } from './QuickActionsSection';
 import { FinancialSummaryCards } from './FinancialSummaryCards';
 import { MobileCashFlowBarChart } from './charts/MobileCashFlowBarChart';
 import { MobileDonutAllocationChart } from './charts/MobileDonutAllocationChart';
@@ -83,18 +82,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         />
       )}
 
-      {/* 3. Quick Actions Dock */}
-      <QuickActionsSection
-        onConnectBank={onConnectBank}
-        onImportStatement={onImportStatement}
-        onAddTransaction={onAddTransaction}
-        onAddExpense={onAddExpense}
-        onAddIncome={onAddIncome}
-        onAddInvestment={onAddInvestment}
-        onAskCopilot={onAskCopilot}
-      />
-
-      {/* 4. Inflow vs Outflow KPI Summary Cards */}
+      {/* 3. Inflow vs Outflow KPI Summary Cards */}
       <FinancialSummaryCards
         totalAssets={totalAssets}
         totalLiabilities={totalLiabilities}
