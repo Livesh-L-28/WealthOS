@@ -150,6 +150,26 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
             })}
           </View>
 
+          {/* Primary Top Action: Connect Bank Account */}
+          <TouchableOpacity
+            style={styles.primaryConnectBar}
+            onPress={onConnectAccount}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Connect New Bank or Demat Account"
+          >
+            <View style={styles.primaryConnectLeft}>
+              <View style={styles.primaryConnectIconCircle}>
+                <Text style={styles.primaryConnectIcon}>🏛️</Text>
+              </View>
+              <View>
+                <Text style={styles.primaryConnectTitle}>+ Connect Bank Account</Text>
+                <Text style={styles.primaryConnectSub}>Link savings, current, demat or credit cards</Text>
+              </View>
+            </View>
+            <Text style={styles.primaryConnectArrow}>›</Text>
+          </TouchableOpacity>
+
           {/* Accounts List */}
           {filteredAccounts.length === 0 ? (
             <View style={styles.emptyContainer}>
@@ -676,7 +696,55 @@ const styles = StyleSheet.create({
     padding: 3,
     borderWidth: 1,
     borderColor: theme.colors.border,
+    marginBottom: 12,
+  },
+  primaryConnectBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
     marginBottom: 14,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  primaryConnectLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  primaryConnectIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 11,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryConnectIcon: {
+    fontSize: 18,
+  },
+  primaryConnectTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.2,
+  },
+  primaryConnectSub: {
+    fontSize: 10,
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginTop: 1,
+  },
+  primaryConnectArrow: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   segmentBtn: {
     flex: 1,
