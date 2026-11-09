@@ -71,6 +71,12 @@ const NAV_SECTIONS: NavSection[] = [
         icon: '⇄',
       },
       {
+        id: 'transfers',
+        title: 'Transfers',
+        subtitle: 'Balanced account-to-account treasury transfer',
+        icon: '↔️',
+      },
+      {
         id: 'analytics',
         title: 'Cash Flow',
         subtitle: '50/30/20 burn rate & monthly surplus',
@@ -94,6 +100,12 @@ const NAV_SECTIONS: NavSection[] = [
         icon: '📈',
       },
       {
+        id: 'dividends',
+        title: 'Dividends & Yield',
+        subtitle: 'Passive cash flow & payout calendar',
+        icon: '💰',
+      },
+      {
         id: 'reports',
         title: 'Reports',
         subtitle: 'Balance sheet, assets vs liabilities & P&L',
@@ -111,6 +123,18 @@ const NAV_SECTIONS: NavSection[] = [
         title: 'Goals',
         subtitle: 'Strategic milestone trackers & projections',
         icon: '🎯',
+      },
+      {
+        id: 'calendar',
+        title: 'Financial Calendar',
+        subtitle: 'Upcoming obligations, EMIs, SIPs & salary',
+        icon: '📅',
+      },
+      {
+        id: 'liabilities',
+        title: 'Liabilities & EMIs',
+        subtitle: 'Debt snowball / avalanche payoff simulator',
+        icon: '💳',
       },
       {
         id: 'copilot',
@@ -140,6 +164,12 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: 'PREFERENCES',
     items: [
+      {
+        id: 'search',
+        title: 'Global Search',
+        subtitle: 'Instant query across transactions, accounts & lots',
+        icon: '🔍',
+      },
       {
         id: 'security',
         title: 'Security & Audit',

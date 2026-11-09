@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { lightTheme, darkTheme } from './theme';
 import { INITIAL_ACCOUNTS, INITIAL_TRANSACTIONS, INITIAL_BUDGETS, INITIAL_GOALS, INITIAL_HOLDINGS } from './data';
 import { BankAccount, Transaction, BudgetEnvelope, FinancialGoal } from './types';
 
@@ -179,6 +180,95 @@ describe('WealthOS Master Mobile Functions & Interactive Integrity Suite', () =>
         expect(fundedPct).toBeGreaterThan(0);
         expect(fundedPct).toBeLessThanOrEqual(100);
       });
+    });
+  });
+
+  describe('5. WealthOS Mobile 2.0 Modern Fintech Features', () => {
+    it('executes inter-account treasury transfers preserving net worth invariance', () => {
+      let accounts = [...INITIAL_ACCOUNTS];
+      const fromAcc = accounts[0]; // HDFC Corporate Salary (482450.0)
+      const toAcc = accounts[1]; // ICICI Privileged Savings (845200.0)
+      const transferAmount = 25000;
+
+      const initialTotalAssets = accounts
+        .filter((a) => a.category === 'ASSET')
+        .reduce((s, a) => s + a.balance, 0);
+
+      // Perform transfer
+      accounts = accounts.map((acc) => {
+        if (acc.id === fromAcc.id) return { ...acc, balance: acc.balance - transferAmount };
+        if (acc.id === toAcc.id) return { ...acc, balance: acc.balance + transferAmount };
+        return acc;
+      });
+
+      const updatedFrom = accounts.find((a) => a.id === fromAcc.id)!;
+      const updatedTo = accounts.find((a) => a.id === toAcc.id)!;
+
+      expect(updatedFrom.balance).toBe(fromAcc.balance - transferAmount);
+      expect(updatedTo.balance).toBe(toAcc.balance + transferAmount);
+
+      const updatedTotalAssets = accounts
+        .filter((a) => a.category === 'ASSET')
+        .reduce((s, a) => s + a.balance, 0);
+
+      // Invariant: Transfer between assets preserves total asset sum exactly
+      expect(updatedTotalAssets).toBe(initialTotalAssets);
+    });
+
+    it('verifies 5-pillar modern fintech navigation mapping', () => {
+      const mapPillar = (screen: string): string => {
+        if (screen === 'home' || screen === 'overview' || screen === 'net-worth') return 'home';
+        if (
+          screen === 'money' ||
+          screen === 'accounts' ||
+          screen === 'transactions' ||
+          screen === 'transfers' ||
+          screen === 'analytics'
+        ) {
+          return 'money';
+        }
+        if (
+          screen === 'invest' ||
+          screen === 'investments' ||
+          screen === 'reports' ||
+          screen === 'dividends'
+        ) {
+          return 'invest';
+        }
+        if (
+          screen === 'plan' ||
+          screen === 'budgets' ||
+          screen === 'goals' ||
+          screen === 'calendar' ||
+          screen === 'liabilities'
+        ) {
+          return 'plan';
+        }
+        return 'more';
+      };
+
+      expect(mapPillar('home')).toBe('home');
+      expect(mapPillar('overview')).toBe('home');
+      expect(mapPillar('accounts')).toBe('money');
+      expect(mapPillar('transfers')).toBe('money');
+      expect(mapPillar('transactions')).toBe('money');
+      expect(mapPillar('investments')).toBe('invest');
+      expect(mapPillar('dividends')).toBe('invest');
+      expect(mapPillar('budgets')).toBe('plan');
+      expect(mapPillar('calendar')).toBe('plan');
+      expect(mapPillar('liabilities')).toBe('plan');
+      expect(mapPillar('copilot')).toBe('more');
+      expect(mapPillar('security')).toBe('more');
+      expect(mapPillar('search')).toBe('more');
+    });
+
+    it('validates light and dark theme contrast tokens', () => {
+      expect(lightTheme.isDark).toBe(false);
+      expect(darkTheme.isDark).toBe(true);
+      expect(lightTheme.colors.primary).toBe('#2563EB'); // Fintech Blue
+      expect(darkTheme.colors.primary).toBe('#3B82F6'); // Bright Blue in Dark
+      expect(lightTheme.colors.canvas).toBe('#F8FAFC'); // Neutral Slate
+      expect(darkTheme.colors.canvas).toBe('#0B0F19'); // Deep Slate
     });
   });
 });

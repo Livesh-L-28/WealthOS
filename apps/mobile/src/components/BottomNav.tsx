@@ -1,105 +1,231 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '../theme';
-import { TabType } from '../types';
+import { useTheme } from '../theme';
+import { PillarType, ActiveScreen } from '../types';
 
 interface BottomNavProps {
-  activeTab: TabType;
-  onTabChange: (tab: TabType) => void;
-  onAddEntry: () => void;
+  activeScreen: ActiveScreen;
+  onSelectPillar: (pillar: PillarType) => void;
+  onOpenQuickAction: () => void;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
-  activeTab,
-  onTabChange,
-  onAddEntry,
+  activeScreen,
+  onSelectPillar,
+  onOpenQuickAction,
 }) => {
   const insets = useSafeAreaInsets();
-  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 22 : 12);
+  const { theme } = useTheme();
+  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 12);
+
+  // Map any active screen to one of the 5 primary fintech pillars
+  const getActivePillar = (): PillarType => {
+    if (activeScreen === 'home' || activeScreen === 'overview' || activeScreen === 'net-worth') {
+      return 'home';
+    }
+    if (
+      activeScreen === 'money' ||
+      activeScreen === 'accounts' ||
+      activeScreen === 'transactions' ||
+      activeScreen === 'transfers' ||
+      activeScreen === 'analytics'
+    ) {
+      return 'money';
+    }
+    if (
+      activeScreen === 'invest' ||
+      activeScreen === 'investments' ||
+      activeScreen === 'reports' ||
+      activeScreen === 'dividends'
+    ) {
+      return 'invest';
+    }
+    if (
+      activeScreen === 'plan' ||
+      activeScreen === 'budgets' ||
+      activeScreen === 'goals' ||
+      activeScreen === 'calendar' ||
+      activeScreen === 'liabilities'
+    ) {
+      return 'plan';
+    }
+    return 'more';
+  };
+
+  const activePillar = getActivePillar();
+
+  const PILLARS: { id: PillarType; label: string; icon: string }[] = [
+    { id: 'home', label: 'Home', icon: '🏛️' },
+    { id: 'money', label: 'Money', icon: '💳' },
+    { id: 'invest', label: 'Invest', icon: '📈' },
+    { id: 'plan', label: 'Plan', icon: '🎯' },
+    { id: 'more', label: 'More', icon: '☰' },
+  ];
 
   return (
-    <View style={[styles.navContainer, { paddingBottom: bottomInset }]}>
+    <View
+      style={[
+        styles.navContainer,
+        {
+          paddingBottom: bottomInset,
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+        },
+      ]}
+    >
       <View style={styles.dockRow}>
-        {/* Slot 1: Overview */}
+        {/* 1. Home */}
         <TouchableOpacity
           style={styles.navSlot}
-          onPress={() => onTabChange('overview')}
+          onPress={() => onSelectPillar('home')}
           activeOpacity={0.7}
           accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'overview' }}
-          accessibilityLabel="Overview Tab"
+          accessibilityState={{ selected: activePillar === 'home' }}
+          accessibilityLabel="Home Pillar"
         >
-          <View style={[styles.iconPill, activeTab === 'overview' && styles.iconPillActive]}>
-            <Text style={styles.iconEmoji}>📊</Text>
+          <View
+            style={[
+              styles.iconPill,
+              activePillar === 'home' && { backgroundColor: theme.colors.primaryLightSolid },
+            ]}
+          >
+            <Text style={styles.iconEmoji}>🏛️</Text>
           </View>
-          <Text style={[styles.navLabel, activeTab === 'overview' && styles.navLabelActive]}>
-            Overview
+          <Text
+            style={[
+              styles.navLabel,
+              { color: theme.colors.textSecondary },
+              activePillar === 'home' && { color: theme.colors.primary, fontWeight: '800' },
+            ]}
+          >
+            Home
           </Text>
         </TouchableOpacity>
 
-        {/* Slot 2: Accounts & Ledger */}
+        {/* 2. Money */}
         <TouchableOpacity
           style={styles.navSlot}
-          onPress={() => onTabChange('accounts')}
+          onPress={() => onSelectPillar('money')}
           activeOpacity={0.7}
           accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'accounts' }}
-          accessibilityLabel="Accounts Tab"
+          accessibilityState={{ selected: activePillar === 'money' }}
+          accessibilityLabel="Money Pillar"
         >
-          <View style={[styles.iconPill, activeTab === 'accounts' && styles.iconPillActive]}>
-            <Text style={styles.iconEmoji}>🏦</Text>
+          <View
+            style={[
+              styles.iconPill,
+              activePillar === 'money' && { backgroundColor: theme.colors.primaryLightSolid },
+            ]}
+          >
+            <Text style={styles.iconEmoji}>💳</Text>
           </View>
-          <Text style={[styles.navLabel, activeTab === 'accounts' && styles.navLabelActive]}>
-            Accounts
+          <Text
+            style={[
+              styles.navLabel,
+              { color: theme.colors.textSecondary },
+              activePillar === 'money' && { color: theme.colors.primary, fontWeight: '800' },
+            ]}
+          >
+            Money
           </Text>
         </TouchableOpacity>
 
-        {/* Slot 3: Center Elevated Add Entry FAB */}
+        {/* Center: Contextual Quick-Action Centre FAB */}
         <TouchableOpacity
           style={styles.centerFabSlot}
-          onPress={onAddEntry}
+          onPress={onOpenQuickAction}
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel="Add New Entry or Transaction"
+          accessibilityLabel="Quick Financial Actions"
         >
-          <View style={styles.centerFabCircle}>
+          <View style={[styles.centerFabCircle, { backgroundColor: theme.colors.primary }]}>
             <Text style={styles.centerFabPlus}>+</Text>
           </View>
-          <Text style={styles.centerFabLabel}>Add Entry</Text>
+          <Text style={[styles.centerFabLabel, { color: theme.colors.primary }]}>Action</Text>
         </TouchableOpacity>
 
-        {/* Slot 4: Portfolio */}
+        {/* 3. Invest */}
         <TouchableOpacity
           style={styles.navSlot}
-          onPress={() => onTabChange('investments')}
+          onPress={() => onSelectPillar('invest')}
           activeOpacity={0.7}
           accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'investments' }}
-          accessibilityLabel="Portfolio Tab"
+          accessibilityState={{ selected: activePillar === 'invest' }}
+          accessibilityLabel="Invest Pillar"
         >
-          <View style={[styles.iconPill, activeTab === 'investments' && styles.iconPillActive]}>
+          <View
+            style={[
+              styles.iconPill,
+              activePillar === 'invest' && { backgroundColor: theme.colors.primaryLightSolid },
+            ]}
+          >
             <Text style={styles.iconEmoji}>📈</Text>
           </View>
-          <Text style={[styles.navLabel, activeTab === 'investments' && styles.navLabelActive]}>
-            Portfolio
+          <Text
+            style={[
+              styles.navLabel,
+              { color: theme.colors.textSecondary },
+              activePillar === 'invest' && { color: theme.colors.primary, fontWeight: '800' },
+            ]}
+          >
+            Invest
           </Text>
         </TouchableOpacity>
 
-        {/* Slot 5: Budgets & Goals */}
+        {/* 4. Plan */}
         <TouchableOpacity
           style={styles.navSlot}
-          onPress={() => onTabChange('budgets')}
+          onPress={() => onSelectPillar('plan')}
           activeOpacity={0.7}
           accessibilityRole="tab"
-          accessibilityState={{ selected: activeTab === 'budgets' }}
-          accessibilityLabel="Budgets Tab"
+          accessibilityState={{ selected: activePillar === 'plan' }}
+          accessibilityLabel="Plan Pillar"
         >
-          <View style={[styles.iconPill, activeTab === 'budgets' && styles.iconPillActive]}>
+          <View
+            style={[
+              styles.iconPill,
+              activePillar === 'plan' && { backgroundColor: theme.colors.primaryLightSolid },
+            ]}
+          >
             <Text style={styles.iconEmoji}>🎯</Text>
           </View>
-          <Text style={[styles.navLabel, activeTab === 'budgets' && styles.navLabelActive]}>
-            Budgets
+          <Text
+            style={[
+              styles.navLabel,
+              { color: theme.colors.textSecondary },
+              activePillar === 'plan' && { color: theme.colors.primary, fontWeight: '800' },
+            ]}
+          >
+            Plan
+          </Text>
+        </TouchableOpacity>
+
+        {/* 5. More */}
+        <TouchableOpacity
+          style={styles.navSlot}
+          onPress={() => onSelectPillar('more')}
+          activeOpacity={0.7}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activePillar === 'more' }}
+          accessibilityLabel="More Pillar"
+        >
+          <View
+            style={[
+              styles.iconPill,
+              activePillar === 'more' && { backgroundColor: theme.colors.primaryLightSolid },
+            ]}
+          >
+            <Text style={styles.iconEmoji}>☰</Text>
+          </View>
+          <Text
+            style={[
+              styles.navLabel,
+              { color: theme.colors.textSecondary },
+              activePillar === 'more' && { color: theme.colors.primary, fontWeight: '800' },
+            ]}
+          >
+            More
           </Text>
         </TouchableOpacity>
       </View>
@@ -109,39 +235,33 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
 const styles = StyleSheet.create({
   navContainer: {
-    backgroundColor: theme.colors.surface,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
     paddingTop: 6,
-    shadowColor: theme.colors.textPrimary,
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: -3 },
     shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 10,
+    shadowRadius: 8,
+    elevation: 12,
   },
   dockRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     paddingHorizontal: 8,
   },
   navSlot: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
-    minHeight: 46,
+    paddingVertical: 4,
   },
   iconPill: {
-    width: 40,
-    height: 28,
-    borderRadius: 14,
+    width: 38,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
-  },
-  iconPillActive: {
-    backgroundColor: theme.colors.primaryLightSolid,
   },
   iconEmoji: {
     fontSize: 16,
@@ -149,47 +269,37 @@ const styles = StyleSheet.create({
   navLabel: {
     fontSize: 10,
     fontWeight: '600',
-    color: theme.colors.textSecondary,
     letterSpacing: -0.2,
   },
-  navLabelActive: {
-    color: theme.colors.primaryDark,
-    fontWeight: '800',
-  },
   centerFabSlot: {
-    flex: 1.1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -16,
-    paddingVertical: 0,
+    paddingHorizontal: 4,
+    marginTop: -14,
   },
   centerFabCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.primary,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: theme.colors.primaryDark,
+    shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.38,
-    shadowRadius: 6,
-    elevation: 8,
-    borderWidth: 3,
-    borderColor: theme.colors.surface,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
+    marginBottom: 2,
   },
   centerFabPlus: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: theme.colors.textWhite,
-    lineHeight: 28,
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '700',
+    lineHeight: 26,
     marginTop: -2,
   },
   centerFabLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
-    marginTop: 2,
     letterSpacing: -0.2,
   },
 });

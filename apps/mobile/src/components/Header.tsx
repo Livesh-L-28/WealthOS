@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
 
 interface HeaderProps {
   onAddTransaction?: () => void;
@@ -9,22 +9,31 @@ interface HeaderProps {
   onOpenReconciliation: () => void;
   onOpenHub: () => void;
   onOpenCopilot?: () => void;
+  onOpenSearch?: () => void;
   activeWorkspace?: string;
   isSyncing?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  onAddTransaction,
-  onAddIncome,
-  onAddExpense,
   onOpenReconciliation,
   onOpenHub,
   onOpenCopilot,
+  onOpenSearch,
   activeWorkspace = 'Family Office',
   isSyncing = false,
 }) => {
+  const { theme, isDark, toggleTheme } = useTheme();
+
   return (
-    <View style={styles.header}>
+    <View
+      style={[
+        styles.header,
+        {
+          backgroundColor: theme.colors.surface,
+          borderBottomColor: theme.colors.border,
+        },
+      ]}
+    >
       {/* Left: Brand Identity & Enterprise Workspace Dropdown Trigger */}
       <TouchableOpacity
         style={styles.brandRow}
@@ -32,61 +41,102 @@ export const Header: React.FC<HeaderProps> = ({
         activeOpacity={0.75}
         accessibilityLabel="Open Workspace and Enterprise Menu"
       >
-        <View style={styles.logoBadge}>
+        <View style={[styles.logoBadge, { backgroundColor: theme.colors.primary }]}>
           <Text style={styles.logoText}>W</Text>
         </View>
         <View style={styles.brandTextCol}>
           <View style={styles.titleWithPill}>
-            <Text style={styles.brandTitle}>
-              Wealth<Text style={styles.brandAccent}>OS</Text>
+            <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
+              Wealth<Text style={[styles.brandAccent, { color: theme.colors.primary }]}>OS</Text>
             </Text>
-            <View style={styles.workspacePill}>
-              <Text style={styles.workspacePillText}>
+            <View
+              style={[
+                styles.workspacePill,
+                {
+                  backgroundColor: theme.colors.primaryLightSolid,
+                  borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(37, 99, 235, 0.2)',
+                },
+              ]}
+            >
+              <Text style={[styles.workspacePillText, { color: theme.colors.primary }]}>
                 {activeWorkspace.toUpperCase()}
               </Text>
-              <Text style={styles.workspacePillArrow}>▾</Text>
+              <Text style={[styles.workspacePillArrow, { color: theme.colors.primary }]}>▾</Text>
             </View>
           </View>
           <View style={styles.syncRow}>
-            <View style={[styles.syncDot, isSyncing && styles.syncDotPulse]} />
-            <Text style={styles.syncText}>
+            <View
+              style={[
+                styles.syncDot,
+                { backgroundColor: theme.colors.positive },
+                isSyncing && styles.syncDotPulse,
+              ]}
+            />
+            <Text style={[styles.syncText, { color: theme.colors.textSecondary }]}>
               {isSyncing ? 'Synchronizing...' : 'Ledger In Balance'}
             </Text>
           </View>
         </View>
       </TouchableOpacity>
 
-      {/* Right: Sleek Action Dock: Copilot, Reconciliation Shield & Enterprise Menu */}
+      {/* Right: Sleek Action Dock: Search, Theme Toggle, Copilot, Reconciliation Shield & Enterprise Menu */}
       <View style={styles.actionsRow}>
+        {onOpenSearch && (
+          <TouchableOpacity
+            style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
+            onPress={onOpenSearch}
+            activeOpacity={0.75}
+            accessibilityLabel="Open Global Search"
+          >
+            <Text style={styles.actionIconSmall}>🔍</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* 1-Tap Dark Mode Toggle */}
+        <TouchableOpacity
+          style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
+          onPress={toggleTheme}
+          activeOpacity={0.75}
+          accessibilityLabel="Toggle Dark Mode"
+        >
+          <Text style={styles.actionIconSmall}>{isDark ? '☀️' : '🌙'}</Text>
+        </TouchableOpacity>
+
         {onOpenCopilot && (
           <TouchableOpacity
-            style={styles.copilotHeaderBtn}
+            style={[
+              styles.copilotHeaderBtn,
+              {
+                backgroundColor: theme.colors.primaryLightSolid,
+                borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(37, 99, 235, 0.25)',
+              },
+            ]}
             onPress={onOpenCopilot}
             activeOpacity={0.8}
             accessibilityLabel="Open AI Copilot"
           >
             <Text style={styles.copilotHeaderIcon}>✨</Text>
-            <Text style={styles.copilotHeaderText}>Copilot</Text>
+            <Text style={[styles.copilotHeaderText, { color: theme.colors.primary }]}>Copilot</Text>
           </TouchableOpacity>
         )}
 
         <TouchableOpacity
-          style={styles.iconButton}
+          style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
           onPress={onOpenReconciliation}
           activeOpacity={0.7}
           accessibilityLabel="Open Ledger Control Centre"
         >
           <Text style={styles.iconButtonText}>🛡️</Text>
-          <View style={styles.shieldActiveDot} />
+          <View style={[styles.shieldActiveDot, { backgroundColor: theme.colors.positive }]} />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.menuButton}
+          style={[styles.menuButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
           onPress={onOpenHub}
           activeOpacity={0.7}
           accessibilityLabel="Open Full Menu"
         >
-          <Text style={styles.menuButtonText}>☰</Text>
+          <Text style={[styles.menuButtonText, { color: theme.colors.textPrimary }]}>☰</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -95,12 +145,10 @@ export const Header: React.FC<HeaderProps> = ({
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: theme.colors.surface,
     paddingHorizontal: 16,
     paddingTop: 8,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -115,17 +163,16 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 11,
-    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: theme.colors.primary,
+    shadowColor: '#2563EB',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3,
     elevation: 3,
   },
   logoText: {
-    color: theme.colors.textWhite,
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '900',
     letterSpacing: -0.5,
@@ -141,32 +188,28 @@ const styles = StyleSheet.create({
   brandTitle: {
     fontSize: 17,
     fontWeight: '800',
-    color: theme.colors.textPrimary,
     letterSpacing: -0.4,
   },
   brandAccent: {
-    color: theme.colors.primary,
+    fontWeight: '800',
   },
   workspacePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingHorizontal: 7,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 7,
+    borderRadius: 6,
+    borderWidth: 1,
   },
   workspacePillText: {
     fontSize: 9,
     fontWeight: '800',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   workspacePillArrow: {
     fontSize: 8,
-    color: theme.colors.textTertiary,
+    fontWeight: '800',
   },
   syncRow: {
     flexDirection: 'row',
@@ -178,83 +221,70 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: theme.colors.primary,
   },
   syncDotPulse: {
-    backgroundColor: '#F59E0B',
+    opacity: 0.4,
   },
   syncText: {
-    fontSize: 10.5,
+    fontSize: 10,
     fontWeight: '600',
-    color: theme.colors.textSecondary,
+    letterSpacing: -0.2,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: 6,
   },
   copilotHeaderBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#F0FDF4',
-    borderWidth: 1,
-    borderColor: 'rgba(22, 163, 106, 0.4)',
-    paddingHorizontal: 9,
+    paddingHorizontal: 8,
     paddingVertical: 6,
     borderRadius: 10,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    borderWidth: 1,
   },
   copilotHeaderIcon: {
     fontSize: 12,
   },
   copilotHeaderText: {
     fontSize: 11,
-    fontWeight: '800',
-    color: theme.colors.primaryDark,
+    fontWeight: '700',
   },
   iconButton: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     borderRadius: 10,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
     position: 'relative',
   },
   iconButtonText: {
-    fontSize: 15,
+    fontSize: 14,
+  },
+  actionIconSmall: {
+    fontSize: 13,
   },
   shieldActiveDot: {
     position: 'absolute',
     top: 5,
     right: 5,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: theme.colors.primary,
-    borderWidth: 1,
-    borderColor: theme.colors.surface,
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
   },
   menuButton: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     borderRadius: 10,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   menuButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: theme.colors.textPrimary,
+    lineHeight: 18,
   },
 });

@@ -6,15 +6,16 @@ import {
   Modal,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  Platform,
+  ScrollView,
 } from 'react-native';
-import { theme } from '../theme';
+import { useTheme } from '../theme';
 
 interface QuickAddModalProps {
   visible: boolean;
   onClose: () => void;
   onSelectExpense: () => void;
   onSelectIncome: () => void;
+  onSelectTransfer: () => void;
   onSelectConnectBank: () => void;
   onSelectImportStatement: () => void;
   onSelectAddInvestment: () => void;
@@ -27,181 +28,240 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
   onClose,
   onSelectExpense,
   onSelectIncome,
+  onSelectTransfer,
   onSelectConnectBank,
   onSelectImportStatement,
   onSelectAddInvestment,
   onSelectCreateBudget,
   onSelectCopilot,
 }) => {
+  const { theme } = useTheme();
+
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback>
-            <View style={styles.sheet}>
-              <View style={styles.dragPill} />
+            <View style={[styles.sheet, { backgroundColor: theme.colors.surface }]}>
+              <View style={[styles.dragPill, { backgroundColor: theme.colors.borderStrong }]} />
 
               <View style={styles.headerRow}>
                 <View>
-                  <Text style={styles.title}>Quick Financial Action</Text>
-                  <Text style={styles.subtitle}>Post verified transactions to double-entry ledger</Text>
+                  <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
+                    Contextual Financial Action
+                  </Text>
+                  <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+                    Post balanced entries directly to double-entry ledger
+                  </Text>
                 </View>
                 <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
-                  <Text style={styles.closeBtnText}>✕</Text>
+                  <Text style={[styles.closeBtnText, { color: theme.colors.textSecondary }]}>✕</Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Primary Dual Actions: Expense & Income */}
-              <View style={styles.primaryGrid}>
-                {/* Add Expense (Outflow) */}
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Primary Dual Actions: Expense & Income */}
+                <View style={styles.primaryGrid}>
+                  {/* Add Expense (Outflow) */}
+                  <TouchableOpacity
+                    style={[
+                      styles.primaryCard,
+                      {
+                        backgroundColor: theme.colors.negativeBgSolid,
+                        borderColor: 'rgba(220, 38, 38, 0.25)',
+                      },
+                    ]}
+                    onPress={() => {
+                      onClose();
+                      onSelectExpense();
+                    }}
+                    activeOpacity={0.85}
+                  >
+                    <View style={styles.iconCircleRed}>
+                      <Text style={styles.iconArrowRed}>↑</Text>
+                    </View>
+                    <View style={styles.primaryTextCol}>
+                      <View style={styles.cardHeaderRow}>
+                        <Text style={[styles.expenseTitle, { color: theme.colors.negativeDark }]}>
+                          Add Expense
+                        </Text>
+                        <View style={styles.tagRed}>
+                          <Text style={styles.tagTextRed}>OUTFLOW</Text>
+                        </View>
+                      </View>
+                      <Text style={[styles.cardSub, { color: theme.colors.textSecondary }]}>
+                        Living costs, bills, dining, EMIs
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                  {/* Add Income (Inflow) */}
+                  <TouchableOpacity
+                    style={[
+                      styles.primaryCard,
+                      {
+                        backgroundColor: theme.colors.positiveBgSolid,
+                        borderColor: 'rgba(5, 150, 105, 0.25)',
+                      },
+                    ]}
+                    onPress={() => {
+                      onClose();
+                      onSelectIncome();
+                    }}
+                    activeOpacity={0.85}
+                  >
+                    <View style={styles.iconCircleGreen}>
+                      <Text style={styles.iconArrowGreen}>↓</Text>
+                    </View>
+                    <View style={styles.primaryTextCol}>
+                      <View style={styles.cardHeaderRow}>
+                        <Text style={[styles.incomeTitle, { color: theme.colors.positiveDark }]}>
+                          Add Income
+                        </Text>
+                        <View style={styles.tagGreen}>
+                          <Text style={styles.tagTextGreen}>INFLOW</Text>
+                        </View>
+                      </View>
+                      <Text style={[styles.cardSub, { color: theme.colors.textSecondary }]}>
+                        Salary, dividends, retainers
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+
+                {/* Transfer Funds Action Button */}
                 <TouchableOpacity
-                  style={[styles.primaryCard, styles.expenseCard]}
+                  style={[
+                    styles.transferCard,
+                    {
+                      backgroundColor: theme.colors.primaryLightSolid,
+                      borderColor: 'rgba(37, 99, 235, 0.25)',
+                    },
+                  ]}
                   onPress={() => {
                     onClose();
-                    onSelectExpense();
+                    onSelectTransfer();
                   }}
                   activeOpacity={0.85}
                 >
-                  <View style={styles.iconCircleRed}>
-                    <Text style={styles.iconArrowRed}>↑</Text>
+                  <View style={[styles.transferIconBox, { backgroundColor: theme.colors.primary }]}>
+                    <Text style={styles.transferIconText}>⇄</Text>
                   </View>
-                  <View style={styles.primaryTextCol}>
+                  <View style={styles.transferTextCol}>
                     <View style={styles.cardHeaderRow}>
-                      <Text style={styles.expenseTitle}>Add Expense</Text>
-                      <View style={styles.tagRed}>
-                        <Text style={styles.tagTextRed}>OUTFLOW</Text>
+                      <Text style={[styles.transferTitle, { color: theme.colors.primaryDark }]}>
+                        Transfer Between Accounts
+                      </Text>
+                      <View style={[styles.tagBlue, { backgroundColor: theme.colors.primary }]}>
+                        <Text style={styles.tagTextWhite}>TRANSFER</Text>
                       </View>
                     </View>
-                    <Text style={styles.cardSub}>Living costs, bills, dining, EMIs</Text>
-                  </View>
-                </TouchableOpacity>
-
-                {/* Add Income (Inflow) */}
-                <TouchableOpacity
-                  style={[styles.primaryCard, styles.incomeCard]}
-                  onPress={() => {
-                    onClose();
-                    onSelectIncome();
-                  }}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.iconCircleGreen}>
-                    <Text style={styles.iconArrowGreen}>↓</Text>
-                  </View>
-                  <View style={styles.primaryTextCol}>
-                    <View style={styles.cardHeaderRow}>
-                      <Text style={styles.incomeTitle}>Add Income</Text>
-                      <View style={styles.tagGreen}>
-                        <Text style={styles.tagTextGreen}>INFLOW</Text>
-                      </View>
-                    </View>
-                    <Text style={styles.cardSub}>Salary, dividends, client retainers</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-
-              {/* Secondary Strategic Financial Actions */}
-              <View style={styles.sectionDivider} />
-              <Text style={styles.sectionLabel}>ENTERPRISE PORTFOLIO & WEALTH OPS</Text>
-
-              <View style={styles.actionList}>
-                {/* Link Institution Account */}
-                <TouchableOpacity
-                  style={styles.actionRow}
-                  onPress={() => {
-                    onClose();
-                    onSelectConnectBank();
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.actionIconBox}>
-                    <Text style={styles.actionIcon}>🏛️</Text>
-                  </View>
-                  <View style={styles.actionInfoCol}>
-                    <Text style={styles.actionItemTitle}>Link Financial Institution</Text>
-                    <Text style={styles.actionItemSub}>Connect bank, demat, or credit facility</Text>
-                  </View>
-                  <Text style={styles.chevron}>›</Text>
-                </TouchableOpacity>
-
-                {/* Add Investment Asset */}
-                <TouchableOpacity
-                  style={styles.actionRow}
-                  onPress={() => {
-                    onClose();
-                    onSelectAddInvestment();
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.actionIconBox}>
-                    <Text style={styles.actionIcon}>📈</Text>
-                  </View>
-                  <View style={styles.actionInfoCol}>
-                    <Text style={styles.actionItemTitle}>Add Investment Holding</Text>
-                    <Text style={styles.actionItemSub}>Stocks, Mutual Funds, SGBs, Fixed Deposits</Text>
-                  </View>
-                  <Text style={styles.chevron}>›</Text>
-                </TouchableOpacity>
-
-                {/* Create Budget Envelope */}
-                <TouchableOpacity
-                  style={styles.actionRow}
-                  onPress={() => {
-                    onClose();
-                    onSelectCreateBudget();
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.actionIconBox}>
-                    <Text style={styles.actionIcon}>🎯</Text>
-                  </View>
-                  <View style={styles.actionInfoCol}>
-                    <Text style={styles.actionItemTitle}>Create Budget Envelope</Text>
-                    <Text style={styles.actionItemSub}>Set monthly spending cap & envelope limit</Text>
-                  </View>
-                  <Text style={styles.chevron}>›</Text>
-                </TouchableOpacity>
-
-                {/* Import Statement */}
-                <TouchableOpacity
-                  style={styles.actionRow}
-                  onPress={() => {
-                    onClose();
-                    onSelectImportStatement();
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.actionIconBox}>
-                    <Text style={styles.actionIcon}>📄</Text>
-                  </View>
-                  <View style={styles.actionInfoCol}>
-                    <Text style={styles.actionItemTitle}>Import CAS / Bank PDF</Text>
-                    <Text style={styles.actionItemSub}>OCR auto-extract with arithmetic reconciliation</Text>
-                  </View>
-                  <Text style={styles.chevron}>›</Text>
-                </TouchableOpacity>
-
-                {/* Ask Copilot */}
-                <TouchableOpacity
-                  style={styles.actionRow}
-                  onPress={() => {
-                    onClose();
-                    onSelectCopilot();
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.actionIconBox, { backgroundColor: '#F0FDF4' }]}>
-                    <Text style={styles.actionIcon}>✨</Text>
-                  </View>
-                  <View style={styles.actionInfoCol}>
-                    <Text style={[styles.actionItemTitle, { color: theme.colors.primaryDark }]}>
-                      Ask Financial Copilot
+                    <Text style={[styles.cardSub, { color: theme.colors.textSecondary }]}>
+                      Move funds between verified banks with zero double-entry float
                     </Text>
-                    <Text style={styles.actionItemSub}>Run AI scenario analysis & runway projections</Text>
                   </View>
-                  <Text style={styles.chevron}>›</Text>
                 </TouchableOpacity>
-              </View>
+
+                {/* Secondary Strategic Financial Actions */}
+                <View style={[styles.sectionDivider, { backgroundColor: theme.colors.border }]} />
+                <Text style={[styles.sectionLabel, { color: theme.colors.textSecondary }]}>
+                  PORTFOLIO & WEALTH OPERATIONS
+                </Text>
+
+                <View style={styles.actionList}>
+                  {/* Link Institution Account */}
+                  <TouchableOpacity
+                    style={[styles.actionRow, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}
+                    onPress={() => {
+                      onClose();
+                      onSelectConnectBank();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.actionIconPill, { backgroundColor: theme.colors.primaryLightSolid }]}>
+                      <Text style={styles.actionIcon}>🏛️</Text>
+                    </View>
+                    <View style={styles.actionTextCol}>
+                      <Text style={[styles.actionTitle, { color: theme.colors.textPrimary }]}>
+                        Connect Bank or Demat
+                      </Text>
+                      <Text style={[styles.actionSub, { color: theme.colors.textSecondary }]}>
+                        Link bank account, FD or brokerage
+                      </Text>
+                    </View>
+                    <Text style={[styles.actionArrow, { color: theme.colors.primary }]}>›</Text>
+                  </TouchableOpacity>
+
+                  {/* Add Investment */}
+                  <TouchableOpacity
+                    style={[styles.actionRow, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}
+                    onPress={() => {
+                      onClose();
+                      onSelectAddInvestment();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.actionIconPill, { backgroundColor: theme.colors.primaryLightSolid }]}>
+                      <Text style={styles.actionIcon}>📈</Text>
+                    </View>
+                    <View style={styles.actionTextCol}>
+                      <Text style={[styles.actionTitle, { color: theme.colors.textPrimary }]}>
+                        Add Investment Holding
+                      </Text>
+                      <Text style={[styles.actionSub, { color: theme.colors.textSecondary }]}>
+                        Record equities, mutual fund lots, or SGBs
+                      </Text>
+                    </View>
+                    <Text style={[styles.actionArrow, { color: theme.colors.primary }]}>›</Text>
+                  </TouchableOpacity>
+
+                  {/* Import Statement */}
+                  <TouchableOpacity
+                    style={[styles.actionRow, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}
+                    onPress={() => {
+                      onClose();
+                      onSelectImportStatement();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.actionIconPill, { backgroundColor: theme.colors.primaryLightSolid }]}>
+                      <Text style={styles.actionIcon}>📄</Text>
+                    </View>
+                    <View style={styles.actionTextCol}>
+                      <Text style={[styles.actionTitle, { color: theme.colors.textPrimary }]}>
+                        Import Statement OCR
+                      </Text>
+                      <Text style={[styles.actionSub, { color: theme.colors.textSecondary }]}>
+                        Extract PDF / Excel with AI cross-verification
+                      </Text>
+                    </View>
+                    <Text style={[styles.actionArrow, { color: theme.colors.primary }]}>›</Text>
+                  </TouchableOpacity>
+
+                  {/* Create Budget Envelope */}
+                  <TouchableOpacity
+                    style={[styles.actionRow, { borderColor: theme.colors.border, backgroundColor: theme.colors.card }]}
+                    onPress={() => {
+                      onClose();
+                      onSelectCreateBudget();
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.actionIconPill, { backgroundColor: theme.colors.primaryLightSolid }]}>
+                      <Text style={styles.actionIcon}>◔</Text>
+                    </View>
+                    <View style={styles.actionTextCol}>
+                      <Text style={[styles.actionTitle, { color: theme.colors.textPrimary }]}>
+                        Create Budget Envelope
+                      </Text>
+                      <Text style={[styles.actionSub, { color: theme.colors.textSecondary }]}>
+                        Zero-based monthly spending cap
+                      </Text>
+                    </View>
+                    <Text style={[styles.actionArrow, { color: theme.colors.primary }]}>›</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -213,120 +273,84 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 20, 0.55)',
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 12,
+    paddingBottom: 36,
+    maxHeight: '88%',
   },
   dragPill: {
     width: 40,
-    height: 4.5,
-    borderRadius: 2.5,
-    backgroundColor: theme.colors.borderStrong,
+    height: 4,
+    borderRadius: 2,
     alignSelf: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   headerRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 16,
   },
   title: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '800',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
   subtitle: {
-    fontSize: 11,
-    color: theme.colors.textSecondary,
+    fontSize: 12,
     marginTop: 2,
   },
   closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surfaceElevated,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    padding: 6,
   },
   closeBtnText: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
+    fontSize: 16,
     fontWeight: '700',
   },
   primaryGrid: {
     gap: 10,
+    marginBottom: 10,
   },
   primaryCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    gap: 12,
-  },
-  expenseCard: {
-    backgroundColor: '#FFFDFD',
-    borderColor: '#FECACA',
-    shadowColor: theme.colors.danger,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  incomeCard: {
-    backgroundColor: '#FCFFFD',
-    borderColor: '#BBF7D0',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
+    borderRadius: 14,
+    borderWidth: 1,
   },
   iconCircleRed: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#FEE2E2',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#DC2626',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconCircleGreen: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#DCFCE7',
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginRight: 12,
   },
   iconArrowRed: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#DC2626',
-    marginTop: -2,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  iconCircleGreen: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#059669',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
   iconArrowGreen: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#16A36A',
-    marginTop: -2,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '800',
   },
   primaryTextCol: {
     flex: 1,
@@ -338,99 +362,121 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   expenseTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '800',
-    color: '#991B1B',
   },
   incomeTitle: {
-    fontSize: 14.5,
+    fontSize: 15,
     fontWeight: '800',
-    color: '#087A50',
   },
   tagRed: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: 'rgba(220, 38, 38, 0.15)',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 5,
+    borderRadius: 4,
   },
   tagTextRed: {
-    fontSize: 8.5,
-    fontWeight: '800',
     color: '#DC2626',
-    letterSpacing: 0.4,
+    fontSize: 9,
+    fontWeight: '800',
   },
   tagGreen: {
-    backgroundColor: '#F0FDF4',
+    backgroundColor: 'rgba(5, 150, 105, 0.15)',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 5,
+    borderRadius: 4,
   },
   tagTextGreen: {
-    fontSize: 8.5,
+    color: '#059669',
+    fontSize: 9,
     fontWeight: '800',
-    color: '#16A36A',
-    letterSpacing: 0.4,
   },
   cardSub: {
     fontSize: 11,
-    color: theme.colors.textSecondary,
-    fontWeight: '500',
+  },
+  transferCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 14,
+  },
+  transferIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  transferIconText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  transferTextCol: {
+    flex: 1,
+  },
+  transferTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  tagBlue: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  tagTextWhite: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
   },
   sectionDivider: {
     height: 1,
-    backgroundColor: theme.colors.border,
-    marginVertical: 14,
+    marginBottom: 12,
   },
   sectionLabel: {
     fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.textTertiary,
-    letterSpacing: 0.7,
-    marginBottom: 8,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: 10,
   },
   actionList: {
     gap: 8,
+    paddingBottom: 20,
   },
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surfaceElevated,
+    padding: 12,
     borderRadius: 12,
-    padding: 10,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: 10,
   },
-  actionIconBox: {
-    width: 34,
-    height: 34,
+  actionIconPill: {
+    width: 36,
+    height: 36,
     borderRadius: 10,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 12,
   },
   actionIcon: {
     fontSize: 16,
   },
-  actionInfoCol: {
+  actionTextCol: {
     flex: 1,
   },
-  actionItemTitle: {
-    fontSize: 12.5,
+  actionTitle: {
+    fontSize: 13,
     fontWeight: '700',
-    color: theme.colors.textPrimary,
+    marginBottom: 2,
   },
-  actionItemSub: {
-    fontSize: 10,
-    color: theme.colors.textSecondary,
-    marginTop: 1,
+  actionSub: {
+    fontSize: 11,
   },
-  chevron: {
+  actionArrow: {
     fontSize: 16,
-    color: theme.colors.textTertiary,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
-

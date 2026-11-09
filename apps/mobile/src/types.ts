@@ -1,5 +1,10 @@
 export type TabType = 'overview' | 'accounts' | 'investments' | 'budgets' | 'copilot';
 
+/**
+ * WealthOS Mobile 2.0 Modern Fintech Navigation Pillars
+ */
+export type PillarType = 'home' | 'money' | 'invest' | 'plan' | 'more';
+
 export type HubViewType =
   | 'net-worth'
   | 'reports'
@@ -10,9 +15,14 @@ export type HubViewType =
   | 'settings'
   | 'transactions'
   | 'goals'
-  | 'security';
+  | 'security'
+  | 'search'
+  | 'transfers'
+  | 'calendar'
+  | 'dividends'
+  | 'liabilities';
 
-export type ActiveScreen = TabType | HubViewType;
+export type ActiveScreen = TabType | HubViewType | PillarType;
 
 export type DashboardPeriod = '1M' | '3M' | 'YTD' | 'ALL';
 
@@ -41,6 +51,8 @@ export interface Transaction {
   status: 'SETTLED' | 'PENDING' | 'RECONCILED';
   journalEntryId?: string;
   notes?: string;
+  isRecurring?: boolean;
+  isDuplicateFlag?: boolean;
 }
 
 export interface InvestmentHolding {
@@ -82,6 +94,7 @@ export interface CopilotMessage {
   text: string;
   timestamp: string;
   metrics?: { label: string; value: string }[];
+  citations?: string[];
 }
 
 export interface LedgerReconciliation {
@@ -147,4 +160,41 @@ export interface AuditLogItem {
   action: string;
   details: string;
   hash: string;
+}
+
+export interface TransferRequest {
+  fromAccountId: string;
+  toAccountId: string;
+  amount: number;
+  notes?: string;
+}
+
+export interface DividendItem {
+  id: string;
+  symbol: string;
+  company: string;
+  payoutDate: string;
+  amountPerShare: number;
+  totalPayout: number;
+  status: 'RECEIVED' | 'PROJECTED';
+}
+
+export interface UpcomingObligation {
+  id: string;
+  title: string;
+  amount: number;
+  dueDate: string;
+  category: string;
+  type: 'EMI' | 'BILL' | 'SIP' | 'SALARY';
+  accountName: string;
+  isPaid: boolean;
+}
+
+export interface GlobalSearchResult {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: 'ACCOUNT' | 'TRANSACTION' | 'INVESTMENT' | 'GOAL' | 'DOCUMENT';
+  targetScreen: ActiveScreen;
+  amount?: number;
 }

@@ -16,10 +16,10 @@ import {
   initialWindowMetrics,
 } from 'react-native-safe-area-context';
 
-import { theme } from './src/theme';
+import { theme, ThemeProvider, useTheme } from './src/theme';
 import {
-  TabType,
   ActiveScreen,
+  PillarType,
   DashboardPeriod,
   BankAccount,
   Transaction,
@@ -27,6 +27,7 @@ import {
   BudgetEnvelope,
   FinancialGoal,
   CopilotMessage,
+  DocumentItem,
 } from './src/types';
 import {
   INITIAL_ACCOUNTS,
@@ -35,6 +36,7 @@ import {
   INITIAL_BUDGETS,
   INITIAL_GOALS,
   INITIAL_COPILOT_MESSAGES,
+  INITIAL_DOCUMENTS,
 } from './src/data';
 
 import { Header } from './src/components/Header';
@@ -51,6 +53,9 @@ import { ReconciliationScreen } from './src/components/ReconciliationScreen';
 import { DocumentsScreen } from './src/components/DocumentsScreen';
 import { HouseholdScreen } from './src/components/HouseholdScreen';
 import { SettingsScreen } from './src/components/SettingsScreen';
+import { FinancialCalendarScreen } from './src/components/FinancialCalendarScreen';
+import { DividendsScreen } from './src/components/DividendsScreen';
+import { LiabilitiesScreen } from './src/components/LiabilitiesScreen';
 import { ReconciliationModal } from './src/components/ReconciliationModal';
 import { AddTransactionModal } from './src/components/AddTransactionModal';
 import { ConnectAccountModal } from './src/components/ConnectAccountModal';
@@ -59,6 +64,8 @@ import { CreateBudgetModal } from './src/components/CreateBudgetModal';
 import { CreateGoalModal } from './src/components/CreateGoalModal';
 import { AddInvestmentModal } from './src/components/AddInvestmentModal';
 import { QuickAddModal } from './src/components/QuickAddModal';
+import { TransferFundsModal } from './src/components/TransferFundsModal';
+import { GlobalSearchModal } from './src/components/GlobalSearchModal';
 import { formatINR } from './src/formatters';
 
 export { formatINR };
@@ -109,6 +116,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, Error
 
 function WealthOSContent() {
   const insets = useSafeAreaInsets();
+  const { theme, isDark } = useTheme();
   const androidStatusBarHeight = RNStatusBar.currentHeight || 28;
   const topPadding = Math.max(
     insets.top,
@@ -128,11 +136,14 @@ function WealthOSContent() {
   const [holdings, setHoldings] = useState<InvestmentHolding[]>(INITIAL_HOLDINGS);
   const [budgets, setBudgets] = useState<BudgetEnvelope[]>(INITIAL_BUDGETS);
   const [goals, setGoals] = useState<FinancialGoal[]>(INITIAL_GOALS);
+  const [documents] = useState<DocumentItem[]>(INITIAL_DOCUMENTS);
   const [copilotMessages, setCopilotMessages] = useState<CopilotMessage[]>(INITIAL_COPILOT_MESSAGES);
   const [chatInput, setChatInput] = useState('');
 
   // Modals & Drawer
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isEnterpriseDrawerOpen, setIsEnterpriseDrawerOpen] = useState(false);
   const [isReconModalOpen, setIsReconModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
@@ -244,13 +255,53 @@ function WealthOSContent() {
     );
   };
 
+  const handleTransferFunds = (transfer: {
+    fromAccountId: string;
+    toAccountId: string;
+    amount: number;
+    notes?: string;
+  }) => {
+    const fromAcc = accounts.find((a) => a.id === transfer.fromAccountId);
+    const toAcc = accounts.find((a) => a.id === transfer.toAccountId);
+    if (!fromAcc || !toAcc) return;
+
+    setAccounts((prev) =>
+      prev.map((acc) => {
+        if (acc.id === transfer.fromAccountId) {
+          return { ...acc, balance: acc.balance - transfer.amount };
+        }
+        if (acc.id === transfer.toAccountId) {
+          return { ...acc, balance: acc.balance + transfer.amount };
+        }
+        return acc;
+      })
+    );
+
+    const newTx: Transaction = {
+      id: `tx-xfer-${Date.now()}`,
+      title: `Transfer: ${fromAcc.name} → ${toAcc.name}`,
+      category: 'Internal Transfer',
+      amount: transfer.amount,
+      type: 'DEBIT',
+      accountName: fromAcc.name,
+      date: 'Today',
+      status: 'RECONCILED',
+      notes: transfer.notes,
+    };
+
+    setTransactions([newTx, ...transactions]);
+    showNotification(
+      `Transferred ${formatINR(transfer.amount)} from ${fromAcc.name} to ${toAcc.name}`
+    );
+  };
+
   const handleSimulateImport = () => {
     setIsImportModalOpen(false);
     const parsedTx1: Transaction = {
       id: `tx-imp-${Date.now()}-1`,
-      title: 'Zerodha Mutual Fund Dividend Yield',
-      category: 'Investment Yield',
-      amount: 8750,
+      title: 'HDFC Interest Credit Q2',
+      category: 'Interest Income',
+      amount: 4210.0,
       type: 'CREDIT',
       accountName: 'HDFC Corporate Salary',
       date: 'Today',
@@ -258,9 +309,9 @@ function WealthOSContent() {
     };
     const parsedTx2: Transaction = {
       id: `tx-imp-${Date.now()}-2`,
-      title: 'Apollo Pharmacy Health & Care',
-      category: 'Healthcare',
-      amount: 2450,
+      title: 'Swiggy Gourmet Dining',
+      category: 'Food & Dining',
+      amount: 1450.0,
       type: 'DEBIT',
       accountName: 'HDFC Corporate Salary',
       date: 'Today',
@@ -268,29 +319,36 @@ function WealthOSContent() {
     };
 
     setTransactions([parsedTx1, parsedTx2, ...transactions]);
-    showNotification('Statement Parsed: 2 transactions reconciled into ledger (+₹8,750, -₹2,450)');
+    setAccounts((prev) =>
+      prev.map((acc) =>
+        acc.id === 'acc-hdfc-sal'
+          ? { ...acc, balance: acc.balance + (4210.0 - 1450.0) }
+          : acc
+      )
+    );
+    showNotification('Statement parsed: 2 journal entries reconciled into general ledger');
   };
 
-  const handleCreateBudget = (newEnv: BudgetEnvelope) => {
-    setBudgets((prev) => [newEnv, ...prev]);
+  const handleCreateBudget = (newBudget: BudgetEnvelope) => {
+    setBudgets([...budgets, newBudget]);
     setIsCreateBudgetModalOpen(false);
-    showNotification(`Created envelope "${newEnv.category}" (${formatINR(newEnv.budgeted)})`);
+    showNotification(`Created ${newBudget.category} envelope (${formatINR(newBudget.budgeted)})`);
   };
 
   const handleCreateGoal = (newGoal: FinancialGoal) => {
-    setGoals((prev) => [newGoal, ...prev]);
+    setGoals([...goals, newGoal]);
     setIsCreateGoalModalOpen(false);
-    showNotification(`Goal Created: "${newGoal.title}" Target ${formatINR(newGoal.targetAmount)}`);
+    showNotification(`Strategic goal established: ${newGoal.title}`);
   };
 
   const handleAddInvestment = (newHolding: InvestmentHolding) => {
-    setHoldings((prev) => [newHolding, ...prev]);
+    setHoldings([...holdings, newHolding]);
     setIsAddInvestmentModalOpen(false);
-    showNotification(`Added ${newHolding.symbol} (${formatINR(newHolding.currentValue)}) to Portfolio`);
+    showNotification(`Recorded ${newHolding.symbol} (${newHolding.name}) in portfolio lots`);
   };
 
-  const handleSendCopilotMessage = (promptText?: string) => {
-    const textToSend = promptText || chatInput;
+  const handleSendCopilotMessage = (customText?: string) => {
+    const textToSend = customText || chatInput;
     if (!textToSend.trim()) return;
 
     const userMsg: CopilotMessage = {
@@ -304,38 +362,30 @@ function WealthOSContent() {
     setChatInput('');
 
     setTimeout(() => {
-      let replyText = 'I analyzed your active portfolio lots and monthly cash flow.';
-      let replyMetrics: { label: string; value: string }[] | undefined = undefined;
+      let replyText =
+        'I reviewed your double-entry trial balance. All journal entries and institution cash balances are strictly in sync with zero unreconciled float.';
+      const replyMetrics = [
+        { label: 'Net Worth', value: formatINR(netWorth) },
+        { label: 'Liquid Runway', value: '6.2 Months' },
+        { label: 'Double-Entry Variance', value: '₹0.00' },
+      ];
 
       const lower = textToSend.toLowerCase();
-      if (lower.includes('emergency') || lower.includes('runway')) {
-        replyText = `Your liquid cash reserves total ${formatINR(1327650)}. At your current monthly outflow of ${formatINR(monthlyOutflows)}, your emergency runway is 6.2 months, which exceeds your 6.0-month target threshold.`;
-        replyMetrics = [
-          { label: 'Liquid Cash', value: '₹13.28 Lakhs' },
-          { label: 'Monthly Burn', value: formatINR(monthlyOutflows) },
-          { label: 'Runway', value: '6.2 Months' },
-        ];
-      } else if (lower.includes('vacation') || lower.includes('afford')) {
-        replyText = `Yes, you can comfortably afford the ₹1,50,000 expenditure. Your monthly surplus is ${formatINR(monthlyInflows - monthlyOutflows)} and your discretionary budget has ${formatINR(6200)} unused. Withdrawing this will maintain 5.5 months of emergency runway.`;
-        replyMetrics = [
-          { label: 'Monthly Surplus', value: formatINR(monthlyInflows - monthlyOutflows) },
-          { label: 'Post-Trip Runway', value: '5.5 Months' },
-          { label: 'Recommendation', value: 'Feasible (Approved)' },
-        ];
-      } else if (lower.includes('invest') || lower.includes('sip')) {
-        replyText = `Based on your debt-to-income ratio (18.2%) and remaining monthly surplus, you can safely deploy ₹35,000 into Nifty 50 Index funds or Flexi-cap equities without impairing your EMI obligations.`;
-        replyMetrics = [
-          { label: 'Deployable Surplus', value: '₹35,000' },
-          { label: 'Tax Lot Age', value: 'LTCG (> 365d)' },
-          { label: 'Suggested Allocation', value: '70% Equity / 30% Debt' },
-        ];
-      } else {
+      if (lower.includes('runway') || lower.includes('emergency')) {
+        const liquid = totalAssets - 4522551.25;
+        const burn = monthlyOutflows > 0 ? monthlyOutflows : 148250;
+        const months = (liquid / burn).toFixed(1);
+        replyText = `Based on ₹${formatINR(liquid)} liquid cash across 3 depository accounts and an average burn of ₹${formatINR(burn)}/mo, your emergency runway is ${months} months.`;
+      } else if (lower.includes('afford') || lower.includes('vacation') || lower.includes('trip')) {
+        replyText =
+          'Yes, you can comfortably afford this trip. Deploying ₹1,50,000 will leave ₹26.78 Lakhs in liquid cash and preserve 5.8 months of emergency runway.';
+      } else if (lower.includes('sip') || lower.includes('invest') || lower.includes('portfolio')) {
+        replyText = `Your investment portfolio sits at ${formatINR(totalPortfolioValue)} (+${(
+          ((totalPortfolioValue - totalInvestedValue) / totalInvestedValue) *
+          100
+        ).toFixed(1)}% unrealized gain). You currently deploy ₹50,000/mo into SIPs with ₹35,000 monthly surplus buffer remaining.`;
+      } else if (lower.includes('balance') || lower.includes('sigma') || lower.includes('verify')) {
         replyText = `WealthOS verified your double-entry ledger balance. Net worth is ${formatINR(netWorth)} across 6 connected institutions with zero unreconciled discrepancies.`;
-        replyMetrics = [
-          { label: 'Consolidated Net Worth', value: formatINR(netWorth) },
-          { label: 'Active Holdings', value: `${holdings.length} Assets` },
-          { label: 'Ledger Variance', value: '₹0.00 (Balanced)' },
-        ];
       }
 
       const copilotReply: CopilotMessage = {
@@ -350,46 +400,104 @@ function WealthOSContent() {
     }, 550);
   };
 
-  // Determine if active screen is a primary bottom tab
-  const isPrimaryTab = ['overview', 'accounts', 'investments', 'budgets', 'copilot'].includes(
-    activeScreen
-  );
-  const activeTab: TabType = isPrimaryTab
-    ? (activeScreen as TabType)
-    : activeScreen === 'transactions'
-    ? 'accounts'
-    : activeScreen === 'goals'
-    ? 'budgets'
-    : 'overview';
+  const handleSelectPillar = (pillar: PillarType) => {
+    switch (pillar) {
+      case 'home':
+        setActiveScreen('overview');
+        break;
+      case 'money':
+        setActiveScreen('accounts');
+        break;
+      case 'invest':
+        setActiveScreen('investments');
+        break;
+      case 'plan':
+        setActiveScreen('budgets');
+        break;
+      case 'more':
+        setIsEnterpriseDrawerOpen(true);
+        break;
+    }
+  };
 
   return (
-    <View style={[styles.safeContainer, { paddingTop: topPadding }]}>
-      <ExpoStatusBar style="dark" backgroundColor={theme.colors.surface} translucent={true} />
+    <View
+      style={[
+        styles.safeContainer,
+        {
+          paddingTop: topPadding,
+          backgroundColor: theme.colors.surface,
+        },
+      ]}
+    >
+      <ExpoStatusBar
+        style={isDark ? 'light' : 'dark'}
+        backgroundColor={theme.colors.surface}
+        translucent={true}
+      />
 
       {/* Top Header */}
       <Header
         onOpenCopilot={() => setActiveScreen('copilot')}
         onOpenReconciliation={() => setActiveScreen('reconciliation')}
         onOpenHub={() => setIsEnterpriseDrawerOpen(true)}
+        onOpenSearch={() => setIsSearchModalOpen(true)}
         activeWorkspace={activeWorkspace}
         isSyncing={refreshing}
       />
 
       {/* Floating Notification Toast */}
       {notification && (
-        <View style={styles.notificationToast}>
-          <View style={styles.notifIconCircle}>
-            <Text style={styles.notifIconText}>✓</Text>
+        <View
+          style={[
+            styles.notificationToast,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(37, 99, 235, 0.4)',
+            },
+          ]}
+        >
+          <View
+            style={[
+              styles.notifIconCircle,
+              { backgroundColor: theme.colors.primaryLightSolid },
+            ]}
+          >
+            <Text style={[styles.notifIconText, { color: theme.colors.primary }]}>✓</Text>
           </View>
-          <Text style={styles.notificationText} numberOfLines={2}>
+          <Text
+            style={[styles.notificationText, { color: theme.colors.textPrimary }]}
+            numberOfLines={2}
+          >
             {notification}
           </Text>
         </View>
       )}
 
       {/* Main Content Router */}
-      <View style={styles.mainContent}>
-        {/* Enterprise Dedicated Screens */}
+      <View style={[styles.mainContent, { backgroundColor: theme.colors.canvas }]}>
+        {/* Dedicated Modern Fintech Screens */}
+        {activeScreen === 'calendar' && (
+          <FinancialCalendarScreen
+            onBack={() => setActiveScreen('overview')}
+            onShowToast={showNotification}
+          />
+        )}
+
+        {activeScreen === 'dividends' && (
+          <DividendsScreen
+            onBack={() => setActiveScreen('investments')}
+            onShowToast={showNotification}
+          />
+        )}
+
+        {activeScreen === 'liabilities' && (
+          <LiabilitiesScreen
+            onBack={() => setActiveScreen('budgets')}
+            onShowToast={showNotification}
+          />
+        )}
+
         {(activeScreen === 'net-worth' || activeScreen === 'reports') && (
           <NetWorthScreen onBack={() => setActiveScreen('overview')} />
         )}
@@ -432,8 +540,8 @@ function WealthOSContent() {
           />
         )}
 
-        {/* Primary Bottom Tab Screens */}
-        {activeScreen === 'overview' && (
+        {/* 1. Home Pillar */}
+        {(activeScreen === 'overview' || activeScreen === 'home') && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -476,7 +584,10 @@ function WealthOSContent() {
           </ScrollView>
         )}
 
-        {(activeScreen === 'accounts' || activeScreen === 'transactions') && (
+        {/* 2. Money Pillar */}
+        {(activeScreen === 'accounts' ||
+          activeScreen === 'transactions' ||
+          activeScreen === 'money') && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -501,7 +612,8 @@ function WealthOSContent() {
           </ScrollView>
         )}
 
-        {activeScreen === 'investments' && (
+        {/* 3. Invest Pillar */}
+        {(activeScreen === 'investments' || activeScreen === 'invest') && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -521,7 +633,8 @@ function WealthOSContent() {
           </ScrollView>
         )}
 
-        {(activeScreen === 'budgets' || activeScreen === 'goals') && (
+        {/* 4. Plan Pillar */}
+        {(activeScreen === 'budgets' || activeScreen === 'goals' || activeScreen === 'plan') && (
           <ScrollView
             style={styles.scrollArea}
             showsVerticalScrollIndicator={false}
@@ -545,6 +658,7 @@ function WealthOSContent() {
           </ScrollView>
         )}
 
+        {/* 5. Copilot AI Screen */}
         {activeScreen === 'copilot' && (
           <CopilotScreen
             messages={copilotMessages}
@@ -555,11 +669,11 @@ function WealthOSContent() {
         )}
       </View>
 
-      {/* Symmetrical 5-Slot Bottom Dock with Center Elevated Add Entry FAB */}
+      {/* Modern Fintech 5-Pillar Navigation Dock with Elevated Quick Action Center */}
       <BottomNav
-        activeTab={activeTab}
-        onTabChange={(tab) => setActiveScreen(tab)}
-        onAddEntry={() => setIsQuickAddOpen(true)}
+        activeScreen={activeScreen}
+        onSelectPillar={handleSelectPillar}
+        onOpenQuickAction={() => setIsQuickAddOpen(true)}
       />
 
       {/* Enterprise Drawer Hub */}
@@ -575,12 +689,13 @@ function WealthOSContent() {
         }}
       />
 
-      {/* Quick Financial Action Modal Sheet */}
+      {/* Contextual Quick Financial Action Modal Sheet */}
       <QuickAddModal
         visible={isQuickAddOpen}
         onClose={() => setIsQuickAddOpen(false)}
         onSelectExpense={handleOpenAddExpense}
         onSelectIncome={handleOpenAddIncome}
+        onSelectTransfer={() => setIsTransferModalOpen(true)}
         onSelectConnectBank={() => setIsConnectModalOpen(true)}
         onSelectImportStatement={() => setIsImportModalOpen(true)}
         onSelectAddInvestment={() => setIsAddInvestmentModalOpen(true)}
@@ -588,7 +703,27 @@ function WealthOSContent() {
         onSelectCopilot={() => setActiveScreen('copilot')}
       />
 
-      {/* Modals */}
+      {/* Account-to-Account Treasury Transfer Modal */}
+      <TransferFundsModal
+        visible={isTransferModalOpen}
+        onClose={() => setIsTransferModalOpen(false)}
+        accounts={accounts}
+        onSubmit={handleTransferFunds}
+      />
+
+      {/* Global Financial Search Modal */}
+      <GlobalSearchModal
+        visible={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        accounts={accounts}
+        transactions={transactions}
+        holdings={holdings}
+        goals={goals}
+        documents={documents}
+        onNavigate={(screen) => setActiveScreen(screen)}
+      />
+
+      {/* Financial Operations Modals */}
       <ReconciliationModal
         visible={isReconModalOpen}
         onClose={() => setIsReconModalOpen(false)}
@@ -642,9 +777,11 @@ function WealthOSContent() {
 export default function App() {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <ErrorBoundary>
-        <WealthOSContent />
-      </ErrorBoundary>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <WealthOSContent />
+        </ErrorBoundary>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
@@ -652,11 +789,9 @@ export default function App() {
 const styles = StyleSheet.create({
   safeContainer: {
     flex: 1,
-    backgroundColor: theme.colors.surface,
   },
   mainContent: {
     flex: 1,
-    backgroundColor: theme.colors.canvas,
   },
   scrollArea: {
     flex: 1,
@@ -666,7 +801,6 @@ const styles = StyleSheet.create({
     top: Platform.OS === 'ios' ? 70 : 60,
     left: 16,
     right: 16,
-    backgroundColor: theme.colors.surface,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -674,8 +808,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: 'rgba(22, 163, 106, 0.4)',
-    shadowColor: theme.colors.textPrimary,
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
@@ -686,20 +819,17 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: theme.colors.primaryLightSolid,
     alignItems: 'center',
     justifyContent: 'center',
   },
   notifIconText: {
     fontSize: 12,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
   },
   notificationText: {
     flex: 1,
     fontSize: 11,
     fontWeight: '700',
-    color: theme.colors.textPrimary,
     lineHeight: 16,
   },
   errorContainer: {
@@ -716,13 +846,13 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#17231D',
+    color: '#0F172A',
     marginBottom: 8,
     textAlign: 'center',
   },
   errorSubtitle: {
     fontSize: 13,
-    color: '#758078',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 16,
@@ -730,7 +860,7 @@ const styles = StyleSheet.create({
   errorDetail: {
     fontSize: 11,
     color: '#DC2626',
-    backgroundColor: '#FEE2E2',
+    backgroundColor: '#FEF2F2',
     padding: 10,
     borderRadius: 8,
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -738,7 +868,7 @@ const styles = StyleSheet.create({
     maxWidth: '90%',
   },
   resetButton: {
-    backgroundColor: '#16A36A',
+    backgroundColor: '#2563EB',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,

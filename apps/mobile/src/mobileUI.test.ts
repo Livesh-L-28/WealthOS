@@ -18,21 +18,21 @@ import {
 describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
   describe('Brand Theme & Color Alignment with Web Fintech Design System', () => {
     it('enforces exact WealthOS Web color palette tokens', () => {
-      expect(theme.colors.canvas).toBe('#F7F9F7');
+      expect(theme.colors.canvas).toBe('#F8FAFC');
       expect(theme.colors.surface).toBe('#FFFFFF');
-      expect(theme.colors.border).toBe('#E7ECE8');
-      expect(theme.colors.primary).toBe('#16A36A');
-      expect(theme.colors.primaryDark).toBe('#087A50');
-      expect(theme.colors.textPrimary).toBe('#17231D');
-      expect(theme.colors.textSecondary).toBe('#758078');
-      expect(theme.colors.negative).toBe('#DC5B5B');
+      expect(theme.colors.border).toBe('#E2E8F0');
+      expect(theme.colors.primary).toBe('#2563EB');
+      expect(theme.colors.primaryDark).toBe('#1D4ED8');
+      expect(theme.colors.textPrimary).toBe('#0F172A');
+      expect(theme.colors.textSecondary).toBe('#475569');
+      expect(theme.colors.negative).toBe('#DC2626');
     });
 
     it('provides chart and asset class series colors matching web standards', () => {
-      expect(theme.colors.charts.equity).toBe('#16A36A');
-      expect(theme.colors.charts.mutualFund).toBe('#6475D8');
-      expect(theme.colors.charts.gold).toBe('#D99A32');
-      expect(theme.colors.charts.fixedIncome).toBe('#0D9488');
+      expect(theme.colors.charts.equity).toBe('#2563EB');
+      expect(theme.colors.charts.mutualFund).toBe('#6366F1');
+      expect(theme.colors.charts.gold).toBe('#F59E0B');
+      expect(theme.colors.charts.fixedIncome).toBe('#059669');
     });
   });
 
@@ -154,10 +154,10 @@ describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
   describe('Mobile Ergonomics, Header Visibility & Bottom Dock Add Entry', () => {
     it('verifies theme surface and primary contrast foundation', () => {
       expect(theme.colors.surface).toBe('#FFFFFF');
-      expect(theme.colors.canvas).toBe('#F7F9F7');
-      expect(theme.colors.primary).toBe('#16A36A');
-      expect(theme.colors.primaryDark).toBe('#087A50');
-      expect(theme.colors.danger).toBe('#DC5B5B');
+      expect(theme.colors.canvas).toBe('#F8FAFC');
+      expect(theme.colors.primary).toBe('#2563EB');
+      expect(theme.colors.primaryDark).toBe('#1D4ED8');
+      expect(theme.colors.danger).toBe('#DC2626');
     });
 
     it('verifies transaction ledger initial categories and presets', () => {

@@ -1,4 +1,13 @@
-import { BankAccount, Transaction, InvestmentHolding, BudgetEnvelope, FinancialGoal, CopilotMessage } from './types';
+import {
+  BankAccount,
+  Transaction,
+  InvestmentHolding,
+  BudgetEnvelope,
+  FinancialGoal,
+  CopilotMessage,
+  DividendItem,
+  UpcomingObligation,
+} from './types';
 
 export const INITIAL_ACCOUNTS: BankAccount[] = [
   {
@@ -447,6 +456,98 @@ export const INITIAL_AUDIT_LOGS = [
     action: 'Transaction Reconciliation',
     details: 'Journal Entry #JE-2026-1107-001 verified against statement OCR',
     hash: '0x11ab...6044',
+  },
+];
+
+export const INITIAL_DIVIDENDS: DividendItem[] = [
+  {
+    id: 'div-1',
+    symbol: 'TCS',
+    company: 'Tata Consultancy Services',
+    payoutDate: '03 Nov 2026',
+    amountPerShare: 29.0,
+    totalPayout: 14500.0,
+    status: 'RECEIVED',
+  },
+  {
+    id: 'div-2',
+    symbol: 'RELIANCE',
+    company: 'Reliance Industries Ltd',
+    payoutDate: '24 Nov 2026',
+    amountPerShare: 10.0,
+    totalPayout: 1500.0,
+    status: 'PROJECTED',
+  },
+  {
+    id: 'div-3',
+    symbol: 'HDFCBANK',
+    company: 'HDFC Bank Ltd',
+    payoutDate: '15 Dec 2026',
+    amountPerShare: 19.5,
+    totalPayout: 3900.0,
+    status: 'PROJECTED',
+  },
+  {
+    id: 'div-4',
+    symbol: 'SGB2028',
+    company: 'RBI Sovereign Gold Bond 2.5%',
+    payoutDate: '28 Dec 2026',
+    amountPerShare: 68.75,
+    totalPayout: 3437.5,
+    status: 'PROJECTED',
+  },
+];
+
+export const INITIAL_OBLIGATIONS: UpcomingObligation[] = [
+  {
+    id: 'ob-1',
+    title: 'HDFC Home Loan EMI',
+    amount: 22894.0,
+    dueDate: '01 Dec 2026',
+    category: 'Housing & Debt',
+    type: 'EMI',
+    accountName: 'HDFC Corporate Salary',
+    isPaid: false,
+  },
+  {
+    id: 'ob-2',
+    title: 'Parag Parikh Flexi Cap SIP',
+    amount: 50000.0,
+    dueDate: '01 Dec 2026',
+    category: 'Investments',
+    type: 'SIP',
+    accountName: 'ICICI Privileged Savings',
+    isPaid: false,
+  },
+  {
+    id: 'ob-3',
+    title: 'AWS Cloud Infrastructure Bill',
+    amount: 14250.0,
+    dueDate: '07 Dec 2026',
+    category: 'Technology',
+    type: 'BILL',
+    accountName: 'Axis Bank Magnus Card',
+    isPaid: false,
+  },
+  {
+    id: 'ob-4',
+    title: 'Axis Magnus Card Total Due',
+    amount: 38200.0,
+    dueDate: '15 Dec 2026',
+    category: 'Credit Card',
+    type: 'BILL',
+    accountName: 'HDFC Corporate Salary',
+    isPaid: false,
+  },
+  {
+    id: 'ob-5',
+    title: 'Infy Advisory Monthly Retainer',
+    amount: 185000.0,
+    dueDate: '05 Dec 2026',
+    category: 'Professional Income',
+    type: 'SALARY',
+    accountName: 'HDFC Corporate Salary',
+    isPaid: false,
   },
 ];
 
