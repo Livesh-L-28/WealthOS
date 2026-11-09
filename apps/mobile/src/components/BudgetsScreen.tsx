@@ -1,12 +1,180 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Modal,
+  ScrollView,
+} from 'react-native';
 import { theme } from '../theme';
-import { BudgetEnvelope, FinancialGoal } from '../types';
+import { BudgetEnvelope, FinancialGoal, Transaction } from '../types';
 import { formatINR } from '../formatters';
+
+interface EnvelopeExpenditure {
+  id: string;
+  date: string;
+  title: string;
+  account: string;
+  amount: number;
+  ref: string;
+  status: 'SETTLED' | 'RECONCILED';
+}
+
+const ENVELOPE_EXPENDITURES_MAP: Record<string, EnvelopeExpenditure[]> = {
+  'Housing & EMI': [
+    {
+      id: 'h-1',
+      date: '02 Nov 2026',
+      title: 'DLF CyberCity Lease Rent',
+      account: 'HDFC Corporate Salary •••• 4921',
+      amount: 42500,
+      ref: 'JE-2026-1102-003',
+      status: 'SETTLED',
+    },
+    {
+      id: 'h-2',
+      date: '01 Nov 2026',
+      title: 'Society Maintenance & Estate Dues',
+      account: 'HDFC Corporate Salary •••• 4921',
+      amount: 2500,
+      ref: 'JE-2026-1101-018',
+      status: 'SETTLED',
+    },
+  ],
+  'Food & Groceries': [
+    {
+      id: 'f-1',
+      date: '06 Nov 2026',
+      title: "Nature's Basket Organic Groceries",
+      account: 'Axis Bank Magnus Card •••• 1004',
+      amount: 8450,
+      ref: 'JE-2026-1106-009',
+      status: 'SETTLED',
+    },
+    {
+      id: 'f-2',
+      date: '04 Nov 2026',
+      title: 'Whole Foods Fresh Produce & Dairy',
+      account: 'Axis Bank Magnus Card •••• 1004',
+      amount: 6750,
+      ref: 'JE-2026-1104-012',
+      status: 'SETTLED',
+    },
+    {
+      id: 'f-3',
+      date: '01 Nov 2026',
+      title: 'Monthly Pantry & Provisions Order',
+      account: 'HDFC Corporate Salary •••• 4921',
+      amount: 7200,
+      ref: 'JE-2026-1101-015',
+      status: 'SETTLED',
+    },
+  ],
+  'Transportation & Fuel': [
+    {
+      id: 't-1',
+      date: '05 Nov 2026',
+      title: 'Shell Petrol Station Premium V-Power',
+      account: 'Axis Bank Magnus Card •••• 1004',
+      amount: 5400,
+      ref: 'JE-2026-1105-021',
+      status: 'SETTLED',
+    },
+    {
+      id: 't-2',
+      date: '03 Nov 2026',
+      title: 'EV Fast Charging Station Supercharge',
+      account: 'Axis Bank Magnus Card •••• 1004',
+      amount: 4800,
+      ref: 'JE-2026-1103-024',
+      status: 'SETTLED',
+    },
+    {
+      id: 't-3',
+      date: '01 Nov 2026',
+      title: 'National Highway Fastag Auto-Reload',
+      account: 'HDFC Corporate Salary •••• 4921',
+      amount: 1950,
+      ref: 'JE-2026-1101-027',
+      status: 'SETTLED',
+    },
+  ],
+  'Utilities & Telecom': [
+    {
+      id: 'u-1',
+      date: '04 Nov 2026',
+      title: 'Tata Power Electricity Utility Bill',
+      account: 'HDFC Corporate Salary •••• 4921',
+      amount: 5100,
+      ref: 'JE-2026-1104-031',
+      status: 'SETTLED',
+    },
+    {
+      id: 'u-2',
+      date: '02 Nov 2026',
+      title: 'Airtel Fiber Gigabit Broadband',
+      account: 'HDFC Corporate Salary •••• 4921',
+      amount: 1899,
+      ref: 'JE-2026-1102-034',
+      status: 'SETTLED',
+    },
+    {
+      id: 'u-3',
+      date: '01 Nov 2026',
+      title: 'Mahanagar Gas Piped Cooking Gas',
+      account: 'HDFC Corporate Salary •••• 4921',
+      amount: 1201,
+      ref: 'JE-2026-1101-036',
+      status: 'SETTLED',
+    },
+  ],
+  'Discretionary & Dining': [
+    {
+      id: 'd-1',
+      date: '06 Nov 2026',
+      title: 'The Table Fine Dining & Bistro',
+      account: 'Axis Bank Magnus Card •••• 1004',
+      amount: 9600,
+      ref: 'JE-2026-1106-041',
+      status: 'SETTLED',
+    },
+    {
+      id: 'd-2',
+      date: '04 Nov 2026',
+      title: 'Blue Tokai Specialty Coffee Roasters',
+      account: 'Axis Bank Magnus Card •••• 1004',
+      amount: 2800,
+      ref: 'JE-2026-1104-045',
+      status: 'SETTLED',
+    },
+    {
+      id: 'd-3',
+      date: '02 Nov 2026',
+      title: 'Weekend Artisanal Brunch & Bakery',
+      account: 'Axis Bank Magnus Card •••• 1004',
+      amount: 6400,
+      ref: 'JE-2026-1102-048',
+      status: 'SETTLED',
+    },
+  ],
+  'Investments & SIPs': [
+    {
+      id: 'i-1',
+      date: '01 Nov 2026',
+      title: 'Monthly SIP - Parag Parikh Flexi Cap',
+      account: 'ICICI Privileged Savings •••• 9921',
+      amount: 50000,
+      ref: 'JE-2026-1101-004',
+      status: 'RECONCILED',
+    },
+  ],
+};
 
 interface BudgetsScreenProps {
   budgets: BudgetEnvelope[];
   goals: FinancialGoal[];
+  transactions?: Transaction[];
   onAddTransaction?: () => void;
   onAddEnvelope?: () => void;
   onAddGoal?: () => void;
@@ -35,6 +203,7 @@ const GOAL_EMOJIS: Record<string, string> = {
 export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   budgets,
   goals,
+  transactions = [],
   onAddTransaction,
   onAddEnvelope,
   onAddGoal,
@@ -442,29 +611,38 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
     </>
   )}
 
-      {/* Envelope Detail Modal */}
+      {/* Envelope Detail Modal with Itemized Expenditures */}
       {selectedEnv && (
         <Modal
           visible={!!selectedEnv}
           transparent
-          animationType="fade"
+          animationType="slide"
           onRequestClose={() => setSelectedEnv(null)}
         >
           <View style={styles.modalBackdrop}>
             <View style={styles.detailModalBox}>
               <View style={styles.modalBar} />
+
               <View style={styles.modalHeaderRow}>
                 <View style={[styles.categoryAvatarLarge, { backgroundColor: `${selectedEnv.color}20` }]}>
                   <Text style={styles.categoryAvatarLargeEmoji}>
                     {CATEGORY_EMOJIS[selectedEnv.category] || '📦'}
                   </Text>
                 </View>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.detailModalTitle}>{selectedEnv.category}</Text>
-                  <Text style={styles.detailModalSub}>Monthly Budget Envelope</Text>
+                  <Text style={styles.detailModalSub}>Monthly Budget Envelope • November 2026</Text>
                 </View>
+                <TouchableOpacity
+                  style={styles.modalCloseHeaderBtn}
+                  onPress={() => setSelectedEnv(null)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.modalCloseHeaderBtnText}>✕</Text>
+                </TouchableOpacity>
               </View>
 
+              {/* KPI Summary Grid */}
               <View style={styles.detailMetricGrid}>
                 <View style={styles.detailMetricCol}>
                   <Text style={styles.detailMetricLabel}>BUDGET ALLOCATED</Text>
@@ -476,35 +654,113 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                     {formatINR(selectedEnv.spent)}
                   </Text>
                 </View>
+                <View style={styles.detailMetricCol}>
+                  <Text style={styles.detailMetricLabel}>BUFFER LEFT</Text>
+                  <Text
+                    style={[
+                      styles.detailMetricValue,
+                      { color: selectedEnv.spent >= selectedEnv.budgeted ? '#DC2626' : '#087A50' },
+                    ]}
+                  >
+                    {formatINR(Math.max(0, selectedEnv.budgeted - selectedEnv.spent))}
+                  </Text>
+                </View>
               </View>
 
-              <View style={styles.safeRemainingBox}>
-                <Text style={styles.safeRemainingLabel}>Safe Remaining Spend:</Text>
-                <Text style={styles.safeRemainingValue}>
-                  {formatINR(Math.max(0, selectedEnv.budgeted - selectedEnv.spent))}
-                </Text>
-              </View>
-
-              {onAddTransaction && (
-                <TouchableOpacity
-                  style={styles.modalPrimaryBtn}
-                  onPress={() => {
-                    setSelectedEnv(null);
-                    onAddTransaction();
-                  }}
-                  activeOpacity={0.8}
+              {/* Progress Bar Capsule */}
+              <View style={styles.envelopeProgressTrack}>
+                <View style={[styles.progressTick, { left: '80%' }]} />
+                <View
+                  style={[
+                    styles.envelopeProgressFill,
+                    {
+                      width: `${Math.min(100, Math.max(4, (selectedEnv.spent / selectedEnv.budgeted) * 100))}%`,
+                      backgroundColor:
+                        selectedEnv.spent >= selectedEnv.budgeted
+                          ? '#DC2626'
+                          : (selectedEnv.spent / selectedEnv.budgeted) >= 0.8
+                          ? '#F59E0B'
+                          : '#10B981',
+                    },
+                  ]}
                 >
-                  <Text style={styles.modalPrimaryBtnText}>+ Log Expense to this Category</Text>
-                </TouchableOpacity>
-              )}
+                  <View style={styles.progressLeadHead} />
+                </View>
+              </View>
 
-              <TouchableOpacity
-                style={styles.modalCloseBtn}
-                onPress={() => setSelectedEnv(null)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.modalCloseBtnText}>Close</Text>
-              </TouchableOpacity>
+              {/* Itemized Expenditures List Section */}
+              <View style={styles.envelopeExpendituresSection}>
+                <View style={styles.envelopeExpendituresHeaderRow}>
+                  <Text style={styles.envelopeExpendituresTitle}>
+                    ITEMIZED EXPENDITURES ({ENVELOPE_EXPENDITURES_MAP[selectedEnv.category]?.length || 0})
+                  </Text>
+                  <Text style={styles.envelopeExpendituresTotal}>
+                    Total: {formatINR(selectedEnv.spent)}
+                  </Text>
+                </View>
+                <Text style={styles.envelopeExpendituresSub}>
+                  General ledger journal entries posted to this envelope
+                </Text>
+
+                <ScrollView
+                  style={styles.envelopeExpScroll}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {(ENVELOPE_EXPENDITURES_MAP[selectedEnv.category] || []).map((item) => (
+                    <View key={item.id} style={styles.envelopeExpCard}>
+                      <View style={styles.envelopeExpTop}>
+                        <View style={styles.envelopeExpDateBadge}>
+                          <Text style={styles.envelopeExpDateText}>📅 {item.date}</Text>
+                        </View>
+                        <View style={styles.envelopeExpStatusPill}>
+                          <Text style={styles.envelopeExpStatusText}>● {item.status}</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.envelopeExpMain}>
+                        <Text style={styles.envelopeExpTitle} numberOfLines={1}>
+                          {item.title}
+                        </Text>
+                        <Text style={styles.envelopeExpAmount}>
+                          -{formatINR(item.amount)}
+                        </Text>
+                      </View>
+
+                      <View style={styles.envelopeExpFoot}>
+                        <Text style={styles.envelopeExpAccount}>
+                          🏦 {item.account}
+                        </Text>
+                        <Text style={styles.envelopeExpRef}>
+                          {item.ref}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* Action Buttons */}
+              <View style={styles.modalActionButtonsRow}>
+                {onAddTransaction && (
+                  <TouchableOpacity
+                    style={styles.modalPrimaryActionBtn}
+                    onPress={() => {
+                      setSelectedEnv(null);
+                      onAddTransaction();
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.modalPrimaryActionBtnText}>+ Log Expense to {selectedEnv.category.split(' ')[0]}</Text>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity
+                  style={styles.modalCloseActionBtn}
+                  onPress={() => setSelectedEnv(null)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.modalCloseActionBtnText}>Close</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>
@@ -1163,7 +1419,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
-    paddingBottom: 34,
+    paddingBottom: 28,
+    maxHeight: '90%',
   },
   modalBar: {
     width: 38,
@@ -1177,7 +1434,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  modalCloseHeaderBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCloseHeaderBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#64748B',
   },
   categoryAvatarLarge: {
     width: 44,
@@ -1190,7 +1460,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   detailModalTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
     color: theme.colors.textPrimary,
   },
@@ -1206,28 +1476,161 @@ const styles = StyleSheet.create({
   },
   detailMetricGrid: {
     flexDirection: 'row',
-    gap: 12,
-    marginVertical: 14,
+    gap: 8,
+    marginVertical: 10,
   },
   detailMetricCol: {
     flex: 1,
     backgroundColor: theme.colors.surfaceElevated,
-    padding: 12,
+    padding: 10,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: theme.colors.borderLight,
   },
   detailMetricLabel: {
-    fontSize: 9.5,
+    fontSize: 8.5,
     fontWeight: '700',
     color: theme.colors.textSecondary,
     marginBottom: 4,
   },
   detailMetricValue: {
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '800',
     color: theme.colors.textPrimary,
     fontVariant: ['tabular-nums'],
+  },
+  envelopeExpendituresSection: {
+    marginTop: 10,
+    marginBottom: 6,
+    maxHeight: 260,
+  },
+  envelopeExpendituresHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  envelopeExpendituresTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#17231D',
+    letterSpacing: 0.5,
+  },
+  envelopeExpendituresTotal: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#DC2626',
+    fontVariant: ['tabular-nums'],
+  },
+  envelopeExpendituresSub: {
+    fontSize: 9.5,
+    color: theme.colors.textTertiary,
+    marginTop: 1,
+    marginBottom: 8,
+  },
+  envelopeExpScroll: {
+    maxHeight: 210,
+  },
+  envelopeExpCard: {
+    backgroundColor: '#F8FAF9',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#E7ECE8',
+  },
+  envelopeExpTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  envelopeExpDateBadge: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 0.5,
+    borderColor: '#E2E8F0',
+  },
+  envelopeExpDateText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  envelopeExpStatusPill: {
+    backgroundColor: '#E8F5EE',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  envelopeExpStatusText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#087A50',
+  },
+  envelopeExpMain: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 2,
+  },
+  envelopeExpTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#17231D',
+    flex: 1,
+    marginRight: 8,
+  },
+  envelopeExpAmount: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#DC2626',
+    fontVariant: ['tabular-nums'],
+  },
+  envelopeExpFoot: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  envelopeExpAccount: {
+    fontSize: 9.5,
+    color: '#64748B',
+  },
+  envelopeExpRef: {
+    fontSize: 9,
+    color: '#94A3B8',
+    fontFamily: 'monospace',
+    fontWeight: '700',
+  },
+  modalActionButtonsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  modalPrimaryActionBtn: {
+    flex: 1,
+    backgroundColor: '#087A50',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalPrimaryActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  modalCloseActionBtn: {
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCloseActionBtnText: {
+    color: '#475569',
+    fontSize: 12,
+    fontWeight: '700',
   },
   safeRemainingBox: {
     flexDirection: 'row',

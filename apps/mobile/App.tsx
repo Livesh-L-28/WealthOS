@@ -736,6 +736,7 @@ function WealthOSContent() {
             <BudgetsScreen
               budgets={budgets}
               goals={goals}
+              transactions={transactions}
               onAddTransaction={handleOpenAddExpense}
               onAddEnvelope={() => setIsCreateBudgetModalOpen(true)}
               onAddGoal={() => setIsCreateGoalModalOpen(true)}
