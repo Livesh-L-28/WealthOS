@@ -170,27 +170,29 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
 
       {/* 2. Monthly Spending Envelopes Section */}
       <View style={styles.sectionHeaderRow}>
-        <View>
+        <View style={{ flex: 1, marginRight: 8 }}>
           <Text style={styles.sectionHeaderTitle}>MONTHLY SPENDING ENVELOPES</Text>
           <Text style={styles.sectionHeaderSub}>Zero-based envelope accounting with live burn</Text>
         </View>
         <View style={styles.headerButtonsRow}>
           {onAddEnvelope && (
             <TouchableOpacity
-              style={styles.addSmallPillSecondary}
+              style={styles.addEnvelopeBtn}
               onPress={onAddEnvelope}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Text style={styles.addSmallPillSecondaryText}>+ Envelope</Text>
+              <Text style={styles.addEnvelopeBtnIcon}>+</Text>
+              <Text style={styles.addEnvelopeBtnText}>Budget</Text>
             </TouchableOpacity>
           )}
           {onAddTransaction && (
             <TouchableOpacity
-              style={styles.addSmallPill}
+              style={styles.addExpenseBtn}
               onPress={onAddTransaction}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Text style={styles.addSmallPillText}>+ Log Spend</Text>
+              <Text style={styles.addExpenseBtnIcon}>+</Text>
+              <Text style={styles.addExpenseBtnText}>Expense</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -275,17 +277,21 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                   </View>
                 </View>
 
-                {/* Progress Bar Capsule */}
+                {/* Enhanced Modern Fintech Envelope Progress Bar Capsule */}
                 <View style={styles.envelopeProgressTrack}>
+                  {/* 80% Caution Threshold Marker */}
+                  <View style={[styles.progressTick, { left: '80%' }]} />
                   <View
                     style={[
                       styles.envelopeProgressFill,
                       {
-                        width: `${pct}%`,
-                        backgroundColor: isOver ? '#DC2626' : isWarning ? '#F59E0B' : env.color,
+                        width: `${Math.max(4, pct)}%`,
+                        backgroundColor: isOver ? '#DC2626' : isWarning ? '#F59E0B' : '#10B981',
                       },
                     ]}
-                  />
+                  >
+                    <View style={styles.progressLeadHead} />
+                  </View>
                 </View>
 
                 {/* Envelope Footer */}
@@ -307,70 +313,132 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   {(activeSubTab === 'ALL' || activeSubTab === 'GOALS') && (
     <>
       <View style={styles.sectionHeaderRow}>
-        <View>
+        <View style={{ flex: 1, marginRight: 8 }}>
           <Text style={styles.sectionHeaderTitle}>STRATEGIC FINANCIAL GOALS</Text>
           <Text style={styles.sectionHeaderSub}>Target wealth milestones & capital allocation</Text>
         </View>
         {onAddGoal && (
           <TouchableOpacity
-            style={styles.addSmallPill}
+            style={styles.addGoalBtn}
             onPress={onAddGoal}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <Text style={styles.addSmallPillText}>+ Set Goal</Text>
+            <Text style={styles.addGoalBtnIcon}>+</Text>
+            <Text style={styles.addGoalBtnText}>Add Goal</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <View style={styles.goalsList}>
-        {goals.map((goal) => {
-          const goalPct = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
-          const shortfall = Math.max(0, goal.targetAmount - goal.currentAmount);
-          const emoji = GOAL_EMOJIS[goal.title] || '🎯';
-
-          return (
+      {goals.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyEmoji}>🎯</Text>
+          <Text style={styles.emptyTitle}>No Strategic Goals Configured</Text>
+          <Text style={styles.emptySubtitle}>
+            Define target wealth milestones, retirement corpus, or capital allocation goals.
+          </Text>
+          {onAddGoal && (
             <TouchableOpacity
-              key={goal.id}
-              style={styles.goalCard}
-              onPress={() => setSelectedGoal(goal)}
+              style={styles.emptyActionBtn}
+              onPress={onAddGoal}
               activeOpacity={0.8}
             >
-              <View style={styles.goalTopRow}>
-                <View style={styles.goalTitleWrap}>
-                  <View style={styles.goalAvatar}>
-                    <Text style={styles.goalAvatarEmoji}>{emoji}</Text>
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.goalTitle} numberOfLines={1}>{goal.title}</Text>
-                    <Text style={styles.goalShortfallText}>Shortfall: {formatINR(shortfall)}</Text>
-                  </View>
-                </View>
-                <View style={styles.targetYearBadge}>
-                  <Text style={styles.targetYearText}>Target: {goal.targetYear}</Text>
-                </View>
-              </View>
-
-              <View style={styles.goalValuesRow}>
-                <Text style={styles.goalCurrentVal}>{formatINR(goal.currentAmount)}</Text>
-                <Text style={styles.goalTargetVal}>of {formatINR(goal.targetAmount)}</Text>
-                <View style={styles.goalPctPill}>
-                  <Text style={styles.goalPctPillText}>{goalPct.toFixed(0)}% FUNDED</Text>
-                </View>
-              </View>
-
-              {/* Goal Progress Capsule */}
-              <View style={styles.goalProgressTrack}>
-                <View
-                  style={[
-                    styles.goalProgressFill,
-                    { width: `${goalPct}%`, backgroundColor: '#16A36A' },
-                  ]}
-                />
-              </View>
+              <Text style={styles.emptyActionBtnText}>+ Set First Strategic Goal</Text>
             </TouchableOpacity>
-          );
-        })}
-      </View>
+          )}
+        </View>
+      ) : (
+        <View style={styles.goalsList}>
+          {goals.map((goal) => {
+            const goalPct = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
+            const shortfall = Math.max(0, goal.targetAmount - goal.currentAmount);
+            const emoji = GOAL_EMOJIS[goal.title] || '🎯';
+            const isCompleted = goalPct >= 100;
+
+            return (
+              <TouchableOpacity
+                key={goal.id}
+                style={styles.goalCard}
+                onPress={() => setSelectedGoal(goal)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.goalTopRow}>
+                  <View style={styles.goalTitleWrap}>
+                    <View style={styles.goalAvatar}>
+                      <Text style={styles.goalAvatarEmoji}>{emoji}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.goalTitle} numberOfLines={1}>{goal.title}</Text>
+                      <Text style={styles.goalShortfallText}>
+                        {isCompleted ? '✓ Target milestone reached' : `Shortfall: ${formatINR(shortfall)}`}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.targetYearBadge}>
+                    <Text style={styles.targetYearText}>Target: {goal.targetYear}</Text>
+                  </View>
+                </View>
+
+                <View style={styles.goalValuesRow}>
+                  <Text style={styles.goalCurrentVal}>{formatINR(goal.currentAmount)}</Text>
+                  <Text style={styles.goalTargetVal}>of {formatINR(goal.targetAmount)}</Text>
+                  <View style={[styles.goalPctPill, isCompleted && styles.goalPctPillComplete]}>
+                    <Text style={[styles.goalPctPillText, isCompleted && styles.goalPctPillTextComplete]}>
+                      {isCompleted ? '✓ 100% FUNDED' : `${goalPct.toFixed(0)}% FUNDED`}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Enhanced Modern Fintech Goal Completion Bar */}
+                <View style={styles.goalProgressTrack}>
+                  {/* Subtle Milestone Stage Ticks: 25%, 50%, 75% */}
+                  <View style={[styles.progressTick, { left: '25%' }]} />
+                  <View style={[styles.progressTick, { left: '50%' }]} />
+                  <View style={[styles.progressTick, { left: '75%' }]} />
+                  <View
+                    style={[
+                      styles.goalProgressFill,
+                      {
+                        width: `${Math.max(4, goalPct)}%`,
+                        backgroundColor: isCompleted ? '#087A50' : '#10B981',
+                      },
+                    ]}
+                  >
+                    <View style={styles.progressLeadHead} />
+                  </View>
+                </View>
+
+                {/* Completion Milestone Sub-Info */}
+                <View style={styles.goalProgressMetaRow}>
+                  <Text style={styles.goalProgressMetaLeft}>
+                    {isCompleted ? '🎉 Milestone Complete' : `${formatINR(goal.currentAmount)} accumulated`}
+                  </Text>
+                  <Text style={styles.goalProgressMetaRight}>
+                    {isCompleted ? 'Target corpus achieved' : `${formatINR(shortfall)} to go`}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+
+          {/* Interactive Create Goal Quick Card */}
+          {onAddGoal && (
+            <TouchableOpacity
+              style={styles.addGoalCard}
+              onPress={onAddGoal}
+              activeOpacity={0.8}
+            >
+              <View style={styles.addGoalCardIconWrap}>
+                <Text style={styles.addGoalCardIcon}>🎯</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.addGoalCardTitle}>Create Strategic Wealth Goal</Text>
+                <Text style={styles.addGoalCardSub}>Set target corpus, timeline & auto-allocation</Text>
+              </View>
+              <Text style={styles.addGoalCardArrow}>+ Add Goal ›</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
     </>
   )}
 
@@ -680,7 +748,82 @@ const styles = StyleSheet.create({
   },
   headerButtonsRow: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
+    alignItems: 'center',
+  },
+  addGoalBtn: {
+    backgroundColor: '#087A50',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 13,
+    paddingVertical: 6,
+    borderRadius: 20,
+    shadowColor: '#087A50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.22,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  addGoalBtnIcon: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    lineHeight: 15,
+  },
+  addGoalBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  addExpenseBtn: {
+    backgroundColor: '#087A50',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    shadowColor: '#087A50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.22,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  addExpenseBtnIcon: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '900',
+    lineHeight: 15,
+  },
+  addExpenseBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  addEnvelopeBtn: {
+    backgroundColor: '#E8F5EE',
+    borderWidth: 1,
+    borderColor: 'rgba(8, 122, 80, 0.25)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  addEnvelopeBtnIcon: {
+    color: '#087A50',
+    fontSize: 13,
+    fontWeight: '800',
+    lineHeight: 15,
+  },
+  addEnvelopeBtnText: {
+    color: '#087A50',
+    fontSize: 11,
+    fontWeight: '700',
   },
   addSmallPill: {
     backgroundColor: '#ECFDF5',
@@ -793,15 +936,36 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   envelopeProgressTrack: {
-    height: 7,
+    height: 8,
     backgroundColor: '#EEF2EF',
-    borderRadius: 3.5,
+    borderRadius: 4,
     overflow: 'hidden',
-    marginVertical: 4,
+    marginVertical: 5,
+    position: 'relative',
+    borderWidth: 0.5,
+    borderColor: '#DFE5E1',
   },
   envelopeProgressFill: {
     height: '100%',
-    borderRadius: 3.5,
+    borderRadius: 4,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  progressTick: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    width: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    zIndex: 10,
+  },
+  progressLeadHead: {
+    width: 3,
+    height: '70%',
+    borderRadius: 1.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    marginRight: 2,
   },
   envelopeFooter: {
     flexDirection: 'row',
@@ -824,7 +988,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   goalsList: {
-    gap: 10,
+    gap: 12,
   },
   goalCard: {
     backgroundColor: theme.colors.surface,
@@ -852,15 +1016,15 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   goalAvatar: {
-    width: 34,
-    height: 34,
+    width: 36,
+    height: 36,
     borderRadius: 10,
     backgroundColor: '#F0FDF4',
     alignItems: 'center',
     justifyContent: 'center',
   },
   goalAvatarEmoji: {
-    fontSize: 16,
+    fontSize: 17,
   },
   goalTitle: {
     fontSize: 13,
@@ -874,7 +1038,7 @@ const styles = StyleSheet.create({
   },
   targetYearBadge: {
     backgroundColor: '#F3F4F6',
-    paddingHorizontal: 7,
+    paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
   },
@@ -902,25 +1066,92 @@ const styles = StyleSheet.create({
   },
   goalPctPill: {
     backgroundColor: '#DCFCE7',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 5,
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 6,
     marginLeft: 'auto',
   },
   goalPctPillText: {
-    fontSize: 9,
+    fontSize: 9.5,
     fontWeight: '800',
     color: '#087A50',
   },
+  goalPctPillComplete: {
+    backgroundColor: '#E8F5EE',
+  },
+  goalPctPillTextComplete: {
+    color: '#087A50',
+  },
   goalProgressTrack: {
-    height: 7,
-    backgroundColor: '#EEF2EF',
-    borderRadius: 3.5,
+    height: 10,
+    backgroundColor: '#E7ECE8',
+    borderRadius: 5,
     overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 0.5,
+    borderColor: '#DFE5E1',
+    marginVertical: 4,
   },
   goalProgressFill: {
     height: '100%',
-    borderRadius: 3.5,
+    borderRadius: 5,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  goalProgressMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  goalProgressMetaLeft: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#087A50',
+  },
+  goalProgressMetaRight: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    color: theme.colors.textTertiary,
+  },
+  addGoalCard: {
+    marginTop: 4,
+    backgroundColor: '#F8FAF9',
+    borderWidth: 1.5,
+    borderColor: '#C6DCDB',
+    borderStyle: 'dashed',
+    borderRadius: 16,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  addGoalCardIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#E8F5EE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addGoalCardIcon: {
+    fontSize: 18,
+  },
+  addGoalCardTitle: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#17231D',
+  },
+  addGoalCardSub: {
+    fontSize: 10,
+    color: '#758078',
+    marginTop: 2,
+  },
+  addGoalCardArrow: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#087A50',
   },
   modalBackdrop: {
     flex: 1,

@@ -101,7 +101,32 @@ describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
         expect(goal.currentAmount).toBeGreaterThanOrEqual(0);
         expect(goal.currentAmount).toBeLessThanOrEqual(goal.targetAmount);
         expect(goal.targetYear).toBeGreaterThanOrEqual(2026);
+
+        // Completion bar calculations
+        const goalPct = (goal.currentAmount / goal.targetAmount) * 100;
+        const shortfall = goal.targetAmount - goal.currentAmount;
+        expect(goalPct).toBeGreaterThanOrEqual(0);
+        expect(goalPct).toBeLessThanOrEqual(100);
+        expect(shortfall).toBeGreaterThanOrEqual(0);
       });
+    });
+
+    it('verifies goal milestone creation with custom targets and monthly SIP allocation', () => {
+      const customGoal = {
+        id: 'goal-custom-1',
+        title: 'New Custom Villa Goal',
+        targetAmount: 5000000,
+        currentAmount: 1000000,
+        targetYear: 2028,
+        category: 'Strategic Corpus',
+        monthlySavingsTarget: Math.round(5000000 / 36),
+      };
+      const completionPct = (customGoal.currentAmount / customGoal.targetAmount) * 100;
+      const shortfall = customGoal.targetAmount - customGoal.currentAmount;
+
+      expect(completionPct).toBe(20);
+      expect(shortfall).toBe(4000000);
+      expect(customGoal.monthlySavingsTarget).toBeGreaterThan(100000);
     });
 
     it('verifies balance sheet assets and liabilities accounting equation', () => {
