@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme';
 import { PillarType, ActiveScreen } from '../types';
 
@@ -15,9 +14,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onSelectPillar,
   onOpenQuickAction,
 }) => {
-  const insets = useSafeAreaInsets();
   const { theme } = useTheme();
-  const bottomInset = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 12);
+  const bottomInset = Platform.OS === 'ios' ? 24 : 12;
 
   // Map any active screen to one of the primary fintech pillars
   const getActivePillar = (): PillarType => {
@@ -102,7 +100,49 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* 2. Invest */}
+        {/* 2. Accounts / Money */}
+        <TouchableOpacity
+          style={styles.navSlot}
+          onPress={() => onSelectPillar('money')}
+          activeOpacity={0.7}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: activePillar === 'money' }}
+          accessibilityLabel="Accounts Pillar"
+        >
+          <View
+            style={[
+              styles.iconPill,
+              activePillar === 'money' && { backgroundColor: theme.colors.primaryLightSolid },
+            ]}
+          >
+            <Text style={styles.iconEmoji}>💳</Text>
+          </View>
+          <Text
+            style={[
+              styles.navLabel,
+              { color: theme.colors.textSecondary },
+              activePillar === 'money' && { color: theme.colors.primary, fontWeight: '800' },
+            ]}
+          >
+            Accounts
+          </Text>
+        </TouchableOpacity>
+
+        {/* Center: Contextual Quick-Action Centre FAB */}
+        <TouchableOpacity
+          style={styles.centerFabSlot}
+          onPress={onOpenQuickAction}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel="Quick Financial Actions"
+        >
+          <View style={[styles.centerFabCircle, { backgroundColor: theme.colors.primary }]}>
+            <Text style={styles.centerFabPlus}>+</Text>
+          </View>
+          <Text style={[styles.centerFabLabel, { color: theme.colors.primary }]}>Action</Text>
+        </TouchableOpacity>
+
+        {/* 3. Invest */}
         <TouchableOpacity
           style={styles.navSlot}
           onPress={() => onSelectPillar('invest')}
@@ -130,21 +170,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           </Text>
         </TouchableOpacity>
 
-        {/* Center: Contextual Quick-Action Centre FAB */}
-        <TouchableOpacity
-          style={styles.centerFabSlot}
-          onPress={onOpenQuickAction}
-          activeOpacity={0.85}
-          accessibilityRole="button"
-          accessibilityLabel="Quick Financial Actions"
-        >
-          <View style={[styles.centerFabCircle, { backgroundColor: theme.colors.primary }]}>
-            <Text style={styles.centerFabPlus}>+</Text>
-          </View>
-          <Text style={[styles.centerFabLabel, { color: theme.colors.primary }]}>Action</Text>
-        </TouchableOpacity>
-
-        {/* 3. Plan */}
+        {/* 4. Plan */}
         <TouchableOpacity
           style={styles.navSlot}
           onPress={() => onSelectPillar('plan')}
@@ -169,34 +195,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             ]}
           >
             Plan
-          </Text>
-        </TouchableOpacity>
-
-        {/* 4. More */}
-        <TouchableOpacity
-          style={styles.navSlot}
-          onPress={() => onSelectPillar('more')}
-          activeOpacity={0.7}
-          accessibilityRole="tab"
-          accessibilityState={{ selected: activePillar === 'more' }}
-          accessibilityLabel="More Pillar"
-        >
-          <View
-            style={[
-              styles.iconPill,
-              activePillar === 'more' && { backgroundColor: theme.colors.primaryLightSolid },
-            ]}
-          >
-            <Text style={styles.iconEmoji}>☰</Text>
-          </View>
-          <Text
-            style={[
-              styles.navLabel,
-              { color: theme.colors.textSecondary },
-              activePillar === 'more' && { color: theme.colors.primary, fontWeight: '800' },
-            ]}
-          >
-            More
           </Text>
         </TouchableOpacity>
       </View>

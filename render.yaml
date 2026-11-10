@@ -1,0 +1,70 @@
+services:
+  # ----------------------------------------------------
+  # WealthOS Web Service (Next.js Fintech Platform)
+  # ----------------------------------------------------
+  - type: web
+    name: wealthos-web
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm install && npm run build:packages && npm run --workspace=@wealthos/web build
+    startCommand: npm run --workspace=@wealthos/web start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: BACKEND_API_INTERNAL_URL
+        fromService:
+          type: web
+          name: wealthos-api
+          property: host
+      - key: NEXT_PUBLIC_ENVIRONMENT
+        value: production
+
+  # ----------------------------------------------------
+  # WealthOS Backend Service (FastAPI Accounting Core)
+  # ----------------------------------------------------
+  - type: web
+    name: wealthos-api
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: cd backend && pip install -r requirements.txt && alembic upgrade head
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: wealthos-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: wealthos-redis
+          property: connectionString
+
+  # ----------------------------------------------------
+  # WealthOS Redis Cache & Event Broker
+  # ----------------------------------------------------
+  - type: redis
+    name: wealthos-redis
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+
+databases:
+  # ----------------------------------------------------
+  # WealthOS High-Resilience Financial PostgreSQL Database
+  # ----------------------------------------------------
+  - name: wealthos-db
+    plan: starter
+    region: oregon
+    databaseName: wealthos
+    user: wealthos_admin
+

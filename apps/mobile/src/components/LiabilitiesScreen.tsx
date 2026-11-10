@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../theme';
 import {
@@ -12,26 +13,59 @@ import {
   SAMPLE_AMORTIZATION_SCHEDULE,
 } from '../data';
 import { formatINR } from '../formatters';
+import { liabilitiesService } from '../api/domainServices';
 
 interface LiabilitiesScreenProps {
   onBack: () => void;
   onShowToast: (msg: string) => void;
+  totalLiabilities?: number;
 }
 
 export const LiabilitiesScreen: React.FC<LiabilitiesScreenProps> = ({
   onBack,
   onShowToast,
+  totalLiabilities: propTotalLiabilities,
 }) => {
   const { theme } = useTheme();
   const [strategy, setStrategy] = useState<'AVALANCHE' | 'SNOWBALL'>('AVALANCHE');
   const [extraPayment, setExtraPayment] = useState<number>(10000);
+  const [summaryData, setSummaryData] = useState<any>(null);
+  const [strategyData, setStrategyData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const totalLiabilities = BALANCE_SHEET_LIABILITIES.reduce((s, l) => s + l.amount, 0);
-  const totalMonthlyEMI = BALANCE_SHEET_LIABILITIES.reduce((s, l) => s + l.emi, 0);
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [sum, strat] = await Promise.all([
+          liabilitiesService.fetchSummary(),
+          liabilitiesService.compareDebtStrategies(extraPayment),
+        ]);
+        if (isMounted) {
+          setSummaryData(sum);
+          setStrategyData(strat);
+        }
+      } catch {
+        // Fallback
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadData();
+    return () => { isMounted = false; };
+  }, [extraPayment]);
 
-  const interestSaved =
-    strategy === 'AVALANCHE' ? 256500 + extraPayment * 4.2 : 218000 + extraPayment * 3.8;
-  const monthsReduced = Math.min(48, Math.round(18 + extraPayment / 750));
+  const totalLiabilities = propTotalLiabilities ?? (summaryData?.total_outstanding_principal ? parseFloat(summaryData.total_outstanding_principal) : BALANCE_SHEET_LIABILITIES.reduce((s, l) => s + l.amount, 0));
+  const totalMonthlyEMI = summaryData?.total_monthly_emi ? parseFloat(summaryData.total_monthly_emi) : BALANCE_SHEET_LIABILITIES.reduce((s, l) => s + l.emi, 0);
+
+  const interestSaved = strategyData?.avalanche?.interest_saved
+    ? (strategy === 'AVALANCHE' ? parseFloat(strategyData.avalanche.interest_saved) : parseFloat(strategyData.snowball?.interest_saved || '218000'))
+    : (strategy === 'AVALANCHE' ? 256500 + extraPayment * 4.2 : 218000 + extraPayment * 3.8);
+
+  const monthsReduced = strategyData?.avalanche?.months_saved
+    ? (strategy === 'AVALANCHE' ? strategyData.avalanche.months_saved : strategyData.snowball?.months_saved || 18)
+    : Math.min(48, Math.round(18 + extraPayment / 750));
 
   return (
     <ScrollView

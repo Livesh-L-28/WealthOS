@@ -1,0 +1,195 @@
+# ==============================================================================
+# WealthOS Production Environment Architecture (Container Topology)
+# ==============================================================================
+# Phase: 27 Production Readiness Review
+# Note: For architectural specification and deployment validation only.
+# Deployment to live production strictly prohibited without separate approval.
+# ==============================================================================
+
+version: "3.8"
+
+networks:
+  wealthos_prod_network:
+    name: wealthos_prod_network
+    driver: bridge
+    internal: false
+
+volumes:
+  wealthos_prod_postgres_primary_data:
+    name: wealthos_prod_postgres_primary_data
+  wealthos_prod_postgres_replica_data:
+    name: wealthos_prod_postgres_replica_data
+  wealthos_prod_redis_data:
+    name: wealthos_prod_redis_data
+  wealthos_prod_storage_data:
+    name: wealthos_prod_storage_data
+
+services:
+  # Primary PostgreSQL 16.8 (ACID General Ledger & Tenant-Scoped Tables)
+  prod-postgres-primary:
+    image: postgres:16.8-alpine
+    container_name: wealthos_prod_postgres_primary
+    restart: always
+    environment:
+      POSTGRES_USER: ${PROD_POSTGRES_USER:-wealthos_admin}
+      POSTGRES_PASSWORD: ${PROD_POSTGRES_PASSWORD}
+      POSTGRES_DB: wealthos_production
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - wealthos_prod_postgres_primary_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/init-extensions.sql:/docker-entrypoint-initdb.d/01-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PROD_POSTGRES_USER:-wealthos_admin} -d wealthos_production"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wealthos_prod_network
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8192M
+
+  # Secondary Read-Replica PostgreSQL (Analytical & Reporting Workloads)
+  prod-postgres-replica:
+    image: postgres:16.8-alpine
+    container_name: wealthos_prod_postgres_replica
+    restart: always
+    environment:
+      POSTGRES_USER: ${PROD_POSTGRES_USER:-wealthos_admin}
+      POSTGRES_PASSWORD: ${PROD_POSTGRES_PASSWORD}
+      POSTGRES_DB: wealthos_production
+    volumes:
+      - wealthos_prod_postgres_replica_data:/var/lib/postgresql/data
+    depends_on:
+      prod-postgres-primary:
+        condition: service_healthy
+    networks:
+      - wealthos_prod_network
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 4096M
+
+  # Redis 7.2 Cache, Rate Limiter & Celery Broker
+  prod-redis:
+    image: redis:7.2.7-alpine
+    container_name: wealthos_prod_redis
+    restart: always
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass "${PROD_REDIS_PASSWORD}"
+      --maxmemory 1024mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - wealthos_prod_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${PROD_REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wealthos_prod_network
+
+  # FastAPI Production Application Backend
+  prod-backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wealthos_prod_backend_api
+    restart: always
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      LOG_LEVEL: INFO
+      POSTGRES_HOST: prod-postgres-primary
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: wealthos_production
+      POSTGRES_USER: wealthos_app
+      POSTGRES_PASSWORD: ${PROD_POSTGRES_APP_PASSWORD}
+      POSTGRES_REPLICA_HOST: prod-postgres-replica
+      POSTGRES_REPLICA_PORT: 5432
+      POSTGRES_REPLICA_DB: wealthos_production
+      POSTGRES_REPLICA_USER: wealthos_app
+      POSTGRES_REPLICA_PASSWORD: ${PROD_POSTGRES_APP_PASSWORD}
+      REDIS_HOST: prod-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${PROD_REDIS_PASSWORD}
+      SECRET_KEY: ${PROD_SECRET_KEY}
+      ENCRYPTION_MASTER_KEY: ${PROD_ENCRYPTION_MASTER_KEY}
+    depends_on:
+      prod-postgres-primary:
+        condition: service_healthy
+      prod-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - wealthos_prod_network
+
+  # Celery Asynchronous Task Worker
+  prod-celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wealthos_prod_celery_worker
+    restart: always
+    command: celery -A app.celery_app.celery_app worker --loglevel=INFO --concurrency=4
+    environment:
+      ENVIRONMENT: production
+      POSTGRES_HOST: prod-postgres-primary
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: wealthos_production
+      POSTGRES_USER: wealthos_app
+      POSTGRES_PASSWORD: ${PROD_POSTGRES_APP_PASSWORD}
+      REDIS_HOST: prod-redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${PROD_REDIS_PASSWORD}
+    depends_on:
+      prod-postgres-primary:
+        condition: service_healthy
+      prod-redis:
+        condition: service_healthy
+    networks:
+      - wealthos_prod_network
+
+  # Next.js 14 Production Web Application
+  prod-web-frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: wealthos_prod_web_frontend
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      NEXT_PUBLIC_ENVIRONMENT: production
+      NEXT_PUBLIC_API_URL: https://api.wealthos.internal
+      BACKEND_API_INTERNAL_URL: http://prod-backend-api:8000
+    depends_on:
+      - prod-backend-api
+    networks:
+      - wealthos_prod_network
+
+  # Ingress Reverse Proxy & TLS Gateway (Caddy)
+  prod-ingress:
+    image: caddy:2.8-alpine
+    container_name: wealthos_prod_ingress
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - prod-web-frontend
+      - prod-backend-api
+    networks:
+      - wealthos_prod_network
+

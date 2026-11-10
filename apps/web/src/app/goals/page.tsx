@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { CreateGoalModal, NewGoalData } from '@/components/modals/CreateGoalModal';
+import { AddSavingsModal } from '@/components/modals/AddSavingsModal';
 
 type GoalsTab = 'MILESTONES' | 'EMERGENCY_RUNWAY' | 'RETIREMENT' | 'DEBT_PAYOFF' | 'PASSIVE_INCOME';
 
@@ -52,40 +53,40 @@ interface DebtItem {
 
 const GOALS_DATA: GoalItem[] = [
   {
-    id: 'g-1',
-    name: 'Emergency Reserve Fund (6 Months Expenses)',
-    targetAmount: 900000.0,
-    currentAmount: 480000.0,
-    targetDate: '2027-03-31',
+    id: 'g-bike',
+    name: 'Bike',
+    targetAmount: 2345678.0,
+    currentAmount: 1876543.0,
+    targetDate: '2030-12-31',
     monthlyContribution: 35000.0,
     currency: 'INR',
-    category: 'EMERGENCY',
+    category: 'VEHICLE',
     inflationRate: 0.06,
   },
   {
-    id: 'g-2',
-    name: 'Commercial Real Estate Down Payment',
-    targetAmount: 2500000.0,
-    currentAmount: 1250000.0,
-    targetDate: '2028-12-31',
+    id: 'g-fire',
+    name: 'Financial Independence (FIRE)',
+    targetAmount: 10000000.0,
+    currentAmount: 4250000.0,
+    targetDate: '2032-12-31',
+    monthlyContribution: 75000.0,
+    currency: 'INR',
+    category: 'RETIREMENT',
+    inflationRate: 0.06,
+  },
+  {
+    id: 'g-ev',
+    name: 'Luxury EV (BMW i4 M50)',
+    targetAmount: 7500000.0,
+    currentAmount: 1850000.0,
+    targetDate: '2027-06-30',
     monthlyContribution: 50000.0,
     currency: 'INR',
-    category: 'HOUSING',
+    category: 'VEHICLE',
     inflationRate: 0.07,
   },
   {
-    id: 'g-3',
-    name: 'Sabbatical & Angel Venture Fund',
-    targetAmount: 1500000.0,
-    currentAmount: 450000.0,
-    targetDate: '2029-06-30',
-    monthlyContribution: 35000.0,
-    currency: 'INR',
-    category: 'SAVINGS',
-    inflationRate: 0.06,
-  },
-  {
-    id: 'g-4',
+    id: 'g-edu',
     name: 'Children Higher Education Trust',
     targetAmount: 5000000.0,
     currentAmount: 1850000.0,
@@ -130,7 +131,14 @@ export default function GoalsPage() {
   const [debts] = useState<DebtItem[]>(DEBTS_DATA);
   const [debtStrategy, setDebtStrategy] = useState<'AVALANCHE' | 'SNOWBALL'>('AVALANCHE');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [savingsModalGoal, setSavingsModalGoal] = useState<GoalItem | null>(null);
   const [adjustForInflation, setAdjustForInflation] = useState(true);
+
+  const handleDepositSuccess = (goalId: string, amount: number) => {
+    setGoals((prev) =>
+      prev.map((g) => (g.id === goalId ? { ...g, currentAmount: g.currentAmount + amount } : g))
+    );
+  };
 
   const handleGoalCreated = (newG: NewGoalData) => {
     const record: GoalItem = {
@@ -385,6 +393,15 @@ export default function GoalsPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSavingsModalGoal(g)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[#E8F5EE] hover:bg-[#D4EEDB] text-[#087A50] text-xs font-bold transition shadow-xs active:scale-95"
+                          title="Direct-post savings to goal"
+                        >
+                          <PlusCircle className="w-3.5 h-3.5" />
+                          <span>+ Add Savings</span>
+                        </button>
                         <Badge variant={feasBadgeVariant} size="sm">
                           {feasLabel}
                         </Badge>
@@ -766,6 +783,19 @@ export default function GoalsPage() {
         onClose={() => setIsCreateModalOpen(false)}
         onGoalCreated={handleGoalCreated}
       />
+
+      {/* Add Savings Modal */}
+      {savingsModalGoal && (
+        <AddSavingsModal
+          isOpen={!!savingsModalGoal}
+          onClose={() => setSavingsModalGoal(null)}
+          goalId={savingsModalGoal.id}
+          goalTitle={savingsModalGoal.name}
+          targetAmount={savingsModalGoal.targetAmount}
+          currentAmount={savingsModalGoal.currentAmount}
+          onDepositSuccess={handleDepositSuccess}
+        />
+      )}
     </div>
   );
 }

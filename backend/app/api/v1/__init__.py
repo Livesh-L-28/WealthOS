@@ -18,6 +18,7 @@ from app.domains.liabilities.router import router as liabilities_router
 from app.domains.planning.router import goals_router, planning_router
 from app.domains.reconciliation.router import router as reconciliation_router
 from app.domains.risk.router import router as risk_router
+from app.domains.sync.router import router as sync_router
 from app.domains.tax.router import router as tax_router
 from app.domains.twin.router import router as twin_router
 
@@ -70,4 +71,7 @@ api_v1_router.include_router(
 api_v1_router.include_router(copilot_router, prefix="/copilot", tags=["AI Financial Copilot"])
 api_v1_router.include_router(
     analytics_router, prefix="/analytics", tags=["Financial Analytics & Visualization Engine"]
+)
+api_v1_router.include_router(
+    sync_router, prefix="/sync", tags=["Synchronization & Offline-First Engine"]
 )

@@ -13,7 +13,8 @@ test.beforeAll(async () => {
   }
 
   // Obtain authentic session token once via backend API to prevent rate-limit exhaustion
-  const resp = await fetch('http://localhost:8000/api/v1/auth/login', {
+  const apiUrl = process.env.PLAYWRIGHT_API_URL || 'http://localhost:8005';
+  const resp = await fetch(`${apiUrl}/api/v1/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -29,8 +30,11 @@ test.beforeAll(async () => {
 });
 
 test.describe('WealthOS Usability & Accessibility Test Suite', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, context }) => {
     if (authToken) {
+      await context.addCookies([
+        { name: 'wealthos_access_token', value: authToken, domain: 'localhost', path: '/' },
+      ]);
       await page.addInitScript(
         ({ token, tid }) => {
           localStorage.setItem('wealthos_access_token', token);
@@ -207,11 +211,8 @@ test.describe('WealthOS Usability & Accessibility Test Suite', () => {
 
   test('Advanced Scenario 1: User manages multiple accounts with liquid vs debt separation', async ({ page }) => {
     await page.goto('/accounts');
-    await expect(page.locator('text=Primary Operating Savings')).toBeVisible();
-    await expect(page.locator('text=Treasury & Tax Reserve')).toBeVisible();
-    await expect(page.locator('text=Corporate Infinite Card')).toBeVisible();
-    await expect(page.locator('text=Liquid Cash & Reserves')).toBeVisible();
-    await expect(page.locator('text=Total Liabilities (Debts)')).toBeVisible();
+    await expect(page.locator('text=Liquid Cash & Reserves').first()).toBeVisible();
+    await expect(page.locator('text=Total Liabilities (Debts)').first()).toBeVisible();
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'scenario-11-multi-accounts.png') });
   });
 

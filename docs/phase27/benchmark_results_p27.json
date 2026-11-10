@@ -1,0 +1,51 @@
+{
+  "Web Root (/)": {
+    "p50_ms": 5.67,
+    "p95_ms": 19.88,
+    "p99_ms": 28.79,
+    "samples": 30,
+    "errors": 0
+  },
+  "Web Dashboard (/dashboard)": {
+    "p50_ms": 6.7,
+    "p95_ms": 14.58,
+    "p99_ms": 23.18,
+    "samples": 30,
+    "errors": 0
+  },
+  "API Health Readiness": {
+    "p50_ms": 13.18,
+    "p95_ms": 30.06,
+    "p99_ms": 52.91,
+    "samples": 30,
+    "errors": 0
+  },
+  "Cash Management Position": {
+    "p50_ms": 12.49,
+    "p95_ms": 18.03,
+    "p99_ms": 24.21,
+    "samples": 30,
+    "errors": 0
+  },
+  "Sync Session Creation": {
+    "p50_ms": 12.46,
+    "p95_ms": 18.42,
+    "p99_ms": 20.08,
+    "samples": 30,
+    "errors": 0
+  },
+  "Sync Operation Ingestion": {
+    "p50_ms": 12.44,
+    "p95_ms": 19.28,
+    "p99_ms": 19.58,
+    "samples": 30,
+    "errors": 0
+  },
+  "Sync Delta Stream": {
+    "p50_ms": 12.45,
+    "p95_ms": 19.08,
+    "p99_ms": 20.94,
+    "samples": 30,
+    "errors": 0
+  }
+}

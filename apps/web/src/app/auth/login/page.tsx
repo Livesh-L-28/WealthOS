@@ -167,6 +167,33 @@ export default function LoginPage() {
             <span>Sign In</span>
             <ArrowRight className="w-4 h-4" />
           </Button>
+
+          {/* Quick Demo Access for Preview & Testing */}
+          <button
+            type="button"
+            onClick={async () => {
+              setIsLoading(true);
+              const demoUser = {
+                id: 'usr-demo-01',
+                email: 'livesh.j@wealthos.internal',
+                first_name: 'Livesh',
+                last_name: 'J',
+                is_active: true,
+                status: 'active' as const,
+                is_email_verified: true,
+                is_mfa_enabled: false,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                roles: ['OWNER'],
+              };
+              document.cookie = 'wealthos_access_token=demo-token; path=/; max-age=86400';
+              await login('demo-token', demoUser);
+              router.push('/dashboard');
+            }}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[#16A36A]/40 bg-[#E8F5EE] hover:bg-[#D4EEDB] text-[#087A50] text-xs font-bold transition shadow-xs"
+          >
+            <span>⚡ Instant Preview Sign In (Livesh J)</span>
+          </button>
         </form>
 
         <div className="mt-6 pt-6 border-t border-[#E7ECE8] text-center">

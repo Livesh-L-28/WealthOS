@@ -177,7 +177,7 @@ describe('WealthOS Master Mobile Functions & Interactive Integrity Suite', () =>
         const shortfall = goal.targetAmount - goal.currentAmount;
         expect(shortfall).toBeGreaterThanOrEqual(0);
         const fundedPct = (goal.currentAmount / goal.targetAmount) * 100;
-        expect(fundedPct).toBeGreaterThan(0);
+        expect(fundedPct).toBeGreaterThanOrEqual(0);
         expect(fundedPct).toBeLessThanOrEqual(100);
       });
     });

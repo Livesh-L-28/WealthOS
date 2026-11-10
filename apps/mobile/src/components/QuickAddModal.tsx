@@ -48,10 +48,10 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
               <View style={styles.headerRow}>
                 <View>
                   <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
-                    Contextual Financial Action
+                    Quick Actions
                   </Text>
                   <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-                    Post balanced entries directly to double-entry ledger
+                    Record a transaction, transfer money, or manage your wealth
                   </Text>
                 </View>
                 <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>

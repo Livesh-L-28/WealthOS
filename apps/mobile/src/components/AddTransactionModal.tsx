@@ -9,6 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { theme } from '../theme';
 import { BankAccount } from '../types';
@@ -86,16 +87,13 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const handleSubmit = () => {
     const parsedAmount = parseFloat(amount);
     if (!parsedAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
-      alert('Please enter a valid amount');
+      Alert.alert('Invalid Amount', 'Please enter a valid transaction amount.');
       return;
     }
-    if (!title.trim()) {
-      alert('Please enter a description or merchant name');
-      return;
-    }
+    const finalTitle = title.trim() || `${category} ${isIncome ? 'Inflow' : 'Expense'}`;
 
     onSubmit({
-      title: title.trim(),
+      title: finalTitle,
       amount: parsedAmount,
       category,
       type,

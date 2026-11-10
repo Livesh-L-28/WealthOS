@@ -219,7 +219,7 @@ def execute_drill() -> dict:
     if code != 0:
         raise RuntimeError(f"Backup failed: {stderr}")
 
-    enc_files = list(BACKUP_DIR.glob("*.dump.enc"))
+    enc_files = sorted(BACKUP_DIR.glob("*.dump.enc"), key=lambda p: p.stat().st_mtime, reverse=True)
     assert len(enc_files) > 0, "No encrypted backup found!"
     backup_artifact = enc_files[0]
     manifest_file = backup_artifact.with_suffix(".json").with_name(backup_artifact.name.replace(".dump.enc", ".json"))

@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../theme';
 import { DividendItem } from '../types';
 import { INITIAL_DIVIDENDS } from '../data';
 import { formatINR } from '../formatters';
+import { investmentsService } from '../api/domainServices';
 
 interface DividendsScreenProps {
   onBack: () => void;
@@ -21,7 +23,27 @@ export const DividendsScreen: React.FC<DividendsScreenProps> = ({
   onShowToast,
 }) => {
   const { theme } = useTheme();
-  const [dividends] = useState<DividendItem[]>(INITIAL_DIVIDENDS);
+  const [dividends, setDividends] = useState<DividendItem[]>(INITIAL_DIVIDENDS);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDividends() {
+      setIsLoading(true);
+      try {
+        const liveDividends = await investmentsService.fetchDividends();
+        if (isMounted && liveDividends && liveDividends.length > 0) {
+          setDividends(liveDividends);
+        }
+      } catch {
+        // Fallback
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadDividends();
+    return () => { isMounted = false; };
+  }, []);
 
   const totalReceived = dividends
     .filter((d) => d.status === 'RECEIVED')

@@ -56,4 +56,18 @@
   ::-webkit-scrollbar-thumb:hover {
     background: #9BA39D;
   }
+
+  /* Privacy Mode (Mask Balances in Public) */
+  html.privacy-mode .font-mono,
+  html.privacy-mode .tabular-nums,
+  html.privacy-mode [data-currency="true"] {
+    filter: blur(5.5px);
+    user-select: none;
+    transition: filter 0.15s ease-in-out;
+  }
+  html.privacy-mode .font-mono:hover,
+  html.privacy-mode .tabular-nums:hover,
+  html.privacy-mode [data-currency="true"]:hover {
+    filter: blur(0);
+  }
 }

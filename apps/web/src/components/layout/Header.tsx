@@ -16,6 +16,8 @@ import {
   Calendar,
   Sparkles,
   HelpCircle,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { useAuth } from '@/lib/auth-context';
@@ -28,8 +30,37 @@ export function Header() {
   const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [privacyMode, setPrivacyMode] = useState(false);
   const workspaceRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Initialize privacy mode from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('wealthos_privacy_mode') === 'true';
+      setPrivacyMode(saved);
+      if (saved) {
+        document.documentElement.classList.add('privacy-mode');
+      }
+    } catch {
+      // localStorage may be unavailable in restricted contexts
+    }
+  }, []);
+
+  const togglePrivacyMode = () => {
+    const next = !privacyMode;
+    setPrivacyMode(next);
+    try {
+      localStorage.setItem('wealthos_privacy_mode', String(next));
+    } catch {
+      // ignore
+    }
+    if (next) {
+      document.documentElement.classList.add('privacy-mode');
+    } else {
+      document.documentElement.classList.remove('privacy-mode');
+    }
+  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -47,11 +78,11 @@ export function Header() {
 
   const initials = user
     ? `${user.first_name?.[0] || ''}${user.last_name?.[0] || ''}`.toUpperCase() || user.email[0].toUpperCase()
-    : 'WO';
+    : 'LJ';
 
   const userDisplayName = user
     ? `${user.first_name} ${user.last_name}`.trim() || user.email
-    : 'WealthOS User';
+    : 'Livesh J';
 
   // Simplified, user-friendly page titles
   const getPageTitle = () => {
@@ -193,6 +224,21 @@ export function Header() {
           <Calendar className="w-3.5 h-3.5 text-[#717D74]" />
           <span className="font-medium">Nov 2026</span>
         </div>
+
+        {/* Privacy Mode Toggle */}
+        <button
+          type="button"
+          onClick={togglePrivacyMode}
+          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors border ${
+            privacyMode
+              ? 'bg-[#16A36A]/10 text-[#087A50] border-[#16A36A]/40'
+              : 'text-[#717D74] hover:text-[#17231D] hover:bg-[#F0F4F1] border-transparent hover:border-[#E7ECE8]'
+          } focus-visible:ring-2 focus-visible:ring-[#16A36A]`}
+          title={privacyMode ? 'Privacy Mode Active (Tap to reveal balances)' : 'Privacy Mode: Hide Balances in Public'}
+          aria-label={privacyMode ? 'Disable Privacy Mode' : 'Enable Privacy Mode'}
+        >
+          {privacyMode ? <EyeOff className="w-4 h-4 text-[#087A50]" /> : <Eye className="w-4 h-4" />}
+        </button>
 
         {/* Notifications Icon */}
         <button

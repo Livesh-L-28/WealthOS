@@ -19,11 +19,12 @@ interface BudgetCategory {
 }
 
 const CATEGORIES: BudgetCategory[] = [
-  { id: 'b-1', name: 'Housing & Executive Residence', allocated: 85000, spent: 85000, status: 'HEALTHY' },
-  { id: 'b-2', name: 'Food, Groceries & Dining', allocated: 35000, spent: 31500, status: 'WARNING' },
-  { id: 'b-3', name: 'Technology & Cloud Hosting', allocated: 20000, spent: 22800, status: 'EXCEEDED' },
-  { id: 'b-4', name: 'Mobility, Fuel & Transit', allocated: 15000, spent: 8500, status: 'HEALTHY' },
-  { id: 'b-5', name: 'Health & Wellness', allocated: 10000, spent: 3750, status: 'HEALTHY' },
+  { id: 'b-1', name: 'Housing & EMI', allocated: 45000, spent: 45000, status: 'HEALTHY' },
+  { id: 'b-2', name: 'Food & Groceries', allocated: 30000, spent: 22400, status: 'HEALTHY' },
+  { id: 'b-3', name: 'Transportation & Fuel', allocated: 15000, spent: 12150, status: 'HEALTHY' },
+  { id: 'b-4', name: 'Utilities & Telecom', allocated: 10000, spent: 8200, status: 'HEALTHY' },
+  { id: 'b-5', name: 'Discretionary & Dining', allocated: 25000, spent: 18800, status: 'HEALTHY' },
+  { id: 'b-6', name: 'Investments & SIPs', allocated: 55000, spent: 50000, status: 'HEALTHY' },
 ];
 
 export function BudgetProgressCard() {

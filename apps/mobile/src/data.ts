@@ -11,7 +11,7 @@ import {
 
 export const INITIAL_ACCOUNTS: BankAccount[] = [
   {
-    id: 'acc-hdfc-sal',
+    id: '906488f3-9054-46e3-8f23-de222446f32c',
     name: 'HDFC Corporate Salary',
     institution: 'HDFC Bank',
     accountNumberMask: '•••• 4921',
@@ -24,7 +24,7 @@ export const INITIAL_ACCOUNTS: BankAccount[] = [
     lastSynced: 'Just now',
   },
   {
-    id: 'acc-icici-sav',
+    id: '782414cc-9714-46b0-8b0a-ab9fea1399d0',
     name: 'ICICI Privileged Savings',
     institution: 'ICICI Bank',
     accountNumberMask: '•••• 8192',
@@ -37,7 +37,7 @@ export const INITIAL_ACCOUNTS: BankAccount[] = [
     lastSynced: '10m ago',
   },
   {
-    id: 'acc-sbi-fd',
+    id: '4231438c-a546-4896-a094-125cd8ee08de',
     name: 'SBI Tax Saver Term Deposit',
     institution: 'State Bank of India',
     accountNumberMask: '•••• 1042',
@@ -50,7 +50,7 @@ export const INITIAL_ACCOUNTS: BankAccount[] = [
     lastSynced: '1h ago',
   },
   {
-    id: 'acc-zerodha-demat',
+    id: 'b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e',
     name: 'Zerodha Demat & Trading',
     institution: 'Zerodha Broking',
     accountNumberMask: '•••• 3391',
@@ -62,7 +62,7 @@ export const INITIAL_ACCOUNTS: BankAccount[] = [
     lastSynced: '5m ago',
   },
   {
-    id: 'acc-hdfc-loan',
+    id: 'c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f',
     name: 'HDFC Priority Home Loan',
     institution: 'HDFC Bank',
     accountNumberMask: '•••• 9940',
@@ -75,7 +75,7 @@ export const INITIAL_ACCOUNTS: BankAccount[] = [
     lastSynced: 'Today',
   },
   {
-    id: 'acc-axis-card',
+    id: 'd3e4f5a6-b7c8-4d9e-0f1a-2b3c4d5e6f7a',
     name: 'Axis Bank Magnus Card',
     institution: 'Axis Bank',
     accountNumberMask: '•••• 1102',
@@ -269,28 +269,28 @@ export const INITIAL_BUDGETS: BudgetEnvelope[] = [
 
 export const INITIAL_GOALS: FinancialGoal[] = [
   {
-    id: 'g-1',
-    title: 'Emergency Reserve (6 Months Runway)',
-    targetAmount: 1200000,
-    currentAmount: 1020000,
-    targetYear: 2026,
-    category: 'Safety',
+    id: 'g-bike',
+    title: 'Bike',
+    targetAmount: 2345678,
+    currentAmount: 0,
+    targetYear: 2030,
+    category: 'Vehicle',
   },
   {
-    id: 'g-2',
-    title: 'Child Higher Education Fund',
-    targetAmount: 5000000,
-    currentAmount: 2100000,
-    targetYear: 2034,
-    category: 'Education',
+    id: 'g-fire',
+    title: 'Financial Independence (FIRE)',
+    targetAmount: 10000000,
+    currentAmount: 4250000,
+    targetYear: 2032,
+    category: 'Retirement',
   },
   {
-    id: 'g-3',
-    title: 'Financial Independence & Early Retirement',
-    targetAmount: 50000000,
-    currentAmount: 9400000,
-    targetYear: 2045,
-    category: 'Wealth',
+    id: 'g-ev',
+    title: 'Luxury EV (BMW i4 M50)',
+    targetAmount: 7500000,
+    currentAmount: 1850000,
+    targetYear: 2027,
+    category: 'Vehicle',
   },
 ];
 

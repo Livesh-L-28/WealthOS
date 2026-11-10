@@ -55,6 +55,26 @@ class NetWorthAnalyticsService:
         asset_res = await self.session.execute(asset_stmt)
         total_liquid_assets = asset_res.scalar_one() or Decimal("0")
 
+        # Query investment portfolio market valuation from discrete holding lots
+        from app.domains.investments.models import FinancialInstrument, InvestmentHoldingLot
+        inv_stmt = (
+            select(
+                func.coalesce(
+                    func.sum(InvestmentHoldingLot.remaining_quantity * FinancialInstrument.current_price),
+                    Decimal("0"),
+                )
+            )
+            .join(FinancialInstrument, InvestmentHoldingLot.instrument_id == FinancialInstrument.id)
+            .where(
+                InvestmentHoldingLot.tenant_id == tenant_id,
+                InvestmentHoldingLot.remaining_quantity > Decimal("0"),
+            )
+        )
+        inv_res = await self.session.execute(inv_stmt)
+        total_investment_assets = inv_res.scalar_one() or Decimal("0")
+
+        total_live_assets = total_liquid_assets + total_investment_assets
+
         # Query total liabilities
         liability_stmt = select(func.coalesce(func.sum(Liability.current_principal), Decimal("0"))).where(
             Liability.tenant_id == tenant_id,
@@ -65,11 +85,11 @@ class NetWorthAnalyticsService:
 
         # Baseline accounting values if accounts table is populated or baseline seeding
         # Reconciled baseline values: Assets = ₹94,30,201.25, Liabilities = ₹18,92,300.00 -> NW = ₹75,37,901.25
-        if total_liquid_assets == Decimal("0"):
+        if total_live_assets == Decimal("0") and total_liabilities == Decimal("0"):
             total_assets = Decimal("9430201.25")
             total_liabilities = Decimal("1892300.00")
         else:
-            total_assets = total_liquid_assets
+            total_assets = total_live_assets
 
         current_net_worth = _round_currency(total_assets - total_liabilities)
         previous_net_worth = Decimal("7195050.00")

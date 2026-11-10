@@ -1,0 +1,166 @@
+# ==============================================================================
+# WealthOS Isolated Staging Environment Architecture
+# ==============================================================================
+
+version: "3.8"
+
+networks:
+  wealthos_staging_network:
+    name: wealthos_staging_network
+    driver: bridge
+
+volumes:
+  staging_postgres_data:
+    name: wealthos_staging_postgres_data
+  staging_redis_data:
+    name: wealthos_staging_redis_data
+  staging_minio_data:
+    name: wealthos_staging_minio_data
+
+services:
+  # Staging PostgreSQL Database
+  staging-postgres:
+    image: postgres:16.8-alpine
+    container_name: wealthos_staging_postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5435:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wealthos_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-wealthos_local_dev_password_change_in_prod}
+      POSTGRES_DB: wealthos_staging
+    volumes:
+      - staging_postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres/init-extensions.sql:/docker-entrypoint-initdb.d/01-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wealthos_admin} -d wealthos_staging"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wealthos_staging_network
+
+  # Staging Redis Cache & Celery Broker
+  staging-redis:
+    image: redis:7.2.7-alpine
+    container_name: wealthos_staging_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}"
+    ports:
+      - "127.0.0.1:6381:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}
+    volumes:
+      - staging_redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD:-wealthos_local_dev_redis_change_in_prod}\" ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - wealthos_staging_network
+
+  # Staging MinIO Object Storage
+  staging-minio:
+    image: ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
+    container_name: wealthos_staging_minio
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:9010:9000"
+      - "127.0.0.1:9011:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadminpassword}
+    command: server /data --console-address ":9001"
+    volumes:
+      - staging_minio_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/9000' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wealthos_staging_network
+
+  # Staging MinIO Bucket Provisioner
+  staging-minio-init:
+    image: ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
+    container_name: wealthos_staging_minio_init
+    depends_on:
+      staging-minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/bash -c "
+      sleep 2;
+      /usr/bin/mc alias set localminio http://staging-minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadminpassword};
+      /usr/bin/mc mb --ignore-existing localminio/wealthos-staging-documents;
+      /usr/bin/mc mb --ignore-existing localminio/wealthos-staging-vault;
+      /usr/bin/mc mb --ignore-existing localminio/wealthos-staging-quarantine;
+      echo 'Staging MinIO storage buckets initialized';
+      exit 0;
+      "
+    networks:
+      - wealthos_staging_network
+
+  # Staging Backend FastAPI Service
+  staging-backend-api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: wealthos_staging_backend_api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8001"
+    env_file:
+      - ./backend/.env.staging
+    environment:
+      API_HOST: 0.0.0.0
+      API_PORT: 8001
+      POSTGRES_HOST: staging-postgres
+      POSTGRES_PORT: 5432
+      REDIS_HOST: staging-redis
+      REDIS_PORT: 6379
+      MINIO_ENDPOINT: staging-minio:9000
+    depends_on:
+      staging-postgres:
+        condition: service_healthy
+      staging-redis:
+        condition: service_healthy
+      staging-minio:
+        condition: service_healthy
+      staging-minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wealthos_staging_network
+
+  # Staging Next.js Web Client
+  staging-web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: wealthos_staging_web
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:3001"
+    env_file:
+      - ./apps/web/.env.staging
+    environment:
+      PORT: 3001
+      NEXT_PUBLIC_API_URL: http://localhost:8001
+      BACKEND_API_INTERNAL_URL: http://staging-backend-api:8001
+    depends_on:
+      staging-backend-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://127.0.0.1:3001/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wealthos_staging_network
+

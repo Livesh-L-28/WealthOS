@@ -10,10 +10,12 @@ build/
 *.tsbuildinfo
 *.apk
 *.aab
+*.zip
+*.dm
+*.baseline_bak
 
 # Cache & Environment
-.env
-.env*.local
+.env*
 .cache
 .pytest_cache
 __pycache__/

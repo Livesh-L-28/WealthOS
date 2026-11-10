@@ -46,9 +46,9 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <Text style={styles.backArrow}>‹</Text>
           <Text style={styles.backLabel}>Overview</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Security & Hardware Custody</Text>
+        <Text style={styles.screenTitle}>Settings & Security</Text>
         <View style={styles.topRightBadge}>
-          <Text style={styles.topRightBadgeText}>GATE 9</Text>
+          <Text style={styles.topRightBadgeText}>ENCRYPTED</Text>
         </View>
       </View>
 

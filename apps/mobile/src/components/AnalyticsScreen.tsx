@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { theme } from '../theme';
 import { formatINR } from '../formatters';
+import { analyticsService } from '../api/domainServices';
 
 interface AnalyticsScreenProps {
   onBack: () => void;
+  onShowToast?: (msg: string) => void;
+  monthlyInflows?: number;
+  monthlyOutflows?: number;
 }
 
 type Cadence = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
@@ -83,11 +88,57 @@ const RECURRING_ITEMS = [
   { name: 'Health & Term Insurance', amount: 8400, cadence: 'Monthly', date: 'Due 22nd' },
 ];
 
-export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({ onBack }) => {
+export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
+  onBack,
+  onShowToast,
+  monthlyInflows,
+  monthlyOutflows,
+}) => {
   const [cadence, setCadence] = useState<Cadence>('MONTHLY');
-  const data = CADENCE_DATA[cadence];
+  const [backendData, setBackendData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const savingsRate = Math.round((data.investments / (data.totalSpend + data.investments)) * 100);
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchAnalytics() {
+      setIsLoading(true);
+      try {
+        const res = await analyticsService.fetchCadenceSpend(cadence);
+        if (isMounted && res) {
+          setBackendData(res);
+        }
+      } catch {
+        // Fallback
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    fetchAnalytics();
+    return () => { isMounted = false; };
+  }, [cadence]);
+
+  const fallback = CADENCE_DATA[cadence];
+  const totalSpend = monthlyOutflows && cadence === 'MONTHLY' ? monthlyOutflows : (backendData?.summary?.total_expenses ? parseFloat(backendData.summary.total_expenses) : fallback.totalSpend);
+  const ceiling = fallback.ceiling;
+  const previousSpend = fallback.previousSpend;
+  const periodLabel = fallback.periodLabel;
+  const needs = backendData?.summary?.needs ? parseFloat(backendData.summary.needs) : fallback.needs;
+  const wants = backendData?.summary?.wants ? parseFloat(backendData.summary.wants) : fallback.wants;
+  const investments = backendData?.summary?.investments ? parseFloat(backendData.summary.investments) : fallback.investments;
+  const dailyBurn = cadence === 'DAILY' ? totalSpend : Math.round(totalSpend / 30);
+
+  const data = {
+    totalSpend,
+    ceiling,
+    previousSpend,
+    periodLabel,
+    needs,
+    wants,
+    investments,
+    dailyBurn,
+  };
+
+  const savingsRate = Math.round((data.investments / (data.totalSpend + data.investments || 1)) * 100);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>

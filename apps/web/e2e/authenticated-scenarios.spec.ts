@@ -13,7 +13,8 @@ test.beforeAll(async () => {
   }
 
   // Obtain authentic session token once via API
-  const resp = await fetch('http://localhost:8000/api/v1/auth/login', {
+  const apiUrl = process.env.PLAYWRIGHT_API_URL || 'http://localhost:8005';
+  const resp = await fetch(`${apiUrl}/api/v1/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -63,8 +64,11 @@ test.describe('Gate 4: Playwright Authenticated Browser Scenarios', () => {
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'scenario-03-mfa-guard.png') });
   });
 
-  test('Scenario 04: Authenticated Session Logout & Storage Purge', async ({ page }) => {
+  test('Scenario 04: Authenticated Session Logout & Storage Purge', async ({ page, context }) => {
     if (authToken) {
+      await context.addCookies([
+        { name: 'wealthos_access_token', value: authToken, domain: 'localhost', path: '/' },
+      ]);
       await page.addInitScript(
         ({ token, tid }) => {
           localStorage.setItem('wealthos_access_token', token);
@@ -76,7 +80,8 @@ test.describe('Gate 4: Playwright Authenticated Browser Scenarios', () => {
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/.*\/dashboard/);
 
-    // Trigger logout by purging storage and navigating to login
+    // Trigger logout by purging cookies/storage and navigating to login
+    await context.clearCookies();
     await page.evaluate(() => {
       localStorage.removeItem('wealthos_access_token');
       localStorage.removeItem('wealthos_current_tenant_id');
@@ -241,8 +246,11 @@ test.describe('Gate 4: Playwright Authenticated Browser Scenarios', () => {
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'scenario-14-404-handling.png') });
   });
 
-  test('Scenario 15: Responsive Navigation & Tenant Workspace State', async ({ page }) => {
+  test('Scenario 15: Responsive Navigation & Tenant Workspace State', async ({ page, context }) => {
     if (authToken) {
+      await context.addCookies([
+        { name: 'wealthos_access_token', value: authToken, domain: 'localhost', path: '/' },
+      ]);
       await page.addInitScript(
         ({ token, tid }) => {
           localStorage.setItem('wealthos_access_token', token);

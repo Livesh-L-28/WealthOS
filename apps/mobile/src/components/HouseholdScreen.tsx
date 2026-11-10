@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { theme } from '../theme';
 import { formatINR } from '../formatters';
+import { householdService } from '../api/domainServices';
 import { INITIAL_HOUSEHOLD_MEMBERS } from '../data';
+import { HouseholdMember } from '../types';
 
 interface HouseholdScreenProps {
   onBack: () => void;
@@ -19,7 +22,28 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
   onBack,
   onShowToast,
 }) => {
-  const members = INITIAL_HOUSEHOLD_MEMBERS;
+  const [members, setMembers] = useState<HouseholdMember[]>(INITIAL_HOUSEHOLD_MEMBERS);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadHousehold() {
+      setIsLoading(true);
+      try {
+        const liveMembers = await householdService.fetchHouseholdNetWorth();
+        if (isMounted && liveMembers && liveMembers.length > 0) {
+          setMembers(liveMembers);
+        }
+      } catch {
+        // Fallback
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadHousehold();
+    return () => { isMounted = false; };
+  }, []);
+
   const totalJointWealth = members.reduce(
     (sum, m) => sum + (m.sharedAssets - m.sharedLiabilities),
     0

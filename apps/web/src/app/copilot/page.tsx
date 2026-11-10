@@ -190,7 +190,7 @@ export default function CopilotPage() {
             data: { result: 'General inquiry processed against confirmed ledger balances' },
           },
         ];
-        responseContent = `I searched your confirmed records. Your current liquid depository balance is ₹17,35,200.50 and total net worth is ₹75,37,901.25. You can ask specific questions regarding budgets, expenses, SIP schedules, or portfolio returns anytime.`;
+        responseContent = `I searched your confirmed records. Your current liquid depository balance is ₹13,27,650.00 and total net worth is ₹75,37,901.25. You can ask specific questions regarding budgets, expenses, SIP schedules, or portfolio returns anytime.`;
       }
 
       const assistantMsg: CopilotChatMsg = {

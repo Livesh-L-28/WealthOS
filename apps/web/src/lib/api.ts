@@ -1,6 +1,8 @@
 import { WealthOSClient } from '@wealthos/api-client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = typeof window !== 'undefined'
+  ? ''
+  : (process.env.BACKEND_API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000');
 
 export const apiClient = new WealthOSClient({
   baseUrl: API_BASE_URL,

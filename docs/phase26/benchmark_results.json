@@ -1,0 +1,101 @@
+[
+  {
+    "operation": "Web Initial Load (Root)",
+    "p50": 3.6,
+    "p95": 7.38,
+    "p99": 10.4,
+    "mean": 4.13,
+    "min": 2.99,
+    "max": 11.38,
+    "errors": 0,
+    "samples": 30
+  },
+  {
+    "operation": "Web Dashboard Page",
+    "p50": 7.84,
+    "p95": 11.08,
+    "p99": 13.32,
+    "mean": 8.14,
+    "min": 6.45,
+    "max": 14.18,
+    "errors": 0,
+    "samples": 30
+  },
+  {
+    "operation": "Account Position API",
+    "p50": 13.97,
+    "p95": 19.13,
+    "p99": 25.67,
+    "mean": 14.91,
+    "min": 12.74,
+    "max": 27.65,
+    "errors": 0,
+    "samples": 30
+  },
+  {
+    "operation": "Portfolio Analytics API",
+    "p50": 15.63,
+    "p95": 30.18,
+    "p99": 32.89,
+    "mean": 18.72,
+    "min": 13.8,
+    "max": 33.59,
+    "errors": 0,
+    "samples": 30
+  },
+  {
+    "operation": "Transaction Search API",
+    "p50": 13.3,
+    "p95": 14.32,
+    "p99": 14.59,
+    "mean": 13.38,
+    "min": 12.56,
+    "max": 14.67,
+    "errors": 0,
+    "samples": 30
+  },
+  {
+    "operation": "Copilot Session API",
+    "p50": 14.23,
+    "p95": 16.2,
+    "p99": 17.07,
+    "mean": 14.62,
+    "min": 13.56,
+    "max": 17.39,
+    "errors": 0,
+    "samples": 30
+  },
+  {
+    "operation": "Document Registration API",
+    "p50": 15.44,
+    "p95": 20.94,
+    "p99": 22.22,
+    "mean": 16.21,
+    "min": 14.23,
+    "max": 22.51,
+    "errors": 0,
+    "samples": 30
+  },
+  {
+    "operation": "Internal Transfer POST",
+    "p50": 16.87,
+    "p95": 20.59,
+    "p99": 28.29,
+    "mean": 17.65,
+    "min": 15.09,
+    "max": 31.16,
+    "errors": 0,
+    "samples": 30
+  },
+  {
+    "operation": "Deep Readiness Probe",
+    "p50": 5.88,
+    "p95": 8.24,
+    "p99": 8.61,
+    "mean": 6.17,
+    "min": 5.48,
+    "max": 8.66,
+    "errors": 0,
+    "samples": 30
+  }
+]

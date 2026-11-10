@@ -70,6 +70,32 @@ export const FINANCIAL_DICTIONARY: Record<string, FinancialTermDefinition> = {
     term: 'Solvency Ratio',
     simpleExplanation: 'Ratio of total assets to total debt. Above 2.0x indicates solid long-term resilience against financial shocks.',
   },
+  'cash-balance': {
+    term: 'Cash Balance',
+    simpleExplanation: 'Liquid money in depository savings and checking accounts available for immediate withdrawal or spending.',
+    example: 'Money in your HDFC savings account is part of your cash balance.',
+  },
+  'market-value': {
+    term: 'Investment Market Value',
+    simpleExplanation: 'Current estimated worth of your investment holdings calculated as Quantity multiplied by the latest Market Price.',
+    example: '10 shares at ₹2,000 live price gives a market value of ₹20,000.',
+  },
+  'realized-gain': {
+    term: 'Realized Gain',
+    simpleExplanation: 'Actual locked-in profit after selling an asset (Sale Proceeds minus FIFO Cost Basis). Subject to capital gains taxation.',
+  },
+  'unrealized-gain': {
+    term: 'Unrealized Gain',
+    simpleExplanation: 'Paper profit or loss on securities you still own, reflecting the difference between Market Value and Cost Basis.',
+  },
+  'expected-income': {
+    term: 'Expected Income',
+    simpleExplanation: 'Projected or declared incoming funds (such as upcoming salary or announced dividends) that have not yet credited to your account.',
+  },
+  'actual-income': {
+    term: 'Actual Income',
+    simpleExplanation: 'Cash that has cleared and deposited into your accounts, verified and posted on the double-entry general ledger.',
+  },
 };
 
 interface InfoTooltipProps {

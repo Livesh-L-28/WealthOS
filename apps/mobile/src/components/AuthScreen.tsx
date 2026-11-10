@@ -7,11 +7,14 @@ import {
   SafeAreaView,
   TextInput,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../theme';
+import { config } from '../config';
+import { setAuthenticatedSession, UserSessionData } from '../api/client';
 
 interface AuthScreenProps {
-  onUnlock: () => void;
+  onUnlock: (session?: UserSessionData) => void;
   activeWorkspace: string;
   onSelectWorkspace: (ws: string) => void;
   onShowToast?: (msg: string) => void;
@@ -26,18 +29,18 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   const { theme, isDark, toggleTheme } = useTheme();
   const [authMode, setAuthMode] = useState<'SIGNIN' | 'REGISTER'>('SIGNIN');
 
-  // Sign In State
-  const [loginEmail, setLoginEmail] = useState('livesh.test@wealthos.internal');
-  const [loginPassword, setLoginPassword] = useState('SecurePassword123!');
+  // Sign In State - seeded with verified active test account
+  const [loginEmail, setLoginEmail] = useState('wealthos.mobile.test@example.com');
+  const [loginPassword, setLoginPassword] = useState('ValidSecurePassword123!@#');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Register State
-  const [regFirstName, setRegFirstName] = useState('Livesh');
-  const [regLastName, setRegLastName] = useState('Sharma');
+  const [regFirstName, setRegFirstName] = useState('');
+  const [regLastName, setRegLastName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
-  const [regWorkspace, setRegWorkspace] = useState('Livesh Family Office');
+  const [regWorkspace, setRegWorkspace] = useState('');
 
   const handleSignIn = async () => {
     setErrorMessage(null);
@@ -48,29 +51,67 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
     setIsSubmitting(true);
     try {
-      // Connect to local backend API / database
-      const response = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
+      // Connect to real backend API v1 auth endpoint
+      const response = await fetch(`${config.apiUrl}/api/v1/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: loginEmail,
+          email: loginEmail.trim().toLowerCase(),
           password: loginPassword,
         }),
       });
 
-      const data = await response.json();
-      if (response.ok && data.success) {
-        onShowToast?.('✓ Authenticated via PostgreSQL. Welcome back!');
-        onUnlock();
+      const data = await response.json().catch(() => null);
+
+      if (response.ok && data?.success && data?.data?.access_token) {
+        const result = data.data;
+        const tenant = result.active_tenant || {
+          id: result.tenant_id || 'default-tenant',
+          name: activeWorkspace || 'Primary Workspace',
+        };
+
+        const sessionData: UserSessionData = {
+          user: {
+            id: result.user?.id || 'usr-default',
+            email: result.user?.email || loginEmail,
+            name: result.user?.name || result.user?.full_name || 'WealthOS User',
+            mfa_enabled: result.user?.mfa_enabled,
+          },
+          activeTenant: {
+            id: tenant.id,
+            name: tenant.name || 'Primary Workspace',
+            slug: tenant.slug,
+            role: tenant.role,
+          },
+          tokens: {
+            accessToken: result.access_token,
+            refreshToken: result.refresh_token || '',
+          },
+        };
+
+        // Persist session in hardware-backed SecureStore driver
+        await setAuthenticatedSession(sessionData);
+
+        if (tenant.name) {
+          onSelectWorkspace(tenant.name);
+        }
+
+        onShowToast?.('✓ Authenticated via WealthOS Engine. Welcome back!');
+        onUnlock(sessionData);
       } else {
-        // Fallback for offline or local dev session
-        onShowToast?.('✓ Authenticated via SecureStore Enclave.');
-        onUnlock();
+        // Enforce strict fail-closed: display exact backend rejection reason
+        const failMsg =
+          data?.error?.message ||
+          data?.detail ||
+          'Authentication failed: Invalid credentials or inactive session.';
+        setErrorMessage(failMsg);
+        onShowToast?.(`Authentication error: ${failMsg}`);
       }
-    } catch {
-      // Offline fallback: unlock local encrypted session
-      onShowToast?.('✓ Authenticated via Local Hardware Enclave.');
-      onUnlock();
+    } catch (err: any) {
+      // Enforce strict fail-closed: never unlock on network failure or offline error
+      const netMsg = `Network connection error: Unable to reach backend at ${config.apiUrl}. Please verify server availability.`;
+      setErrorMessage(netMsg);
+      onShowToast?.('Connection failed. Server unreachable.');
     } finally {
       setIsSubmitting(false);
     }
@@ -83,32 +124,45 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       return;
     }
 
+    if (regPassword.length < 12) {
+      setErrorMessage('Password must be at least 12 characters long and contain uppercase, lowercase, numbers, and symbols.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Connect to local backend API / database to provision user & tenant
-      const response = await fetch('http://127.0.0.1:8000/api/v1/auth/register', {
+      // Connect to real backend registration endpoint
+      const response = await fetch(`${config.apiUrl}/api/v1/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: regEmail,
+          email: regEmail.trim().toLowerCase(),
           password: regPassword,
-          first_name: regFirstName,
-          last_name: regLastName,
-          personal_workspace_name: regWorkspace,
+          first_name: regFirstName.trim(),
+          last_name: regLastName.trim() || undefined,
+          personal_workspace_name: regWorkspace.trim() || undefined,
         }),
       });
 
-      const data = await response.json();
-      if (response.ok && data.success) {
-        onShowToast?.('✓ Account & workspace registered in PostgreSQL database!');
-        onUnlock();
+      const data = await response.json().catch(() => null);
+
+      if (response.ok && data?.success) {
+        onShowToast?.('✓ Account provisioned! Please sign in with your credentials.');
+        setLoginEmail(regEmail.trim().toLowerCase());
+        setLoginPassword(regPassword);
+        setAuthMode('SIGNIN');
       } else {
-        onShowToast?.('✓ Account provisioned successfully.');
-        onUnlock();
+        const failMsg =
+          data?.error?.message ||
+          data?.detail ||
+          'Registration rejected by server policy.';
+        setErrorMessage(failMsg);
+        onShowToast?.(`Registration error: ${failMsg}`);
       }
-    } catch {
-      onShowToast?.('✓ Workspace created in local encrypted ledger.');
-      onUnlock();
+    } catch (err: any) {
+      const netMsg = `Network error during registration: Unable to reach backend at ${config.apiUrl}.`;
+      setErrorMessage(netMsg);
+      onShowToast?.('Registration failed. Server unreachable.');
     } finally {
       setIsSubmitting(false);
     }

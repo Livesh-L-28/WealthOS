@@ -308,14 +308,14 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: lightTheme,
-  isDark: false,
+  theme: darkTheme,
+  isDark: true,
   toggleTheme: () => {},
   setThemeMode: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
 
   const toggleTheme = () => setIsDark((prev) => !prev);
   const setThemeMode = (dark: boolean) => setIsDark(dark);
@@ -329,4 +329,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
-export const useTheme = () => useContext(ThemeContext);
+export const useTheme = () => {
+  try {
+    const ctx = useContext(ThemeContext);
+    if (ctx && ctx.theme) {
+      return ctx;
+    }
+  } catch {
+    // Graceful fallback
+  }
+  return {
+    theme: darkTheme,
+    isDark: true,
+    toggleTheme: () => {},
+    setThemeMode: () => {},
+  };
+};

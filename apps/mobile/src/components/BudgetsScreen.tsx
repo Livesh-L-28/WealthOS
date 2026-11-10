@@ -196,6 +196,9 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 };
 
 const GOAL_EMOJIS: Record<string, string> = {
+  'Bike': '🎯',
+  'Financial Independence (FIRE)': '🏖️',
+  'Luxury EV (BMW i4 M50)': '🚗',
   'Villa Down Payment Fund': '🏡',
   'Emergency Liquid Reserve': '🛡️',
   'Child Higher Education': '🎓',

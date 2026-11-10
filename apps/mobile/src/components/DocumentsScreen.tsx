@@ -1,27 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { theme } from '../theme';
 import { INITIAL_DOCUMENTS } from '../data';
 import { DocumentItem } from '../types';
+import { documentsService } from '../api/domainServices';
 
 interface DocumentsScreenProps {
   onBack: () => void;
   onUploadDocument: () => void;
   onShowToast: (msg: string) => void;
+  documents?: DocumentItem[];
 }
 
 export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({
   onBack,
   onUploadDocument,
   onShowToast,
+  documents: propDocuments,
 }) => {
-  const [documents, setDocuments] = useState<DocumentItem[]>(INITIAL_DOCUMENTS);
+  const [documents, setDocuments] = useState<DocumentItem[]>(propDocuments || INITIAL_DOCUMENTS);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadDocuments() {
+      setIsLoading(true);
+      try {
+        const liveDocs = await documentsService.fetchDocuments();
+        if (isMounted && liveDocs && liveDocs.length > 0) {
+          setDocuments(liveDocs);
+        }
+      } catch {
+        // Fallback
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    if (!propDocuments || propDocuments.length === 0) {
+      loadDocuments();
+    }
+    return () => { isMounted = false; };
+  }, [propDocuments]);
 
   const handleInspectDoc = (doc: DocumentItem) => {
     onShowToast(`Inspecting ${doc.name}: ${Math.round(doc.confidence * 100)}% OCR confidence • Arithmetic ${doc.arithmeticCheck}`);

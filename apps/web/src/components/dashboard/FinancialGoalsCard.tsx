@@ -17,28 +17,28 @@ interface GoalSummary {
 
 const DASHBOARD_GOALS: GoalSummary[] = [
   {
-    id: 'g-1',
-    title: 'Emergency Safety Reserve',
-    current: 480000,
-    target: 900000,
-    targetDate: 'Mar 2027',
+    id: 'g-bike',
+    title: 'Bike',
+    current: 1876543,
+    target: 2345678,
+    targetDate: 'Dec 2030',
     monthly: 35000,
   },
   {
-    id: 'g-2',
-    title: 'Commercial Property Down Payment',
-    current: 1250000,
-    target: 2500000,
-    targetDate: 'Dec 2028',
+    id: 'g-fire',
+    title: 'Financial Independence (FIRE)',
+    current: 4250000,
+    target: 10000000,
+    targetDate: 'Dec 2032',
+    monthly: 75000,
+  },
+  {
+    id: 'g-ev',
+    title: 'Luxury EV (BMW i4 M50)',
+    current: 1850000,
+    target: 7500000,
+    targetDate: 'Jun 2027',
     monthly: 50000,
-  },
-  {
-    id: 'g-3',
-    title: 'Angel Venture Fund',
-    current: 450000,
-    target: 1500000,
-    targetDate: 'Jun 2029',
-    monthly: 35000,
   },
 ];
 

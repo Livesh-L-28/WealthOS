@@ -54,16 +54,31 @@ export default function NetWorthPage() {
   const [strategy, setStrategy] = useState<'AVALANCHE' | 'SNOWBALL'>('AVALANCHE');
   const [extraPayment, setExtraPayment] = useState<number>(10000);
 
+  // Simulator State (Roadmap Items 45-54: Major Purchase Simulator)
+  const [simCost, setSimCost] = useState<number>(500000);
+  const [simDownPayment, setSimDownPayment] = useState<number>(150000);
+  const [simItemName, setSimItemName] = useState<string>('Premium Electric Vehicle');
+
+  // Dynamic simulation calculations
+  const simLoan = Math.max(0, simCost - simDownPayment);
+  const simRate = 0.088 / 12;
+  const simN = 36;
+  const simEmi = simLoan > 0 ? (simLoan * simRate * Math.pow(1 + simRate, simN)) / (Math.pow(1 + simRate, simN) - 1) : 0;
+  const simBaseLiquid = 1327650;
+  const simRemainingLiquid = Math.max(0, simBaseLiquid - simDownPayment);
+  const simMonthlyOutflow = 151550;
+  const simRunwayMonths = (simRemainingLiquid / simMonthlyOutflow).toFixed(1);
+
   const assets = [
-    { name: 'Depository Bank Accounts', amount: 1735200.5, icon: Landmark, share: '18.4%' },
-    { name: 'Direct Equity & Demat Holdings', amount: 3845000.75, icon: TrendingUp, share: '40.8%' },
-    { name: 'Real Estate & Properties', amount: 3500000.0, icon: Building2, share: '37.1%' },
-    { name: 'Automobiles & Vehicles', amount: 350000.0, icon: Car, share: '3.7%' },
+    { name: 'Liquid Depository & Savings', amount: 1327650.0, icon: Landmark, share: '14.1%' },
+    { name: 'Direct Equity & Demat Portfolio', amount: 4522551.25, icon: TrendingUp, share: '47.9%' },
+    { name: 'Fixed Term Deposits & SGB Gold', amount: 1862500.0, icon: Building2, share: '19.7%' },
+    { name: 'Real Estate Primary Residence Equity', amount: 1717500.0, icon: Car, share: '18.3%' },
   ];
 
   const liabilities = [
-    { name: 'Housing Mortgage Loan (8.5% APR)', amount: 1850000.0, icon: Landmark, share: '97.8%', emi: 22894.0 },
-    { name: 'Credit Card Revolving (24% APR)', amount: 42300.0, icon: CreditCard, share: '2.2%', emi: 3500.0 },
+    { name: 'Housing Mortgage Loan (HDFC)', amount: 1650000.0, icon: Landmark, share: '87.2%', emi: 22894.0 },
+    { name: 'Axis Bank Magnus Revolving Card', amount: 242300.0, icon: CreditCard, share: '12.8%', emi: 12500.0 },
   ];
 
   const totalAssets = assets.reduce((sum, a) => sum + a.amount, 0);
@@ -149,6 +164,77 @@ export default function NetWorthPage() {
               {((totalLiabilities / totalAssets) * 100).toFixed(1)}%
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* ================= ROADMAP ITEM 1-10: SINGLE FINANCIAL OVERVIEW — WHY DID WEALTH CHANGE? ================= */}
+      <div className="p-6 rounded-2xl bg-white border border-[#16A36A]/30 shadow-[0_1px_3px_0_rgba(23,35,29,0.04)] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E7ECE8]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#E8F5EE] text-[#087A50] flex items-center justify-center font-bold text-lg">
+              📊
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-[#17231D]">Why Did Wealth Change?</h2>
+                <Badge variant="positive" size="sm">Double-Entry Attribution</Badge>
+              </div>
+              <p className="text-xs text-[#758078]">
+                Audited monthly reconciliation: 10 Oct 2026 to 08 Nov 2026 across 6 connected institutions
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="text-xs font-mono font-bold text-[#087A50] bg-[#DCFCE7] px-2.5 py-1 rounded-lg">
+              +₹3,42,851.25 (+4.76%)
+            </span>
+          </div>
+        </div>
+
+        {/* Waterfall Table / Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+            <span className="text-[10px] font-bold text-[#758078] uppercase block">Starting Net Worth</span>
+            <span className="text-xs text-[#758078] block mt-0.5">10 Oct 2026 Balance</span>
+            <span className="text-base font-bold font-mono text-[#17231D] mt-2 block">₹71,95,050.00</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F0FDF4] border border-[#BBF7D0]">
+            <span className="text-[10px] font-bold text-[#15803D] uppercase block">+ Inflows & Salary</span>
+            <span className="text-xs text-[#758078] block mt-0.5">Infosys & TCS Dividend</span>
+            <span className="text-base font-bold font-mono text-[#15803D] mt-2 block">+₹2,12,000.00</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#FEF2F2] border border-[#FECACA]">
+            <span className="text-[10px] font-bold text-[#DC2626] uppercase block">− Living Outflows</span>
+            <span className="text-xs text-[#758078] block mt-0.5">Rent, Dues & Living</span>
+            <span className="text-base font-bold font-mono text-[#DC2626] mt-2 block">−₹1,51,550.00</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#F0FDF4] border border-[#BBF7D0]">
+            <span className="text-[10px] font-bold text-[#15803D] uppercase block">+ Market Appreciation</span>
+            <span className="text-xs text-[#758078] block mt-0.5">PPFAS & Direct Equity</span>
+            <span className="text-base font-bold font-mono text-[#15803D] mt-2 block">+₹3,24,401.25</span>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-[#FFFBEB] border border-[#FDE68A]">
+            <span className="text-[10px] font-bold text-[#D97706] uppercase block">− Debt Principal Paid</span>
+            <span className="text-xs text-[#758078] block mt-0.5">Home Loan Amortization</span>
+            <span className="text-base font-bold font-mono text-[#D97706] mt-2 block">−₹42,000.00</span>
+          </div>
+        </div>
+
+        {/* Closing Certification Banner */}
+        <div className="p-3 rounded-xl bg-[#FAFCFA] border border-[#E7ECE8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-[#758078]">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[#16A36A] shrink-0" />
+            <span>
+              Internal transfers between checking and savings (₹2,50,000) are zero-sum and excluded to prevent duplicate wealth inflation.
+            </span>
+          </div>
+          <span className="font-mono font-bold text-[#17231D] shrink-0">
+            Closing: ₹75,37,901.25
+          </span>
         </div>
       </div>
 
@@ -308,6 +394,103 @@ export default function NetWorthPage() {
             accessibleDescription="Principal vs Interest Amortization Installment Bars"
           />
         </ChartContainer>
+      </Card>
+
+      {/* ================= ROADMAP ITEMS 45-54: MAJOR PURCHASE SIMULATOR ================= */}
+      <Card>
+        <CardHeader
+          title="Major Purchase & Capital Expenditure Simulator"
+          subtitle="Test affordability of high-value purchases (e.g. ₹5 Lakh vehicle) against reserves, runway and FIRE goals"
+        />
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-[#758078] uppercase block mb-1.5">Purchase Name</label>
+              <input
+                type="text"
+                value={simItemName}
+                onChange={(e) => setSimItemName(e.target.value)}
+                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl px-3 py-2 text-sm font-semibold text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[#758078] uppercase block mb-1.5">Total Acquisition Cost (₹)</label>
+              <input
+                type="number"
+                value={simCost}
+                onChange={(e) => setSimCost(Number(e.target.value))}
+                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[#758078] uppercase block mb-1.5">Down Payment Outflow (₹)</label>
+              <input
+                type="number"
+                value={simDownPayment}
+                onChange={(e) => setSimDownPayment(Number(e.target.value))}
+                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+              />
+            </div>
+          </div>
+
+          {/* Metric Comparison Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+              <span className="text-xs text-[#758078]">Emergency Cash Runway Post-Purchase</span>
+              <p className={`text-xl font-bold font-mono mt-1 ${Number(simRunwayMonths) >= 6.0 ? 'text-[#16A36A]' : Number(simRunwayMonths) >= 3.0 ? 'text-[#D97706]' : 'text-[#DC5B5B]'}`}>
+                {simRunwayMonths} Months
+              </p>
+              <p className="text-[10px] text-[#758078] mt-0.5">
+                Safe threshold: &gt; 6.0 Months (Remaining cash: ₹{simRemainingLiquid.toLocaleString('en-IN')})
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+              <span className="text-xs text-[#758078]">Estimated Monthly Loan EMI</span>
+              <p className="text-xl font-bold font-mono text-[#17231D] mt-1">
+                ₹{Math.round(simEmi).toLocaleString('en-IN')} / mo
+              </p>
+              <p className="text-[10px] text-[#758078] mt-0.5">
+                Financing ₹{simLoan.toLocaleString('en-IN')} @ 8.8% p.a. over 36 months
+              </p>
+            </div>
+
+            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+              <span className="text-xs text-[#758078]">FIRE Goal Timeline Impact</span>
+              <p className="text-xl font-bold font-mono text-[#D97706] mt-1">
+                +2.1 Months Delay
+              </p>
+              <p className="text-[10px] text-[#758078] mt-0.5">
+                Absorbed within current monthly discretionary surplus
+              </p>
+            </div>
+          </div>
+
+          {/* Verdict Recommendation */}
+          <div className={`p-4 rounded-xl border flex items-start gap-3 ${
+            simDownPayment > simBaseLiquid 
+              ? 'bg-[#FEF2F2] border-[#FECACA]' 
+              : Number(simRunwayMonths) < 3.0 
+              ? 'bg-[#FFFBEB] border-[#FDE68A]' 
+              : 'bg-[#F0FDF4] border-[#86EFAC]'
+          }`}>
+            <Sparkles className="w-5 h-5 text-[#087A50] shrink-0 mt-0.5" />
+            <div>
+              <span className="text-xs font-bold text-[#17231D] block">
+                {simDownPayment > simBaseLiquid
+                  ? 'CRITICAL DEFICIT: INSUFFICIENT LIQUID RESERVES'
+                  : Number(simRunwayMonths) < 3.0
+                  ? 'ELEVATED RISK: EMERGENCY BUFFER DEPLETED'
+                  : `VERDICT: AFFORDABLE WITH ₹${(simDownPayment / 100000).toFixed(2)}L DOWN PAYMENT`}
+              </span>
+              <p className="text-xs text-[#505D54] mt-1 leading-relaxed">
+                {simDownPayment > simBaseLiquid
+                  ? `Required down payment of ₹${simDownPayment.toLocaleString('en-IN')} exceeds current liquid cash (₹13,27,650.00).`
+                  : `You can comfortably purchase this ₹${(simCost / 100000).toFixed(2)} Lakh asset without impairing your long-term FIRE goals. Liquid emergency reserves remain at ₹${(simRemainingLiquid / 100000).toFixed(2)}L (${simRunwayMonths} months runway).`}
+              </p>
+            </div>
+          </div>
+        </div>
       </Card>
     </div>
   );

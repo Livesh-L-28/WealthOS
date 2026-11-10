@@ -14,7 +14,8 @@ test.beforeAll(async () => {
 
   // Obtain authentic session token via backend API
   try {
-    const resp = await fetch('http://localhost:8000/api/v1/auth/login', {
+    const apiUrl = process.env.PLAYWRIGHT_API_URL || 'http://localhost:8005';
+    const resp = await fetch(`${apiUrl}/api/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

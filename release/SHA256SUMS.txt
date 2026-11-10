@@ -1,0 +1,3 @@
+360c75c3a3f205c58cf83a3c02c1e159f2c706c5813ffec984f54b1b5a33a906  android/wealthos-release.apk
+0b392bad1aad1d24b722f6601448fb22d8ffc205a2a43f3da39d9b2cccbb6faa  backend/Dockerfile
+300f3e8251cf52b3726597b480484d56b928b4a39c01626f4167a72532af0c05  deployment/docker-compose.prod.yml

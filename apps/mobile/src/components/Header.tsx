@@ -70,6 +70,17 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right: Clean Header Actions */}
       <View style={styles.actionsRow}>
+        {onOpenCopilot && (
+          <TouchableOpacity
+            style={[styles.iconButton, { backgroundColor: theme.colors.primaryLightSolid, borderColor: theme.colors.border }]}
+            onPress={onOpenCopilot}
+            activeOpacity={0.75}
+            accessibilityLabel="Open AI Copilot"
+          >
+            <Text style={styles.actionIconSmall}>🤖</Text>
+          </TouchableOpacity>
+        )}
+
         {onOpenSearch && (
           <TouchableOpacity
             style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
@@ -90,6 +101,17 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <Text style={styles.actionIconSmall}>{isDark ? '☀️' : '🌙'}</Text>
         </TouchableOpacity>
+
+        {onOpenHub && (
+          <TouchableOpacity
+            style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
+            onPress={onOpenHub}
+            activeOpacity={0.75}
+            accessibilityLabel="Open Menu"
+          >
+            <Text style={styles.actionIconSmall}>☰</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

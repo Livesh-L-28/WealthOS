@@ -18,3 +18,9 @@ export function formatINR(val: number): string {
   return `${isNegative ? '-' : ''}₹${formatted}.${decimalPart}`;
 }
 
+export function formatPercentage(val: number, precision: number = 1): string {
+  const sign = val > 0 ? '+' : '';
+  return `${sign}${val.toFixed(precision)}%`;
+}
+
+

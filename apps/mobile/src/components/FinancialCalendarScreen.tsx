@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../theme';
 import { UpcomingObligation } from '../types';
 import { INITIAL_OBLIGATIONS } from '../data';
 import { formatINR } from '../formatters';
+import { cashService } from '../api/domainServices';
 
 interface FinancialCalendarScreenProps {
   onBack: () => void;
@@ -23,6 +25,26 @@ export const FinancialCalendarScreen: React.FC<FinancialCalendarScreenProps> = (
   const { theme } = useTheme();
   const [obligations, setObligations] = useState<UpcomingObligation[]>(INITIAL_OBLIGATIONS);
   const [filter, setFilter] = useState<'ALL' | 'DUE' | 'PAID'>('ALL');
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadObligations() {
+      setIsLoading(true);
+      try {
+        const liveRules = await cashService.fetchRecurringRules();
+        if (isMounted && liveRules && liveRules.length > 0) {
+          setObligations(liveRules);
+        }
+      } catch {
+        // Fallback
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadObligations();
+    return () => { isMounted = false; };
+  }, []);
 
   const filtered = obligations.filter((o) => {
     if (filter === 'DUE') return !o.isPaid;

@@ -49,6 +49,7 @@ def upgrade() -> None:
     op.execute("CREATE INDEX IF NOT EXISTS idx_outbox_tenant_status ON outbox_events(tenant_id, status);")
     op.execute("CREATE INDEX IF NOT EXISTS idx_outbox_created_at ON outbox_events(created_at);")
     op.execute("ALTER TABLE outbox_events ENABLE ROW LEVEL SECURITY;")
+    op.execute("ALTER TABLE outbox_events FORCE ROW LEVEL SECURITY;")
     op.execute(
         """
         CREATE POLICY outbox_tenant_isolation ON outbox_events FOR ALL TO wealthos_app
@@ -80,6 +81,7 @@ def upgrade() -> None:
     )
     op.execute("CREATE INDEX IF NOT EXISTS idx_idempotency_lookup ON api_idempotency_records(tenant_id, idempotency_key);")
     op.execute("ALTER TABLE api_idempotency_records ENABLE ROW LEVEL SECURITY;")
+    op.execute("ALTER TABLE api_idempotency_records FORCE ROW LEVEL SECURITY;")
     op.execute(
         """
         CREATE POLICY idempotency_tenant_isolation ON api_idempotency_records FOR ALL TO wealthos_app
@@ -108,6 +110,7 @@ def upgrade() -> None:
     )
     op.execute("CREATE INDEX IF NOT EXISTS idx_data_lineage_entity ON financial_data_lineage(tenant_id, entity_type, entity_id);")
     op.execute("ALTER TABLE financial_data_lineage ENABLE ROW LEVEL SECURITY;")
+    op.execute("ALTER TABLE financial_data_lineage FORCE ROW LEVEL SECURITY;")
     op.execute(
         """
         CREATE POLICY lineage_tenant_isolation ON financial_data_lineage FOR ALL TO wealthos_app
@@ -180,6 +183,7 @@ def upgrade() -> None:
     )
     op.execute("CREATE INDEX IF NOT EXISTS idx_api_keys_lookup ON user_api_keys(tenant_id, key_hash);")
     op.execute("ALTER TABLE user_api_keys ENABLE ROW LEVEL SECURITY;")
+    op.execute("ALTER TABLE user_api_keys FORCE ROW LEVEL SECURITY;")
     op.execute(
         """
         CREATE POLICY api_keys_tenant_isolation ON user_api_keys FOR ALL TO wealthos_app
@@ -211,6 +215,7 @@ def upgrade() -> None:
     )
     op.execute("CREATE INDEX IF NOT EXISTS idx_tenant_quotas ON tenant_resource_quotas(tenant_id);")
     op.execute("ALTER TABLE tenant_resource_quotas ENABLE ROW LEVEL SECURITY;")
+    op.execute("ALTER TABLE tenant_resource_quotas FORCE ROW LEVEL SECURITY;")
     op.execute(
         """
         CREATE POLICY quotas_tenant_isolation ON tenant_resource_quotas FOR ALL TO wealthos_app
@@ -240,6 +245,7 @@ def upgrade() -> None:
     )
     op.execute("CREATE INDEX IF NOT EXISTS idx_consent_tenant_user ON data_consent_records(tenant_id, user_id, purpose);")
     op.execute("ALTER TABLE data_consent_records ENABLE ROW LEVEL SECURITY;")
+    op.execute("ALTER TABLE data_consent_records FORCE ROW LEVEL SECURITY;")
     op.execute(
         """
         CREATE POLICY consent_tenant_isolation ON data_consent_records FOR ALL TO wealthos_app

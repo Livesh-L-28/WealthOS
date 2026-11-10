@@ -13,5 +13,9 @@ config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(monorepoRoot, 'node_modules'),
 ];
+config.resolver.extraNodeModules = {
+  react: path.resolve(monorepoRoot, 'node_modules/react'),
+  'react-dom': path.resolve(monorepoRoot, 'node_modules/react-dom'),
+};
 
 module.exports = config;

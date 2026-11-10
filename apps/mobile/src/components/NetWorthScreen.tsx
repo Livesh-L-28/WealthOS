@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { theme } from '../theme';
 import { formatINR } from '../formatters';
+import { analyticsService, liabilitiesService } from '../api/domainServices';
 import {
   BALANCE_SHEET_ASSETS,
   BALANCE_SHEET_LIABILITIES,
@@ -17,18 +19,56 @@ import {
 interface NetWorthScreenProps {
   onBack: () => void;
   onShowToast?: (msg: string) => void;
+  totalAssets?: number;
+  totalLiabilities?: number;
+  netWorth?: number;
 }
 
-export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({ onBack, onShowToast }) => {
+export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({
+  onBack,
+  onShowToast,
+  totalAssets: propAssets,
+  totalLiabilities: propLiabilities,
+  netWorth: propNetWorth,
+}) => {
   const [strategy, setStrategy] = useState<'AVALANCHE' | 'SNOWBALL'>('AVALANCHE');
   const [extraPayment, setExtraPayment] = useState<number>(10000);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [backendData, setBackendData] = useState<any>(null);
 
-  const totalAssets = BALANCE_SHEET_ASSETS.reduce((sum, a) => sum + a.amount, 0);
-  const totalLiabilities = BALANCE_SHEET_LIABILITIES.reduce((sum, l) => sum + l.amount, 0);
-  const netWorth = totalAssets - totalLiabilities;
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [nwRes, stratRes] = await Promise.all([
+          analyticsService.fetchNetWorth(),
+          liabilitiesService.compareDebtStrategies(extraPayment),
+        ]);
+        if (isMounted) {
+          setBackendData({ nw: nwRes, strat: stratRes });
+        }
+      } catch {
+        // Fallback gracefully
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+    loadData();
+    return () => { isMounted = false; };
+  }, [extraPayment]);
 
-  const interestSaved = strategy === 'AVALANCHE' ? 256500 + extraPayment * 4.2 : 218000 + extraPayment * 3.8;
-  const monthsReduced = Math.min(48, Math.round(18 + extraPayment / 750));
+  const totalAssets = propAssets ?? (backendData?.nw?.summary?.total_assets ? parseFloat(backendData.nw.summary.total_assets) : BALANCE_SHEET_ASSETS.reduce((sum, a) => sum + a.amount, 0));
+  const totalLiabilities = propLiabilities ?? (backendData?.nw?.summary?.total_liabilities ? parseFloat(backendData.nw.summary.total_liabilities) : BALANCE_SHEET_LIABILITIES.reduce((sum, l) => sum + l.amount, 0));
+  const netWorth = propNetWorth ?? (totalAssets - totalLiabilities);
+
+  const interestSaved = backendData?.strat?.avalanche?.interest_saved
+    ? (strategy === 'AVALANCHE' ? parseFloat(backendData.strat.avalanche.interest_saved) : parseFloat(backendData.strat.snowball?.interest_saved || '218000'))
+    : (strategy === 'AVALANCHE' ? 256500 + extraPayment * 4.2 : 218000 + extraPayment * 3.8);
+
+  const monthsReduced = backendData?.strat?.avalanche?.months_saved
+    ? (strategy === 'AVALANCHE' ? backendData.strat.avalanche.months_saved : backendData.strat.snowball?.months_saved || 18)
+    : Math.min(48, Math.round(18 + extraPayment / 750));
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
