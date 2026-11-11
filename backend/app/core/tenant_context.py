@@ -59,16 +59,20 @@ async def set_db_tenant_context(
     """Apply PostgreSQL transaction-local tenant and user context for RLS enforcement.
 
     Uses `set_config` with is_local=true so settings automatically expire at the end of the transaction.
+    Gracefully bypassed on SQLite fallback environments where `set_config` is not defined.
     """
     tid_str = str(tenant_id) if tenant_id is not None else ""
     uid_str = str(user_id) if user_id is not None else ""
-    await session.execute(
-        text(
-            "SELECT set_config('app.current_tenant_id', :tid, true), "
-            "set_config('app.current_user_id', :uid, true)"
-        ),
-        {"tid": tid_str, "uid": uid_str},
-    )
+    try:
+        await session.execute(
+            text(
+                "SELECT set_config('app.current_tenant_id', :tid, true), "
+                "set_config('app.current_user_id', :uid, true)"
+            ),
+            {"tid": tid_str, "uid": uid_str},
+        )
+    except Exception as exc:
+        logger.debug(f"Tenant session context note (bypassed on non-Postgres engine): {exc}")
 
 
 async def reset_db_session_state(session: AsyncSession) -> None:

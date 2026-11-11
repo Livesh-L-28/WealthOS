@@ -15,18 +15,33 @@ from app.infrastructure.redis import (
 
 @pytest.mark.asyncio
 async def test_redis_unauthenticated_connection_rejected():
-    """Verify that unauthenticated connection to a password-protected Redis fails."""
-    # Simulate a Redis server requiring auth when client connects without credentials
+    """Verify that unauthenticated connection to a password-protected Redis fails in production."""
     mock_client = AsyncMock()
     mock_client.ping.side_effect = AuthenticationError("NOAUTH Authentication required.")
 
-    with patch("redis.asyncio.from_url", return_value=mock_client):
-        # Explicitly reset global client
-        await close_redis()
+    with patch("app.core.config.settings.ENVIRONMENT", "production"):
+        with patch("redis.asyncio.from_url", return_value=mock_client):
+            # Explicitly reset global client
+            await close_redis()
 
-        with pytest.raises(AuthenticationError, match="NOAUTH Authentication required."):
+            with pytest.raises(AuthenticationError, match="NOAUTH Authentication required."):
+                client = await init_redis()
+                await client.ping()
+
+
+@pytest.mark.asyncio
+async def test_redis_in_memory_fallback_in_development():
+    """Verify that in non-production, unavailable Redis activates in-memory fallback."""
+    mock_client = AsyncMock()
+    mock_client.ping.side_effect = ConnectionError("Connection refused")
+
+    with patch("app.core.config.settings.ENVIRONMENT", "development"):
+        with patch("redis.asyncio.from_url", return_value=mock_client):
+            await close_redis()
             client = await init_redis()
-            await client.ping()
+            assert client is not None
+            await client.set("key", "val")
+            assert await client.get("key") == "val"
 
 
 @pytest.mark.asyncio

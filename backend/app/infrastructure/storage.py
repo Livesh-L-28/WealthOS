@@ -8,9 +8,11 @@ Zero sensitive document content is ever logged.
 
 import hashlib
 import io
+import json
 import re
 import uuid
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, BinaryIO
 
 import boto3
@@ -84,22 +86,224 @@ class DocumentQuarantineError(StorageError):
 
 
 _s3_client: Any = None
+_is_local_storage_fallback: bool = False
+
+
+class LocalStorageDriver:
+    """Enterprise local disk object storage driver.
+
+    Provides transparent drop-in compatibility with the boto3 S3 client interface.
+    Stores bucket objects at `backend/var/storage/{bucket}/{key}` with directory isolation.
+    """
+
+    def __init__(self, base_dir: Path | None = None):
+        if base_dir is None:
+            base_dir = Path(__file__).resolve().parent.parent.parent / "var" / "storage"
+        self.base_dir = base_dir
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+
+    def _get_path(self, bucket: str, key: str) -> Path:
+        target = self.base_dir / bucket / key
+        target.parent.mkdir(parents=True, exist_ok=True)
+        return target
+
+    def head_bucket(self, Bucket: str):
+        bucket_dir = self.base_dir / Bucket
+        if not bucket_dir.exists():
+            raise ClientError({"Error": {"Code": "404", "Message": "Not Found"}}, "HeadBucket")
+        return {}
+
+    def create_bucket(self, Bucket: str):
+        (self.base_dir / Bucket).mkdir(parents=True, exist_ok=True)
+        return {}
+
+    def put_public_access_block(self, Bucket: str, PublicAccessBlockConfiguration: dict):
+        return {}
+
+    def list_buckets(self):
+        buckets = []
+        for p in self.base_dir.iterdir():
+            if p.is_dir():
+                buckets.append({"Name": p.name})
+        return {"Buckets": buckets}
+
+    def put_object(
+        self,
+        Bucket: str,
+        Key: str,
+        Body: bytes | BinaryIO,
+        ContentType: str = "application/octet-stream",
+        Metadata: dict | None = None,
+    ):
+        path = self._get_path(Bucket, Key)
+        data = Body if isinstance(Body, bytes) else Body.read()
+        with open(path, "wb") as f:
+            f.write(data)
+        if Metadata:
+            with open(str(path) + ".meta.json", "w") as mf:
+                json.dump({"ContentType": ContentType, "Metadata": Metadata}, mf)
+        return {"ETag": hashlib.md5(data).hexdigest()}
+
+    def get_object(self, Bucket: str, Key: str):
+        path = self._get_path(Bucket, Key)
+        if not path.exists():
+            raise ClientError(
+                {"Error": {"Code": "NoSuchKey", "Message": "The specified key does not exist."}},
+                "GetObject",
+            )
+        with open(path, "rb") as f:
+            data = f.read()
+        content_type = "application/octet-stream"
+        meta_file = Path(str(path) + ".meta.json")
+        metadata = {}
+        if meta_file.exists():
+            try:
+                with open(meta_file, "r") as mf:
+                    d = json.load(mf)
+                    content_type = d.get("ContentType", content_type)
+                    metadata = d.get("Metadata", {})
+            except Exception:
+                pass
+        return {
+            "Body": io.BytesIO(data),
+            "ContentType": content_type,
+            "ContentLength": len(data),
+            "Metadata": metadata,
+        }
+
+    def head_object(self, Bucket: str, Key: str):
+        path = self._get_path(Bucket, Key)
+        if not path.exists():
+            raise ClientError(
+                {"Error": {"Code": "NoSuchKey", "Message": "The specified key does not exist."}},
+                "HeadObject",
+            )
+        content_type = "application/octet-stream"
+        meta_file = Path(str(path) + ".meta.json")
+        metadata = {}
+        if meta_file.exists():
+            try:
+                with open(meta_file, "r") as mf:
+                    d = json.load(mf)
+                    content_type = d.get("ContentType", content_type)
+                    metadata = d.get("Metadata", {})
+            except Exception:
+                pass
+        return {
+            "ContentLength": path.stat().st_size,
+            "ContentType": content_type,
+            "Metadata": metadata,
+        }
+
+    def delete_object(self, Bucket: str, Key: str):
+        path = self._get_path(Bucket, Key)
+        if path.exists():
+            path.unlink()
+        meta_file = Path(str(path) + ".meta.json")
+        if meta_file.exists():
+            meta_file.unlink()
+        return {}
+
+    def upload_fileobj(
+        self,
+        Fileobj: BinaryIO,
+        Bucket: str,
+        Key: str,
+        ExtraArgs: dict | None = None,
+        Callback: Any = None,
+        Config: Any = None,
+    ):
+        extra = ExtraArgs or {}
+        content_type = extra.get("ContentType", "application/octet-stream")
+        metadata = extra.get("Metadata")
+        return self.put_object(
+            Bucket=Bucket,
+            Key=Key,
+            Body=Fileobj,
+            ContentType=content_type,
+            Metadata=metadata,
+        )
+
+    def download_fileobj(
+        self,
+        Bucket: str,
+        Key: str,
+        Fileobj: BinaryIO,
+        ExtraArgs: dict | None = None,
+        Callback: Any = None,
+        Config: Any = None,
+    ):
+        res = self.get_object(Bucket=Bucket, Key=Key)
+        body = res["Body"].read()
+        Fileobj.write(body)
+
+    def copy_object(self, Bucket: str, Key: str, CopySource: str | dict):
+        if isinstance(CopySource, str):
+            src_bucket, src_key = CopySource.split("/", 1)
+        elif isinstance(CopySource, dict):
+            src_bucket = CopySource.get("Bucket", "")
+            src_key = CopySource.get("Key", "")
+        else:
+            raise ClientError({"Error": {"Code": "400", "Message": "Invalid CopySource"}}, "CopyObject")
+        src_res = self.get_object(Bucket=src_bucket, Key=src_key)
+        return self.put_object(
+            Bucket=Bucket,
+            Key=Key,
+            Body=src_res["Body"].read(),
+            ContentType=src_res["ContentType"],
+            Metadata=src_res["Metadata"],
+        )
+
+    def generate_presigned_post(
+        self,
+        Bucket: str,
+        Key: str,
+        Fields: dict | None = None,
+        Conditions: list | None = None,
+        ExpiresIn: int = 3600,
+    ):
+        return {
+            "url": f"/api/v1/documents/raw/{Bucket}/{Key}",
+            "fields": Fields or {},
+        }
+
+    def generate_presigned_url(self, ClientMethod: str, Params: dict, ExpiresIn: int = 3600, HttpMethod: str | None = None):
+        bucket = Params.get("Bucket", "wealthos-documents")
+        key = Params.get("Key", "")
+        return f"/api/v1/documents/raw/{bucket}/{key}"
 
 
 def get_s3_client() -> Any:
-    """Create or return existing S3/MinIO client."""
-    global _s3_client
+    """Create or return existing S3/MinIO client with seamless local disk fallback."""
+    global _s3_client, _is_local_storage_fallback
     if _s3_client is None:
         endpoint_url = f"{'https' if settings.MINIO_SECURE else 'http'}://{settings.MINIO_ENDPOINT}"
-        logger.info(f"Initializing Object Storage client at {endpoint_url}")
-        _s3_client = boto3.client(
-            "s3",
-            endpoint_url=endpoint_url,
-            aws_access_key_id=settings.MINIO_ACCESS_KEY,
-            aws_secret_access_key=settings.MINIO_SECRET_KEY,
-            region_name=settings.MINIO_REGION,
-            config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
-        )
+        try:
+            logger.info(f"Probing Object Storage client at {endpoint_url}")
+            client = boto3.client(
+                "s3",
+                endpoint_url=endpoint_url,
+                aws_access_key_id=settings.MINIO_ACCESS_KEY,
+                aws_secret_access_key=settings.MINIO_SECRET_KEY,
+                region_name=settings.MINIO_REGION,
+                config=Config(
+                    signature_version="s3v4",
+                    s3={"addressing_style": "path"},
+                    connect_timeout=1.5,
+                    read_timeout=1.5,
+                ),
+            )
+            client.list_buckets()
+            _s3_client = client
+            _is_local_storage_fallback = False
+            logger.info("Connected to remote S3/MinIO cluster successfully")
+        except Exception as exc:
+            logger.warning(
+                f"Remote MinIO/S3 unavailable ({exc}). Activating resilient Local Disk Object Storage Driver."
+            )
+            _s3_client = LocalStorageDriver()
+            _is_local_storage_fallback = True
+
     return _s3_client
 
 
@@ -582,11 +786,16 @@ init_storage = init_storage_buckets
 
 
 def check_storage_health() -> dict:
-    """Check object storage availability."""
+    """Check object storage availability with active engine telemetry."""
     try:
         client = get_s3_client()
         client.list_buckets()
-        return {"status": "healthy", "endpoint": settings.MINIO_ENDPOINT}
+        return {
+            "status": "healthy",
+            "driver": "local_disk_storage_driver" if _is_local_storage_fallback else "s3_minio",
+            "fallback_active": _is_local_storage_fallback,
+            "endpoint": "local_disk" if _is_local_storage_fallback else settings.MINIO_ENDPOINT,
+        }
     except Exception as exc:
         logger.warning(f"Storage health check failed: {exc}")
         return {"status": "unhealthy", "error": str(exc), "endpoint": settings.MINIO_ENDPOINT}

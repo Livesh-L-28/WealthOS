@@ -91,3 +91,4 @@ export function validateDoubleEntryTransaction(legs: LedgerLeg[]): ValidationRes
 
   return { isValid: true };
 }
+

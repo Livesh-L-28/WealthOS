@@ -31,6 +31,8 @@ async_session_factory: async_sessionmaker[AsyncSession] | None = None
 read_engine: AsyncEngine | None = None
 read_session_factory: async_sessionmaker[AsyncSession] | None = None
 
+_is_sqlite_fallback: bool = False
+
 
 class Base(DeclarativeBase):
     """Base declarative class for all WealthOS entities."""
@@ -121,6 +123,7 @@ def get_engine() -> AsyncEngine:
             max_overflow=settings.DB_MAX_OVERFLOW,
             pool_timeout=settings.DB_POOL_TIMEOUT,
             pool_pre_ping=settings.DB_POOL_PRE_PING,
+            pool_recycle=1800,
             echo=settings.DEBUG and settings.LOG_LEVEL == "DEBUG",
         )
     return engine
@@ -201,13 +204,61 @@ class PrimaryReplicaRouter:
 
 
 async def init_db() -> None:
-    """Initialize database connection pools (Primary + Read Replica)."""
-    get_engine()
-    get_session_factory()
-    if settings.get_replica_database_url():
+    """Initialize database connection pools with resilient SQLite fallback."""
+    global engine, async_session_factory, _is_sqlite_fallback
+    eng = get_engine()
+    try:
+        async with eng.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        _is_sqlite_fallback = False
+        get_session_factory()
+        logger.info("Primary PostgreSQL database pool initialized and verified")
+    except Exception as exc:
+        if settings.is_production:
+            raise
+        logger.warning(
+            f"Primary PostgreSQL database unavailable ({exc}). Activating embedded async SQLite database engine..."
+        )
+        from pathlib import Path
+        from sqlalchemy import event
+
+        var_dir = Path(__file__).resolve().parent.parent.parent / "var" / "data"
+        var_dir.mkdir(parents=True, exist_ok=True)
+        db_path = var_dir / "wealthos_dev.db"
+        sqlite_url = f"sqlite+aiosqlite:///{db_path}"
+
+        if engine is not None:
+            await engine.dispose()
+
+        engine = create_async_engine(
+            sqlite_url,
+            echo=settings.DEBUG and settings.LOG_LEVEL == "DEBUG",
+        )
+
+        @event.listens_for(engine.sync_engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
+
+        async_session_factory = async_sessionmaker(
+            bind=engine,
+            class_=AsyncSession,
+            expire_on_commit=False,
+            autocommit=False,
+            autoflush=False,
+        )
+        _is_sqlite_fallback = True
+
+        # Initialize schema tables
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info(f"Resilient SQLite engine active at {db_path} with WAL mode and schema ready")
+
+    if not _is_sqlite_fallback and settings.get_replica_database_url():
         get_read_engine()
         get_read_session_factory()
-    logger.info("Database connection pool(s) initialized")
 
 
 async def close_db() -> None:
@@ -333,8 +384,13 @@ async def check_database_health() -> dict:
             val = result.scalar()
             latency = round((time.perf_counter() - start_time) * 1000, 2)
             if val == 1:
-                status_dict = {"status": "healthy", "latency_ms": latency}
-                if PrimaryReplicaRouter.is_replica_active():
+                status_dict = {
+                    "status": "healthy",
+                    "engine": "sqlite+aiosqlite (local resilient engine)" if _is_sqlite_fallback else "postgresql+asyncpg",
+                    "fallback_active": _is_sqlite_fallback,
+                    "latency_ms": latency,
+                }
+                if not _is_sqlite_fallback and PrimaryReplicaRouter.is_replica_active():
                     try:
                         rep_start = time.perf_counter()
                         rep_eng = get_read_engine()

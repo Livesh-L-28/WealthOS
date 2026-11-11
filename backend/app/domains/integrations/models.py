@@ -6,6 +6,7 @@ from typing import Any
 
 from sqlalchemy import (
     ARRAY,
+    JSON,
     Boolean,
     DateTime,
     ForeignKey,
@@ -111,7 +112,7 @@ class FinancialProvider(Base):
     category: Mapped[str] = mapped_column(String(50), nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="AVAILABLE", nullable=False)
     supported_products: Mapped[list[str]] = mapped_column(
-        ARRAY(String(50)), default=["BANK_ACCOUNTS", "TRANSACTIONS"], nullable=False
+        ARRAY(String(50)).with_variant(JSON, "sqlite"), default=["BANK_ACCOUNTS", "TRANSACTIONS"], nullable=False
     )
     auth_type: Mapped[str] = mapped_column(String(50), default="OAUTH2", nullable=False)
     capabilities: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict, nullable=False)
@@ -142,7 +143,7 @@ class ProviderConsent(Base):
     provider_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("financial_providers.id", ondelete="CASCADE"), nullable=False
     )
-    scopes_granted: Mapped[list[str]] = mapped_column(ARRAY(String(50)), nullable=False)
+    scopes_granted: Mapped[list[str]] = mapped_column(ARRAY(String(50)).with_variant(JSON, "sqlite"), nullable=False)
     purpose: Mapped[str] = mapped_column(Text, nullable=False)
     valid_until: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
