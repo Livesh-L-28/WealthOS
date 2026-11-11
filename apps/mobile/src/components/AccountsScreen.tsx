@@ -125,7 +125,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
             <View style={styles.summaryTop}>
               <Text style={styles.summaryLabel}>CONNECTED INSTITUTION ACCOUNTS</Text>
               <View style={styles.syncBadge}>
-                <Text style={styles.syncBadgeText}>● All 6 Synced</Text>
+                <Text style={styles.syncBadgeText}>● All {accounts.length} Synced</Text>
               </View>
             </View>
 

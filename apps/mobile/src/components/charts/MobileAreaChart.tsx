@@ -14,6 +14,7 @@ import Svg, {
   Stop,
   Line,
   Circle,
+  Rect,
   G,
   Text as SvgText,
 } from 'react-native-svg';
@@ -334,15 +335,38 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
                     strokeWidth={isSelected ? 3 : 2}
                   />
                   {isSelected && (
-                    <Line
-                      x1={pt.x}
-                      y1={paddingTop}
-                      x2={pt.x}
-                      y2={paddingTop + plotH}
-                      stroke="#2563EB"
-                      strokeDasharray="2 2"
-                      strokeWidth={1}
-                    />
+                    <>
+                      <Line
+                        x1={pt.x}
+                        y1={paddingTop}
+                        x2={pt.x}
+                        y2={paddingTop + plotH}
+                        stroke="#2563EB"
+                        strokeDasharray="2 2"
+                        strokeWidth={1.5}
+                      />
+                      {/* Floating Interactive Tooltip Badge */}
+                      <G>
+                        <Rect
+                          x={Math.max(paddingLeft, Math.min(chartWidth - paddingRight - 84, pt.x - 42))}
+                          y={Math.max(4, pt.y - 30)}
+                          width={84}
+                          height={24}
+                          rx={6}
+                          fill="#0F172A"
+                        />
+                        <SvgText
+                          x={Math.max(paddingLeft, Math.min(chartWidth - paddingRight - 84, pt.x - 42)) + 42}
+                          y={Math.max(4, pt.y - 30) + 15}
+                          fill="#FFFFFF"
+                          fontSize="9"
+                          fontWeight="800"
+                          textAnchor="middle"
+                        >
+                          {formatINR(series[i].value)}
+                        </SvgText>
+                      </G>
+                    </>
                   )}
                   {/* Bottom date label */}
                   <SvgText

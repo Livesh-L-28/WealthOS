@@ -2,7 +2,20 @@
  * Currency and Number Formatters for WealthOS Mobile
  */
 
-export function formatINR(val: number): string {
+let privacyModeActive = false;
+
+export function setGlobalPrivacyMode(enabled: boolean): void {
+  privacyModeActive = enabled;
+}
+
+export function isGlobalPrivacyMode(): boolean {
+  return privacyModeActive;
+}
+
+export function formatINR(val: number, options?: { forceShow?: boolean }): string {
+  if (privacyModeActive && !options?.forceShow) {
+    return '₹••••••';
+  }
   const isNegative = val < 0;
   const absVal = Math.abs(val);
   const parts = absVal.toFixed(2).split('.');

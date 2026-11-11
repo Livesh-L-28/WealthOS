@@ -98,6 +98,21 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
   const [backendData, setBackendData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // "What-If" Wealth Compounding Simulator State
+  const [simBoost, setSimBoost] = useState<number>(5000);
+  const [simYears, setSimYears] = useState<number>(10);
+  const [simCagr, setSimCagr] = useState<number>(12);
+
+  // SIP Future Value formula: P * ((1+r)^n - 1)/r * (1+r)
+  const simR = (simCagr / 100) / 12;
+  const simN = simYears * 12;
+  const simFutureValue = Math.round(
+    simBoost * ((Math.pow(1 + simR, simN) - 1) / simR) * (1 + simR)
+  );
+  const simTotalInvested = simBoost * simN;
+  const simWealthGain = simFutureValue - simTotalInvested;
+  const simMultiplier = (simFutureValue / (simTotalInvested || 1)).toFixed(1);
+
   useEffect(() => {
     let isMounted = true;
     async function fetchAnalytics() {
@@ -355,6 +370,117 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
             </View>
           </View>
         ))}
+      </View>
+
+      {/* "What-If" Wealth Compounding Simulator Card */}
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionHeading}>WHAT-IF WEALTH COMPOUNDING SIMULATOR</Text>
+        <Text style={styles.sectionSub}>Long-Term Alpha</Text>
+      </View>
+
+      <View style={styles.simulatorCard}>
+        <View style={styles.simTopRow}>
+          <Text style={styles.simBadgeIcon}>🌱</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.simCardTitle}>Compound Interest Accelerator</Text>
+            <Text style={styles.simCardSubtitle}>
+              Model the exponential power of cutting minor spends into long-term SIP investments.
+            </Text>
+          </View>
+        </View>
+
+        {/* 1. Monthly Boost Chips */}
+        <Text style={styles.simLabel}>MONTHLY SIP CONTRIBUTION BOOST</Text>
+        <View style={styles.simChipsRow}>
+          {[2500, 5000, 10000, 25000].map((amt) => {
+            const isSelected = simBoost === amt;
+            return (
+              <TouchableOpacity
+                key={amt}
+                style={[styles.simChip, isSelected && styles.simChipActive]}
+                onPress={() => setSimBoost(amt)}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.simChipText, isSelected && styles.simChipTextActive]}>
+                  +{formatINR(amt)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* 2. Horizon Chips */}
+        <View style={styles.simDoubleRow}>
+          <View style={{ flex: 1, marginRight: 8 }}>
+            <Text style={styles.simLabel}>HORIZON</Text>
+            <View style={styles.simChipsRowSmall}>
+              {[5, 10, 15, 20].map((yrs) => {
+                const isSelected = simYears === yrs;
+                return (
+                  <TouchableOpacity
+                    key={yrs}
+                    style={[styles.simChipSmall, isSelected && styles.simChipSmallActive]}
+                    onPress={() => setSimYears(yrs)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.simChipTextSmall, isSelected && styles.simChipTextSmallActive]}>
+                      {yrs}Y
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* 3. Expected CAGR */}
+          <View style={{ flex: 1 }}>
+            <Text style={styles.simLabel}>ANNUAL CAGR</Text>
+            <View style={styles.simChipsRowSmall}>
+              {[10, 12, 15].map((rate) => {
+                const isSelected = simCagr === rate;
+                return (
+                  <TouchableOpacity
+                    key={rate}
+                    style={[styles.simChipSmall, isSelected && styles.simChipSmallActive]}
+                    onPress={() => setSimCagr(rate)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.simChipTextSmall, isSelected && styles.simChipTextSmallActive]}>
+                      {rate}%
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+
+        {/* Projected Result Box */}
+        <View style={styles.simResultBox}>
+          <View style={styles.simResultHeader}>
+            <Text style={styles.simResultEyebrow}>PROJECTED WEALTH CORPUS ({simYears} YEARS)</Text>
+            <View style={styles.simMultiplierBadge}>
+              <Text style={styles.simMultiplierText}>{simMultiplier}x Growth</Text>
+            </View>
+          </View>
+          <Text style={styles.simCorpusValue}>{formatINR(simFutureValue)}</Text>
+
+          <View style={styles.simBreakdownRow}>
+            <View style={styles.simBreakdownCol}>
+              <Text style={styles.simBreakdownLabel}>Total Invested</Text>
+              <Text style={styles.simBreakdownVal}>{formatINR(simTotalInvested)}</Text>
+            </View>
+            <View style={styles.simBreakdownDivider} />
+            <View style={styles.simBreakdownCol}>
+              <Text style={styles.simBreakdownLabel}>Pure Compounding Alpha</Text>
+              <Text style={styles.simBreakdownValGreen}>+{formatINR(simWealthGain)}</Text>
+            </View>
+          </View>
+        </View>
+
+        <Text style={styles.simFootnote}>
+          💡 Investing +{formatINR(simBoost)}/month at {simCagr}% CAGR yields a {formatINR(simFutureValue)} reserve in {simYears} years.
+        </Text>
       </View>
 
       <View style={{ height: 40 }} />
@@ -747,6 +873,173 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     color: theme.colors.primary,
+  },
+  simulatorCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 20,
+  },
+  simTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 16,
+  },
+  simBadgeIcon: {
+    fontSize: 24,
+    marginTop: 2,
+  },
+  simCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    marginBottom: 4,
+  },
+  simCardSubtitle: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    lineHeight: 16,
+  },
+  simLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  simChipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  simChip: {
+    flex: 1,
+    paddingVertical: 9,
+    alignItems: 'center',
+    borderRadius: 10,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  simChipActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  simChipText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: theme.colors.textSecondary,
+  },
+  simChipTextActive: {
+    color: theme.colors.textWhite,
+  },
+  simDoubleRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  simChipsRowSmall: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  simChipSmall: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 8,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  simChipSmallActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  simChipTextSmall: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: theme.colors.textSecondary,
+  },
+  simChipTextSmallActive: {
+    color: theme.colors.textWhite,
+  },
+  simResultBox: {
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    marginBottom: 12,
+  },
+  simResultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  simResultEyebrow: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.textSecondary,
+    letterSpacing: 0.5,
+  },
+  simMultiplierBadge: {
+    backgroundColor: '#059669',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  simMultiplierText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  simCorpusValue: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: theme.colors.textPrimary,
+    marginBottom: 12,
+    letterSpacing: -0.5,
+  },
+  simBreakdownRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.borderLight,
+  },
+  simBreakdownCol: {
+    flex: 1,
+  },
+  simBreakdownLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    marginBottom: 2,
+  },
+  simBreakdownVal: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.textPrimary,
+  },
+  simBreakdownDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: theme.colors.borderLight,
+    marginHorizontal: 12,
+  },
+  simBreakdownValGreen: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#10B981',
+  },
+  simFootnote: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+    lineHeight: 16,
+    fontStyle: 'italic',
   },
 });
 

@@ -8,6 +8,7 @@ import { MobileCashFlowBarChart } from './charts/MobileCashFlowBarChart';
 import { MobileDonutAllocationChart } from './charts/MobileDonutAllocationChart';
 import { FinancialHealthCard } from './FinancialHealthCard';
 import { RecentTransactionsCard } from './RecentTransactionsCard';
+import { MorningBriefCard } from './MorningBriefCard';
 
 interface OverviewScreenProps {
   period: DashboardPeriod;
@@ -91,6 +92,18 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
           );
         })}
       </View>
+
+      {/* Daily 30-Second Wealth Intelligence Brief Card */}
+      <MorningBriefCard
+        netWorth={netWorth}
+        monthlyInflows={monthlyInflows}
+        monthlyOutflows={monthlyOutflows}
+        totalAssets={totalAssets}
+        totalLiabilities={totalLiabilities}
+        goals={goals}
+        transactions={transactions}
+        onOpenAnalytics={onOpenAnalytics}
+      />
 
       {/* 1. Hero Net Worth Interactive Bezier Area Chart with Trajectory & Attribution */}
       <MobileAreaChart

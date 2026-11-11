@@ -55,6 +55,75 @@ const INCOME_CATEGORIES = [
 const EXPENSE_PRESETS = [500, 1000, 2500, 5000, 10000, 25000];
 const INCOME_PRESETS = [5000, 15000, 35000, 75000, 150000, 250000];
 
+interface HabitChip {
+  icon: string;
+  label: string;
+  amount: number;
+  category: string;
+}
+
+const QUICK_HABITS: HabitChip[] = [
+  { icon: '☕', label: 'Coffee', amount: 150, category: 'Dining & Restaurants' },
+  { icon: '⛽', label: 'Fuel', amount: 1000, category: 'Transport & Fuel' },
+  { icon: '🛒', label: 'Groceries', amount: 600, category: 'Food & Groceries' },
+  { icon: '🍽️', label: 'Dining Out', amount: 850, category: 'Dining & Restaurants' },
+  { icon: '🚕', label: 'Cab / Ride', amount: 250, category: 'Transport & Fuel' },
+  { icon: '📱', label: 'Mobile / Net', amount: 299, category: 'Utilities & Bills' },
+];
+
+function parseNaturalLanguage(text: string, accounts: BankAccount[]) {
+  const words = text.trim().split(/\s+/);
+  let parsedAmount = '';
+  const remainingWords: string[] = [];
+  let matchedCat = '';
+  let matchedAcc = '';
+  let matchedType: 'DEBIT' | 'CREDIT' = 'DEBIT';
+
+  for (const w of words) {
+    const cleanNum = w.replace(/[₹,]/g, '');
+    if (!parsedAmount && !isNaN(Number(cleanNum)) && Number(cleanNum) > 0) {
+      parsedAmount = cleanNum;
+      continue;
+    }
+    const lower = w.toLowerCase();
+    if (['salary', 'bonus', 'dividend', 'interest', 'stipend'].includes(lower)) {
+      matchedType = 'CREDIT';
+      if (lower === 'salary') matchedCat = 'Corporate Salary';
+      if (lower === 'dividend') matchedCat = 'Investment Dividend Payout';
+      continue;
+    }
+    if (['coffee', 'tea', 'cafe', 'starbucks'].includes(lower)) {
+      matchedCat = 'Dining & Restaurants';
+    } else if (['grocery', 'groceries', 'supermarket', 'blinkit', 'zepto'].includes(lower)) {
+      matchedCat = 'Food & Groceries';
+    } else if (['fuel', 'petrol', 'diesel', 'shell'].includes(lower)) {
+      matchedCat = 'Transport & Fuel';
+    } else if (['cab', 'uber', 'ola', 'auto'].includes(lower)) {
+      matchedCat = 'Transport & Fuel';
+    } else if (['recharge', 'wifi', 'broadband', 'electricity', 'bill'].includes(lower)) {
+      matchedCat = 'Utilities & Bills';
+    }
+
+    const foundAcc = accounts.find(
+      (a) => a.name.toLowerCase().includes(lower) || a.institution.toLowerCase().includes(lower)
+    );
+    if (foundAcc) {
+      matchedAcc = foundAcc.name;
+      continue;
+    }
+
+    remainingWords.push(w);
+  }
+
+  return {
+    amount: parsedAmount,
+    title: remainingWords.join(' '),
+    category: matchedCat,
+    account: matchedAcc,
+    type: matchedType,
+  };
+}
+
 export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   visible,
   onClose,
@@ -65,12 +134,33 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const [type, setType] = useState<'DEBIT' | 'CREDIT'>(initialType);
   const [amount, setAmount] = useState('');
   const [title, setTitle] = useState('');
+  const [quickInput, setQuickInput] = useState('');
   const [category, setCategory] = useState(
     initialType === 'CREDIT' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0]
   );
   const [selectedAccount, setSelectedAccount] = useState(
     accounts[0]?.name || 'Primary Operating Savings'
   );
+
+  const handleApplyHabit = (habit: HabitChip) => {
+    setType('DEBIT');
+    setTitle(habit.label);
+    setAmount(habit.amount.toString());
+    setCategory(habit.category);
+    setQuickInput('');
+  };
+
+  const handleQuickInputChange = (txt: string) => {
+    setQuickInput(txt);
+    if (txt.trim().length > 1) {
+      const parsed = parseNaturalLanguage(txt, accounts);
+      if (parsed.amount) setAmount(parsed.amount);
+      if (parsed.title) setTitle(parsed.title);
+      if (parsed.category) setCategory(parsed.category);
+      if (parsed.account) setSelectedAccount(parsed.account);
+      if (parsed.type) setType(parsed.type);
+    }
+  };
 
   useEffect(() => {
     if (visible) {
@@ -156,6 +246,45 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                   ↓ Income (Inflow)
                 </Text>
               </TouchableOpacity>
+            </View>
+
+            {/* 1-Tap Frictionless Habit Chips (Daily Spends) */}
+            {!isIncome && (
+              <View style={styles.habitsSection}>
+                <Text style={styles.habitsLabel}>⚡ 1-TAP QUICK LOG HABITS</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.habitsScroll}>
+                  {QUICK_HABITS.map((h, i) => (
+                    <TouchableOpacity
+                      key={i}
+                      style={styles.habitChip}
+                      onPress={() => handleApplyHabit(h)}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={styles.habitChipIcon}>{h.icon}</Text>
+                      <Text style={styles.habitChipText}>{h.label}</Text>
+                      <Text style={styles.habitChipAmount}>₹{h.amount}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Natural Language Quick Input */}
+            <View style={styles.nlBox}>
+              <View style={styles.nlLabelRow}>
+                <Text style={styles.nlLabel}>SMART ONE-LINER QUICK PARSER</Text>
+                <View style={styles.nlAiBadge}>
+                  <Text style={styles.nlAiBadgeText}>Instant</Text>
+                </View>
+              </View>
+              <TextInput
+                style={styles.nlInput}
+                placeholder="e.g. 'Coffee 150 Cash', 'Dinner 850 HDFC', 'Salary 150000'"
+                placeholderTextColor="#94A3B8"
+                value={quickInput}
+                onChangeText={handleQuickInputChange}
+                autoCapitalize="sentences"
+              />
             </View>
 
             {/* Amount Input */}
@@ -560,5 +689,86 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     color: theme.colors.textWhite,
+  },
+  habitsSection: {
+    marginBottom: 14,
+  },
+  habitsLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  habitsScroll: {
+    flexDirection: 'row',
+  },
+  habitChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+  habitChipIcon: {
+    fontSize: 13,
+  },
+  habitChipText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  habitChipAmount: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#087A50',
+  },
+  nlBox: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 16,
+  },
+  nlLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  nlLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#64748B',
+    letterSpacing: 0.5,
+  },
+  nlAiBadge: {
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  nlAiBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#2563EB',
+  },
+  nlInput: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 12,
+    color: '#0F172A',
   },
 });

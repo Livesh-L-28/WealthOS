@@ -20,6 +20,7 @@ export const STORAGE_KEYS = {
   COPILOT_MESSAGES: '@wealthos/copilot_messages',
   WORKSPACE: '@wealthos/workspace',
   CUSTOM_SERVER_URL: '@wealthos/custom_server_url',
+  IS_PRIVACY_MODE: '@wealthos/is_privacy_mode',
 } as const;
 
 export interface StoredLedgerState {
@@ -214,6 +215,23 @@ export const localStore = {
       await AsyncStorage.setItem(STORAGE_KEYS.CUSTOM_SERVER_URL, url);
     } catch (err) {
       console.warn('Failed to save custom server url:', err);
+    }
+  },
+
+  async getPrivacyMode(): Promise<boolean> {
+    try {
+      const val = await AsyncStorage.getItem(STORAGE_KEYS.IS_PRIVACY_MODE);
+      return val === 'true';
+    } catch {
+      return false;
+    }
+  },
+
+  async setPrivacyMode(enabled: boolean): Promise<void> {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEYS.IS_PRIVACY_MODE, enabled ? 'true' : 'false');
+    } catch (err) {
+      console.warn('Failed to save privacy mode:', err);
     }
   },
 };

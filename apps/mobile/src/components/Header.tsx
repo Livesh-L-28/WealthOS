@@ -12,6 +12,8 @@ interface HeaderProps {
   onOpenSearch?: () => void;
   activeWorkspace?: string;
   isSyncing?: boolean;
+  isPrivacyMode?: boolean;
+  onTogglePrivacy?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -21,6 +23,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   activeWorkspace = 'Family Office',
   isSyncing = false,
+  isPrivacyMode = false,
+  onTogglePrivacy,
 }) => {
   const { theme, isDark, toggleTheme } = useTheme();
 
@@ -89,6 +93,22 @@ export const Header: React.FC<HeaderProps> = ({
             accessibilityLabel="Open Global Search"
           >
             <Text style={styles.actionIconSmall}>🔍</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Privacy Stealth Mode Eye Toggle */}
+        {onTogglePrivacy && (
+          <TouchableOpacity
+            style={[
+              styles.iconButton,
+              isPrivacyMode && { backgroundColor: theme.colors.primaryLightSolid, borderColor: theme.colors.primary },
+              { backgroundColor: isPrivacyMode ? theme.colors.primaryLightSolid : theme.colors.cardSubtle, borderColor: isPrivacyMode ? theme.colors.primary : theme.colors.border },
+            ]}
+            onPress={onTogglePrivacy}
+            activeOpacity={0.75}
+            accessibilityLabel={isPrivacyMode ? 'Show Balances' : 'Hide Balances (Stealth Mode)'}
+          >
+            <Text style={styles.actionIconSmall}>{isPrivacyMode ? '🙈' : '👁️'}</Text>
           </TouchableOpacity>
         )}
 

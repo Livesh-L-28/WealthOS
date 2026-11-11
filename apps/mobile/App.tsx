@@ -42,6 +42,7 @@ import {
   INITIAL_DOCUMENTS,
 } from './src/data';
 import { localStore } from './src/storage/localStore';
+import { setGlobalPrivacyMode } from './src/formatters';
 
 import { Header } from './src/components/Header';
 import { BottomNav } from './src/components/BottomNav';
@@ -313,6 +314,27 @@ function WealthOSContent() {
   };
 
   // Modals & Drawer
+  const [isPrivacyMode, setIsPrivacyMode] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    localStore.getPrivacyMode().then((saved) => {
+      if (isMounted) {
+        setIsPrivacyMode(saved);
+        setGlobalPrivacyMode(saved);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleTogglePrivacy = () => {
+    const next = !isPrivacyMode;
+    setIsPrivacyMode(next);
+    setGlobalPrivacyMode(next);
+    localStore.setPrivacyMode(next);
+    showNotification(next ? '🙈 Stealth Mode Enabled (Balances Masked)' : '👁️ Stealth Mode Disabled (Balances Visible)');
+  };
+
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -827,6 +849,8 @@ function WealthOSContent() {
         onOpenSearch={() => setIsSearchModalOpen(true)}
         activeWorkspace={activeWorkspace}
         isSyncing={refreshing}
+        isPrivacyMode={isPrivacyMode}
+        onTogglePrivacy={handleTogglePrivacy}
       />
 
       {/* Floating Notification Toast */}
