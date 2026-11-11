@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { useTheme } from '../theme';
 import { DividendItem } from '../types';
-import { INITIAL_DIVIDENDS } from '../data';
 import { formatINR } from '../formatters';
 import { investmentsService } from '../api/domainServices';
 
@@ -23,7 +22,7 @@ export const DividendsScreen: React.FC<DividendsScreenProps> = ({
   onShowToast,
 }) => {
   const { theme } = useTheme();
-  const [dividends, setDividends] = useState<DividendItem[]>(INITIAL_DIVIDENDS);
+  const [dividends, setDividends] = useState<DividendItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -121,7 +120,18 @@ export const DividendsScreen: React.FC<DividendsScreenProps> = ({
           DECLARED & SETTLED PAYOUTS
         </Text>
 
-        {dividends.map((item) => {
+        {dividends.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingVertical: 40, paddingHorizontal: 20 }}>
+            <Text style={{ fontSize: 36, marginBottom: 12 }}>📈</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 6 }}>
+              No Dividend Records Found
+            </Text>
+            <Text style={{ fontSize: 13, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 }}>
+              When dividend announcements and payouts occur for your equity or mutual fund holdings, they will be recognized and logged here.
+            </Text>
+          </View>
+        ) : (
+          dividends.map((item) => {
           const isSettled = item.status === 'RECEIVED';
           return (
             <View
@@ -183,7 +193,7 @@ export const DividendsScreen: React.FC<DividendsScreenProps> = ({
               </View>
             </View>
           );
-        })}
+        }))}
       </View>
     </ScrollView>
   );

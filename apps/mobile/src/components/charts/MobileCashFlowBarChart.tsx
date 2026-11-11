@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,6 +10,7 @@ import {
 import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
 import { theme } from '../../theme';
 import { formatINR } from '../../formatters';
+import { Transaction } from '../../types';
 
 export interface MonthlyCashFlowData {
   month: string;
@@ -19,33 +20,94 @@ export interface MonthlyCashFlowData {
   net: number;
 }
 
-const CASH_FLOW_HISTORY: MonthlyCashFlowData[] = [
-  { month: 'Aug', fullLabel: 'August 2026', inflow: 195000, outflow: 162000, net: 33000 },
-  { month: 'Sep', fullLabel: 'September 2026', inflow: 202000, outflow: 158000, net: 44000 },
-  { month: 'Oct', fullLabel: 'October 2026', inflow: 198000, outflow: 168200, net: 29800 },
-  { month: 'Nov', fullLabel: 'November 2026 (MTD)', inflow: 212000, outflow: 151550, net: 60450 },
-];
-
 function formatShortK(val: number): string {
   if (val >= 100000) return `₹${(val / 100000).toFixed(1)}L`;
   if (val >= 1000) return `₹${(val / 1000).toFixed(0)}k`;
-  return `₹${val}`;
+  return `₹${val.toFixed(0)}`;
 }
 
 interface MobileCashFlowBarChartProps {
+  monthlyInflows?: number;
+  monthlyOutflows?: number;
+  transactions?: Transaction[];
   onOpenAnalytics?: () => void;
 }
 
 export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
+  monthlyInflows = 0,
+  monthlyOutflows = 0,
+  transactions = [],
   onOpenAnalytics,
 }) => {
-  const [selectedIdx, setSelectedIdx] = useState<number>(CASH_FLOW_HISTORY.length - 1);
+  const hasData = monthlyInflows > 0 || monthlyOutflows > 0 || transactions.length > 0;
+
+  const cashFlowHistory: MonthlyCashFlowData[] = useMemo(() => {
+    if (!hasData) {
+      return [];
+    }
+
+    // Group actual transactions by month if available
+    const monthsMap: Record<string, { inflow: number; outflow: number }> = {};
+    if (transactions.length > 0) {
+      transactions.forEach((tx) => {
+        const d = new Date(tx.date);
+        const mKey = isNaN(d.getTime())
+          ? 'Current'
+          : d.toLocaleString('en-US', { month: 'short' });
+        if (!monthsMap[mKey]) monthsMap[mKey] = { inflow: 0, outflow: 0 };
+        if (tx.type === 'CREDIT') {
+          monthsMap[mKey].inflow += tx.amount;
+        } else {
+          monthsMap[mKey].outflow += tx.amount;
+        }
+      });
+    }
+
+    const monthKeys = Object.keys(monthsMap);
+    if (monthKeys.length > 0) {
+      return monthKeys.map((m) => {
+        const inf = monthsMap[m].inflow;
+        const out = monthsMap[m].outflow;
+        return {
+          month: m,
+          fullLabel: `${m} 2026`,
+          inflow: inf,
+          outflow: out,
+          net: inf - out,
+        };
+      });
+    }
+
+    // Single active month from props
+    return [
+      {
+        month: 'Current',
+        fullLabel: 'Current Month',
+        inflow: monthlyInflows,
+        outflow: monthlyOutflows,
+        net: monthlyInflows - monthlyOutflows,
+      },
+    ];
+  }, [hasData, transactions, monthlyInflows, monthlyOutflows]);
+
+  const [selectedIdx, setSelectedIdx] = useState<number>(
+    Math.max(0, cashFlowHistory.length - 1)
+  );
   const [containerWidth, setContainerWidth] = useState<number>(
     Math.max(280, Dimensions.get('window').width - 64)
   );
 
-  const activeMonth = CASH_FLOW_HISTORY[selectedIdx];
-  const savingsRate = ((activeMonth.net / activeMonth.inflow) * 100).toFixed(1);
+  const activeMonth = cashFlowHistory[selectedIdx] || {
+    month: 'Current',
+    fullLabel: 'Current Month',
+    inflow: 0,
+    outflow: 0,
+    net: 0,
+  };
+  const savingsRate =
+    activeMonth.inflow > 0
+      ? ((activeMonth.net / activeMonth.inflow) * 100).toFixed(1)
+      : '0.0';
 
   const onLayout = (e: LayoutChangeEvent) => {
     const cardContentW = e.nativeEvent.layout.width - 32;
@@ -63,24 +125,20 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
   const plotW = Math.max(10, containerWidth - paddingLeft - paddingRight);
   const plotH = chartHeight - paddingTop - paddingBottom;
 
-  const maxVal = 240000;
-  const yTicks = [200000, 100000, 0];
+  const allAmounts = cashFlowHistory.flatMap((c) => [c.inflow, c.outflow]);
+  const maxVal = Math.max(1000, ...allAmounts) * 1.15;
 
-  const getY = (val: number) =>
-    paddingTop + plotH - (val / maxVal) * plotH;
-
-  const numGroups = CASH_FLOW_HISTORY.length;
-  const groupSlot = plotW / numGroups;
-  const barW = Math.min(20, groupSlot * 0.34);
-  const barGap = 4;
+  const getY = (v: number) => paddingTop + plotH - (v / maxVal) * plotH;
+  const barW = Math.min(18, (plotW / Math.max(1, cashFlowHistory.length)) * 0.28);
+  const groupSpacing = plotW / Math.max(1, cashFlowHistory.length);
 
   return (
     <View style={styles.card} onLayout={onLayout}>
       {/* Header */}
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.title}>INFLOW VS OUTFLOW CASH FLOW</Text>
-          <Text style={styles.subtitle}>4-Month Historical Operating Surplus</Text>
+          <Text style={styles.title}>CASH FLOW INFLOW VS OUTFLOW</Text>
+          <Text style={styles.subtitle}>Net Monthly Savings Trajectory</Text>
         </View>
 
         {onOpenAnalytics && (
@@ -88,293 +146,278 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
             style={styles.analyticsBtn}
             onPress={onOpenAnalytics}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Open Cash Flow Analytics"
           >
             <Text style={styles.analyticsBtnText}>Analytics ›</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Selected Month Key Metrics */}
-      <View style={styles.kpiRow}>
-        <View style={styles.kpiBox}>
-          <Text style={styles.kpiLabel}>{activeMonth.fullLabel}</Text>
-          <View style={styles.inflowOutflowRow}>
-            <Text style={styles.inflowText}>+{formatINR(activeMonth.inflow)}</Text>
-            <Text style={styles.vsText}>vs</Text>
-            <Text style={styles.outflowText}>-{formatINR(activeMonth.outflow)}</Text>
+      {!hasData || cashFlowHistory.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyEmoji}>📊</Text>
+          <Text style={styles.emptyTitle}>No Cash Flow Data Yet</Text>
+          <Text style={styles.emptySubtitle}>
+            Monthly cash inflows and expenditure burn will be automatically plotted here as you record income and expenses.
+          </Text>
+        </View>
+      ) : (
+        <>
+          {/* Active Month KPI Summary */}
+          <View style={styles.kpiRow}>
+            <View>
+              <Text style={styles.kpiMonthLabel}>{activeMonth.fullLabel}</Text>
+              <View style={styles.inOutRow}>
+                <View style={styles.metricItem}>
+                  <View style={[styles.dot, { backgroundColor: '#16A36A' }]} />
+                  <Text style={styles.metricText}>
+                    In: <Text style={styles.valGreen}>{formatINR(activeMonth.inflow)}</Text>
+                  </Text>
+                </View>
+                <View style={styles.metricItem}>
+                  <View style={[styles.dot, { backgroundColor: '#DC2626' }]} />
+                  <Text style={styles.metricText}>
+                    Out: <Text style={styles.valRed}>{formatINR(activeMonth.outflow)}</Text>
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.netPillBox}>
+              <Text style={styles.netLabel}>NET SURPLUS</Text>
+              <Text
+                style={[
+                  styles.netVal,
+                  activeMonth.net >= 0 ? styles.valGreen : styles.valRed,
+                ]}
+              >
+                {activeMonth.net >= 0 ? '+' : ''}
+                {formatINR(activeMonth.net)}
+              </Text>
+              <Text style={styles.savingsRateText}>{savingsRate}% saved</Text>
+            </View>
           </View>
-        </View>
 
-        <View style={styles.surplusBadge}>
-          <Text style={styles.surplusLabel}>Net Cash Surplus</Text>
-          <Text style={styles.surplusVal}>+{formatINR(activeMonth.net)}</Text>
-          <Text style={styles.savingsRateText}>{savingsRate}% saved</Text>
-        </View>
-      </View>
-
-      {/* Legend */}
-      <View style={styles.legendRow}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#16A36A' }]} />
-          <Text style={styles.legendText}>Inflows (Salary/Yield)</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: '#6366F1' }]} />
-          <Text style={styles.legendText}>Outflows (Living/EMIs)</Text>
-        </View>
-      </View>
-
-      {/* SVG Bar Chart */}
-      <View style={styles.svgWrap}>
-        <Svg width={containerWidth} height={chartHeight}>
-          {/* Horizontal Gridlines */}
-          {yTicks.map((val, idx) => {
-            const y = getY(val);
-            return (
-              <React.Fragment key={idx}>
-                <Line
-                  x1={paddingLeft}
-                  y1={y}
-                  x2={containerWidth - paddingRight}
-                  y2={y}
-                  stroke="#E7ECE8"
-                  strokeWidth={1}
-                  strokeDasharray="4 4"
-                />
-                <SvgText
-                  x={paddingLeft - 6}
-                  y={y + 3.5}
-                  fill="#758078"
-                  fontSize={9}
-                  fontWeight="600"
-                  textAnchor="end"
-                >
-                  {formatShortK(val)}
-                </SvgText>
-              </React.Fragment>
-            );
-          })}
-
-          {/* Grouped Bars */}
-          {CASH_FLOW_HISTORY.map((item, idx) => {
-            const groupCenterX = paddingLeft + (idx + 0.5) * groupSlot;
-            const inflowX = groupCenterX - barW - barGap / 2;
-            const outflowX = groupCenterX + barGap / 2;
-
-            const inflowY = getY(item.inflow);
-            const inflowH = Math.max(3, getY(0) - inflowY);
-
-            const outflowY = getY(item.outflow);
-            const outflowH = Math.max(3, getY(0) - outflowY);
-
-            const isSelected = selectedIdx === idx;
-
-            return (
-              <React.Fragment key={idx}>
-                {/* Highlight background column for selected month */}
-                {isSelected && (
-                  <Rect
-                    x={groupCenterX - groupSlot / 2 + 2}
-                    y={paddingTop}
-                    width={groupSlot - 4}
-                    height={plotH}
-                    fill="rgba(22, 163, 106, 0.08)"
-                    rx={8}
-                  />
-                )}
-
-                {/* Inflow Bar (Emerald) */}
-                <Rect
-                  x={inflowX}
-                  y={inflowY}
-                  width={barW}
-                  height={inflowH}
-                  fill="#16A36A"
-                  rx={4}
-                  opacity={isSelected ? 1 : 0.8}
-                />
-
-                {/* Outflow Bar (Indigo) */}
-                <Rect
-                  x={outflowX}
-                  y={outflowY}
-                  width={barW}
-                  height={outflowH}
-                  fill="#6366F1"
-                  rx={4}
-                  opacity={isSelected ? 1 : 0.8}
-                />
-
-                {/* Month Label */}
-                <SvgText
-                  x={groupCenterX}
-                  y={chartHeight - 6}
-                  fill={isSelected ? '#16A36A' : '#758078'}
-                  fontSize={10}
-                  fontWeight={isSelected ? '800' : '600'}
-                  textAnchor="middle"
-                >
-                  {item.month}
-                </SvgText>
-              </React.Fragment>
-            );
-          })}
-        </Svg>
-
-        {/* Touch Overlay to Select Month */}
-        <View style={[styles.touchRow, { left: paddingLeft, width: plotW }]}>
-          {CASH_FLOW_HISTORY.map((_, i) => (
-            <TouchableOpacity
-              key={i}
-              style={styles.touchCol}
-              activeOpacity={0.6}
-              onPress={() => setSelectedIdx(i)}
+          {/* Svg Dual Bar Chart */}
+          <Svg width={containerWidth} height={chartHeight}>
+            {/* Grid baseline */}
+            <Line
+              x1={paddingLeft}
+              y1={paddingTop + plotH}
+              x2={containerWidth - paddingRight}
+              y2={paddingTop + plotH}
+              stroke="#E2E8F0"
+              strokeWidth={1}
             />
-          ))}
-        </View>
-      </View>
+
+            {/* Grid upper dashed line */}
+            <Line
+              x1={paddingLeft}
+              y1={getY(maxVal * 0.5)}
+              x2={containerWidth - paddingRight}
+              y2={getY(maxVal * 0.5)}
+              stroke="#E2E8F0"
+              strokeDasharray="3 3"
+              strokeWidth={1}
+            />
+            <SvgText
+              x={paddingLeft - 6}
+              y={getY(maxVal * 0.5) + 3}
+              fill="#94A3B8"
+              fontSize="9"
+              fontWeight="600"
+              textAnchor="end"
+            >
+              {formatShortK(maxVal * 0.5)}
+            </SvgText>
+
+            {cashFlowHistory.map((item, idx) => {
+              const groupCenterX = paddingLeft + (idx + 0.5) * groupSpacing;
+              const inX = groupCenterX - barW - 2;
+              const outX = groupCenterX + 2;
+
+              const inY = getY(item.inflow);
+              const inH = Math.max(2, paddingTop + plotH - inY);
+
+              const outY = getY(item.outflow);
+              const outH = Math.max(2, paddingTop + plotH - outY);
+
+              const isSelected = selectedIdx === idx;
+
+              return (
+                <React.Fragment key={idx}>
+                  {/* Inflow Bar */}
+                  <Rect
+                    x={inX}
+                    y={inY}
+                    width={barW}
+                    height={inH}
+                    rx={3}
+                    fill="#16A36A"
+                    opacity={isSelected ? 1 : 0.65}
+                  />
+
+                  {/* Outflow Bar */}
+                  <Rect
+                    x={outX}
+                    y={outY}
+                    width={barW}
+                    height={outH}
+                    rx={3}
+                    fill="#DC2626"
+                    opacity={isSelected ? 1 : 0.65}
+                  />
+
+                  {/* Month Label */}
+                  <SvgText
+                    x={groupCenterX}
+                    y={chartHeight - 6}
+                    fill={isSelected ? '#0F172A' : '#64748B'}
+                    fontSize="9.5"
+                    fontWeight={isSelected ? '800' : '600'}
+                    textAnchor="middle"
+                  >
+                    {item.month}
+                  </SvgText>
+                </React.Fragment>
+              );
+            })}
+          </Svg>
+        </>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 16,
     marginHorizontal: 16,
-    marginTop: 12,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(22, 163, 106, 0.25)',
-    shadowColor: theme.colors.textPrimary,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 2,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
   },
   title: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
+    color: '#64748B',
   },
   subtitle: {
     fontSize: 10,
-    color: theme.colors.textTertiary,
-    marginTop: 1,
+    color: '#94A3B8',
+    fontWeight: '500',
+    marginTop: 2,
   },
   analyticsBtn: {
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   analyticsBtnText: {
-    fontSize: 10,
+    fontSize: 10.5,
     fontWeight: '700',
-    color: theme.colors.primaryDark,
+    color: '#2563EB',
   },
   kpiRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: theme.colors.canvas,
-    borderRadius: 12,
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    backgroundColor: '#F8FAFC',
     padding: 10,
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderRadius: 12,
   },
-  kpiBox: {
-    flex: 1,
-  },
-  kpiLabel: {
+  kpiMonthLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: theme.colors.textPrimary,
-  },
-  inflowOutflowRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginTop: 2,
-  },
-  inflowText: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    color: '#087A50',
-    fontVariant: ['tabular-nums'],
-  },
-  vsText: {
-    fontSize: 10,
-    color: theme.colors.textTertiary,
-  },
-  outflowText: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    color: '#4F46E5',
-    fontVariant: ['tabular-nums'],
-  },
-  surplusBadge: {
-    alignItems: 'flex-end',
-  },
-  surplusLabel: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: theme.colors.textTertiary,
-  },
-  surplusVal: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#087A50',
-    fontVariant: ['tabular-nums'],
-  },
-  savingsRateText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    color: '#16A36A',
-  },
-  legendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginTop: 10,
+    color: '#0F172A',
     marginBottom: 4,
   },
-  legendItem: {
+  inOutRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  metricItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
   },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
-  legendText: {
+  metricText: {
     fontSize: 10,
+    color: '#64748B',
     fontWeight: '600',
-    color: theme.colors.textSecondary,
   },
-  svgWrap: {
-    position: 'relative',
-    marginTop: 6,
+  valGreen: {
+    color: '#16A36A',
+    fontWeight: '800',
   },
-  touchRow: {
-    position: 'absolute',
-    top: 0,
-    bottom: 20,
-    flexDirection: 'row',
+  valRed: {
+    color: '#DC2626',
+    fontWeight: '800',
   },
-  touchCol: {
-    flex: 1,
-    height: '100%',
+  netPillBox: {
+    alignItems: 'flex-end',
+  },
+  netLabel: {
+    fontSize: 8,
+    fontWeight: '800',
+    color: '#94A3B8',
+    letterSpacing: 0.4,
+  },
+  netVal: {
+    fontSize: 12.5,
+    fontWeight: '900',
+    marginTop: 1,
+  },
+  savingsRateText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#16A36A',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+  },
+  emptyEmoji: {
+    fontSize: 28,
+    marginBottom: 6,
+  },
+  emptyTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  emptySubtitle: {
+    fontSize: 10,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 14,
+    maxWidth: 280,
   },
 });

@@ -12,165 +12,6 @@ import { theme } from '../theme';
 import { BudgetEnvelope, FinancialGoal, Transaction } from '../types';
 import { formatINR } from '../formatters';
 
-interface EnvelopeExpenditure {
-  id: string;
-  date: string;
-  title: string;
-  account: string;
-  amount: number;
-  ref: string;
-  status: 'SETTLED' | 'RECONCILED';
-}
-
-const ENVELOPE_EXPENDITURES_MAP: Record<string, EnvelopeExpenditure[]> = {
-  'Housing & EMI': [
-    {
-      id: 'h-1',
-      date: '02 Nov 2026',
-      title: 'DLF CyberCity Lease Rent',
-      account: 'HDFC Corporate Salary •••• 4921',
-      amount: 42500,
-      ref: 'JE-2026-1102-003',
-      status: 'SETTLED',
-    },
-    {
-      id: 'h-2',
-      date: '01 Nov 2026',
-      title: 'Society Maintenance & Estate Dues',
-      account: 'HDFC Corporate Salary •••• 4921',
-      amount: 2500,
-      ref: 'JE-2026-1101-018',
-      status: 'SETTLED',
-    },
-  ],
-  'Food & Groceries': [
-    {
-      id: 'f-1',
-      date: '06 Nov 2026',
-      title: "Nature's Basket Organic Groceries",
-      account: 'Axis Bank Magnus Card •••• 1004',
-      amount: 8450,
-      ref: 'JE-2026-1106-009',
-      status: 'SETTLED',
-    },
-    {
-      id: 'f-2',
-      date: '04 Nov 2026',
-      title: 'Whole Foods Fresh Produce & Dairy',
-      account: 'Axis Bank Magnus Card •••• 1004',
-      amount: 6750,
-      ref: 'JE-2026-1104-012',
-      status: 'SETTLED',
-    },
-    {
-      id: 'f-3',
-      date: '01 Nov 2026',
-      title: 'Monthly Pantry & Provisions Order',
-      account: 'HDFC Corporate Salary •••• 4921',
-      amount: 7200,
-      ref: 'JE-2026-1101-015',
-      status: 'SETTLED',
-    },
-  ],
-  'Transportation & Fuel': [
-    {
-      id: 't-1',
-      date: '05 Nov 2026',
-      title: 'Shell Petrol Station Premium V-Power',
-      account: 'Axis Bank Magnus Card •••• 1004',
-      amount: 5400,
-      ref: 'JE-2026-1105-021',
-      status: 'SETTLED',
-    },
-    {
-      id: 't-2',
-      date: '03 Nov 2026',
-      title: 'EV Fast Charging Station Supercharge',
-      account: 'Axis Bank Magnus Card •••• 1004',
-      amount: 4800,
-      ref: 'JE-2026-1103-024',
-      status: 'SETTLED',
-    },
-    {
-      id: 't-3',
-      date: '01 Nov 2026',
-      title: 'National Highway Fastag Auto-Reload',
-      account: 'HDFC Corporate Salary •••• 4921',
-      amount: 1950,
-      ref: 'JE-2026-1101-027',
-      status: 'SETTLED',
-    },
-  ],
-  'Utilities & Telecom': [
-    {
-      id: 'u-1',
-      date: '04 Nov 2026',
-      title: 'Tata Power Electricity Utility Bill',
-      account: 'HDFC Corporate Salary •••• 4921',
-      amount: 5100,
-      ref: 'JE-2026-1104-031',
-      status: 'SETTLED',
-    },
-    {
-      id: 'u-2',
-      date: '02 Nov 2026',
-      title: 'Airtel Fiber Gigabit Broadband',
-      account: 'HDFC Corporate Salary •••• 4921',
-      amount: 1899,
-      ref: 'JE-2026-1102-034',
-      status: 'SETTLED',
-    },
-    {
-      id: 'u-3',
-      date: '01 Nov 2026',
-      title: 'Mahanagar Gas Piped Cooking Gas',
-      account: 'HDFC Corporate Salary •••• 4921',
-      amount: 1201,
-      ref: 'JE-2026-1101-036',
-      status: 'SETTLED',
-    },
-  ],
-  'Discretionary & Dining': [
-    {
-      id: 'd-1',
-      date: '06 Nov 2026',
-      title: 'The Table Fine Dining & Bistro',
-      account: 'Axis Bank Magnus Card •••• 1004',
-      amount: 9600,
-      ref: 'JE-2026-1106-041',
-      status: 'SETTLED',
-    },
-    {
-      id: 'd-2',
-      date: '04 Nov 2026',
-      title: 'Blue Tokai Specialty Coffee Roasters',
-      account: 'Axis Bank Magnus Card •••• 1004',
-      amount: 2800,
-      ref: 'JE-2026-1104-045',
-      status: 'SETTLED',
-    },
-    {
-      id: 'd-3',
-      date: '02 Nov 2026',
-      title: 'Weekend Artisanal Brunch & Bakery',
-      account: 'Axis Bank Magnus Card •••• 1004',
-      amount: 6400,
-      ref: 'JE-2026-1102-048',
-      status: 'SETTLED',
-    },
-  ],
-  'Investments & SIPs': [
-    {
-      id: 'i-1',
-      date: '01 Nov 2026',
-      title: 'Monthly SIP - Parag Parikh Flexi Cap',
-      account: 'ICICI Privileged Savings •••• 9921',
-      amount: 50000,
-      ref: 'JE-2026-1101-004',
-      status: 'RECONCILED',
-    },
-  ],
-};
 
 interface BudgetsScreenProps {
   budgets: BudgetEnvelope[];
@@ -709,53 +550,74 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
 
               {/* Itemized Expenditures List Section */}
               <View style={styles.envelopeExpendituresSection}>
-                <View style={styles.envelopeExpendituresHeaderRow}>
-                  <Text style={styles.envelopeExpendituresTitle}>
-                    ITEMIZED EXPENDITURES ({ENVELOPE_EXPENDITURES_MAP[selectedEnv.category]?.length || 0})
-                  </Text>
-                  <Text style={styles.envelopeExpendituresTotal}>
-                    Total: {formatINR(selectedEnv.spent)}
-                  </Text>
-                </View>
-                <Text style={styles.envelopeExpendituresSub}>
-                  General ledger journal entries posted to this envelope
-                </Text>
-
-                <ScrollView
-                  style={styles.envelopeExpScroll}
-                  showsVerticalScrollIndicator={false}
-                >
-                  {(ENVELOPE_EXPENDITURES_MAP[selectedEnv.category] || []).map((item) => (
-                    <View key={item.id} style={styles.envelopeExpCard}>
-                      <View style={styles.envelopeExpTop}>
-                        <View style={styles.envelopeExpDateBadge}>
-                          <Text style={styles.envelopeExpDateText}>📅 {item.date}</Text>
-                        </View>
-                        <View style={styles.envelopeExpStatusPill}>
-                          <Text style={styles.envelopeExpStatusText}>● {item.status}</Text>
-                        </View>
-                      </View>
-
-                      <View style={styles.envelopeExpMain}>
-                        <Text style={styles.envelopeExpTitle} numberOfLines={1}>
-                          {item.title}
+                {(() => {
+                  const matchingTxs = (transactions || []).filter(
+                    (t) => t.category === selectedEnv.category && t.type === 'DEBIT'
+                  );
+                  return (
+                    <>
+                      <View style={styles.envelopeExpendituresHeaderRow}>
+                        <Text style={styles.envelopeExpendituresTitle}>
+                          ITEMIZED EXPENDITURES ({matchingTxs.length})
                         </Text>
-                        <Text style={styles.envelopeExpAmount}>
-                          -{formatINR(item.amount)}
+                        <Text style={styles.envelopeExpendituresTotal}>
+                          Total: {formatINR(selectedEnv.spent)}
                         </Text>
                       </View>
+                      <Text style={styles.envelopeExpendituresSub}>
+                        General ledger journal entries posted to this envelope
+                      </Text>
 
-                      <View style={styles.envelopeExpFoot}>
-                        <Text style={styles.envelopeExpAccount}>
-                          🏦 {item.account}
-                        </Text>
-                        <Text style={styles.envelopeExpRef}>
-                          {item.ref}
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
-                </ScrollView>
+                      <ScrollView
+                        style={styles.envelopeExpScroll}
+                        showsVerticalScrollIndicator={false}
+                      >
+                        {matchingTxs.length === 0 ? (
+                          <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+                            <Text style={{ fontSize: 28, marginBottom: 8 }}>🧾</Text>
+                            <Text style={{ fontSize: 14, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 4 }}>
+                              No Expenditures Recorded
+                            </Text>
+                            <Text style={{ fontSize: 12, color: theme.colors.textSecondary, textAlign: 'center', paddingHorizontal: 16 }}>
+                              Outflows categorized under "{selectedEnv.category}" will automatically reconcile and appear here.
+                            </Text>
+                          </View>
+                        ) : (
+                          matchingTxs.map((item) => (
+                            <View key={item.id} style={styles.envelopeExpCard}>
+                              <View style={styles.envelopeExpTop}>
+                                <View style={styles.envelopeExpDateBadge}>
+                                  <Text style={styles.envelopeExpDateText}>📅 {item.date}</Text>
+                                </View>
+                                <View style={styles.envelopeExpStatusPill}>
+                                  <Text style={styles.envelopeExpStatusText}>● {item.status || 'SETTLED'}</Text>
+                                </View>
+                              </View>
+
+                              <View style={styles.envelopeExpMain}>
+                                <Text style={styles.envelopeExpTitle} numberOfLines={1}>
+                                  {item.title}
+                                </Text>
+                                <Text style={styles.envelopeExpAmount}>
+                                  -{formatINR(item.amount)}
+                                </Text>
+                              </View>
+
+                              <View style={styles.envelopeExpFoot}>
+                                <Text style={styles.envelopeExpAccount}>
+                                  🏦 {item.accountName || 'Ledger Account'}
+                                </Text>
+                                <Text style={styles.envelopeExpRef}>
+                                  {item.journalEntryId || item.id}
+                                </Text>
+                              </View>
+                            </View>
+                          ))
+                        )}
+                      </ScrollView>
+                    </>
+                  );
+                })()}
               </View>
 
               {/* Action Buttons */}

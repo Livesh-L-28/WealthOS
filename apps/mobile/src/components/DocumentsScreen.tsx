@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { theme } from '../theme';
-import { INITIAL_DOCUMENTS } from '../data';
 import { DocumentItem } from '../types';
 import { documentsService } from '../api/domainServices';
 
@@ -25,7 +24,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({
   onShowToast,
   documents: propDocuments,
 }) => {
-  const [documents, setDocuments] = useState<DocumentItem[]>(propDocuments || INITIAL_DOCUMENTS);
+  const [documents, setDocuments] = useState<DocumentItem[]>(propDocuments || []);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -114,7 +113,25 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({
       </View>
 
       <View style={styles.docsList}>
-        {documents.map((doc) => {
+        {documents.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingVertical: 40, paddingHorizontal: 20 }}>
+            <Text style={{ fontSize: 36, marginBottom: 12 }}>📁</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 6 }}>
+              Document Vault Empty
+            </Text>
+            <Text style={{ fontSize: 13, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: 16 }}>
+              Upload tax invoices, CAMS CAS statements, or bank receipts. The WealthOS local engine parses entries with cryptographic validation.
+            </Text>
+            <TouchableOpacity
+              style={{ backgroundColor: theme.colors.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 }}
+              onPress={onUploadDocument}
+              activeOpacity={0.8}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>+ Upload First Document</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          documents.map((doc) => {
           return (
             <TouchableOpacity
               key={doc.id}
@@ -178,7 +195,7 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({
               )}
             </TouchableOpacity>
           );
-        })}
+        }))}
       </View>
 
       <View style={{ height: 40 }} />

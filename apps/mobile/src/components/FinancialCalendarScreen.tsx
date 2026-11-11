@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { useTheme } from '../theme';
 import { UpcomingObligation } from '../types';
-import { INITIAL_OBLIGATIONS } from '../data';
 import { formatINR } from '../formatters';
 import { cashService } from '../api/domainServices';
 
@@ -23,7 +22,7 @@ export const FinancialCalendarScreen: React.FC<FinancialCalendarScreenProps> = (
   onShowToast,
 }) => {
   const { theme } = useTheme();
-  const [obligations, setObligations] = useState<UpcomingObligation[]>(INITIAL_OBLIGATIONS);
+  const [obligations, setObligations] = useState<UpcomingObligation[]>([]);
   const [filter, setFilter] = useState<'ALL' | 'DUE' | 'PAID'>('ALL');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -188,7 +187,18 @@ export const FinancialCalendarScreen: React.FC<FinancialCalendarScreenProps> = (
 
       {/* Timeline List */}
       <View style={styles.listContainer}>
-        {filtered.map((item) => {
+        {filtered.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingVertical: 48, paddingHorizontal: 24 }}>
+            <Text style={{ fontSize: 36, marginBottom: 12 }}>📅</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 6 }}>
+              No Obligations Scheduled
+            </Text>
+            <Text style={{ fontSize: 13, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 }}>
+              No pending dues, SIPs, insurance premiums or tax commitments found. When recurring rules are set up, they will appear here.
+            </Text>
+          </View>
+        ) : (
+          filtered.map((item) => {
           const badgeCol = getBadgeColor(item.type);
           return (
             <View
@@ -276,7 +286,7 @@ export const FinancialCalendarScreen: React.FC<FinancialCalendarScreenProps> = (
               </View>
             </View>
           );
-        })}
+        }))}
       </View>
     </ScrollView>
   );

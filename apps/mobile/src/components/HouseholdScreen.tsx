@@ -10,7 +10,6 @@ import {
 import { theme } from '../theme';
 import { formatINR } from '../formatters';
 import { householdService } from '../api/domainServices';
-import { INITIAL_HOUSEHOLD_MEMBERS } from '../data';
 import { HouseholdMember } from '../types';
 
 interface HouseholdScreenProps {
@@ -22,7 +21,7 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
   onBack,
   onShowToast,
 }) => {
-  const [members, setMembers] = useState<HouseholdMember[]>(INITIAL_HOUSEHOLD_MEMBERS);
+  const [members, setMembers] = useState<HouseholdMember[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -101,7 +100,25 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
       </View>
 
       <View style={styles.membersList}>
-        {members.map((m) => (
+        {members.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingVertical: 36, paddingHorizontal: 20 }}>
+            <Text style={{ fontSize: 36, marginBottom: 12 }}>👨‍👩‍👧</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 6 }}>
+              No Household Members Added
+            </Text>
+            <Text style={{ fontSize: 13, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: 16 }}>
+              Invite family members or business co-owners to view consolidated family office net worth with strict role-based data partitioning.
+            </Text>
+            <TouchableOpacity
+              style={{ backgroundColor: theme.colors.primary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8 }}
+              onPress={() => onShowToast('Invite link generated for family member')}
+              activeOpacity={0.8}
+            >
+              <Text style={{ color: '#FFFFFF', fontWeight: '700', fontSize: 13 }}>+ Invite First Member</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          members.map((m) => (
           <View key={m.id} style={styles.memberCard}>
             <View style={styles.memberTopRow}>
               <View style={styles.memberAvatar}>
@@ -161,7 +178,7 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
               </View>
             </View>
           </View>
-        ))}
+        )))}
       </View>
 
       {/* Shared Household Envelopes */}

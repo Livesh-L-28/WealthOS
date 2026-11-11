@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView, Switch } from 'react-native';
 import { theme } from '../theme';
-import { InvestmentHolding } from '../types';
-import { INITIAL_DIVIDENDS } from '../data';
+import { InvestmentHolding, DividendItem } from '../types';
 import { formatINR } from '../formatters';
 import { MobileDonutAllocationChart } from './charts';
 
@@ -24,29 +23,6 @@ interface ActiveSIP {
   status: 'ACTIVE' | 'PAUSED';
 }
 
-const ACTIVE_SIPS: ActiveSIP[] = [
-  {
-    id: 'sip-1',
-    fundName: 'Parag Parikh Flexi Cap Fund - Direct-G',
-    amount: 50000,
-    frequency: 'Monthly',
-    debitDate: '01st of each month',
-    nextDebit: '01 Dec 2026',
-    sourceAccount: 'ICICI Privileged Savings •••• 9921',
-    status: 'ACTIVE',
-  },
-  {
-    id: 'sip-2',
-    fundName: 'Mirae Asset Large Cap Fund - Direct-G',
-    amount: 25000,
-    frequency: 'Monthly',
-    debitDate: '10th of each month',
-    nextDebit: '10 Nov 2026',
-    sourceAccount: 'HDFC Corporate Salary •••• 4921',
-    status: 'ACTIVE',
-  },
-];
-
 interface BondHolding {
   id: string;
   name: string;
@@ -61,48 +37,6 @@ interface BondHolding {
   issuer: string;
 }
 
-const INITIAL_BONDS: BondHolding[] = [
-  {
-    id: 'bond-1',
-    name: 'RBI Sovereign Gold Bond 2028 Series',
-    symbol: 'SGB2028',
-    type: 'SGB',
-    couponRate: '2.50% p.a. (Semi-Annual)',
-    faceValue: 362500,
-    investedAmount: 275000,
-    currentValue: 362500,
-    maturityDate: 'Oct 2028',
-    nextInterestDate: '15 Apr 2027',
-    issuer: 'Reserve Bank of India',
-  },
-  {
-    id: 'bond-2',
-    name: 'Government of India 7.38% GS 2027',
-    symbol: '738GS2027',
-    type: 'GOVT_BOND',
-    couponRate: '7.38% p.a. Fixed',
-    faceValue: 200000,
-    investedAmount: 201200,
-    currentValue: 204500,
-    maturityDate: '20 Jun 2027',
-    nextInterestDate: '20 Dec 2026',
-    issuer: 'Ministry of Finance, GoI',
-  },
-  {
-    id: 'bond-3',
-    name: 'NHAI 54EC Capital Gains Tax-Saving Bond',
-    symbol: 'NHAI-54EC',
-    type: 'CORP_BOND',
-    couponRate: '5.25% p.a. Annual',
-    faceValue: 500000,
-    investedAmount: 500000,
-    currentValue: 500000,
-    maturityDate: '31 Mar 2029',
-    nextInterestDate: '31 Mar 2027',
-    issuer: 'National Highways Authority of India',
-  },
-];
-
 interface UpcomingDividendEvent {
   id: string;
   symbol: string;
@@ -115,57 +49,6 @@ interface UpcomingDividendEvent {
   recordDate: string;
   status: 'ANNOUNCED' | 'RECORD_LOCKED';
 }
-
-const UPCOMING_DIVIDENDS: UpcomingDividendEvent[] = [
-  {
-    id: 'up-div-1',
-    symbol: 'TCS',
-    company: 'Tata Consultancy Services Ltd',
-    type: 'INTERIM',
-    ratePerShare: 10.0,
-    shares: 200,
-    totalAmount: 2000.0,
-    exDate: '18 Nov 2026',
-    recordDate: '19 Nov 2026',
-    status: 'RECORD_LOCKED',
-  },
-  {
-    id: 'up-div-2',
-    symbol: 'RELIANCE',
-    company: 'Reliance Industries Ltd',
-    type: 'FINAL',
-    ratePerShare: 10.0,
-    shares: 150,
-    totalAmount: 1500.0,
-    exDate: '25 Nov 2026',
-    recordDate: '26 Nov 2026',
-    status: 'ANNOUNCED',
-  },
-  {
-    id: 'up-div-3',
-    symbol: 'INFY',
-    company: 'Infosys Ltd',
-    type: 'SPECIAL',
-    ratePerShare: 18.0,
-    shares: 120,
-    totalAmount: 2160.0,
-    exDate: '02 Dec 2026',
-    recordDate: '03 Dec 2026',
-    status: 'ANNOUNCED',
-  },
-  {
-    id: 'up-div-4',
-    symbol: 'HDFCBANK',
-    company: 'HDFC Bank Ltd',
-    type: 'INTERIM',
-    ratePerShare: 19.5,
-    shares: 100,
-    totalAmount: 1950.0,
-    exDate: '15 Dec 2026',
-    recordDate: '16 Dec 2026',
-    status: 'ANNOUNCED',
-  },
-];
 
 interface ExtractedAsset {
   id: string;
@@ -188,6 +71,10 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
 }) => {
   const [filter, setFilter] = useState<PortfolioFilter>('ALL');
   const [selectedHolding, setSelectedHolding] = useState<InvestmentHolding | null>(null);
+  const [sips, setSips] = useState<ActiveSIP[]>([]);
+  const [bonds, setBonds] = useState<BondHolding[]>([]);
+  const [upcomingDividends, setUpcomingDividends] = useState<UpcomingDividendEvent[]>([]);
+  const [historicalDividends, setHistoricalDividends] = useState<DividendItem[]>([]);
 
   // Document & Image AI OCR Classifier State
   const [isDocClassifierOpen, setIsDocClassifierOpen] = useState(false);
@@ -419,6 +306,8 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
       <MobileDonutAllocationChart
         totalValue={totalValue}
         totalInvested={totalInvested}
+        holdings={holdings}
+        onAddInvestment={onAddInvestment}
       />
 
       {/* Segmented Filter Control */}
@@ -432,9 +321,9 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
             { id: 'ALL', label: `All (${holdings.length})` },
             { id: 'EQUITY', label: 'Equities' },
             { id: 'MUTUAL_FUND', label: 'Mutual Funds' },
-            { id: 'SIPS', label: `SIPs (${ACTIVE_SIPS.length})` },
-            { id: 'BONDS', label: `Bonds (${INITIAL_BONDS.length})` },
-            { id: 'DIVIDENDS', label: `Dividends (${UPCOMING_DIVIDENDS.length})` },
+            { id: 'SIPS', label: sips.length > 0 ? `SIPs (${sips.length})` : 'SIPs' },
+            { id: 'BONDS', label: bonds.length > 0 ? `Bonds (${bonds.length})` : 'Bonds' },
+            { id: 'DIVIDENDS', label: upcomingDividends.length > 0 ? `Dividends (${upcomingDividends.length})` : 'Dividends' },
             { id: 'DAILY_MICRO', label: 'Daily Micro' },
             { id: 'GOLD', label: 'Gold' },
           ] as const
@@ -461,7 +350,9 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
           <View style={styles.summaryBar}>
             <View>
               <Text style={styles.summaryBarLabel}>TOTAL MONTHLY SIP COMMITMENT</Text>
-              <Text style={styles.summaryBarVal}>₹75,000.00 / month</Text>
+              <Text style={styles.summaryBarVal}>
+                {formatINR(sips.reduce((s, x) => s + x.amount, 0))} / month
+              </Text>
             </View>
             {onAddInvestment && (
               <TouchableOpacity
@@ -473,30 +364,49 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
               </TouchableOpacity>
             )}
           </View>
-          {ACTIVE_SIPS.map((sip) => (
-            <View key={sip.id} style={styles.holdingCard}>
-              <View style={styles.holdingTopRow}>
-                <View style={styles.holdingTitleCol}>
-                  <Text style={styles.holdingSymbol}>{sip.fundName}</Text>
-                  <Text style={styles.holdingName}>Auto-debit: {sip.sourceAccount}</Text>
+          {sips.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyEmoji}>🔄</Text>
+              <Text style={styles.emptyTitle}>No Active SIPs Tracked</Text>
+              <Text style={styles.emptySubtitle}>
+                Automate systematic investments into equity or index funds to maintain disciplined rupee-cost averaging.
+              </Text>
+              {onAddInvestment && (
+                <TouchableOpacity
+                  style={styles.emptyActionBtn}
+                  onPress={onAddInvestment}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.emptyActionBtnText}>+ Set Up First SIP</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            sips.map((sip) => (
+              <View key={sip.id} style={styles.holdingCard}>
+                <View style={styles.holdingTopRow}>
+                  <View style={styles.holdingTitleCol}>
+                    <Text style={styles.holdingSymbol}>{sip.fundName}</Text>
+                    <Text style={styles.holdingName}>Auto-debit: {sip.sourceAccount}</Text>
+                  </View>
+                  <View style={styles.holdingValueCol}>
+                    <Text style={styles.holdingValue}>{formatINR(sip.amount)}/mo</Text>
+                    <View style={styles.activePill}>
+                      <Text style={styles.activePillText}>● {sip.status}</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.holdingValueCol}>
-                  <Text style={styles.holdingValue}>{formatINR(sip.amount)}/mo</Text>
-                  <View style={styles.activePill}>
-                    <Text style={styles.activePillText}>● {sip.status}</Text>
+                <View style={styles.holdingDetailsRow}>
+                  <Text style={styles.holdingDetailsText}>
+                    Schedule: {sip.debitDate} · Next: {sip.nextDebit}
+                  </Text>
+                  <View style={styles.taxLotPill}>
+                    <Text style={styles.taxLotText}>NACH Mandate</Text>
                   </View>
                 </View>
               </View>
-              <View style={styles.holdingDetailsRow}>
-                <Text style={styles.holdingDetailsText}>
-                  Schedule: {sip.debitDate} · Next: {sip.nextDebit}
-                </Text>
-                <View style={styles.taxLotPill}>
-                  <Text style={styles.taxLotText}>NACH Mandate</Text>
-                </View>
-              </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       )}
 
@@ -506,36 +416,63 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
           <View style={styles.summaryBar}>
             <View>
               <Text style={styles.summaryBarLabel}>GOVERNMENT & CORPORATE BONDS</Text>
-              <Text style={styles.summaryBarVal}>₹10,67,000.00 Total Depository</Text>
+              <Text style={styles.summaryBarVal}>
+                {formatINR(bonds.reduce((s, b) => s + b.currentValue, 0))} Total Depository
+              </Text>
             </View>
-            <View style={styles.taxLotPill}>
-              <Text style={styles.taxLotText}>Sovereign Backed</Text>
-            </View>
+            {onAddInvestment && (
+              <TouchableOpacity
+                style={styles.subActionBtn}
+                onPress={onAddInvestment}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.subActionBtnText}>+ Add Bond</Text>
+              </TouchableOpacity>
+            )}
           </View>
-          {INITIAL_BONDS.map((bond) => (
-            <View key={bond.id} style={styles.holdingCard}>
-              <View style={styles.holdingTopRow}>
-                <View style={styles.holdingTitleCol}>
-                  <Text style={styles.holdingSymbol}>{bond.name}</Text>
-                  <Text style={styles.holdingName}>Issuer: {bond.issuer}</Text>
+          {bonds.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyEmoji}>📜</Text>
+              <Text style={styles.emptyTitle}>No Bonds or Fixed Income</Text>
+              <Text style={styles.emptySubtitle}>
+                Add Sovereign Gold Bonds (SGBs), RBI Floating Rate Bonds, or Corporate Debentures to your ledger.
+              </Text>
+              {onAddInvestment && (
+                <TouchableOpacity
+                  style={styles.emptyActionBtn}
+                  onPress={onAddInvestment}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.emptyActionBtnText}>+ Add Bond / SGB</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            bonds.map((bond) => (
+              <View key={bond.id} style={styles.holdingCard}>
+                <View style={styles.holdingTopRow}>
+                  <View style={styles.holdingTitleCol}>
+                    <Text style={styles.holdingSymbol}>{bond.name}</Text>
+                    <Text style={styles.holdingName}>Issuer: {bond.issuer}</Text>
+                  </View>
+                  <View style={styles.holdingValueCol}>
+                    <Text style={styles.holdingValue}>{formatINR(bond.currentValue)}</Text>
+                    <View style={styles.activePill}>
+                      <Text style={styles.activePillText}>{bond.couponRate}</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.holdingValueCol}>
-                  <Text style={styles.holdingValue}>{formatINR(bond.currentValue)}</Text>
-                  <View style={styles.activePill}>
-                    <Text style={styles.activePillText}>{bond.couponRate}</Text>
+                <View style={styles.holdingDetailsRow}>
+                  <Text style={styles.holdingDetailsText}>
+                    Matures: {bond.maturityDate} · Next Interest: {bond.nextInterestDate}
+                  </Text>
+                  <View style={styles.taxLotPill}>
+                    <Text style={styles.taxLotText}>{bond.type}</Text>
                   </View>
                 </View>
               </View>
-              <View style={styles.holdingDetailsRow}>
-                <Text style={styles.holdingDetailsText}>
-                  Matures: {bond.maturityDate} · Next Interest: {bond.nextInterestDate}
-                </Text>
-                <View style={styles.taxLotPill}>
-                  <Text style={styles.taxLotText}>{bond.type}</Text>
-                </View>
-              </View>
-            </View>
-          ))}
+            ))
+          )}
         </View>
       )}
 
@@ -660,7 +597,12 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
             <View style={styles.dividendHeroTop}>
               <View>
                 <Text style={styles.dividendHeroLabel}>FY26 PROJECTED DIVIDEND YIELD</Text>
-                <Text style={styles.dividendHeroVal}>₹48,650.00</Text>
+                <Text style={styles.dividendHeroVal}>
+                  {formatINR(
+                    historicalDividends.reduce((s, d) => s + (d.totalPayout || 0), 0) +
+                    upcomingDividends.reduce((s, d) => s + (d.totalAmount || 0), 0)
+                  )}
+                </Text>
               </View>
               <View style={styles.dripToggleBox}>
                 <Text style={styles.dripLabel}>Auto DRIP</Text>
@@ -674,76 +616,96 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
             </View>
             <View style={styles.dividendHeroBottomRow}>
               <Text style={styles.dividendHeroSub}>
-                Settled to date: <Text style={{ color: '#087A50', fontWeight: '800' }}>₹23,337.50</Text> · Next 60 days: <Text style={{ color: '#2563EB', fontWeight: '800' }}>₹25,312.50</Text>
+                Settled: <Text style={{ color: '#087A50', fontWeight: '800' }}>{formatINR(historicalDividends.reduce((s, d) => s + (d.totalPayout || 0), 0))}</Text> · Upcoming: <Text style={{ color: '#2563EB', fontWeight: '800' }}>{formatINR(upcomingDividends.reduce((s, d) => s + (d.totalAmount || 0), 0))}</Text>
               </Text>
             </View>
           </View>
 
-          {/* Upcoming Dividend Payout Calendar */}
-          <View style={styles.dividendSectionHeadingRow}>
-            <Text style={styles.dividendSectionTitle}>UPCOMING PAYOUT CALENDAR (ANNOUNCED)</Text>
-            <Text style={styles.dividendSectionSub}>{UPCOMING_DIVIDENDS.length} Ex-Dates</Text>
-          </View>
-
-          {UPCOMING_DIVIDENDS.map((div) => (
-            <View key={div.id} style={styles.holdingCard}>
-              <View style={styles.holdingTopRow}>
-                <View style={styles.holdingTitleCol}>
-                  <Text style={styles.holdingSymbol}>{div.symbol} · {div.type} DIVIDEND</Text>
-                  <Text style={styles.holdingName}>{div.company}</Text>
-                </View>
-                <View style={styles.holdingValueCol}>
-                  <Text style={[styles.holdingValue, { color: '#087A50' }]}>
-                    +{formatINR(div.totalAmount)}
-                  </Text>
-                  <View style={styles.activePill}>
-                    <Text style={styles.activePillText}>₹{div.ratePerShare}/sh</Text>
-                  </View>
-                </View>
-              </View>
-              <View style={styles.holdingDetailsRow}>
-                <Text style={styles.holdingDetailsText}>
-                  Ex-Date: {div.exDate} · Record: {div.recordDate} ({div.shares} Shares)
-                </Text>
-                <View style={styles.taxLotPill}>
-                  <Text style={styles.taxLotText}>{div.status}</Text>
-                </View>
-              </View>
+          {upcomingDividends.length === 0 && historicalDividends.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyEmoji}>💰</Text>
+              <Text style={styles.emptyTitle}>No Dividends Recorded</Text>
+              <Text style={styles.emptySubtitle}>
+                Dividends credited to your bank accounts or announced by portfolio companies will automatically be recognized and tracked here.
+              </Text>
             </View>
-          ))}
-
-          {/* Settled / Received Dividends */}
-          <View style={styles.dividendSectionHeadingRow}>
-            <Text style={styles.dividendSectionTitle}>HISTORICAL RECEIVED DIVIDENDS</Text>
-            <Text style={styles.dividendSectionSub}>TDS 10% Withheld</Text>
-          </View>
-
-          {INITIAL_DIVIDENDS.map((div) => (
-            <View key={div.id} style={styles.holdingCard}>
-              <View style={styles.holdingTopRow}>
-                <View style={styles.holdingTitleCol}>
-                  <Text style={styles.holdingSymbol}>{div.symbol}</Text>
-                  <Text style={styles.holdingName}>{div.company}</Text>
-                </View>
-                <View style={styles.holdingValueCol}>
-                  <Text style={[styles.holdingValue, { color: '#087A50' }]}>
-                    +{formatINR(div.totalPayout)}
-                  </Text>
-                  <View style={[styles.statusPillBadge, { backgroundColor: '#E8F5EE' }]}>
-                    <Text style={[styles.statusPillBadgeText, { color: '#087A50' }]}>✓ CREDITED</Text>
+          ) : (
+            <>
+              {/* Upcoming Dividend Payout Calendar */}
+              {upcomingDividends.length > 0 && (
+                <>
+                  <View style={styles.dividendSectionHeadingRow}>
+                    <Text style={styles.dividendSectionTitle}>UPCOMING PAYOUT CALENDAR (ANNOUNCED)</Text>
+                    <Text style={styles.dividendSectionSub}>{upcomingDividends.length} Ex-Dates</Text>
                   </View>
-                </View>
-              </View>
-              <View style={styles.holdingDetailsRow}>
-                <Text style={styles.holdingDetailsText}>
-                  Date: {div.payoutDate} · Rate: ₹{div.amountPerShare.toFixed(2)}/sh
-                </Text>
-                <View style={styles.taxLotPill}>
-                  <Text style={styles.taxLotText}>Bank ECS Verified</Text>
-                </View>
-              </View>
-            </View>
-          ))}
+
+                  {upcomingDividends.map((div) => (
+                    <View key={div.id} style={styles.holdingCard}>
+                      <View style={styles.holdingTopRow}>
+                        <View style={styles.holdingTitleCol}>
+                          <Text style={styles.holdingSymbol}>{div.symbol} · {div.type} DIVIDEND</Text>
+                          <Text style={styles.holdingName}>{div.company}</Text>
+                        </View>
+                        <View style={styles.holdingValueCol}>
+                          <Text style={[styles.holdingValue, { color: '#087A50' }]}>
+                            +{formatINR(div.totalAmount)}
+                          </Text>
+                          <View style={styles.activePill}>
+                            <Text style={styles.activePillText}>₹{div.ratePerShare}/sh</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <View style={styles.holdingDetailsRow}>
+                        <Text style={styles.holdingDetailsText}>
+                          Ex-Date: {div.exDate} · Record: {div.recordDate} ({div.shares} Shares)
+                        </Text>
+                        <View style={styles.taxLotPill}>
+                          <Text style={styles.taxLotText}>{div.status}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+                </>
+              )}
+
+              {/* Settled / Received Dividends */}
+              {historicalDividends.length > 0 && (
+                <>
+                  <View style={styles.dividendSectionHeadingRow}>
+                    <Text style={styles.dividendSectionTitle}>HISTORICAL RECEIVED DIVIDENDS</Text>
+                    <Text style={styles.dividendSectionSub}>TDS 10% Withheld</Text>
+                  </View>
+
+                  {historicalDividends.map((div) => (
+                    <View key={div.id} style={styles.holdingCard}>
+                      <View style={styles.holdingTopRow}>
+                        <View style={styles.holdingTitleCol}>
+                          <Text style={styles.holdingSymbol}>{div.symbol}</Text>
+                          <Text style={styles.holdingName}>{div.company}</Text>
+                        </View>
+                        <View style={styles.holdingValueCol}>
+                          <Text style={[styles.holdingValue, { color: '#087A50' }]}>
+                            +{formatINR(div.totalPayout)}
+                          </Text>
+                          <View style={[styles.statusPillBadge, { backgroundColor: '#E8F5EE' }]}>
+                            <Text style={[styles.statusPillBadgeText, { color: '#087A50' }]}>✓ CREDITED</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <View style={styles.holdingDetailsRow}>
+                        <Text style={styles.holdingDetailsText}>
+                          Date: {div.payoutDate} · Rate: ₹{div.amountPerShare.toFixed(2)}/sh
+                        </Text>
+                        <View style={styles.taxLotPill}>
+                          <Text style={styles.taxLotText}>Bank ECS Verified</Text>
+                        </View>
+                      </View>
+                    </View>
+                  ))}
+                </>
+              )}
+            </>
+          )}
         </View>
       )}
 

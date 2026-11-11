@@ -3,20 +3,73 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { theme } from '../theme';
 
 interface FinancialHealthCardProps {
-  score?: number;
-  emergencyRunwayMonths?: number;
-  debtToIncomePct?: number;
-  solvencyRatio?: number;
+  totalAssets?: number;
+  totalLiabilities?: number;
+  monthlyInflows?: number;
+  monthlyOutflows?: number;
   onPress?: () => void;
 }
 
 export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({
-  score = 88,
-  emergencyRunwayMonths = 6.2,
-  debtToIncomePct = 18.2,
-  solvencyRatio = 79.9,
+  totalAssets = 0,
+  totalLiabilities = 0,
+  monthlyInflows = 0,
+  monthlyOutflows = 0,
   onPress,
 }) => {
+  const hasData = totalAssets > 0 || totalLiabilities > 0 || monthlyInflows > 0 || monthlyOutflows > 0;
+
+  // Real calculations
+  const emergencyRunwayMonths =
+    monthlyOutflows > 0
+      ? (totalAssets / monthlyOutflows).toFixed(1)
+      : totalAssets > 0
+      ? '12+'
+      : '0.0';
+
+  const debtToIncomePct =
+    monthlyInflows > 0
+      ? Math.min(100, Math.round((totalLiabilities / monthlyInflows) * 100))
+      : totalLiabilities > 0
+      ? 100
+      : 0;
+
+  const solvencyRatio =
+    totalAssets > 0
+      ? Math.max(0, Math.min(100, Math.round(((totalAssets - totalLiabilities) / totalAssets) * 100)))
+      : 100;
+
+  // Calculate dynamic composite health score
+  let score = 0;
+  let ratingText = 'INITIALIZING';
+  let ratingColor = '#64748B';
+
+  if (!hasData) {
+    score = 0;
+    ratingText = 'INITIALIZING';
+    ratingColor = '#64748B';
+  } else {
+    // Solvency (40 pts)
+    const solvencyPts = (solvencyRatio / 100) * 40;
+    // DTI (30 pts, lower is better)
+    const dtiPts = Math.max(0, (1 - debtToIncomePct / 100)) * 30;
+    // Runway (30 pts, target 6 months)
+    const runwayNum = parseFloat(emergencyRunwayMonths) || 0;
+    const runwayPts = Math.min(30, (runwayNum / 6) * 30);
+    score = Math.round(solvencyPts + dtiPts + runwayPts);
+
+    if (score >= 80) {
+      ratingText = `${score} / 100 · EXCELLENT ›`;
+      ratingColor = '#16A36A';
+    } else if (score >= 60) {
+      ratingText = `${score} / 100 · HEALTHY ›`;
+      ratingColor = '#2563EB';
+    } else {
+      ratingText = `${score} / 100 · ATTENTION ›`;
+      ratingColor = '#D97706';
+    }
+  }
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -24,34 +77,36 @@ export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({
         onPress={onPress}
         activeOpacity={onPress ? 0.75 : 1}
         disabled={!onPress}
+        accessibilityRole="button"
+        accessibilityLabel="Financial Health and Solvency Card"
       >
         <View style={styles.headerRow}>
           <View>
             <Text style={styles.title}>FINANCIAL HEALTH & SOLVENCY</Text>
             <Text style={styles.subtitle}>Autonomous Risk & Solvency Engine</Text>
           </View>
-          <View style={styles.scorePill}>
-            <Text style={styles.scoreText}>{score} / 100 · EXCELLENT ›</Text>
+          <View style={[styles.scorePill, !hasData && { backgroundColor: '#F1F5F9', borderColor: '#E2E8F0' }]}>
+            <Text style={[styles.scoreText, { color: ratingColor }]}>{ratingText}</Text>
           </View>
         </View>
 
         <View style={styles.metricsGrid}>
           <View style={styles.metricBox}>
-            <Text style={styles.metricValue}>{emergencyRunwayMonths} Mos</Text>
+            <Text style={styles.metricValue}>{hasData ? `${emergencyRunwayMonths}m` : '—'}</Text>
             <Text style={styles.metricLabel}>Runway</Text>
-            <Text style={styles.metricStatus}>Target 6.0m</Text>
+            <Text style={styles.metricStatus}>{hasData ? 'Target 6.0m' : 'Awaiting burn'}</Text>
           </View>
 
           <View style={styles.metricBox}>
-            <Text style={styles.metricValue}>{debtToIncomePct}%</Text>
+            <Text style={styles.metricValue}>{hasData ? `${debtToIncomePct}%` : '0%'}</Text>
             <Text style={styles.metricLabel}>Debt-to-Income</Text>
-            <Text style={styles.metricStatus}>Safe (&lt; 35%)</Text>
+            <Text style={styles.metricStatus}>{debtToIncomePct <= 35 ? 'Safe (< 35%)' : 'Elevated'}</Text>
           </View>
 
           <View style={styles.metricBox}>
-            <Text style={styles.metricValue}>{solvencyRatio}%</Text>
+            <Text style={styles.metricValue}>{hasData ? `${solvencyRatio}%` : '100%'}</Text>
             <Text style={styles.metricLabel}>Solvency</Text>
-            <Text style={styles.metricStatus}>5x Buffer</Text>
+            <Text style={styles.metricStatus}>{solvencyRatio >= 70 ? 'Strong Buffer' : 'Moderate'}</Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -61,84 +116,79 @@ export const FinancialHealthCard: React.FC<FinancialHealthCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    marginTop: 14,
+    marginHorizontal: 16,
+    marginBottom: 12,
   },
   card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.textPrimary,
-    shadowOffset: { width: 0, height: 1 },
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 4,
+    shadowRadius: 8,
     elevation: 2,
   },
   headerRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    alignItems: 'center',
+    marginBottom: 14,
   },
   title: {
     fontSize: 10.5,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.5,
+    fontWeight: '800',
+    letterSpacing: 0.6,
+    color: '#64748B',
   },
   subtitle: {
     fontSize: 10,
-    color: theme.colors.textMuted,
+    color: '#94A3B8',
+    fontWeight: '500',
     marginTop: 2,
   },
   scorePill: {
-    backgroundColor: theme.colors.primaryLightSolid,
+    backgroundColor: 'rgba(22, 163, 106, 0.10)',
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(22, 163, 106, 0.20)',
   },
   scoreText: {
-    fontSize: 9.5,
+    fontSize: 10.5,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
   },
   metricsGrid: {
     flexDirection: 'row',
     gap: 8,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderLight,
-    paddingTop: 12,
   },
   metricBox: {
     flex: 1,
-    backgroundColor: '#FAFCFA',
+    backgroundColor: '#F8FAFC',
     borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 6,
+    padding: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.borderLight,
+    borderColor: '#F1F5F9',
   },
   metricValue: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginBottom: 2,
   },
   metricLabel: {
-    fontSize: 9.5,
+    fontSize: 10,
     fontWeight: '700',
-    color: theme.colors.textSecondary,
-    marginTop: 2,
-    textAlign: 'center',
+    color: '#64748B',
+    marginBottom: 2,
   },
   metricStatus: {
     fontSize: 8.5,
     fontWeight: '600',
-    color: theme.colors.primaryDark,
-    marginTop: 3,
-    textAlign: 'center',
+    color: '#94A3B8',
   },
 });

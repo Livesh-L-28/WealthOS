@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { DashboardPeriod, Transaction, BudgetEnvelope, FinancialGoal } from '../types';
+import { DashboardPeriod, Transaction, BudgetEnvelope, FinancialGoal, InvestmentHolding } from '../types';
 import { MobileAreaChart } from './charts/MobileAreaChart';
 import { IncomeExpenseActionBar } from './IncomeExpenseActionBar';
 import { FinancialSummaryCards } from './FinancialSummaryCards';
@@ -22,6 +22,7 @@ interface OverviewScreenProps {
   budgets: BudgetEnvelope[];
   goals: FinancialGoal[];
   transactions: Transaction[];
+  holdings?: InvestmentHolding[];
   onConnectBank: () => void;
   onImportStatement: () => void;
   onAddTransaction: () => void;
@@ -50,6 +51,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
   budgets,
   goals,
   transactions,
+  holdings = [],
   onConnectBank,
   onImportStatement,
   onAddTransaction,
@@ -93,6 +95,9 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
       {/* 1. Hero Net Worth Interactive Bezier Area Chart with Trajectory & Attribution */}
       <MobileAreaChart
         currentNetWorth={netWorth}
+        monthlyInflows={monthlyInflows}
+        monthlyOutflows={monthlyOutflows}
+        transactions={transactions}
         onOpenNetWorth={onOpenNetWorth}
       />
 
@@ -119,11 +124,19 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
       <MobileDonutAllocationChart
         totalValue={totalPortfolioValue}
         totalInvested={totalInvestedValue}
+        holdings={holdings}
         onOpenPortfolio={onOpenPortfolio}
+        onAddInvestment={onAddInvestment}
       />
 
       {/* 5. Solvency & Financial Health Rating */}
-      <FinancialHealthCard onPress={onOpenAnalytics} />
+      <FinancialHealthCard
+        totalAssets={totalAssets}
+        totalLiabilities={totalLiabilities}
+        monthlyInflows={monthlyInflows}
+        monthlyOutflows={monthlyOutflows}
+        onPress={onOpenAnalytics}
+      />
 
       {/* 6. Recent Transactions General Journal */}
       <RecentTransactionsCard
@@ -131,8 +144,13 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         onViewAll={onViewAllTransactions}
       />
 
-      {/* 7. Comprehensive Cash Flow Inflow vs Outflow & Trajectory Graph (In the Last) */}
-      <MobileCashFlowBarChart onOpenAnalytics={onOpenAnalytics} />
+      {/* 7. Comprehensive Cash Flow Inflow vs Outflow & Trajectory Graph */}
+      <MobileCashFlowBarChart
+        monthlyInflows={monthlyInflows}
+        monthlyOutflows={monthlyOutflows}
+        transactions={transactions}
+        onOpenAnalytics={onOpenAnalytics}
+      />
     </View>
   );
 };

@@ -964,6 +964,7 @@ function WealthOSContent() {
               budgets={budgets}
               goals={goals}
               transactions={transactions}
+              holdings={holdings}
               onConnectBank={() => setIsConnectModalOpen(true)}
               onImportStatement={() => setIsImportModalOpen(true)}
               onAddTransaction={() => handleOpenAddExpense()}

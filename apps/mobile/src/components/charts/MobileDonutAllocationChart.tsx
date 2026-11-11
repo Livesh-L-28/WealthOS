@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
 import { theme } from '../../theme';
 import { formatINR } from '../../formatters';
+import { InvestmentHolding } from '../../types';
 
 export interface AssetAllocationSlice {
   id: string;
@@ -13,30 +14,70 @@ export interface AssetAllocationSlice {
   pnlPct: number;
 }
 
-const ALLOCATION_SLICES: AssetAllocationSlice[] = [
-  { id: 'equity', label: 'Equities', pct: 42, amount: 1982400, color: '#16A36A', pnlPct: 24.2 },
-  { id: 'mf', label: 'Mutual Funds', pct: 36, amount: 1699200, color: '#6366F1', pnlPct: 15.8 },
-  { id: 'gold', label: 'Gold (SGB)', pct: 12, amount: 566400, color: '#F59E0B', pnlPct: 11.4 },
-  { id: 'fixed', label: 'Fixed Income', pct: 10, amount: 472000, color: '#0D9488', pnlPct: 7.2 },
-];
-
 interface MobileDonutAllocationChartProps {
   totalValue: number;
   totalInvested: number;
+  holdings?: InvestmentHolding[];
   onOpenPortfolio?: () => void;
+  onAddInvestment?: () => void;
 }
 
 export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProps> = ({
   totalValue,
   totalInvested,
+  holdings = [],
   onOpenPortfolio,
+  onAddInvestment,
 }) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const totalPnl = totalValue - totalInvested;
   const pnlPct = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
 
-  const activeSlice = ALLOCATION_SLICES.find((s) => s.id === selectedId) || null;
+  // Dynamically compute slices from actual user holdings
+  const slices: AssetAllocationSlice[] = useMemo(() => {
+    if (!holdings || holdings.length === 0 || totalValue <= 0) {
+      return [];
+    }
+
+    const typeConfig: Record<string, { label: string; color: string }> = {
+      EQUITY: { label: 'Equities', color: '#16A36A' },
+      MUTUAL_FUND: { label: 'Mutual Funds', color: '#6366F1' },
+      GOLD: { label: 'Gold (SGB)', color: '#F59E0B' },
+      FIXED_INCOME: { label: 'Fixed Income', color: '#0D9488' },
+      REAL_ESTATE: { label: 'Real Estate', color: '#8B5CF6' },
+      CRYPTO: { label: 'Digital Assets', color: '#EC4899' },
+    };
+
+    const grouped: Record<string, { amount: number; invested: number }> = {};
+    holdings.forEach((h) => {
+      const t = h.type || 'EQUITY';
+      if (!grouped[t]) grouped[t] = { amount: 0, invested: 0 };
+      grouped[t].amount += h.currentValue || (h.quantity * h.currentPrice);
+      grouped[t].invested += (h.investedValue || (h.quantity * (h.avgBuyPrice || 0)));
+    });
+
+    const result: AssetAllocationSlice[] = [];
+    Object.keys(grouped).forEach((typeKey) => {
+      const g = grouped[typeKey];
+      const cfg = typeConfig[typeKey] || { label: typeKey, color: '#3B82F6' };
+      const pct = Math.round((g.amount / totalValue) * 100);
+      const gain = g.amount - g.invested;
+      const gainPct = g.invested > 0 ? (gain / g.invested) * 100 : 0;
+      result.push({
+        id: typeKey.toLowerCase(),
+        label: cfg.label,
+        pct: Math.max(1, pct),
+        amount: g.amount,
+        color: cfg.color,
+        pnlPct: gainPct,
+      });
+    });
+
+    return result;
+  }, [holdings, totalValue]);
+
+  const activeSlice = slices.find((s) => s.id === selectedId) || null;
 
   // Responsive donut geometry
   const windowW = Dimensions.get('window').width;
@@ -57,17 +98,21 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
         </View>
 
         <View style={styles.headerActions}>
-          <View style={styles.pnlBadge}>
-            <Text style={styles.pnlText}>
-              {totalPnl >= 0 ? '+' : ''}
-              {pnlPct.toFixed(1)}%
-            </Text>
-          </View>
+          {totalValue > 0 && (
+            <View style={styles.pnlBadge}>
+              <Text style={styles.pnlText}>
+                {totalPnl >= 0 ? '+' : ''}
+                {pnlPct.toFixed(1)}%
+              </Text>
+            </View>
+          )}
           {onOpenPortfolio && (
             <TouchableOpacity
               style={styles.portfolioBtn}
               onPress={onOpenPortfolio}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Open Portfolio View"
             >
               <Text style={styles.portfolioBtnText}>Portfolio ›</Text>
             </TouchableOpacity>
@@ -76,13 +121,22 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
       </View>
 
       {/* Donut and Center Metric Row */}
-      {totalValue === 0 ? (
+      {totalValue <= 0 || slices.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📈</Text>
           <Text style={styles.emptyTitle}>No Investment Holdings Tracked</Text>
           <Text style={styles.emptySubtitle}>
-            Add equities, mutual funds, or gold to track asset allocation and unrealized gains.
+            Add equities, mutual funds, gold or SIPs to monitor your unified portfolio allocation and unrealized gains.
           </Text>
+          {onAddInvestment && (
+            <TouchableOpacity
+              style={styles.emptyActionBtn}
+              onPress={onAddInvestment}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.emptyActionBtnText}>+ Add First Investment</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <View style={styles.donutRow}>
@@ -90,7 +144,7 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
           <View style={[styles.donutWrapper, { width: size, height: size }]}>
             <Svg width={size} height={size}>
               <G rotation="-90" origin={`${size / 2}, ${size / 2}`}>
-                {ALLOCATION_SLICES.map((slice) => {
+                {slices.map((slice) => {
                   const strokeDasharray = `${(slice.pct / 100) * circumference} ${circumference}`;
                   const strokeDashoffset = -((accumulatedPct / 100) * circumference);
                   accumulatedPct += slice.pct;
@@ -134,25 +188,33 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
 
           {/* Right Asset Breakdown List */}
           <View style={styles.assetList}>
-            {ALLOCATION_SLICES.map((slice) => {
+            {slices.map((slice) => {
               const isSelected = selectedId === slice.id;
               return (
                 <TouchableOpacity
                   key={slice.id}
-                  style={[styles.assetItem, isSelected && styles.assetItemActive]}
-                  onPress={() => setSelectedId(isSelected ? null : slice.id)}
+                  style={[styles.assetRow, isSelected && styles.assetRowSelected]}
+                  onPress={() => setSelectedId(selectedId === slice.id ? null : slice.id)}
                   activeOpacity={0.7}
                 >
-                  <View style={styles.assetItemLeft}>
-                    <View style={[styles.assetDot, { backgroundColor: slice.color }]} />
+                  <View style={styles.assetLeft}>
+                    <View style={[styles.colorDot, { backgroundColor: slice.color }]} />
                     <View>
-                      <Text style={styles.assetName}>{slice.label}</Text>
-                      <Text style={styles.assetValue}>{formatINR(slice.amount)}</Text>
+                      <Text style={styles.assetLabel}>{slice.label}</Text>
+                      <Text style={styles.assetAmount}>{formatINR(slice.amount)}</Text>
                     </View>
                   </View>
-                  <View style={styles.assetItemRight}>
+                  <View style={styles.assetRight}>
                     <Text style={styles.assetPct}>{slice.pct}%</Text>
-                    <Text style={styles.assetGain}>+{slice.pnlPct}%</Text>
+                    <Text
+                      style={[
+                        styles.assetPnl,
+                        slice.pnlPct >= 0 ? styles.pnlGreen : styles.pnlRed,
+                      ]}
+                    >
+                      {slice.pnlPct >= 0 ? '▲ +' : '▼ '}
+                      {slice.pnlPct.toFixed(1)}%
+                    </Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -160,37 +222,24 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
           </View>
         </View>
       )}
-
-      {/* Footer Shortcut to Holdings */}
-      {onOpenPortfolio && (
-        <TouchableOpacity
-          style={styles.portfolioFooter}
-          onPress={onOpenPortfolio}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.portfolioFooterText}>
-            View All 8 Holdings & FIFO Lots ›
-          </Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 16,
     marginHorizontal: 16,
-    marginTop: 12,
+    marginBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(22, 163, 106, 0.25)',
-    shadowColor: theme.colors.textPrimary,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 2,
   },
   headerRow: {
     flexDirection: 'row',
@@ -199,47 +248,50 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
+    color: '#64748B',
   },
   subtitle: {
     fontSize: 10,
-    color: theme.colors.textTertiary,
-    marginTop: 1,
+    color: '#94A3B8',
+    fontWeight: '500',
+    marginTop: 2,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  portfolioBtn: {
-    backgroundColor: '#E8F5EE',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 7,
-  },
-  portfolioBtnText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#087A50',
-  },
   pnlBadge: {
-    backgroundColor: '#DCFCE7',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 7,
+    backgroundColor: 'rgba(22, 163, 106, 0.10)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   pnlText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
-    color: '#087A50',
+    color: '#16A36A',
+  },
+  portfolioBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  portfolioBtnText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#2563EB',
   },
   donutRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
   donutWrapper: {
     position: 'relative',
@@ -250,114 +302,111 @@ const styles = StyleSheet.create({
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 84,
+    width: '70%',
+    height: '70%',
   },
   centerLabel: {
     fontSize: 8,
-    fontWeight: '700',
-    color: theme.colors.textTertiary,
-    letterSpacing: 0.3,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+    color: '#94A3B8',
   },
   centerValue: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: theme.colors.textPrimary,
-    textAlign: 'center',
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#0F172A',
     marginTop: 1,
   },
   centerSub: {
-    fontSize: 8,
+    fontSize: 7.5,
     fontWeight: '700',
-    color: '#087A50',
-    marginTop: 1,
+    color: '#16A36A',
   },
   assetList: {
     flex: 1,
     gap: 6,
   },
-  assetItem: {
+  assetRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 5,
-    paddingHorizontal: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
     borderRadius: 8,
-    backgroundColor: theme.colors.canvas,
-    borderWidth: 1,
-    borderColor: 'transparent',
   },
-  assetItemActive: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.surfaceElevated,
+  assetRowSelected: {
+    backgroundColor: '#F8FAFC',
   },
-  assetItemLeft: {
+  assetLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  assetDot: {
-    width: 8,
-    height: 8,
+  colorDot: {
+    width: 7,
+    height: 7,
     borderRadius: 4,
   },
-  assetName: {
-    fontSize: 10.5,
+  assetLabel: {
+    fontSize: 11,
     fontWeight: '700',
-    color: theme.colors.textPrimary,
+    color: '#0F172A',
   },
-  assetValue: {
+  assetAmount: {
     fontSize: 9,
-    fontWeight: '600',
-    color: theme.colors.textTertiary,
+    color: '#64748B',
   },
-  assetItemRight: {
+  assetRight: {
     alignItems: 'flex-end',
   },
   assetPct: {
     fontSize: 11,
     fontWeight: '800',
-    color: theme.colors.textPrimary,
-    fontVariant: ['tabular-nums'],
+    color: '#0F172A',
   },
-  assetGain: {
+  assetPnl: {
     fontSize: 8.5,
     fontWeight: '700',
-    color: '#087A50',
   },
-  portfolioFooter: {
-    marginTop: 12,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-    alignItems: 'center',
+  pnlGreen: {
+    color: '#16A36A',
   },
-  portfolioFooterText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: theme.colors.primaryDark,
+  pnlRed: {
+    color: '#DC2626',
   },
   emptyContainer: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 18,
+    paddingHorizontal: 12,
   },
   emptyEmoji: {
-    fontSize: 26,
+    fontSize: 28,
     marginBottom: 6,
   },
   emptyTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
     color: '#0F172A',
     marginBottom: 4,
-    textAlign: 'center',
   },
   emptySubtitle: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
     textAlign: 'center',
-    lineHeight: 16,
-    maxWidth: 260,
+    lineHeight: 14,
+    maxWidth: 280,
+    marginBottom: 10,
+  },
+  emptyActionBtn: {
+    backgroundColor: '#2563EB',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  emptyActionBtnText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

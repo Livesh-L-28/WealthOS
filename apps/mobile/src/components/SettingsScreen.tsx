@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,9 +6,12 @@ import {
   TouchableOpacity,
   Switch,
   ScrollView,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { theme } from '../theme';
-import { INITIAL_AUDIT_LOGS } from '../data';
+import { config, setRuntimeApiUrl } from '../config';
+import { localStore } from '../storage/localStore';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -28,6 +31,64 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const [biometricsEnabled, setBiometricsEnabled] = useState(true);
   const [offlineSync, setOfflineSync] = useState(true);
   const [pushAlerts, setPushAlerts] = useState(true);
+
+  // Server endpoint & diagnostic state
+  const [serverUrl, setServerUrl] = useState<string>(config.apiUrl);
+  const [pingStatus, setPingStatus] = useState<'IDLE' | 'TESTING' | 'SUCCESS' | 'FAILED'>('IDLE');
+  const [pingLatency, setPingLatency] = useState<number | null>(null);
+  const [pingMessage, setPingMessage] = useState<string>('');
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    localStore.getCustomServerUrl().then((saved) => {
+      if (isMounted && saved) {
+        setServerUrl(saved);
+        setRuntimeApiUrl(saved);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  const handleTestConnection = async (targetUrl = serverUrl) => {
+    const cleanUrl = targetUrl.trim().replace(/\/$/, '');
+    setPingStatus('TESTING');
+    setPingMessage('Connecting to ' + cleanUrl + '...');
+    const startTime = Date.now();
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch(`${cleanUrl}/api/v1/health`, {
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      const latency = Date.now() - startTime;
+      if (res.ok || res.status === 503) {
+        setPingStatus('SUCCESS');
+        setPingLatency(latency);
+        setPingMessage(`Online (${latency}ms)`);
+        onShowToast(`Backend reachable: ${latency}ms latency`);
+      } else {
+        setPingStatus('FAILED');
+        setPingLatency(latency);
+        setPingMessage(`Server returned HTTP ${res.status}`);
+        onShowToast(`Server error: HTTP ${res.status}`);
+      }
+    } catch (err: any) {
+      setPingStatus('FAILED');
+      setPingLatency(null);
+      setPingMessage('Unreachable (Offline or timeout)');
+      onShowToast('Could not reach backend at ' + cleanUrl);
+    }
+  };
+
+  const handleSaveServerUrl = async (urlToSave = serverUrl) => {
+    const clean = urlToSave.trim().replace(/\/$/, '');
+    setServerUrl(clean);
+    setRuntimeApiUrl(clean);
+    await localStore.setCustomServerUrl(clean);
+    onShowToast(`Server configured: ${clean}`);
+  };
 
   const handleToggleBiometrics = (val: boolean) => {
     setBiometricsEnabled(val);
@@ -113,6 +174,92 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
             trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
             thumbColor={theme.colors.surface}
           />
+        </View>
+      </View>
+
+      {/* Cloud & Local Server Connection Card */}
+      <View style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionHeading}>CLOUD & LOCAL SERVER CONNECTION</Text>
+        <View style={[
+          styles.statusBadge,
+          pingStatus === 'SUCCESS' && { backgroundColor: '#E8F5EE' },
+          pingStatus === 'FAILED' && { backgroundColor: '#FEE2E2' },
+          pingStatus === 'TESTING' && { backgroundColor: '#EFF6FF' },
+        ]}>
+          <Text style={[
+            styles.statusBadgeText,
+            pingStatus === 'SUCCESS' && { color: '#087A50' },
+            pingStatus === 'FAILED' && { color: '#DC2626' },
+            pingStatus === 'TESTING' && { color: '#2563EB' },
+          ]}>
+            {pingStatus === 'SUCCESS' ? `● ${pingMessage}` :
+             pingStatus === 'FAILED' ? `● ${pingMessage}` :
+             pingStatus === 'TESTING' ? 'Testing...' : '● Standalone / Offline'}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.serverCard}>
+        <Text style={styles.serverInputLabel}>FASTAPI BACKEND ENDPOINT</Text>
+        <TextInput
+          style={styles.serverInput}
+          value={serverUrl}
+          onChangeText={setServerUrl}
+          placeholder="http://192.168.31.120:8000"
+          placeholderTextColor="#94A3B8"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <View style={styles.serverPresetRow}>
+          <TouchableOpacity
+            style={styles.serverPresetBtn}
+            onPress={() => {
+              const url = 'http://192.168.31.120:8000';
+              setServerUrl(url);
+              handleSaveServerUrl(url);
+              handleTestConnection(url);
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.serverPresetBtnText}>LAN (192.168.31.120)</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.serverPresetBtn}
+            onPress={() => {
+              const url = 'http://127.0.0.1:8000';
+              setServerUrl(url);
+              handleSaveServerUrl(url);
+              handleTestConnection(url);
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.serverPresetBtnText}>Localhost</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.serverActionRow}>
+          <TouchableOpacity
+            style={[styles.testConnBtn, pingStatus === 'TESTING' && { opacity: 0.7 }]}
+            onPress={() => handleTestConnection()}
+            disabled={pingStatus === 'TESTING'}
+            activeOpacity={0.8}
+          >
+            {pingStatus === 'TESTING' ? (
+              <ActivityIndicator size="small" color="#2563EB" />
+            ) : (
+              <Text style={styles.testConnBtnText}>⚡ Test Connection</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.saveEndpointBtn}
+            onPress={() => handleSaveServerUrl()}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.saveEndpointBtnText}>Save Endpoint</Text>
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -210,17 +357,29 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
       </View>
 
       <View style={styles.auditLogCard}>
-        {INITIAL_AUDIT_LOGS.map((item, i) => (
-          <View key={item.id} style={[styles.auditLogRow, i > 0 && styles.auditLogRowBorder]}>
-            <View style={styles.auditLogTop}>
-              <Text style={styles.auditActor}>{item.actor}</Text>
-              <Text style={styles.auditTime}>{item.timestamp}</Text>
-            </View>
-            <Text style={styles.auditAction}>{item.action}</Text>
-            <Text style={styles.auditDetails}>{item.details}</Text>
-            <Text style={styles.auditHashText}>Hash: {item.hash}</Text>
+        {auditLogs.length === 0 ? (
+          <View style={{ padding: 24, alignItems: 'center' }}>
+            <Text style={{ fontSize: 24, marginBottom: 8 }}>🔒</Text>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 4 }}>
+              Cryptographic Hash Chain Initialized
+            </Text>
+            <Text style={{ fontSize: 11, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 16 }}>
+              Every financial mutation and double-entry transaction generates an immutable SHA-256 block here.
+            </Text>
           </View>
-        ))}
+        ) : (
+          auditLogs.map((item, i) => (
+            <View key={item.id} style={[styles.auditLogRow, i > 0 && styles.auditLogRowBorder]}>
+              <View style={styles.auditLogTop}>
+                <Text style={styles.auditActor}>{item.actor}</Text>
+                <Text style={styles.auditTime}>{item.timestamp}</Text>
+              </View>
+              <Text style={styles.auditAction}>{item.action}</Text>
+              <Text style={styles.auditDetails}>{item.details}</Text>
+              <Text style={styles.auditHashText}>Hash: {item.hash}</Text>
+            </View>
+          ))
+        )}
       </View>
 
       {/* Account & Session Security / Logout */}
@@ -611,6 +770,94 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: '#DC2626',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+  },
+  statusBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  serverCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    padding: 16,
+    marginBottom: 20,
+  },
+  serverInputLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  serverInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: theme.colors.textPrimary,
+    fontFamily: 'monospace',
+    marginBottom: 10,
+  },
+  serverPresetRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  serverPresetBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  serverPresetBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  serverActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  testConnBtn: {
+    flex: 1,
+    backgroundColor: '#EFF6FF',
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  testConnBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2563EB',
+  },
+  saveEndpointBtn: {
+    flex: 1,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveEndpointBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
 

@@ -10,7 +10,6 @@ import {
 import { theme } from '../theme';
 import { formatINR } from '../formatters';
 import { reconciliationService, accountingService } from '../api/domainServices';
-import { INITIAL_DISCREPANCIES } from '../data';
 import { DiscrepancyItem } from '../types';
 
 interface ReconciliationScreenProps {
@@ -23,7 +22,7 @@ export const ReconciliationScreen: React.FC<ReconciliationScreenProps> = ({
   onShowToast,
 }) => {
   const [filter, setFilter] = useState<'ALL' | 'DISCREPANCY' | 'MATCHED'>('ALL');
-  const [items, setItems] = useState<DiscrepancyItem[]>(INITIAL_DISCREPANCIES);
+  const [items, setItems] = useState<DiscrepancyItem[]>([]);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -175,7 +174,18 @@ export const ReconciliationScreen: React.FC<ReconciliationScreenProps> = ({
       </View>
 
       <View style={styles.itemsList}>
-        {filteredItems.map((item) => {
+        {filteredItems.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingVertical: 40, paddingHorizontal: 20 }}>
+            <Text style={{ fontSize: 36, marginBottom: 12 }}>⚖️</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: theme.colors.textPrimary, marginBottom: 6 }}>
+              All Journals Reconciled
+            </Text>
+            <Text style={{ fontSize: 13, color: theme.colors.textSecondary, textAlign: 'center', lineHeight: 20 }}>
+              Every posted transaction matches your bank statements with zero variance. Your double-entry general journal is in complete balance.
+            </Text>
+          </View>
+        ) : (
+          filteredItems.map((item) => {
           const isResolved = item.status === 'MATCHED';
 
           return (
@@ -268,7 +278,7 @@ export const ReconciliationScreen: React.FC<ReconciliationScreenProps> = ({
               </View>
             </View>
           );
-        })}
+        }))}
       </View>
 
       <View style={{ height: 40 }} />
