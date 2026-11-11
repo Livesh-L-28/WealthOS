@@ -33,8 +33,8 @@ export const Header: React.FC<HeaderProps> = ({
       style={[
         styles.header,
         {
-          backgroundColor: theme.colors.surface,
-          borderBottomColor: theme.colors.border,
+          backgroundColor: isDark ? '#090D16' : '#F8FAFC',
+          borderBottomColor: isDark ? '#1F2937' : '#E2E8F0',
         },
       ]}
     >
@@ -43,14 +43,19 @@ export const Header: React.FC<HeaderProps> = ({
         style={styles.brandRow}
         onPress={onOpenHub}
         activeOpacity={0.75}
-        accessibilityLabel="Open Enterprise Menu"
+        accessibilityLabel="Open Workspace Menu"
       >
-        <View style={[styles.logoBadge, { backgroundColor: theme.colors.primary }]}>
+        <View
+          style={[
+            styles.logoBadge,
+            { backgroundColor: isDark ? '#3B82F6' : '#2563EB' },
+          ]}
+        >
           <Text style={styles.logoText}>W</Text>
         </View>
         <View style={styles.brandTextCol}>
-          <Text style={[styles.brandTitle, { color: theme.colors.textPrimary }]}>
-            Wealth<Text style={[styles.brandAccent, { color: theme.colors.primary }]}>OS</Text>
+          <Text style={[styles.brandTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+            Wealth<Text style={{ color: isDark ? '#3B82F6' : '#2563EB' }}>OS</Text>
           </Text>
           <TouchableOpacity
             style={styles.syncRow}
@@ -61,33 +66,29 @@ export const Header: React.FC<HeaderProps> = ({
             <View
               style={[
                 styles.syncDot,
-                { backgroundColor: theme.colors.positive },
+                { backgroundColor: '#10B981' },
                 isSyncing && styles.syncDotPulse,
               ]}
             />
-            <Text style={[styles.syncText, { color: theme.colors.textSecondary }]}>
-              {isSyncing ? 'Synchronizing...' : 'Ledger In Balance'}
+            <Text style={[styles.syncText, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              {isSyncing ? 'Syncing...' : 'Ledger In Sync'}
             </Text>
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
 
-      {/* Right: Clean Header Actions */}
+      {/* Right: Clean, Airy Header Actions */}
       <View style={styles.actionsRow}>
-        {onOpenCopilot && (
-          <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: theme.colors.primaryLightSolid, borderColor: theme.colors.border }]}
-            onPress={onOpenCopilot}
-            activeOpacity={0.75}
-            accessibilityLabel="Open AI Copilot"
-          >
-            <Text style={styles.actionIconSmall}>🤖</Text>
-          </TouchableOpacity>
-        )}
-
+        {/* 1. Global Search */}
         {onOpenSearch && (
           <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
+            style={[
+              styles.iconButton,
+              {
+                backgroundColor: isDark ? '#111827' : '#FFFFFF',
+                borderColor: isDark ? '#1F2937' : '#E2E8F0',
+              },
+            ]}
             onPress={onOpenSearch}
             activeOpacity={0.75}
             accessibilityLabel="Open Global Search"
@@ -96,35 +97,32 @@ export const Header: React.FC<HeaderProps> = ({
           </TouchableOpacity>
         )}
 
-        {/* Privacy Stealth Mode Eye Toggle */}
-        {onTogglePrivacy && (
-          <TouchableOpacity
-            style={[
-              styles.iconButton,
-              isPrivacyMode && { backgroundColor: theme.colors.primaryLightSolid, borderColor: theme.colors.primary },
-              { backgroundColor: isPrivacyMode ? theme.colors.primaryLightSolid : theme.colors.cardSubtle, borderColor: isPrivacyMode ? theme.colors.primary : theme.colors.border },
-            ]}
-            onPress={onTogglePrivacy}
-            activeOpacity={0.75}
-            accessibilityLabel={isPrivacyMode ? 'Show Balances' : 'Hide Balances (Stealth Mode)'}
-          >
-            <Text style={styles.actionIconSmall}>{isPrivacyMode ? '🙈' : '👁️'}</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* 1-Tap Dark Mode Toggle */}
+        {/* 2. Quick Theme Mode Toggle */}
         <TouchableOpacity
-          style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
+          style={[
+            styles.iconButton,
+            {
+              backgroundColor: isDark ? '#111827' : '#FFFFFF',
+              borderColor: isDark ? '#1F2937' : '#E2E8F0',
+            },
+          ]}
           onPress={toggleTheme}
           activeOpacity={0.75}
-          accessibilityLabel="Toggle Dark Mode"
+          accessibilityLabel="Toggle Dark/Light Mode"
         >
           <Text style={styles.actionIconSmall}>{isDark ? '☀️' : '🌙'}</Text>
         </TouchableOpacity>
 
+        {/* 3. Workspace / Enterprise Drawer Menu */}
         {onOpenHub && (
           <TouchableOpacity
-            style={[styles.iconButton, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}
+            style={[
+              styles.iconButton,
+              {
+                backgroundColor: isDark ? '#111827' : '#FFFFFF',
+                borderColor: isDark ? '#1F2937' : '#E2E8F0',
+              },
+            ]}
             onPress={onOpenHub}
             activeOpacity={0.75}
             accessibilityLabel="Open Menu"
@@ -156,42 +154,29 @@ const styles = StyleSheet.create({
   logoBadge: {
     width: 36,
     height: 36,
-    borderRadius: 11,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#2563EB',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 3,
   },
   logoText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: '900',
-    letterSpacing: -0.5,
+    color: '#FFFFFF',
+    fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
   },
   brandTextCol: {
     justifyContent: 'center',
   },
-  titleWithPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
   brandTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
-    letterSpacing: -0.4,
-  },
-  brandAccent: {
-    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   syncRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    marginTop: 2,
+    marginTop: 1,
   },
   syncDot: {
     width: 6,
@@ -199,27 +184,26 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   syncDotPulse: {
-    opacity: 0.4,
+    opacity: 0.6,
   },
   syncText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
-    letterSpacing: -0.2,
   },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   iconButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
   actionIconSmall: {
-    fontSize: 13,
+    fontSize: 14,
   },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { theme } from '../theme';
+import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
+import { theme, useTheme } from '../theme';
 import { formatINR } from '../formatters';
 
 interface FinancialSummaryCardsProps {
@@ -20,30 +20,53 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
   onPressInflows,
   onPressOutflows,
 }) => {
+  const { isDark } = useTheme();
   const budgetUtilization = budgetAllocated > 0 ? ((monthlyOutflows / budgetAllocated) * 100).toFixed(0) : '0';
   const hasInflows = monthlyInflows > 0;
   const hasOutflows = monthlyOutflows > 0;
+
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const labelColor = isDark ? '#94A3B8' : '#64748B';
+  const subColor = isDark ? '#64748B' : '#94A3B8';
 
   return (
     <View style={styles.container}>
       <View style={styles.row}>
         {/* Inflows Card */}
         <TouchableOpacity
-          style={styles.card}
+          style={[styles.card, { backgroundColor: cardBg, borderColor }]}
           onPress={onPressInflows}
           activeOpacity={onPressInflows ? 0.75 : 1}
           disabled={!onPressInflows}
         >
           <View style={styles.cardHeader}>
-            <Text style={styles.label}>MONTHLY INFLOWS</Text>
-            <View style={styles.iconCircleGreen}>
+            <Text style={[styles.label, { color: labelColor }]}>MONTHLY INFLOWS</Text>
+            <View
+              style={[
+                styles.iconCircleGreen,
+                { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : '#ECFDF5' },
+              ]}
+            >
               <Text style={styles.iconGreen}>↓</Text>
             </View>
           </View>
-          <Text style={styles.valueGreen}>{formatINR(monthlyInflows)}</Text>
+          <Text style={[styles.valueGreen, { color: isDark ? '#34D399' : '#059669' }]}>
+            {formatINR(monthlyInflows)}
+          </Text>
           <View style={styles.footerRow}>
-            <Text style={styles.subtitle}>{hasInflows ? 'Salary & Yield' : 'Awaiting Inflow'}</Text>
-            <View style={styles.badgeGreen}>
+            <Text style={[styles.subtitle, { color: subColor }]}>
+              {hasInflows ? 'Salary & Yield' : 'Awaiting Inflow'}
+            </Text>
+            <View
+              style={[
+                styles.badgeGreen,
+                {
+                  backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5',
+                  borderColor: isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0',
+                },
+              ]}
+            >
               <Text style={styles.badgeTextGreen}>{hasInflows ? '+12.4%' : 'Fresh'}</Text>
             </View>
           </View>
@@ -51,22 +74,41 @@ export const FinancialSummaryCards: React.FC<FinancialSummaryCardsProps> = ({
 
         {/* Outflows Card */}
         <TouchableOpacity
-          style={styles.card}
+          style={[styles.card, { backgroundColor: cardBg, borderColor }]}
           onPress={onPressOutflows}
           activeOpacity={onPressOutflows ? 0.75 : 1}
           disabled={!onPressOutflows}
         >
           <View style={styles.cardHeader}>
-            <Text style={styles.label}>MONTHLY OUTFLOWS</Text>
-            <View style={styles.iconCircleRed}>
+            <Text style={[styles.label, { color: labelColor }]}>MONTHLY OUTFLOWS</Text>
+            <View
+              style={[
+                styles.iconCircleRed,
+                { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2' },
+              ]}
+            >
               <Text style={styles.iconRed}>↑</Text>
             </View>
           </View>
-          <Text style={styles.valueRed}>{formatINR(monthlyOutflows)}</Text>
+          <Text style={[styles.valueRed, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+            {formatINR(monthlyOutflows)}
+          </Text>
           <View style={styles.footerRow}>
-            <Text style={styles.subtitle}>{hasOutflows ? `${budgetUtilization}% of budget` : '0% of budget'}</Text>
-            <View style={styles.badgeGreen}>
-              <Text style={styles.badgeTextGreen}>{hasOutflows ? '-9.9%' : '0% Burn'}</Text>
+            <Text style={[styles.subtitle, { color: subColor }]}>
+              {hasOutflows ? `${budgetUtilization}% of budget` : '0% of budget'}
+            </Text>
+            <View
+              style={[
+                styles.badgeGreen,
+                {
+                  backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF',
+                  borderColor: isDark ? 'rgba(59, 130, 246, 0.3)' : '#BFDBFE',
+                },
+              ]}
+            >
+              <Text style={[styles.badgeTextGreen, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                {hasOutflows ? '-9.9%' : '0% Burn'}
+              </Text>
             </View>
           </View>
         </TouchableOpacity>

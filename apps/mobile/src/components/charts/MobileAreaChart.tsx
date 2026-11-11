@@ -18,7 +18,7 @@ import Svg, {
   G,
   Text as SvgText,
 } from 'react-native-svg';
-import { theme } from '../../theme';
+import { theme, useTheme } from '../../theme';
 import { formatINR } from '../../formatters';
 import { Transaction } from '../../types';
 
@@ -58,6 +58,7 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
   transactions = [],
   onOpenNetWorth,
 }) => {
+  const { theme, isDark } = useTheme();
   const [period, setPeriod] = useState<string>('1M');
   const [viewMode, setViewMode] = useState<'trend' | 'waterfall'>('trend');
   const [chartWidth, setChartWidth] = useState<number>(
@@ -185,35 +186,93 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
   const activePoint = selectedIndex !== null ? series[selectedIndex] : null;
 
   return (
-    <View style={styles.card} onLayout={onLayout}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: isDark ? '#111827' : '#FFFFFF',
+          borderColor: isDark ? '#1F2937' : '#E2E8F0',
+        },
+      ]}
+      onLayout={onLayout}
+    >
       {/* Header with Mode Toggle & Sheet shortcut */}
       <View style={styles.headerRow}>
         <View>
           <View style={styles.titleWithBadge}>
-            <Text style={styles.title}>NET WORTH TRAJECTORY</Text>
-            <View style={styles.actualBadge}>
-              <Text style={styles.actualText}>DOUBLE-ENTRY</Text>
+            <Text style={[styles.title, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              NET WORTH TRAJECTORY
+            </Text>
+            <View
+              style={[
+                styles.actualBadge,
+                {
+                  backgroundColor: isDark ? 'rgba(59, 130, 246, 0.2)' : '#EFF6FF',
+                  borderColor: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(37, 99, 235, 0.15)',
+                },
+              ]}
+            >
+              <Text style={[styles.actualText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                VERIFIED
+              </Text>
             </View>
           </View>
-          <Text style={styles.subtitle}>Verified Against General Journal</Text>
+          <Text style={[styles.subtitle, { color: isDark ? '#64748B' : '#94A3B8' }]}>
+            General Journal Double-Entry
+          </Text>
         </View>
 
-        <View style={styles.modeToggleGroup}>
+        <View
+          style={[
+            styles.modeToggleGroup,
+            { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+          ]}
+        >
           <TouchableOpacity
-            style={[styles.modeBtn, viewMode === 'trend' && styles.modeBtnActive]}
+            style={[
+              styles.modeBtn,
+              viewMode === 'trend' && [
+                styles.modeBtnActive,
+                { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF' },
+              ],
+            ]}
             onPress={() => setViewMode('trend')}
             activeOpacity={0.7}
           >
-            <Text style={[styles.modeBtnText, viewMode === 'trend' && styles.modeBtnTextActive]}>
+            <Text
+              style={[
+                styles.modeBtnText,
+                { color: isDark ? '#94A3B8' : '#64748B' },
+                viewMode === 'trend' && [
+                  styles.modeBtnTextActive,
+                  { color: isDark ? '#F8FAFC' : '#0F172A' },
+                ],
+              ]}
+            >
               Trend
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.modeBtn, viewMode === 'waterfall' && styles.modeBtnActive]}
+            style={[
+              styles.modeBtn,
+              viewMode === 'waterfall' && [
+                styles.modeBtnActive,
+                { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF' },
+              ],
+            ]}
             onPress={() => setViewMode('waterfall')}
             activeOpacity={0.7}
           >
-            <Text style={[styles.modeBtnText, viewMode === 'waterfall' && styles.modeBtnTextActive]}>
+            <Text
+              style={[
+                styles.modeBtnText,
+                { color: isDark ? '#94A3B8' : '#64748B' },
+                viewMode === 'waterfall' && [
+                  styles.modeBtnTextActive,
+                  { color: isDark ? '#F8FAFC' : '#0F172A' },
+                ],
+              ]}
+            >
               Bridge
             </Text>
           </TouchableOpacity>
@@ -223,7 +282,7 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
       {/* Main KPI Amount & Growth Metric */}
       <View style={styles.kpiRow}>
         <View>
-          <Text style={styles.kpiAmount}>
+          <Text style={[styles.kpiAmount, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
             {formatINR(activePoint ? activePoint.value : currentNetWorth)}
           </Text>
           <View style={styles.growthRow}>
@@ -240,14 +299,29 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
                     {growthPct.toFixed(2)}% ({formatINR(growth)})
                   </Text>
                 </View>
-                <Text style={styles.growthPeriodText}>
+                <Text
+                  style={[
+                    styles.growthPeriodText,
+                    { color: isDark ? '#94A3B8' : '#64748B' },
+                  ]}
+                >
                   {activePoint ? `on ${activePoint.date}` : `in selected ${period}`}
                 </Text>
               </>
             ) : (
-              <View style={[styles.growthPill, { backgroundColor: '#F1F5F9' }]}>
-                <Text style={[styles.growthText, { color: '#64748B' }]}>
-                  ● Fresh Personal Ledger
+              <View
+                style={[
+                  styles.growthPill,
+                  { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.growthText,
+                    { color: isDark ? '#94A3B8' : '#64748B' },
+                  ]}
+                >
+                  ● Ledger In Balance
                 </Text>
               </View>
             )}
@@ -256,13 +330,26 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
 
         {onOpenNetWorth && (
           <TouchableOpacity
-            style={styles.sheetBtn}
+            style={[
+              styles.sheetBtn,
+              {
+                backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                borderColor: isDark ? '#334155' : '#E2E8F0',
+              },
+            ]}
             onPress={onOpenNetWorth}
             activeOpacity={0.75}
             accessibilityRole="button"
             accessibilityLabel="View detailed balance sheet"
           >
-            <Text style={styles.sheetBtnText}>Balance Sheet ›</Text>
+            <Text
+              style={[
+                styles.sheetBtnText,
+                { color: isDark ? '#60A5FA' : '#2563EB' },
+              ]}
+            >
+              Balance Sheet ›
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -289,7 +376,7 @@ export const MobileAreaChart: React.FC<MobileAreaChartProps> = ({
                     y1={y}
                     x2={chartWidth - paddingRight}
                     y2={y}
-                    stroke="#E2E8F0"
+                    stroke={isDark ? '#1F2937' : '#E2E8F0'}
                     strokeDasharray="3 3"
                     strokeWidth={1}
                   />

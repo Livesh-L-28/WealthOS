@@ -106,3 +106,4 @@ async def test_database_and_storage_health():
     redis_health = await check_redis_health()
     assert "status" in redis_health
     assert redis_health["status"] in ("healthy", "degraded")
+

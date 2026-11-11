@@ -1008,6 +1008,10 @@ function WealthOSContent() {
               goals={goals}
               transactions={transactions}
               holdings={holdings}
+              userName="Livesh"
+              isPrivacyMode={isPrivacyMode}
+              onTogglePrivacy={handleTogglePrivacy}
+              onTransferFunds={() => setIsTransferModalOpen(true)}
               onConnectBank={() => setIsConnectModalOpen(true)}
               onImportStatement={() => setIsImportModalOpen(true)}
               onAddTransaction={() => handleOpenAddExpense()}

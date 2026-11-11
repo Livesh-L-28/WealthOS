@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { Transaction } from '../types';
 import { formatINR } from '../formatters';
 
@@ -13,27 +13,36 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
   transactions,
   onViewAll,
 }) => {
+  const { isDark } = useTheme();
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const titleColor = isDark ? '#94A3B8' : '#64748B';
+  const subColor = isDark ? '#64748B' : '#94A3B8';
+  const primaryText = isDark ? '#F8FAFC' : '#0F172A';
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.title}>RECENT JOURNAL ENTRIES</Text>
-            <Text style={styles.subtitle}>Double-Entry Verified Postings</Text>
+            <Text style={[styles.title, { color: titleColor }]}>RECENT ACTIVITY</Text>
+            <Text style={[styles.subtitle, { color: subColor }]}>Double-Entry General Journal</Text>
           </View>
           <TouchableOpacity onPress={onViewAll} activeOpacity={0.7}>
-            <Text style={styles.viewAllText}>View All →</Text>
+            <Text style={[styles.viewAllText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+              View All ›
+            </Text>
           </TouchableOpacity>
         </View>
 
         {transactions.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyEmoji}>📝</Text>
-            <Text style={styles.emptyTitle}>No Transactions Recorded</Text>
-            <Text style={styles.emptySubtitle}>
-              Tap + below to record an income or expense to begin building your general journal.
+            <Text style={[styles.emptyTitle, { color: primaryText }]}>No Transactions Yet</Text>
+            <Text style={[styles.emptySubtitle, { color: titleColor }]}>
+              Tap '+ Record' on the top card to log your first income or expense.
             </Text>
           </View>
         ) : (
