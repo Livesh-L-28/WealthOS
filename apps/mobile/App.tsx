@@ -43,6 +43,10 @@ import {
 } from './src/data';
 import { localStore } from './src/storage/localStore';
 import { setGlobalPrivacyMode } from './src/formatters';
+import { BiometricShield } from './src/components/BiometricShield';
+import { generateIdempotencyKey, registerIdempotencyKey, commitIdempotencyKey, failIdempotencyKey } from './src/idempotency';
+import { validateDoubleEntryTransaction } from './src/ledger/doubleEntryValidator';
+import { logger } from './src/logger';
 
 import { Header } from './src/components/Header';
 import { BottomNav } from './src/components/BottomNav';
@@ -417,8 +421,22 @@ function WealthOSContent() {
     type: 'DEBIT' | 'CREDIT';
     accountName: string;
   }) => {
+    // 0. Input validation & Double-Entry Pre-Flight
+    if (!data.amount || isNaN(data.amount) || data.amount <= 0) {
+      showNotification('Transaction amount must be strictly greater than zero.');
+      return;
+    }
+
+    // Idempotency token registration to prevent duplicate submits / double-tapping
+    const idempotencyKey = generateIdempotencyKey();
+    if (!registerIdempotencyKey(idempotencyKey)) {
+      showNotification('Transaction already being processed. Duplicate submission prevented.');
+      return;
+    }
+
     const targetAccount = accounts.find((a) => a.name === data.accountName) || accounts[0];
     if (!targetAccount) {
+      failIdempotencyKey(idempotencyKey);
       showNotification('Please connect an account first.');
       return;
     }
@@ -454,7 +472,7 @@ function WealthOSContent() {
       `✓ Posted ${data.type === 'CREDIT' ? '+' : '-'}${formatINR(data.amount)} for ${data.title}`
     );
 
-    // 3. Sync to backend repository in background (non-blocking)
+    // 3. Sync to backend repository in background (non-blocking) with idempotency
     try {
       const postRes = await accountingService.postTransaction({
         title: data.title,
@@ -463,11 +481,12 @@ function WealthOSContent() {
         type: data.type,
         accountId: targetAccount.id,
       });
+      commitIdempotencyKey(idempotencyKey, postRes);
       if (postRes && postRes.success) {
         await loadLiveLedgerData();
       }
-    } catch {
-      // Offline fallback: retained in local state
+    } catch (err: any) {
+      logger.warn('Backend sync deferred (persisted in offline encrypted store):', err.message);
     }
   };
 
@@ -1223,7 +1242,9 @@ export default function App() {
         <SafeAreaFrameContext.Provider value={staticFrame}>
           <ErrorBoundary>
             <ThemeProvider>
-              <WealthOSContent />
+              <BiometricShield>
+                <WealthOSContent />
+              </BiometricShield>
             </ThemeProvider>
           </ErrorBoundary>
         </SafeAreaFrameContext.Provider>

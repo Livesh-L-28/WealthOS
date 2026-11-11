@@ -9,6 +9,7 @@ import { MobileDonutAllocationChart } from './charts/MobileDonutAllocationChart'
 import { FinancialHealthCard } from './FinancialHealthCard';
 import { RecentTransactionsCard } from './RecentTransactionsCard';
 import { MorningBriefCard } from './MorningBriefCard';
+import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 
 interface OverviewScreenProps {
   period: DashboardPeriod;
@@ -94,25 +95,29 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
       </View>
 
       {/* Daily 30-Second Wealth Intelligence Brief Card */}
-      <MorningBriefCard
-        netWorth={netWorth}
-        monthlyInflows={monthlyInflows}
-        monthlyOutflows={monthlyOutflows}
-        totalAssets={totalAssets}
-        totalLiabilities={totalLiabilities}
-        goals={goals}
-        transactions={transactions}
-        onOpenAnalytics={onOpenAnalytics}
-      />
+      <WidgetErrorBoundary name="Morning Intelligence Brief">
+        <MorningBriefCard
+          netWorth={netWorth}
+          monthlyInflows={monthlyInflows}
+          monthlyOutflows={monthlyOutflows}
+          totalAssets={totalAssets}
+          totalLiabilities={totalLiabilities}
+          goals={goals}
+          transactions={transactions}
+          onOpenAnalytics={onOpenAnalytics}
+        />
+      </WidgetErrorBoundary>
 
       {/* 1. Hero Net Worth Interactive Bezier Area Chart with Trajectory & Attribution */}
-      <MobileAreaChart
-        currentNetWorth={netWorth}
-        monthlyInflows={monthlyInflows}
-        monthlyOutflows={monthlyOutflows}
-        transactions={transactions}
-        onOpenNetWorth={onOpenNetWorth}
-      />
+      <WidgetErrorBoundary name="Hero Net Worth Chart">
+        <MobileAreaChart
+          currentNetWorth={netWorth}
+          monthlyInflows={monthlyInflows}
+          monthlyOutflows={monthlyOutflows}
+          transactions={transactions}
+          onOpenNetWorth={onOpenNetWorth}
+        />
+      </WidgetErrorBoundary>
 
       {/* 2. Primary Add Expense & Add Income Action Bar */}
       {onAddExpense && onAddIncome && (
@@ -134,36 +139,44 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
       />
 
       {/* 4. Multi-Asset Portfolio Asset Allocation Donut Ring Chart */}
-      <MobileDonutAllocationChart
-        totalValue={totalPortfolioValue}
-        totalInvested={totalInvestedValue}
-        holdings={holdings}
-        onOpenPortfolio={onOpenPortfolio}
-        onAddInvestment={onAddInvestment}
-      />
+      <WidgetErrorBoundary name="Asset Allocation Chart">
+        <MobileDonutAllocationChart
+          totalValue={totalPortfolioValue}
+          totalInvested={totalInvestedValue}
+          holdings={holdings}
+          onOpenPortfolio={onOpenPortfolio}
+          onAddInvestment={onAddInvestment}
+        />
+      </WidgetErrorBoundary>
 
       {/* 5. Solvency & Financial Health Rating */}
-      <FinancialHealthCard
-        totalAssets={totalAssets}
-        totalLiabilities={totalLiabilities}
-        monthlyInflows={monthlyInflows}
-        monthlyOutflows={monthlyOutflows}
-        onPress={onOpenAnalytics}
-      />
+      <WidgetErrorBoundary name="Financial Health">
+        <FinancialHealthCard
+          totalAssets={totalAssets}
+          totalLiabilities={totalLiabilities}
+          monthlyInflows={monthlyInflows}
+          monthlyOutflows={monthlyOutflows}
+          onPress={onOpenAnalytics}
+        />
+      </WidgetErrorBoundary>
 
       {/* 6. Recent Transactions General Journal */}
-      <RecentTransactionsCard
-        transactions={transactions}
-        onViewAll={onViewAllTransactions}
-      />
+      <WidgetErrorBoundary name="Recent Transactions Ledger">
+        <RecentTransactionsCard
+          transactions={transactions}
+          onViewAll={onViewAllTransactions}
+        />
+      </WidgetErrorBoundary>
 
       {/* 7. Comprehensive Cash Flow Inflow vs Outflow & Trajectory Graph */}
-      <MobileCashFlowBarChart
-        monthlyInflows={monthlyInflows}
-        monthlyOutflows={monthlyOutflows}
-        transactions={transactions}
-        onOpenAnalytics={onOpenAnalytics}
-      />
+      <WidgetErrorBoundary name="Cash Flow Bar Chart">
+        <MobileCashFlowBarChart
+          monthlyInflows={monthlyInflows}
+          monthlyOutflows={monthlyOutflows}
+          transactions={transactions}
+          onOpenAnalytics={onOpenAnalytics}
+        />
+      </WidgetErrorBoundary>
     </View>
   );
 };
