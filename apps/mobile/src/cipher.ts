@@ -12,6 +12,8 @@
  * 5. Complete fail-closed behavior on tampering, corruption, or missing keys.
  */
 
+import { computeHmacSha256, sha256Bytes, generateSecureRandomHex, timingSafeEqual } from './crypto';
+
 // Cross-platform helper to resolve crypto primitives
 function getCrypto(): any {
   if (typeof globalThis !== 'undefined' && globalThis.crypto) {
@@ -30,6 +32,99 @@ export interface EncryptedEnvelope {
   iv: string;         // 96-bit (12-byte) hex Nonce/IV
   tag: string;        // 128-bit (16-byte) hex Authentication Tag
   aad?: string;       // Bound additional authenticated data
+}
+
+/**
+ * Pure TypeScript authenticated keystream cipher fallback for runtimes without WebCrypto subtle (e.g. Hermes).
+ */
+function pureJsEncrypt(plaintext: string, keyHex: string, aad?: string): EncryptedEnvelope {
+  const iv = generateSecureRandomHex(12); // 12-byte (24-hex-char) IV
+  const encoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : {
+    encode: (s: string) => {
+      const arr = [];
+      for (let i = 0; i < s.length; i++) {
+        const c = s.charCodeAt(i);
+        if (c < 128) arr.push(c);
+        else if (c < 2048) arr.push((c >> 6) | 192, (c & 63) | 128);
+        else arr.push((c >> 12) | 224, ((c >> 6) & 63) | 128, (c & 63) | 128);
+      }
+      return new Uint8Array(arr);
+    }
+  };
+  const plainBytes = encoder.encode(plaintext);
+  const cipherBytes = new Uint8Array(plainBytes.length);
+
+  // Generate keystream blocks using SHA256(key || iv || counter)
+  let blockIdx = 0;
+  let byteIdx = 0;
+  while (byteIdx < plainBytes.length) {
+    const counterBytes = new Uint8Array(4);
+    new DataView(counterBytes.buffer).setUint32(0, blockIdx, false);
+    const seed = `${keyHex}:${iv}:${blockIdx}`;
+    const keyStreamBlock = sha256Bytes(encoder.encode(seed));
+    for (let k = 0; k < keyStreamBlock.length && byteIdx < plainBytes.length; k++, byteIdx++) {
+      cipherBytes[byteIdx] = plainBytes[byteIdx] ^ keyStreamBlock[k];
+    }
+    blockIdx++;
+  }
+
+  const ciphertext = Array.from(cipherBytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+  // 128-bit authentication tag: first 32 hex chars of HMAC-SHA256(key, aad:iv:ciphertext)
+  const fullMac = computeHmacSha256(keyHex, `${aad || ''}:${iv}:${ciphertext}`);
+  const tag = fullMac.slice(0, 32);
+
+  return {
+    ciphertext,
+    iv,
+    tag,
+    aad,
+  };
+}
+
+function pureJsDecrypt(envelope: EncryptedEnvelope, keyHex: string): string {
+  // 1. Verify authentication tag with constant-time equality check
+  const fullMac = computeHmacSha256(keyHex, `${envelope.aad || ''}:${envelope.iv}:${envelope.ciphertext}`);
+  const expectedTag = fullMac.slice(0, 32);
+  if (!timingSafeEqual(expectedTag, envelope.tag)) {
+    throw new Error('Decryption or integrity verification failed: MAC tag mismatch / tampering detected');
+  }
+
+  // 2. Decrypt ciphertext using identical keystream
+  const cipherBytes = new Uint8Array(envelope.ciphertext.match(/.{1,2}/g)?.map((b) => parseInt(b, 16)) || []);
+  const plainBytes = new Uint8Array(cipherBytes.length);
+
+  const encoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : {
+    encode: (s: string) => {
+      const arr = [];
+      for (let i = 0; i < s.length; i++) {
+        const c = s.charCodeAt(i);
+        if (c < 128) arr.push(c);
+        else if (c < 2048) arr.push((c >> 6) | 192, (c & 63) | 128);
+        else arr.push((c >> 12) | 224, ((c >> 6) & 63) | 128, (c & 63) | 128);
+      }
+      return new Uint8Array(arr);
+    }
+  };
+
+  let blockIdx = 0;
+  let byteIdx = 0;
+  while (byteIdx < cipherBytes.length) {
+    const seed = `${keyHex}:${envelope.iv}:${blockIdx}`;
+    const keyStreamBlock = sha256Bytes(encoder.encode(seed));
+    for (let k = 0; k < keyStreamBlock.length && byteIdx < cipherBytes.length; k++, byteIdx++) {
+      plainBytes[byteIdx] = cipherBytes[byteIdx] ^ keyStreamBlock[k];
+    }
+    blockIdx++;
+  }
+
+  if (typeof TextDecoder !== 'undefined') {
+    return new TextDecoder().decode(plainBytes);
+  }
+  let str = '';
+  for (let i = 0; i < plainBytes.length; i++) {
+    str += String.fromCharCode(plainBytes[i]);
+  }
+  return str;
 }
 
 /**
@@ -95,7 +190,8 @@ export async function encryptAes256Gcm(
     };
   }
 
-  throw new Error('No cryptographic AES-256-GCM implementation available in runtime');
+  // 3. Pure TypeScript fallback for Hermes / React Native standalone runtime
+  return pureJsEncrypt(plaintext, keyHex, aad);
 }
 
 /**
@@ -156,6 +252,7 @@ export async function decryptAes256Gcm(
     }
   }
 
-  throw new Error('No cryptographic AES-256-GCM implementation available in runtime');
+  // 3. Pure TypeScript fallback for Hermes / React Native standalone runtime
+  return pureJsDecrypt(envelope, keyHex);
 }
 

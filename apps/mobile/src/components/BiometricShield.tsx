@@ -45,64 +45,77 @@ export const BiometricShield: React.FC<BiometricShieldProps> = ({
     let isMounted = true;
     async function checkHardware() {
       try {
+        if (!LocalAuthentication || typeof LocalAuthentication.hasHardwareAsync !== 'function') {
+          return;
+        }
         const hasHardware = await LocalAuthentication.hasHardwareAsync();
         const isEnrolled = await LocalAuthentication.isEnrolledAsync();
         const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
 
         if (isMounted) {
-          setHasBiometrics(hasHardware && isEnrolled);
-          if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
-            setBiometricType('Face ID');
-          } else if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-            setBiometricType('Fingerprint');
+          setHasBiometrics(Boolean(hasHardware && isEnrolled));
+          if (Array.isArray(types)) {
+            if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+              setBiometricType('Face ID');
+            } else if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+              setBiometricType('Fingerprint');
+            }
           }
         }
       } catch (err: any) {
-        logger.warn('Biometric capability check skipped:', err.message);
+        logger.warn('Biometric capability check skipped:', err?.message || String(err));
       }
     }
-    checkHardware();
+    checkHardware().catch(() => {});
     return () => { isMounted = false; };
   }, []);
 
   // Native biometric authentication trigger
   const triggerBiometricAuth = useCallback(async () => {
-    if (!hasBiometrics) return;
+    if (!hasBiometrics || !LocalAuthentication || typeof LocalAuthentication.authenticateAsync !== 'function') return;
     try {
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Authenticate to unlock WealthOS',
         fallbackLabel: 'Use PIN',
         disableDeviceFallback: false,
       });
-      if (result.success) {
+      if (result && result.success) {
         setIsLocked(false);
         setEnteredPin('');
         setPinError(false);
       }
     } catch (err: any) {
-      logger.warn('Biometric prompt dismissed or failed:', err.message);
+      logger.warn('Biometric prompt dismissed or failed:', err?.message || String(err));
     }
   }, [hasBiometrics]);
 
   // Auto-lock when returning from background > 30 seconds
   useEffect(() => {
     const handleAppStateChange = (nextState: AppStateStatus) => {
-      if (nextState === 'background' || nextState === 'inactive') {
-        setIsInBackground(true);
-        backgroundTimestampRef.current = Date.now();
-      } else if (nextState === 'active') {
-        setIsInBackground(false);
-        const lastBg = backgroundTimestampRef.current;
-        if (enabled && lastBg && Date.now() - lastBg > AUTO_LOCK_TIMEOUT_MS) {
-          setIsLocked(true);
-          triggerBiometricAuth();
+      try {
+        if (nextState === 'background' || nextState === 'inactive') {
+          setIsInBackground(true);
+          backgroundTimestampRef.current = Date.now();
+        } else if (nextState === 'active') {
+          setIsInBackground(false);
+          const lastBg = backgroundTimestampRef.current;
+          if (enabled && lastBg && Date.now() - lastBg > AUTO_LOCK_TIMEOUT_MS) {
+            setIsLocked(true);
+            triggerBiometricAuth().catch(() => {});
+          }
+          backgroundTimestampRef.current = null;
         }
-        backgroundTimestampRef.current = null;
+      } catch (err: any) {
+        logger.warn('AppState transition handler safe catch:', err);
       }
     };
 
     const sub = AppState.addEventListener('change', handleAppStateChange);
-    return () => sub.remove();
+    return () => {
+      try {
+        sub?.remove?.();
+      } catch {}
+    };
   }, [enabled, triggerBiometricAuth]);
 
   // Handle PIN Keypad Press

@@ -16,16 +16,19 @@ class MainActivity : ReactActivity() {
     // Set the theme to AppTheme BEFORE onCreate to support
     // coloring the background, status bar, and navigation bar.
     // This is required for expo-splash-screen.
-    setTheme(R.style.AppTheme);
-
-    // Enterprise Financial Security: Prevent external screenshotting & screen recording,
-    // and protect confidential wealth data from leaking into the Android Recent Apps thumbnail.
-    window.setFlags(
-      WindowManager.LayoutParams.FLAG_SECURE,
-      WindowManager.LayoutParams.FLAG_SECURE
-    );
-
+    setTheme(R.style.AppTheme)
     super.onCreate(null)
+
+    try {
+      // Enterprise Financial Security: Prevent external screenshotting & screen recording,
+      // and protect confidential wealth data from leaking into the Android Recent Apps thumbnail.
+      window.setFlags(
+        WindowManager.LayoutParams.FLAG_SECURE,
+        WindowManager.LayoutParams.FLAG_SECURE
+      )
+    } catch (_: Throwable) {
+      // Graceful fallback if device window policy restricts flags
+    }
   }
 
   /**

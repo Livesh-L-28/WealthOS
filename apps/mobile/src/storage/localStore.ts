@@ -70,32 +70,44 @@ const DEFAULT_WELCOME_COPILOT: CopilotMessage[] = [
 const ENCRYPTED_PREFIX = 'wos_enc_v1:';
 const dbDriver = new EncryptedLocalDatabase();
 let cachedMasterKey: string | null = null;
+let masterKeyInitPromise: Promise<string | null> | null = null;
 
 async function getMasterKey(): Promise<string | null> {
   if (cachedMasterKey) return cachedMasterKey;
-  try {
-    cachedMasterKey = await dbDriver.initialize(true);
-    return cachedMasterKey;
-  } catch (err: any) {
-    logger.warn('Hardware key initialization fallback:', err.message);
-    return null;
-  }
+  if (masterKeyInitPromise) return masterKeyInitPromise;
+
+  masterKeyInitPromise = (async () => {
+    try {
+      cachedMasterKey = await dbDriver.initialize(true);
+      return cachedMasterKey;
+    } catch (err: any) {
+      logger.warn('Hardware key initialization fallback:', err?.message || String(err));
+      return null;
+    } finally {
+      masterKeyInitPromise = null;
+    }
+  })();
+
+  return masterKeyInitPromise;
 }
 
 /**
  * Encrypts a payload string with AES-256-GCM if hardware key is available.
  */
 async function securePack(rawJson: string, aadKey: string): Promise<string> {
+  if (!rawJson) return rawJson ?? '';
   try {
     const key = await getMasterKey();
     if (key) {
       const env = await encryptAes256Gcm(rawJson, key, aadKey);
-      return ENCRYPTED_PREFIX + JSON.stringify(env);
+      if (env && env.ciphertext) {
+        return ENCRYPTED_PREFIX + JSON.stringify(env);
+      }
     }
   } catch (err: any) {
-    logger.warn(`Encryption deferred for ${aadKey}:`, err.message);
+    logger.warn(`Encryption deferred for ${aadKey}:`, err?.message || String(err));
   }
-  return rawJson;
+  return rawJson ?? '';
 }
 
 /**

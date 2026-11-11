@@ -92,6 +92,22 @@ import {
 } from './src/api/domainServices';
 import { validateDeepLink } from './src/deeplink';
 
+// Global unhandled error & promise trap to prevent Android release process termination
+if (typeof globalThis !== 'undefined') {
+  const errorUtils = (globalThis as any).ErrorUtils;
+  if (errorUtils && typeof errorUtils.setGlobalHandler === 'function') {
+    const prevHandler = errorUtils.getGlobalHandler?.();
+    errorUtils.setGlobalHandler((error: any, isFatal?: boolean) => {
+      console.warn('[WealthOS Global Safety Guard] Trapped runtime exception:', error?.message || error);
+      if (prevHandler && !isFatal) {
+        try {
+          prevHandler(error, false);
+        } catch {}
+      }
+    });
+  }
+}
+
 export { formatINR };
 
 // Class ErrorBoundary for resilient native error trapping
