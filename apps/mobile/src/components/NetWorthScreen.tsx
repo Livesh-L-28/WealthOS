@@ -65,17 +65,17 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({
     return () => { isMounted = false; };
   }, [extraPayment]);
 
-  const totalAssets = propAssets ?? (backendData?.nw?.summary?.total_assets ? parseFloat(backendData.nw.summary.total_assets) : BALANCE_SHEET_ASSETS.reduce((sum, a) => sum + a.amount, 0));
-  const totalLiabilities = propLiabilities ?? (backendData?.nw?.summary?.total_liabilities ? parseFloat(backendData.nw.summary.total_liabilities) : BALANCE_SHEET_LIABILITIES.reduce((sum, l) => sum + l.amount, 0));
-  const netWorth = propNetWorth ?? (totalAssets - totalLiabilities);
+  const totalAssets = propAssets !== undefined ? propAssets : (backendData?.nw?.summary?.total_assets ? parseFloat(backendData.nw.summary.total_assets) : 0);
+  const totalLiabilities = propLiabilities !== undefined ? propLiabilities : (backendData?.nw?.summary?.total_liabilities ? parseFloat(backendData.nw.summary.total_liabilities) : 0);
+  const netWorth = propNetWorth !== undefined ? propNetWorth : (totalAssets - totalLiabilities);
 
-  const interestSaved = backendData?.strat?.avalanche?.interest_saved
+  const interestSaved = totalLiabilities === 0 ? 0 : (backendData?.strat?.avalanche?.interest_saved
     ? (strategy === 'AVALANCHE' ? parseFloat(backendData.strat.avalanche.interest_saved) : parseFloat(backendData.strat.snowball?.interest_saved || '218000'))
-    : (strategy === 'AVALANCHE' ? 256500 + extraPayment * 4.2 : 218000 + extraPayment * 3.8);
+    : (strategy === 'AVALANCHE' ? 256500 + extraPayment * 4.2 : 218000 + extraPayment * 3.8));
 
-  const monthsReduced = backendData?.strat?.avalanche?.months_saved
+  const monthsReduced = totalLiabilities === 0 ? 0 : (backendData?.strat?.avalanche?.months_saved
     ? (strategy === 'AVALANCHE' ? backendData.strat.avalanche.months_saved : backendData.strat.snowball?.months_saved || 18)
-    : Math.min(48, Math.round(18 + extraPayment / 750));
+    : Math.min(48, Math.round(18 + extraPayment / 750)));
 
   return (
     <ScrollView
@@ -178,60 +178,80 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({
       {/* Asset Breakdown Section */}
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionHeading}>ASSET ALLOCATION BREAKDOWN</Text>
-        <Text style={styles.sectionCount}>{BALANCE_SHEET_ASSETS.length} Classes</Text>
+        <Text style={styles.sectionCount}>{totalAssets === 0 ? '0 Classes' : `${BALANCE_SHEET_ASSETS.length} Classes`}</Text>
       </View>
 
       <View style={styles.cardGroup}>
-        {BALANCE_SHEET_ASSETS.map((asset) => (
-          <View key={asset.id} style={styles.assetItemRow}>
-            <View style={styles.assetIconBox}>
-              <Text style={styles.assetIcon}>
-                {asset.category === 'Cash' ? '🏦' : asset.category === 'Investments' ? '📈' : asset.category === 'Fixed Income' ? '🪙' : '🏢'}
-              </Text>
-            </View>
-            <View style={styles.assetInfoCol}>
-              <View style={styles.assetTitleRow}>
-                <Text style={styles.assetName}>{asset.name}</Text>
-                <Text style={styles.assetAmount}>{formatINR(asset.amount)}</Text>
-              </View>
-              <View style={styles.assetBarTrack}>
-                <View style={[styles.assetBarFill, { width: `${asset.share}%` }]} />
-              </View>
-              <View style={styles.assetSubRow}>
-                <Text style={styles.assetCategory}>{asset.category}</Text>
-                <Text style={styles.assetShare}>{asset.share}% of Wealth</Text>
-              </View>
-            </View>
+        {totalAssets === 0 ? (
+          <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+            <Text style={{ fontSize: 26, marginBottom: 6 }}>🏛️</Text>
+            <Text style={[styles.assetName, { textAlign: 'center', marginBottom: 4 }]}>No Assets Recorded Yet</Text>
+            <Text style={{ fontSize: 12, color: textSecondary, textAlign: 'center' }}>
+              Link your bank accounts or record investments to track your balance sheet.
+            </Text>
           </View>
-        ))}
+        ) : (
+          BALANCE_SHEET_ASSETS.map((asset) => (
+            <View key={asset.id} style={styles.assetItemRow}>
+              <View style={styles.assetIconBox}>
+                <Text style={styles.assetIcon}>
+                  {asset.category === 'Cash' ? '🏦' : asset.category === 'Investments' ? '📈' : asset.category === 'Fixed Income' ? '🪙' : '🏢'}
+                </Text>
+              </View>
+              <View style={styles.assetInfoCol}>
+                <View style={styles.assetTitleRow}>
+                  <Text style={styles.assetName}>{asset.name}</Text>
+                  <Text style={styles.assetAmount}>{formatINR(asset.amount)}</Text>
+                </View>
+                <View style={styles.assetBarTrack}>
+                  <View style={[styles.assetBarFill, { width: `${asset.share}%` }]} />
+                </View>
+                <View style={styles.assetSubRow}>
+                  <Text style={styles.assetCategory}>{asset.category}</Text>
+                  <Text style={styles.assetShare}>{asset.share}% of Wealth</Text>
+                </View>
+              </View>
+            </View>
+          ))
+        )}
       </View>
 
       {/* Liabilities Breakdown */}
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionHeading}>DEBT OBLIGATIONS & LIABILITIES</Text>
-        <Text style={styles.sectionCount}>{BALANCE_SHEET_LIABILITIES.length} Debts</Text>
+        <Text style={styles.sectionCount}>{totalLiabilities === 0 ? '0 Debts' : `${BALANCE_SHEET_LIABILITIES.length} Debts`}</Text>
       </View>
 
       <View style={styles.cardGroup}>
-        {BALANCE_SHEET_LIABILITIES.map((debt) => (
-          <View key={debt.id} style={styles.debtItemRow}>
-            <View style={styles.debtIconBox}>
-              <Text style={styles.debtIcon}>💳</Text>
-            </View>
-            <View style={styles.debtInfoCol}>
-              <View style={styles.debtTitleRow}>
-                <Text style={styles.debtName}>{debt.name}</Text>
-                <Text style={styles.debtAmount}>{formatINR(debt.amount)}</Text>
-              </View>
-              <View style={styles.debtDetailsRow}>
-                <View style={styles.aprPill}>
-                  <Text style={styles.aprPillText}>{debt.rate}% APR</Text>
-                </View>
-                <Text style={styles.debtEmiText}>EMI: {formatINR(debt.emi)}/mo</Text>
-              </View>
-            </View>
+        {totalLiabilities === 0 ? (
+          <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+            <Text style={{ fontSize: 26, marginBottom: 6 }}>🛡️</Text>
+            <Text style={[styles.debtName, { textAlign: 'center', marginBottom: 4 }]}>No Outstanding Liabilities</Text>
+            <Text style={{ fontSize: 12, color: textSecondary, textAlign: 'center' }}>
+              All liabilities are clear. You are completely debt free.
+            </Text>
           </View>
-        ))}
+        ) : (
+          BALANCE_SHEET_LIABILITIES.map((debt) => (
+            <View key={debt.id} style={styles.debtItemRow}>
+              <View style={styles.debtIconBox}>
+                <Text style={styles.debtIcon}>💳</Text>
+              </View>
+              <View style={styles.debtInfoCol}>
+                <View style={styles.debtTitleRow}>
+                  <Text style={styles.debtName}>{debt.name}</Text>
+                  <Text style={styles.debtAmount}>{formatINR(debt.amount)}</Text>
+                </View>
+                <View style={styles.debtDetailsRow}>
+                  <View style={styles.aprPill}>
+                    <Text style={styles.aprPillText}>{debt.rate}% APR</Text>
+                  </View>
+                  <Text style={styles.debtEmiText}>EMI: {formatINR(debt.emi)}/mo</Text>
+                </View>
+              </View>
+            </View>
+          ))
+        )}
       </View>
 
       {/* Debt Payoff Optimizer Engine */}
@@ -322,52 +342,60 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({
       {/* Amortization Schedule */}
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionHeading}>LOAN AMORTIZATION SCHEDULE</Text>
-        <Text style={styles.sectionCount}>Next 5 Installments</Text>
+        <Text style={styles.sectionCount}>{totalLiabilities === 0 ? '0 Installments' : 'Next 5 Installments'}</Text>
       </View>
 
       <View style={styles.amortizationGroup}>
-        {SAMPLE_AMORTIZATION_SCHEDULE.map((item) => (
-          <View key={item.installment} style={styles.amortItemRow}>
-            <View style={styles.installmentBadge}>
-              <Text style={styles.installmentBadgeText}>#{item.installment}</Text>
-            </View>
-            <View style={styles.amortContentCol}>
-              <View style={styles.amortTopRow}>
-                <Text style={styles.amortDueDate}>{item.dueDate}</Text>
-                <View
-                  style={[
-                    styles.statusPill,
-                    item.status === 'PAID' && styles.statusPaid,
-                    item.status === 'DUE' && styles.statusDue,
-                    item.status === 'UPCOMING' && styles.statusUpcoming,
-                  ]}
-                >
-                  <Text
+        {totalLiabilities === 0 ? (
+          <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+            <Text style={{ fontSize: 12, color: textSecondary, textAlign: 'center' }}>
+              No active loans or scheduled debt repayments.
+            </Text>
+          </View>
+        ) : (
+          SAMPLE_AMORTIZATION_SCHEDULE.map((item) => (
+            <View key={item.installment} style={styles.amortItemRow}>
+              <View style={styles.installmentBadge}>
+                <Text style={styles.installmentBadgeText}>#{item.installment}</Text>
+              </View>
+              <View style={styles.amortContentCol}>
+                <View style={styles.amortTopRow}>
+                  <Text style={styles.amortDueDate}>{item.dueDate}</Text>
+                  <View
                     style={[
-                      styles.statusPillText,
-                      item.status === 'PAID' && styles.statusPaidText,
-                      item.status === 'DUE' && styles.statusDueText,
-                      item.status === 'UPCOMING' && styles.statusUpcomingText,
+                      styles.statusPill,
+                      item.status === 'PAID' && styles.statusPaid,
+                      item.status === 'DUE' && styles.statusDue,
+                      item.status === 'UPCOMING' && styles.statusUpcoming,
                     ]}
                   >
-                    {item.status}
+                    <Text
+                      style={[
+                        styles.statusPillText,
+                        item.status === 'PAID' && styles.statusPaidText,
+                        item.status === 'DUE' && styles.statusDueText,
+                        item.status === 'UPCOMING' && styles.statusUpcomingText,
+                      ]}
+                    >
+                      {item.status}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.amortValuesRow}>
+                  <Text style={styles.amortPrincipal}>
+                    Principal: <Text style={styles.boldText}>{formatINR(item.principal)}</Text>
+                  </Text>
+                  <Text style={styles.amortInterest}>
+                    Interest: <Text style={styles.boldText}>{formatINR(item.interest)}</Text>
+                  </Text>
+                  <Text style={styles.amortBalance}>
+                    Bal: {formatINR(item.remaining)}
                   </Text>
                 </View>
               </View>
-              <View style={styles.amortValuesRow}>
-                <Text style={styles.amortPrincipal}>
-                  Principal: <Text style={styles.boldText}>{formatINR(item.principal)}</Text>
-                </Text>
-                <Text style={styles.amortInterest}>
-                  Interest: <Text style={styles.boldText}>{formatINR(item.interest)}</Text>
-                </Text>
-                <Text style={styles.amortBalance}>
-                  Bal: {formatINR(item.remaining)}
-                </Text>
-              </View>
             </View>
-          </View>
-        ))}
+          ))
+        )}
       </View>
 
       {/* Download Audited Statement CTA Card */}
@@ -377,7 +405,7 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({
             <Text style={styles.exportBadgeIcon}>🛡️</Text>
             <Text style={styles.exportBadgeText}>CERTIFIED TREASURY AUDIT REPORT</Text>
           </View>
-          <Text style={styles.exportTitle}>Official Family Office Balance Sheet</Text>
+          <Text style={styles.exportTitle}>Certified Balance Sheet Statement</Text>
           <Text style={styles.exportDesc}>
             Export institutional statement with SHA-256 Merkle audit seal, asset classification, debt schedule, and statutory compliance certification.
           </Text>

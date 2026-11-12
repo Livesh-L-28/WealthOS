@@ -139,14 +139,14 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
     return () => { isMounted = false; };
   }, [cadence]);
 
-  const fallback = CADENCE_DATA[cadence];
-  const totalSpend = monthlyOutflows && cadence === 'MONTHLY' ? monthlyOutflows : (backendData?.summary?.total_expenses ? parseFloat(backendData.summary.total_expenses) : fallback.totalSpend);
-  const ceiling = fallback.ceiling;
-  const previousSpend = fallback.previousSpend;
-  const periodLabel = fallback.periodLabel;
-  const needs = backendData?.summary?.needs ? parseFloat(backendData.summary.needs) : fallback.needs;
-  const wants = backendData?.summary?.wants ? parseFloat(backendData.summary.wants) : fallback.wants;
-  const investments = backendData?.summary?.investments ? parseFloat(backendData.summary.investments) : fallback.investments;
+  const hasSpend = Boolean(monthlyOutflows || backendData?.summary?.total_expenses);
+  const totalSpend = hasSpend ? (monthlyOutflows && cadence === 'MONTHLY' ? monthlyOutflows : parseFloat(backendData?.summary?.total_expenses || '0')) : 0;
+  const ceiling = hasSpend ? (backendData?.summary?.ceiling ? parseFloat(backendData.summary.ceiling) : Math.round(totalSpend * 1.25)) : 0;
+  const previousSpend = hasSpend ? parseFloat(backendData?.summary?.previous_spend || '0') : 0;
+  const periodLabel = CADENCE_DATA[cadence].periodLabel;
+  const needs = hasSpend ? (backendData?.summary?.needs ? parseFloat(backendData.summary.needs) : Math.round(totalSpend * 0.5)) : 0;
+  const wants = hasSpend ? (backendData?.summary?.wants ? parseFloat(backendData.summary.wants) : Math.round(totalSpend * 0.3)) : 0;
+  const investments = hasSpend ? (backendData?.summary?.investments ? parseFloat(backendData.summary.investments) : Math.round(totalSpend * 0.2)) : 0;
   const dailyBurn = cadence === 'DAILY' ? totalSpend : Math.round(totalSpend / 30);
 
   const data = {
@@ -338,32 +338,47 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
       {/* Category Spend Distribution */}
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionHeading}>SPENDING BY CATEGORY</Text>
-        <Text style={styles.sectionSub}>Sorted by volume</Text>
+        <Text style={styles.sectionSub}>{totalSpend === 0 ? '0 categories' : 'Sorted by volume'}</Text>
       </View>
 
       <View style={styles.categoryCard}>
-        {CATEGORIES.map((cat, i) => (
-          <View key={cat.name} style={[styles.catRow, i > 0 && styles.catRowBorder]}>
-            <View style={styles.catLeft}>
-              <View style={[styles.catColorDot, { backgroundColor: cat.color }]} />
-              <View>
-                <Text style={styles.catName}>{cat.name}</Text>
-                <Text style={styles.catPct}>{cat.pct}% of total</Text>
-              </View>
-            </View>
-            <Text style={styles.catAmount}>{formatINR(cat.amount)}</Text>
+        {totalSpend === 0 ? (
+          <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+            <Text style={{ fontSize: 12, color: textSecondary, textAlign: 'center' }}>
+              No expenses recorded in this period. Log transactions to see category distribution.
+            </Text>
           </View>
-        ))}
+        ) : (
+          CATEGORIES.map((cat, i) => (
+            <View key={cat.name} style={[styles.catRow, i > 0 && styles.catRowBorder]}>
+              <View style={styles.catLeft}>
+                <View style={[styles.catColorDot, { backgroundColor: cat.color }]} />
+                <View>
+                  <Text style={styles.catName}>{cat.name}</Text>
+                  <Text style={styles.catPct}>{cat.pct}% of total</Text>
+                </View>
+              </View>
+              <Text style={styles.catAmount}>{formatINR(cat.amount)}</Text>
+            </View>
+          ))
+        )}
       </View>
 
       {/* Top Recurring Fixed Outflows */}
       <View style={styles.sectionHeaderRow}>
         <Text style={styles.sectionHeading}>RECURRING COMMITMENTS & SUBSCRIPTIONS</Text>
-        <Text style={styles.sectionSub}>{RECURRING_ITEMS.length} Auto-debits</Text>
+        <Text style={styles.sectionSub}>{totalSpend === 0 ? '0 Auto-debits' : `${RECURRING_ITEMS.length} Auto-debits`}</Text>
       </View>
 
       <View style={styles.recurringCard}>
-        {RECURRING_ITEMS.map((item, i) => (
+        {totalSpend === 0 ? (
+          <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+            <Text style={{ fontSize: 12, color: textSecondary, textAlign: 'center' }}>
+              No recurring auto-debit rules or subscription commitments active.
+            </Text>
+          </View>
+        ) : (
+          RECURRING_ITEMS.map((item, i) => (
           <View key={item.name} style={[styles.recRow, i > 0 && styles.recRowBorder]}>
             <View style={styles.recIconBox}>
               <Text style={styles.recIcon}>🔄</Text>
@@ -379,7 +394,7 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
               </View>
             </View>
           </View>
-        ))}
+        )))}
       </View>
 
       {/* "What-If" Wealth Compounding Simulator Card */}

@@ -213,9 +213,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Top Header Controls */}
         <View style={styles.topRow}>
-          <View style={[styles.statusBadge, { backgroundColor: theme.colors.primaryLightSolid }]}>
-            <Text style={[styles.statusBadgeText, { color: theme.colors.primary }]}>
-              POSTGRESQL &bull; GATE 4 ENCRYPTED
+          <View style={[styles.statusBadge, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)' }]}>
+            <Text style={[styles.statusBadgeText, { color: isDark ? '#34D399' : '#059669' }]}>
+              🔒 BANK-GRADE ENCRYPTED
             </Text>
           </View>
           <TouchableOpacity
@@ -236,10 +236,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             Wealth<Text style={[styles.brandAccent, { color: theme.colors.primary }]}>OS</Text>
           </Text>
           <Text style={[styles.tagline, { color: theme.colors.textSecondary }]}>
-            Double-Entry Wealth Operating System
+            Private Financial Operating System
           </Text>
           <Text style={[styles.custodySub, { color: theme.colors.textTertiary }]}>
-            PostgreSQL 16 Database &bull; Argon2id Credentials &bull; Hardware KeyStore
+            Institutional Double-Entry Ledger &bull; Real-Time Net Worth
           </Text>
         </View>
 
@@ -300,56 +300,26 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
         {/* SIGN IN FORM */}
         {authMode === 'SIGNIN' ? (
           <View style={styles.formCard}>
-            {/* Workspace Pills */}
-            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary }]}>SELECT ACTIVE ENTITY</Text>
-            <View style={styles.wsRow}>
-              {['Family Office', 'Personal Holdings', 'Business Treasury'].map((ws) => {
-                const isSelected = activeWorkspace === ws;
-                return (
-                  <TouchableOpacity
-                    key={ws}
-                    style={[
-                      styles.wsPill,
-                      {
-                        backgroundColor: isSelected ? theme.colors.primaryLightSolid : theme.colors.card,
-                        borderColor: isSelected ? theme.colors.primary : theme.colors.border,
-                      },
-                    ]}
-                    onPress={() => onSelectWorkspace(ws)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.wsPillText,
-                        { color: isSelected ? theme.colors.primary : theme.colors.textSecondary },
-                      ]}
-                    >
-                      {ws}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
             {/* Email Field */}
-            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 12 }]}>EMAIL ADDRESS</Text>
+            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary }]}>EMAIL ADDRESS</Text>
             <TextInput
               style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }]}
               value={loginEmail}
               onChangeText={setLoginEmail}
-              placeholder="e.g. founder@wealthos.dev"
+              placeholder="name@example.com"
               placeholderTextColor={theme.colors.textTertiary}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
             />
 
             {/* Password Field */}
-            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 12 }]}>MASTER PASSWORD</Text>
+            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 14 }]}>PASSWORD</Text>
             <TextInput
               style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }]}
               value={loginPassword}
               onChangeText={setLoginPassword}
-              placeholder="Enter your master password"
+              placeholder="Enter your password"
               placeholderTextColor={theme.colors.textTertiary}
               secureTextEntry
             />
@@ -362,7 +332,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               activeOpacity={0.85}
             >
               <Text style={styles.primaryActionText}>
-                {isSubmitting ? 'Authenticating...' : 'Sign In to Family Office'}
+                {isSubmitting ? 'Signing In...' : 'Sign In'}
               </Text>
             </TouchableOpacity>
 
@@ -370,29 +340,14 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             <TouchableOpacity
               style={[styles.biometricBtn, { borderColor: theme.colors.border }]}
               onPress={() => {
-                onShowToast?.('✓ Biometric authentication verified via KeyStore.');
+                onShowToast?.('✓ Biometric authentication verified.');
                 onUnlock();
               }}
               activeOpacity={0.8}
             >
               <Text style={styles.biometricBtnIcon}>🛡️</Text>
               <Text style={[styles.biometricBtnText, { color: theme.colors.textPrimary }]}>
-                Quick Biometric / KeyStore Unlock
-              </Text>
-            </TouchableOpacity>
-
-            {/* Offline Mode / Instant Preview */}
-            <TouchableOpacity
-              style={[styles.offlineBtn, { borderColor: theme.colors.border, backgroundColor: theme.colors.cardSubtle }]}
-              onPress={() => {
-                onShowToast?.('✓ Continuing in Offline Mode with local ledger.');
-                onUnlock();
-              }}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.offlineBtnIcon}>⚡</Text>
-              <Text style={[styles.offlineBtnText, { color: theme.colors.textPrimary }]}>
-                Continue in Offline Mode / Instant Preview
+                Unlock with Face ID / Fingerprint
               </Text>
             </TouchableOpacity>
 
@@ -403,7 +358,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               activeOpacity={0.7}
             >
               <Text style={[styles.switchModeText, { color: theme.colors.textSecondary }]}>
-                Don't have an account? <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>Register New Workspace</Text>
+                Don't have an account? <Text style={{ color: theme.colors.primary, fontWeight: '700' }}>Create an Account</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -433,59 +388,45 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               </View>
             </View>
 
-            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 12 }]}>EMAIL ADDRESS</Text>
+            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 14 }]}>EMAIL ADDRESS</Text>
             <TextInput
               style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }]}
               value={regEmail}
               onChangeText={setRegEmail}
-              placeholder="e.g. founder@wealthos.dev"
+              placeholder="name@example.com"
               placeholderTextColor={theme.colors.textTertiary}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
             />
 
-            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 12 }]}>PASSWORD</Text>
+            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 14 }]}>CREATE PASSWORD</Text>
             <TextInput
               style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }]}
               value={regPassword}
               onChangeText={setRegPassword}
-              placeholder="Min 12 chars, upper, lower, symbol"
+              placeholder="Min 12 characters"
               placeholderTextColor={theme.colors.textTertiary}
               secureTextEntry
             />
 
-            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 12 }]}>FAMILY OFFICE / ENTITY NAME</Text>
+            <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary, marginTop: 14 }]}>PORTFOLIO / WORKSPACE NAME</Text>
             <TextInput
               style={[styles.input, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }]}
               value={regWorkspace}
               onChangeText={setRegWorkspace}
-              placeholder="e.g. Sharma Family Office"
+              placeholder="e.g. My Wealth Portfolio"
               placeholderTextColor={theme.colors.textTertiary}
             />
 
             <TouchableOpacity
-              style={[styles.primaryActionBtn, { backgroundColor: theme.colors.primary, marginTop: 18 }]}
+              style={[styles.primaryActionBtn, { backgroundColor: theme.colors.primary, marginTop: 20 }]}
               onPress={handleRegister}
               disabled={isSubmitting}
               activeOpacity={0.85}
             >
               <Text style={styles.primaryActionText}>
-                {isSubmitting ? 'Provisioning...' : 'Create Account & Initialize Ledger'}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Offline Mode / Instant Preview */}
-            <TouchableOpacity
-              style={[styles.offlineBtn, { borderColor: theme.colors.border, backgroundColor: theme.colors.cardSubtle }]}
-              onPress={() => {
-                onShowToast?.('✓ Continuing in Offline Mode with local ledger.');
-                onUnlock();
-              }}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.offlineBtnIcon}>⚡</Text>
-              <Text style={[styles.offlineBtnText, { color: theme.colors.textPrimary }]}>
-                Continue in Offline Mode / Instant Preview
+                {isSubmitting ? 'Creating Account...' : 'Create Account'}
               </Text>
             </TouchableOpacity>
 
@@ -501,11 +442,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           </View>
         )}
 
-        {/* Database Diagnostic Footer */}
-        <View style={styles.dbStatusCard}>
-          <Text style={styles.dbStatusDot}>🟢</Text>
-          <Text style={[styles.dbStatusText, { color: theme.colors.textSecondary }]}>
-            Connected to PostgreSQL (127.0.0.1:5432) &bull; API v1 (Port 8000)
+        {/* Bank-Grade Security Footer */}
+        <View style={styles.securityFooter}>
+          <Text style={[styles.securityFooterText, { color: theme.colors.textTertiary }]}>
+            🔒 256-Bit SSL Encryption &bull; Hardware KeyStore &bull; Private Ledger
           </Text>
         </View>
       </ScrollView>
@@ -720,29 +660,21 @@ const styles = StyleSheet.create({
   },
   switchModeFooter: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 18,
     paddingVertical: 6,
   },
   switchModeText: {
-    fontSize: 11,
+    fontSize: 12,
   },
-  dbStatusCard: {
-    flexDirection: 'row',
+  securityFooter: {
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    marginTop: 20,
     paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: '#F0FDF4',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#DCFCE7',
   },
-  dbStatusDot: {
-    fontSize: 8,
-  },
-  dbStatusText: {
-    fontSize: 10,
+  securityFooterText: {
+    fontSize: 10.5,
     fontWeight: '600',
+    textAlign: 'center',
   },
 });

@@ -32,15 +32,6 @@ import {
   CopilotMessage,
   DocumentItem,
 } from './src/types';
-import {
-  INITIAL_ACCOUNTS,
-  INITIAL_TRANSACTIONS,
-  INITIAL_HOLDINGS,
-  INITIAL_BUDGETS,
-  INITIAL_GOALS,
-  INITIAL_COPILOT_MESSAGES,
-  INITIAL_DOCUMENTS,
-} from './src/data';
 import { localStore } from './src/storage/localStore';
 import { setGlobalPrivacyMode } from './src/formatters';
 import { BiometricShield } from './src/components/BiometricShield';
@@ -165,6 +156,7 @@ function WealthOSContent() {
   const [period, setPeriod] = useState<DashboardPeriod>('1M');
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string>('User');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isRestoringSession, setIsRestoringSession] = useState<boolean>(true);
 
@@ -270,6 +262,9 @@ function WealthOSContent() {
             if (session.activeTenant?.name) {
               setActiveWorkspace(session.activeTenant.name);
             }
+            if (session.user?.name) {
+              setUserName(session.user.name);
+            }
             await loadLiveLedgerData();
           } else {
             setIsAuthenticated(false);
@@ -318,28 +313,6 @@ function WealthOSContent() {
     setDocuments(clean.documents);
     setCopilotMessages(clean.copilotMessages);
     showNotification('Ledger cleared to clean production state');
-  };
-
-  const handleLoadDemoData = async () => {
-    setAccounts(INITIAL_ACCOUNTS);
-    setTransactions(INITIAL_TRANSACTIONS);
-    setHoldings(INITIAL_HOLDINGS);
-    setBudgets(INITIAL_BUDGETS);
-    setGoals(INITIAL_GOALS);
-    setDocuments(INITIAL_DOCUMENTS);
-    setCopilotMessages(INITIAL_COPILOT_MESSAGES);
-    await localStore.saveLedgerState({
-      hasOnboarded: true,
-      accounts: INITIAL_ACCOUNTS,
-      transactions: INITIAL_TRANSACTIONS,
-      holdings: INITIAL_HOLDINGS,
-      budgets: INITIAL_BUDGETS,
-      goals: INITIAL_GOALS,
-      documents: INITIAL_DOCUMENTS,
-      copilotMessages: INITIAL_COPILOT_MESSAGES,
-      workspace: 'Family Office Demo',
-    });
-    showNotification('Loaded sample demonstration data');
   };
 
   // Modals & Drawer
@@ -858,6 +831,9 @@ function WealthOSContent() {
             if (sessionData?.activeTenant?.name) {
               setActiveWorkspace(sessionData.activeTenant.name);
             }
+            if (sessionData?.user?.name) {
+              setUserName(sessionData.user.name);
+            }
             showNotification('Session authenticated. Loading live ledger...');
             await loadLiveLedgerData();
           }}
@@ -1041,7 +1017,7 @@ function WealthOSContent() {
               transactions={transactions}
               accounts={accounts}
               holdings={holdings}
-              userName="Livesh"
+              userName={userName}
               isPrivacyMode={isPrivacyMode}
               onTogglePrivacy={handleTogglePrivacy}
               onTransferFunds={() => setIsTransferModalOpen(true)}
@@ -1058,7 +1034,6 @@ function WealthOSContent() {
               onAddBudget={() => setIsCreateBudgetModalOpen(true)}
               onAddGoal={() => setIsCreateGoalModalOpen(true)}
               onAddInvestment={() => setIsAddInvestmentModalOpen(true)}
-              onLoadSampleData={handleLoadDemoData}
               onResetToFresh={handleResetToFresh}
             />
           </ScrollView>
@@ -1171,7 +1146,6 @@ function WealthOSContent() {
           showNotification(`Active tenant switched to ${ws}`);
         }}
         onResetToFresh={handleResetToFresh}
-        onLoadSampleData={handleLoadDemoData}
         onLogout={handleLogout}
       />
 

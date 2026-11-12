@@ -20,7 +20,6 @@ interface EnterpriseDrawerProps {
   activeWorkspace: string;
   onSelectWorkspace: (workspace: string) => void;
   onResetToFresh?: () => void;
-  onLoadSampleData?: () => void;
   onLogout?: () => void;
 }
 
@@ -155,7 +154,6 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
   activeWorkspace,
   onSelectWorkspace,
   onResetToFresh,
-  onLoadSampleData,
   onLogout,
 }) => {
   const { isDark } = useTheme();
@@ -276,43 +274,24 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
             ))}
 
             {/* Ledger Mode & Data Controls */}
-            {(onResetToFresh || onLoadSampleData) && (
+            {onResetToFresh && (
               <View style={styles.dataControlsContainer}>
                 <Text style={styles.sectionLabel}>LEDGER STATE & DATA CONTROLS</Text>
                 <View style={styles.dataControlsRow}>
-                  {onResetToFresh && (
-                    <TouchableOpacity
-                      style={styles.dataControlBtnFresh}
-                      onPress={() => {
-                        onResetToFresh();
-                        onClose();
-                      }}
-                      activeOpacity={0.75}
-                    >
-                      <Text style={styles.dataControlBtnIcon}>🌱</Text>
-                      <View style={styles.dataControlBtnTexts}>
-                        <Text style={styles.dataControlBtnTitleFresh}>Reset to Fresh Ledger</Text>
-                        <Text style={styles.dataControlBtnSubFresh}>Reset to clean slate</Text>
-                      </View>
-                    </TouchableOpacity>
-                  )}
-
-                  {onLoadSampleData && (
-                    <TouchableOpacity
-                      style={styles.dataControlBtnSample}
-                      onPress={() => {
-                        onLoadSampleData();
-                        onClose();
-                      }}
-                      activeOpacity={0.75}
-                    >
-                      <Text style={styles.dataControlBtnIcon}>📋</Text>
-                      <View style={styles.dataControlBtnTexts}>
-                        <Text style={styles.dataControlBtnTitleSample}>Load Demo Portfolio</Text>
-                        <Text style={styles.dataControlBtnSubSample}>Populate demo records</Text>
-                      </View>
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity
+                    style={styles.dataControlBtnFresh}
+                    onPress={() => {
+                      onResetToFresh();
+                      onClose();
+                    }}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={styles.dataControlBtnIcon}>🌱</Text>
+                    <View style={styles.dataControlBtnTexts}>
+                      <Text style={styles.dataControlBtnTitleFresh}>Reset to Fresh Ledger</Text>
+                      <Text style={styles.dataControlBtnSubFresh}>Reset to clean slate</Text>
+                    </View>
+                  </TouchableOpacity>
                 </View>
               </View>
             )}

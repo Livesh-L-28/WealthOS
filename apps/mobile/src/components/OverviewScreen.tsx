@@ -44,7 +44,6 @@ interface OverviewScreenProps {
   onOpenNetWorth?: () => void;
   onOpenAnalytics?: () => void;
   onOpenPortfolio?: () => void;
-  onLoadSampleData?: () => void;
   onResetToFresh?: () => void;
 }
 
@@ -80,7 +79,6 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
   onOpenNetWorth,
   onOpenAnalytics,
   onOpenPortfolio,
-  onLoadSampleData,
   onResetToFresh,
 }) => {
   const { theme, isDark } = useTheme();
@@ -155,18 +153,6 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
                 📝 Record Transaction
               </Text>
             </TouchableOpacity>
-
-            {onLoadSampleData && (
-              <TouchableOpacity
-                style={{ paddingVertical: 6, alignItems: 'center', marginTop: 4 }}
-                onPress={onLoadSampleData}
-                activeOpacity={0.7}
-              >
-                <Text style={{ fontSize: 11, color: isDark ? '#64748B' : '#94A3B8', fontWeight: '600' }}>
-                  (Optional) Populate sample data for preview
-                </Text>
-              </TouchableOpacity>
-            )}
           </View>
 
           <View style={styles.highlightsRow}>

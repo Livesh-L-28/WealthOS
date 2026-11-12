@@ -56,16 +56,16 @@ export const LiabilitiesScreen: React.FC<LiabilitiesScreenProps> = ({
     return () => { isMounted = false; };
   }, [extraPayment]);
 
-  const totalLiabilities = propTotalLiabilities ?? (summaryData?.total_outstanding_principal ? parseFloat(summaryData.total_outstanding_principal) : BALANCE_SHEET_LIABILITIES.reduce((s, l) => s + l.amount, 0));
-  const totalMonthlyEMI = summaryData?.total_monthly_emi ? parseFloat(summaryData.total_monthly_emi) : BALANCE_SHEET_LIABILITIES.reduce((s, l) => s + l.emi, 0);
+  const totalLiabilities = propTotalLiabilities !== undefined ? propTotalLiabilities : (summaryData?.total_outstanding_principal ? parseFloat(summaryData.total_outstanding_principal) : 0);
+  const totalMonthlyEMI = summaryData?.total_monthly_emi ? parseFloat(summaryData.total_monthly_emi) : 0;
 
-  const interestSaved = strategyData?.avalanche?.interest_saved
+  const interestSaved = totalLiabilities === 0 ? 0 : (strategyData?.avalanche?.interest_saved
     ? (strategy === 'AVALANCHE' ? parseFloat(strategyData.avalanche.interest_saved) : parseFloat(strategyData.snowball?.interest_saved || '218000'))
-    : (strategy === 'AVALANCHE' ? 256500 + extraPayment * 4.2 : 218000 + extraPayment * 3.8);
+    : (strategy === 'AVALANCHE' ? 256500 + extraPayment * 4.2 : 218000 + extraPayment * 3.8));
 
-  const monthsReduced = strategyData?.avalanche?.months_saved
+  const monthsReduced = totalLiabilities === 0 ? 0 : (strategyData?.avalanche?.months_saved
     ? (strategy === 'AVALANCHE' ? strategyData.avalanche.months_saved : strategyData.snowball?.months_saved || 18)
-    : Math.min(48, Math.round(18 + extraPayment / 750));
+    : Math.min(48, Math.round(18 + extraPayment / 750)));
 
   return (
     <ScrollView
@@ -118,7 +118,7 @@ export const LiabilitiesScreen: React.FC<LiabilitiesScreenProps> = ({
               Active Credit Accounts
             </Text>
             <Text style={[styles.statValue, { color: theme.colors.textPrimary }]}>
-              {BALANCE_SHEET_LIABILITIES.length} Facilities
+              {totalLiabilities === 0 ? '0 Facilities' : `${BALANCE_SHEET_LIABILITIES.length} Facilities`}
             </Text>
           </View>
         </View>
@@ -280,30 +280,40 @@ export const LiabilitiesScreen: React.FC<LiabilitiesScreenProps> = ({
         <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>
           ACTIVE LIABILITIES BREAKDOWN
         </Text>
-        {BALANCE_SHEET_LIABILITIES.map((l) => (
-          <View
-            key={l.id}
-            style={[
-              styles.facilityCard,
-              {
-                backgroundColor: theme.colors.card,
-                borderColor: theme.colors.border,
-              },
-            ]}
-          >
-            <View style={styles.facTop}>
-              <View>
-                <Text style={[styles.facName, { color: theme.colors.textPrimary }]}>{l.name}</Text>
-                <Text style={[styles.facRate, { color: theme.colors.textSecondary }]}>
-                  Interest: {l.rate}% APR • EMI: {formatINR(l.emi)}/mo
+        {totalLiabilities === 0 ? (
+          <View style={[styles.facilityCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border, paddingVertical: 24, alignItems: 'center' }]}>
+            <Text style={{ fontSize: 26, marginBottom: 6 }}>🛡️</Text>
+            <Text style={[styles.facName, { color: theme.colors.textPrimary, textAlign: 'center' }]}>No Active Debt or Loans</Text>
+            <Text style={[styles.facRate, { color: theme.colors.textSecondary, textAlign: 'center', marginTop: 4 }]}>
+              All credit facilities are settled and in pristine standing.
+            </Text>
+          </View>
+        ) : (
+          BALANCE_SHEET_LIABILITIES.map((l) => (
+            <View
+              key={l.id}
+              style={[
+                styles.facilityCard,
+                {
+                  backgroundColor: theme.colors.card,
+                  borderColor: theme.colors.border,
+                },
+              ]}
+            >
+              <View style={styles.facTop}>
+                <View>
+                  <Text style={[styles.facName, { color: theme.colors.textPrimary }]}>{l.name}</Text>
+                  <Text style={[styles.facRate, { color: theme.colors.textSecondary }]}>
+                    Interest: {l.rate}% APR • EMI: {formatINR(l.emi)}/mo
+                  </Text>
+                </View>
+                <Text style={[styles.facAmount, { color: theme.colors.negativeDark }]}>
+                  {formatINR(l.amount)}
                 </Text>
               </View>
-              <Text style={[styles.facAmount, { color: theme.colors.negativeDark }]}>
-                {formatINR(l.amount)}
-              </Text>
             </View>
-          </View>
-        ))}
+          ))
+        )}
       </View>
 
       {/* Amortization Schedule Table */}
@@ -311,7 +321,14 @@ export const LiabilitiesScreen: React.FC<LiabilitiesScreenProps> = ({
         <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>
           UPCOMING AMORTIZATION SCHEDULE
         </Text>
-        {SAMPLE_AMORTIZATION_SCHEDULE.map((item) => (
+        {totalLiabilities === 0 ? (
+          <View style={[styles.facilityCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border, paddingVertical: 20, alignItems: 'center' }]}>
+            <Text style={[styles.facRate, { color: theme.colors.textSecondary, textAlign: 'center' }]}>
+              No scheduled loan installments or active amortization plans.
+            </Text>
+          </View>
+        ) : (
+          SAMPLE_AMORTIZATION_SCHEDULE.map((item) => (
           <View
             key={item.installment}
             style={[
@@ -359,7 +376,7 @@ export const LiabilitiesScreen: React.FC<LiabilitiesScreenProps> = ({
               </Text>
             </View>
           </View>
-        ))}
+        )))}
       </View>
     </ScrollView>
   );
