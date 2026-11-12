@@ -161,7 +161,7 @@ function WealthOSContent() {
   const topPadding = Platform.OS === 'android' ? androidStatusBarHeight + 8 : 44;
 
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('overview');
-  const [activeWorkspace, setActiveWorkspace] = useState('Family Office');
+  const [activeWorkspace, setActiveWorkspace] = useState('Personal');
   const [period, setPeriod] = useState<DashboardPeriod>('1M');
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);

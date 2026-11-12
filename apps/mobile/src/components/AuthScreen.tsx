@@ -29,9 +29,9 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   const { theme, isDark, toggleTheme } = useTheme();
   const [authMode, setAuthMode] = useState<'SIGNIN' | 'REGISTER'>('SIGNIN');
 
-  // Sign In State - seeded with verified active test account
-  const [loginEmail, setLoginEmail] = useState('wealthos.mobile.test@example.com');
-  const [loginPassword, setLoginPassword] = useState('ValidSecurePassword123!@#');
+  // Sign In State - Clean empty fields for fresh installation
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 

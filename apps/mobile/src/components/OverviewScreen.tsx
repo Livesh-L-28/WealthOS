@@ -108,7 +108,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         />
       </WidgetErrorBoundary>
 
-      {/* 1.5. Quick Start / Demo Data Onboarding Banner for zero-friction exploration */}
+      {/* 1.5. Clean Slate Welcome & Quick Start Onboarding Card */}
       {isLedgerEmpty && (
         <View
           style={[
@@ -121,26 +121,24 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         >
           <View style={styles.quickStartHeader}>
             <View style={styles.quickStartBadge}>
-              <Text style={styles.quickStartBadgeText}>🚀 QUICK START GUIDE</Text>
+              <Text style={styles.quickStartBadgeText}>✨ CLEAN SLATE READY</Text>
             </View>
             <Text style={[styles.quickStartTitle, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
-              Experience WealthOS in Action
+              Welcome to Your Fresh Ledger
             </Text>
             <Text style={[styles.quickStartSub, { color: isDark ? '#94A3B8' : '#64748B' }]}>
-              Your secure double-entry financial ledger is initialized. Explore all interactive charts, cash flows, and AI Copilot with realistic demo data, or start by adding your accounts.
+              Your secure double-entry personal ledger is initialized with zero clutter. Add your bank accounts or record your first transaction to begin tracking your net worth and cash flows.
             </Text>
           </View>
 
           <View style={styles.quickStartButtons}>
-            {onLoadSampleData && (
-              <TouchableOpacity
-                style={styles.demoLoadBtn}
-                onPress={onLoadSampleData}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.demoLoadBtnText}>⚡ Load Demo Wealth Portfolio</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={styles.demoLoadBtn}
+              onPress={onConnectBank}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.demoLoadBtnText}>➕ Add Bank Account</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[
@@ -150,13 +148,25 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
                   borderColor: isDark ? '#334155' : '#CBD5E1',
                 },
               ]}
-              onPress={onConnectBank}
+              onPress={onAddTransaction}
               activeOpacity={0.8}
             >
               <Text style={[styles.addAccountBtnText, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
-                ➕ Add My Bank Account
+                📝 Record Transaction
               </Text>
             </TouchableOpacity>
+
+            {onLoadSampleData && (
+              <TouchableOpacity
+                style={{ paddingVertical: 6, alignItems: 'center', marginTop: 4 }}
+                onPress={onLoadSampleData}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 11, color: isDark ? '#64748B' : '#94A3B8', fontWeight: '600' }}>
+                  (Optional) Populate sample data for preview
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.highlightsRow}>

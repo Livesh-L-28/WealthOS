@@ -292,7 +292,7 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
                       <Text style={styles.dataControlBtnIcon}>🌱</Text>
                       <View style={styles.dataControlBtnTexts}>
                         <Text style={styles.dataControlBtnTitleFresh}>Reset to Fresh Ledger</Text>
-                        <Text style={styles.dataControlBtnSubFresh}>Clear all dummy records</Text>
+                        <Text style={styles.dataControlBtnSubFresh}>Reset to clean slate</Text>
                       </View>
                     </TouchableOpacity>
                   )}
