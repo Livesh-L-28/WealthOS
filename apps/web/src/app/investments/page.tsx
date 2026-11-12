@@ -386,27 +386,27 @@ export default function InvestmentsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Investments & Mutual Funds Manager</h1>
+            <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Investments & Mutual Funds Manager</h1>
             <Badge variant="positive" className="gap-1">
               <Sparkles className="w-3 h-3" />
               <span>Mark-to-Market</span>
             </Badge>
           </div>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#475569] mt-1">
             Real-time equity valuation, mutual fund NAVs, active SIP schedules, and strict FIFO tax-lot consumption.
           </p>
         </div>
 
         {/* View Switcher & Actions */}
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="flex items-center bg-[#F7F9F7] border border-[#E7ECE8] rounded-lg p-1">
+          <div className="flex items-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-1">
             <button
               onClick={() => setActiveTab('ALL')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-                activeTab === 'ALL' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+                activeTab === 'ALL' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#475569] hover:text-[#0F172A]'
               }`}
             >
               All Securities
@@ -414,7 +414,7 @@ export default function InvestmentsPage() {
             <button
               onClick={() => setActiveTab('MUTUAL_FUNDS')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-                activeTab === 'MUTUAL_FUNDS' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+                activeTab === 'MUTUAL_FUNDS' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#475569] hover:text-[#0F172A]'
               }`}
             >
               Mutual Funds & SIPs ({mutualFunds.length})
@@ -422,7 +422,7 @@ export default function InvestmentsPage() {
             <button
               onClick={() => setActiveTab('EQUITIES')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-                activeTab === 'EQUITIES' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+                activeTab === 'EQUITIES' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#475569] hover:text-[#0F172A]'
               }`}
             >
               Direct Equities
@@ -430,7 +430,7 @@ export default function InvestmentsPage() {
             <button
               onClick={() => setActiveTab('FIFO_LOTS')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold transition ${
-                activeTab === 'FIFO_LOTS' ? 'bg-[#16A36A] text-white shadow-sm' : 'text-[#758078] hover:text-[#17231D]'
+                activeTab === 'FIFO_LOTS' ? 'bg-[#10B981] text-white shadow-sm' : 'text-[#475569] hover:text-[#0F172A]'
               }`}
             >
               FIFO Lots & Tax Basis
@@ -453,17 +453,17 @@ export default function InvestmentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               {activeTab === 'MUTUAL_FUNDS' ? 'Mutual Fund AUM' : 'Total Portfolio AUM'}
             </span>
-            <PieChart className="w-4 h-4 text-[#16A36A]" />
+            <PieChart className="w-4 h-4 text-[#10B981]" />
           </div>
-          <p className="text-2xl font-bold text-[#17231D] mt-2">
+          <p className="text-2xl font-bold text-[#0F172A] mt-2">
             ₹{(activeTab === 'MUTUAL_FUNDS' ? totalMfValue : totalValue).toLocaleString('en-IN', {
               minimumFractionDigits: 2,
             })}
           </p>
-          <p className="text-[11px] text-[#758078] mt-1">
+          <p className="text-[11px] text-[#475569] mt-1">
             Invested Capital: ₹{(activeTab === 'MUTUAL_FUNDS' ? totalMfCost : totalCost).toLocaleString('en-IN', {
               minimumFractionDigits: 2,
             })}
@@ -472,7 +472,7 @@ export default function InvestmentsPage() {
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               Unrealized Gain / Return
             </span>
             <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -490,7 +490,7 @@ export default function InvestmentsPage() {
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               Active SIP Outflow
             </span>
             <Repeat className="w-4 h-4 text-teal-400" />
@@ -498,20 +498,20 @@ export default function InvestmentsPage() {
           <p className="text-2xl font-bold text-teal-300 mt-2">
             ₹{totalMonthlySip.toLocaleString('en-IN')}/mo
           </p>
-          <p className="text-[11px] text-[#758078] mt-1">
+          <p className="text-[11px] text-[#475569] mt-1">
             4 active automated systematic mandates
           </p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               Tax Lot Grounding
             </span>
             <ShieldCheck className="w-4 h-4 text-brand-400" />
           </div>
-          <p className="text-2xl font-bold text-[#17231D] mt-2">Strict FIFO</p>
-          <p className="text-[11px] text-[#758078] mt-1">STCG vs LTCG tax optimization enabled</p>
+          <p className="text-2xl font-bold text-[#0F172A] mt-2">Strict FIFO</p>
+          <p className="text-[11px] text-[#475569] mt-1">STCG vs LTCG tax optimization enabled</p>
         </Card>
       </div>
 
@@ -519,14 +519,14 @@ export default function InvestmentsPage() {
       {activeTab === 'MUTUAL_FUNDS' ? (
         <div className="space-y-6">
           {/* Active SIP Schedule Banner */}
-          <div className="bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-[#17231D]">Next Systematic Investment (SIP) Due</h3>
-                <p className="text-xs text-[#758078]">
+                <h3 className="text-sm font-semibold text-[#0F172A]">Next Systematic Investment (SIP) Due</h3>
+                <p className="text-xs text-[#475569]">
                   <span className="text-teal-400 font-semibold">10 Nov 2026</span> — ₹20,000 for Mirae Asset Large & Midcap Fund
                 </p>
               </div>
@@ -544,10 +544,10 @@ export default function InvestmentsPage() {
 
           {/* Mutual Funds Table */}
           <Card>
-            <div className="p-4 border-b border-[#E7ECE8] flex justify-between items-center">
+            <div className="p-4 border-b border-[#E2E8F0] flex justify-between items-center">
               <div>
-                <h2 className="text-base font-semibold text-[#17231D]">Mutual Fund Schemes & Folios</h2>
-                <p className="text-xs text-[#758078]">Direct growth schemes with automated daily NAV synchronization</p>
+                <h2 className="text-base font-semibold text-[#0F172A]">Mutual Fund Schemes & Folios</h2>
+                <p className="text-xs text-[#475569]">Direct growth schemes with automated daily NAV synchronization</p>
               </div>
               <Button
                 size="sm"
@@ -563,7 +563,7 @@ export default function InvestmentsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-[#E7ECE8] text-[#717D74] uppercase tracking-wider font-semibold">
+                  <tr className="border-b border-[#E2E8F0] text-[#64748B] uppercase tracking-wider font-semibold">
                     <th className="py-3 px-4">Scheme & Folio</th>
                     <th className="py-3 px-4">Category</th>
                     <th className="py-3 px-4 text-right">Units / Balance</th>
@@ -580,15 +580,15 @@ export default function InvestmentsPage() {
                     <th className="py-3 px-4 text-center">Active SIP</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E7ECE8]">
+                <tbody className="divide-y divide-[#E2E8F0]">
                   {mutualFunds.map((mf) => (
-                    <tr key={mf.folioNumber} className="hover:bg-[#F0F4F1] transition-colors">
+                    <tr key={mf.folioNumber} className="hover:bg-[#F1F5F9] transition-colors">
                       <td className="py-3 px-4">
-                        <div className="font-semibold text-[#17231D] text-sm">{mf.schemeName}</div>
-                        <div className="text-[#758078] font-mono text-[11px] flex items-center gap-1.5 mt-0.5">
+                        <div className="font-semibold text-[#0F172A] text-sm">{mf.schemeName}</div>
+                        <div className="text-[#475569] font-mono text-[11px] flex items-center gap-1.5 mt-0.5">
                           <span>{mf.amc}</span>
                           <span>•</span>
-                          <span className="text-[#9BA39D]">{mf.folioNumber}</span>
+                          <span className="text-[#64748B]">{mf.folioNumber}</span>
                         </div>
                         {mf.lockInMaturityDate && (
                           <div className="mt-1 inline-flex items-center gap-1 text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
@@ -598,21 +598,21 @@ export default function InvestmentsPage() {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#16A36A]/10 text-[#087A50] border border-[#16A36A]/20">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#10B981]/10 text-[#059669] border border-[#10B981]/20">
                           {mf.category}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-right font-mono text-[#17231D]">
+                      <td className="py-3 px-4 text-right font-mono text-[#0F172A]">
                         {mf.units.toLocaleString('en-IN', { maximumFractionDigits: 3 })}
                       </td>
                       <td className="py-3 px-4 text-right font-mono">
-                        <div className="text-[#17231D] font-semibold">₹{mf.currentNav.toFixed(2)}</div>
-                        <div className="text-[#9BA39D] text-[11px]">Avg: ₹{mf.avgNav.toFixed(2)}</div>
+                        <div className="text-[#0F172A] font-semibold">₹{mf.currentNav.toFixed(2)}</div>
+                        <div className="text-[#64748B] text-[11px]">Avg: ₹{mf.avgNav.toFixed(2)}</div>
                       </td>
                       <td className="py-3 px-4 text-right font-mono text-[#4A554E]">
                         ₹{mf.investedValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-semibold text-[#17231D]">
+                      <td className="py-3 px-4 text-right font-mono font-semibold text-[#0F172A]">
                         ₹{mf.currentValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-3 px-4 text-right font-mono">
@@ -630,10 +630,10 @@ export default function InvestmentsPage() {
                               <Repeat className="w-2.5 h-2.5" />
                               ₹{(mf.sipDetails.monthlyAmount / 1000).toFixed(0)}k/mo
                             </span>
-                            <span className="text-[10px] text-[#9BA39D] mt-0.5">Due Day {mf.sipDetails.debitDay}</span>
+                            <span className="text-[10px] text-[#64748B] mt-0.5">Due Day {mf.sipDetails.debitDay}</span>
                           </div>
                         ) : (
-                          <span className="text-[#9BA39D] font-mono text-xs">—</span>
+                          <span className="text-[#64748B] font-mono text-xs">—</span>
                         )}
                       </td>
                     </tr>
@@ -645,14 +645,14 @@ export default function InvestmentsPage() {
         </div>
       ) : activeTab === 'FIFO_LOTS' ? (
         <div className="space-y-6">
-          <div className="bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-[#17231D]">Strict FIFO Lot Accounting & Tax Basis Engine</h3>
-                <p className="text-xs text-[#758078]">
+                <h3 className="text-sm font-semibold text-[#0F172A]">Strict FIFO Lot Accounting & Tax Basis Engine</h3>
+                <p className="text-xs text-[#475569]">
                   Disposals strictly consume oldest open lots first. Gains held &gt;365 days qualify for preferential LTCG treatment.
                 </p>
               </div>
@@ -669,7 +669,7 @@ export default function InvestmentsPage() {
             />
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F7F9F7] text-[#717D74] border-b border-[#E7ECE8] uppercase tracking-wider font-semibold">
+                <thead className="bg-[#F8FAFC] text-[#64748B] border-b border-[#E2E8F0] uppercase tracking-wider font-semibold">
                   <tr>
                     <th className="py-3 px-4">Lot ID & Purchase Date</th>
                     <th className="py-3 px-4">Security</th>
@@ -682,31 +682,31 @@ export default function InvestmentsPage() {
                     <th className="py-3 px-4 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E7ECE8]">
+                <tbody className="divide-y divide-[#E2E8F0]">
                   {FIFO_LOTS.map((lot) => (
-                    <tr key={lot.id} className="hover:bg-[#F0F4F1] transition-colors">
+                    <tr key={lot.id} className="hover:bg-[#F1F5F9] transition-colors">
                       <td className="py-3 px-4 font-mono">
-                        <div className="font-semibold text-[#17231D]">{lot.id}</div>
-                        <div className="text-[11px] text-[#758078] flex items-center gap-1 mt-0.5">
-                          <Calendar className="w-3 h-3 text-[#9BA39D]" />
+                        <div className="font-semibold text-[#0F172A]">{lot.id}</div>
+                        <div className="text-[11px] text-[#475569] flex items-center gap-1 mt-0.5">
+                          <Calendar className="w-3 h-3 text-[#64748B]" />
                           <span>{lot.purchaseDate}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-mono font-bold text-[#17231D]">{lot.symbol}</div>
-                        <div className="text-[11px] text-[#758078]">{lot.name}</div>
+                        <div className="font-mono font-bold text-[#0F172A]">{lot.symbol}</div>
+                        <div className="text-[11px] text-[#475569]">{lot.name}</div>
                       </td>
                       <td className="py-3 px-4 text-right font-mono">
-                        <span className="font-semibold text-[#17231D]">{lot.remainingQty}</span>
-                        <span className="text-[#9BA39D]"> / {lot.originalQty}</span>
+                        <span className="font-semibold text-[#0F172A]">{lot.remainingQty}</span>
+                        <span className="text-[#64748B]"> / {lot.originalQty}</span>
                       </td>
                       <td className="py-3 px-4 text-right font-mono text-[#4A554E]">
                         ₹{lot.purchasePrice.toFixed(2)}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-medium text-[#17231D]">
+                      <td className="py-3 px-4 text-right font-mono font-medium text-[#0F172A]">
                         ₹{lot.costBasis.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono font-semibold text-[#17231D]">
+                      <td className="py-3 px-4 text-right font-mono font-semibold text-[#0F172A]">
                         ₹{lot.currentValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-3 px-4 text-right font-mono">
@@ -754,7 +754,7 @@ export default function InvestmentsPage() {
             />
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-xs uppercase bg-[#F7F9F7] text-[#758078] border-b border-[#E7ECE8]">
+              <thead className="text-xs uppercase bg-[#F8FAFC] text-[#475569] border-b border-[#E2E8F0]">
                 <tr>
                   <th className="px-4 py-3">Symbol & Name</th>
                   <th className="px-4 py-3">Asset Class</th>
@@ -765,30 +765,30 @@ export default function InvestmentsPage() {
                   <th className="px-4 py-3 text-right">Unrealized P&L</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E7ECE8]">
+              <tbody className="divide-y divide-[#E2E8F0]">
                 {holdings
                   .filter((h) => (activeTab === 'EQUITIES' ? h.assetClass === 'EQUITY' : true))
                   .map((h) => (
-                    <tr key={h.symbol} className="hover:bg-[#F0F4F1] transition-colors">
+                    <tr key={h.symbol} className="hover:bg-[#F1F5F9] transition-colors">
                       <td className="px-4 py-3">
-                        <div className="font-mono font-bold text-[#17231D]">{h.symbol}</div>
-                        <div className="text-xs text-[#758078]">{h.name}</div>
+                        <div className="font-mono font-bold text-[#0F172A]">{h.symbol}</div>
+                        <div className="text-xs text-[#475569]">{h.name}</div>
                       </td>
                       <td className="px-4 py-3">
                         <Badge variant="neutral" size="sm">
                           {h.assetClass}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-[#17231D]">
+                      <td className="px-4 py-3 text-right font-mono text-[#0F172A]">
                         {h.quantity.toLocaleString('en-IN')}
                       </td>
                       <td className="px-4 py-3 text-right font-mono text-[#4A554E]">
                         ₹{h.avgCost.toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono text-[#17231D]">
+                      <td className="px-4 py-3 text-right font-mono text-[#0F172A]">
                         ₹{h.currentPrice.toFixed(2)}
                       </td>
-                      <td className="px-4 py-3 text-right font-mono font-medium text-[#17231D]">
+                      <td className="px-4 py-3 text-right font-mono font-medium text-[#0F172A]">
                         ₹{h.currentValue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="px-4 py-3 text-right font-mono">

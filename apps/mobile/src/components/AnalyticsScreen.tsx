@@ -7,7 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { formatINR } from '../formatters';
 import { analyticsService } from '../api/domainServices';
 
@@ -94,6 +94,13 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
   monthlyInflows,
   monthlyOutflows,
 }) => {
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   const [cadence, setCadence] = useState<Cadence>('MONTHLY');
   const [backendData, setBackendData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -156,14 +163,17 @@ export const AnalyticsScreen: React.FC<AnalyticsScreenProps> = ({
   const savingsRate = Math.round((data.investments / (data.totalSpend + data.investments || 1)) * 100);
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: canvasBg }]}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Top Bar */}
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backLabel}>Overview</Text>
+          <Text style={[styles.backArrow, { color: isDark ? '#60A5FA' : '#2563EB' }]}>‹</Text>
+          <Text style={[styles.backLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Overview</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Cash Flow & Spend Analytics</Text>
+        <Text style={[styles.screenTitle, { color: textPrimary }]}>Cash Flow & Spend Analytics</Text>
         <View style={styles.topRightBadge}>
           <Text style={styles.topRightBadgeText}>REAL-TIME</Text>
         </View>

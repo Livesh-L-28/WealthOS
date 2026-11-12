@@ -23,13 +23,13 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div
-      className={`flex flex-col items-center justify-center p-8 text-center border border-dashed border-[#E7ECE8] rounded-2xl bg-[#FAFCFA] ${className}`}
+      className={`flex flex-col items-center justify-center p-8 text-center border border-dashed border-[#E2E8F0] rounded-2xl bg-[#F8FAFC] ${className}`}
     >
-      <div className="w-12 h-12 rounded-2xl bg-white border border-[#E7ECE8] shadow-sm flex items-center justify-center text-[#16A36A] mb-3.5">
+      <div className="w-12 h-12 rounded-2xl bg-white border border-[#E2E8F0] shadow-sm flex items-center justify-center text-[#10B981] mb-3.5">
         <Icon className="w-6 h-6" />
       </div>
-      <h4 className="text-sm font-semibold text-[#17231D]">{title}</h4>
-      <p className="text-xs text-[#758078] max-w-sm mt-1 mb-5">{description}</p>
+      <h4 className="text-sm font-semibold text-[#0F172A]">{title}</h4>
+      <p className="text-xs text-[#475569] max-w-sm mt-1 mb-5">{description}</p>
       {actionLabel && (
         <Button
           variant="secondary"

@@ -69,17 +69,17 @@ export default function AuditSettingsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E7ECE8] gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E2E8F0] gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-[#17231D]">
+            <h2 className="text-sm font-semibold text-[#0F172A]">
               Security Audit Trail
             </h2>
             <Badge variant="neutral" size="sm">
               Append-Only Ledger
             </Badge>
           </div>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#475569] mt-1">
             Immutable, scrubbed security and administrative activity log scoped strictly to {currentWorkspace?.name}.
           </p>
         </div>
@@ -101,32 +101,32 @@ export default function AuditSettingsPage() {
       {/* Filter bar */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-3.5 h-3.5 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-[#475569] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Filter by event type, actor ID, or IP..."
-            className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-md pl-9 pr-3 py-1.5 text-xs text-[#17231D] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A]"
+            className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-md pl-9 pr-3 py-1.5 text-xs text-[#0F172A] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981]"
           />
         </div>
-        <div className="text-xs text-[#758078]">
+        <div className="text-xs text-[#475569]">
           Showing {filteredLogs.length} of {logs.length} events
         </div>
       </div>
 
       {/* Audit Logs Table */}
-      <Card className="bg-white border-[#E7ECE8] overflow-hidden">
+      <Card className="bg-white border-[#E2E8F0] overflow-hidden">
         {isLoading ? (
-          <div className="p-8 text-center text-xs text-[#9BA39D]">Loading audit trail...</div>
+          <div className="p-8 text-center text-xs text-[#64748B]">Loading audit trail...</div>
         ) : error ? (
           <div className="p-8 text-center text-xs text-rose-400">{error}</div>
         ) : filteredLogs.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#9BA39D]">No matching audit events recorded.</div>
+          <div className="p-8 text-center text-xs text-[#64748B]">No matching audit events recorded.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#F7F9F7] border-b border-[#E7ECE8] text-[11px] font-semibold text-[#758078] uppercase tracking-wider">
+              <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[11px] font-semibold text-[#475569] uppercase tracking-wider">
                 <tr>
                   <th className="py-3 px-4">Timestamp</th>
                   <th className="py-3 px-4">Event Type</th>
@@ -140,11 +140,11 @@ export default function AuditSettingsPage() {
                 {filteredLogs.map((log) => {
                   const isSuccess = log.status === 'success';
                   return (
-                    <tr key={log.id} className="hover:bg-[#F0F4F1] transition-colors">
+                    <tr key={log.id} className="hover:bg-[#F1F5F9] transition-colors">
                       <td className="py-3 px-4 font-mono text-[11px] text-[#4A554E] whitespace-nowrap">
                         {new Date(log.created_at).toLocaleString()}
                       </td>
-                      <td className="py-3 px-4 font-medium text-[#17231D] whitespace-nowrap">
+                      <td className="py-3 px-4 font-medium text-[#0F172A] whitespace-nowrap">
                         {formatEventType(log.event_type)}
                       </td>
                       <td className="py-3 px-4 whitespace-nowrap">
@@ -161,10 +161,10 @@ export default function AuditSettingsPage() {
                           <span>{log.status}</span>
                         </Badge>
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-[#758078] whitespace-nowrap max-w-[120px] truncate">
+                      <td className="py-3 px-4 font-mono text-[11px] text-[#475569] whitespace-nowrap max-w-[120px] truncate">
                         {log.user_id ? log.user_id.slice(0, 8) + '...' : 'System'}
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-[#758078] whitespace-nowrap">
+                      <td className="py-3 px-4 font-mono text-[11px] text-[#475569] whitespace-nowrap">
                         {log.ip_address || 'Internal'}
                       </td>
                       <td className="py-3 px-4 text-right whitespace-nowrap">
@@ -172,7 +172,7 @@ export default function AuditSettingsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedLog(log)}
-                          className="text-xs text-[#16A36A] hover:text-[#087A50] p-1"
+                          className="text-xs text-[#10B981] hover:text-[#059669] p-1"
                           aria-label="Inspect payload"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -190,54 +190,54 @@ export default function AuditSettingsPage() {
       {/* Inspect Modal */}
       {selectedLog && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <Card className="bg-white border-[#E7ECE8] w-full max-w-lg p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E7ECE8]">
-              <h3 className="text-sm font-bold text-[#17231D]">
+          <Card className="bg-white border-[#E2E8F0] w-full max-w-lg p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+              <h3 className="text-sm font-bold text-[#0F172A]">
                 Audit Record: {formatEventType(selectedLog.event_type)}
               </h3>
               <button
                 onClick={() => setSelectedLog(null)}
-                className="text-[#758078] hover:text-[#17231D]"
+                className="text-[#475569] hover:text-[#0F172A]"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="mt-4 space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-2 text-[11px] text-[#758078]">
+              <div className="grid grid-cols-2 gap-2 text-[11px] text-[#475569]">
                 <div>
-                  <span className="text-[#9BA39D]">Record ID:</span>{' '}
+                  <span className="text-[#64748B]">Record ID:</span>{' '}
                   <span className="font-mono text-[#4A554E] select-all">{selectedLog.id}</span>
                 </div>
                 <div>
-                  <span className="text-[#9BA39D]">Timestamp:</span>{' '}
+                  <span className="text-[#64748B]">Timestamp:</span>{' '}
                   <span className="font-mono text-[#4A554E]">
                     {new Date(selectedLog.created_at).toISOString()}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[#9BA39D]">Actor User:</span>{' '}
+                  <span className="text-[#64748B]">Actor User:</span>{' '}
                   <span className="font-mono text-[#4A554E] select-all">
                     {selectedLog.user_id || 'System / Unauthenticated'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[#9BA39D]">Source IP:</span>{' '}
+                  <span className="text-[#64748B]">Source IP:</span>{' '}
                   <span className="font-mono text-[#4A554E]">{selectedLog.ip_address || 'N/A'}</span>
                 </div>
               </div>
 
               <div>
-                <span className="text-[#758078] block mb-1 font-semibold text-[11px]">
+                <span className="text-[#475569] block mb-1 font-semibold text-[11px]">
                   Scrubbed Audit Payload:
                 </span>
-                <pre className="bg-white p-3 rounded border border-[#E7ECE8] font-mono text-[11px] text-[#4A554E] overflow-x-auto max-h-48">
+                <pre className="bg-white p-3 rounded border border-[#E2E8F0] font-mono text-[11px] text-[#4A554E] overflow-x-auto max-h-48">
                   {JSON.stringify(selectedLog.details || {}, null, 2)}
                 </pre>
               </div>
             </div>
 
-            <div className="mt-6 pt-3 border-t border-[#E7ECE8] flex justify-end">
+            <div className="mt-6 pt-3 border-t border-[#E2E8F0] flex justify-end">
               <Button
                 variant="outline"
                 size="sm"

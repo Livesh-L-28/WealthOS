@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView, Switch } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { InvestmentHolding, DividendItem } from '../types';
 import { formatINR } from '../formatters';
 import { MobileDonutAllocationChart } from './charts';
@@ -69,6 +69,12 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
   onAddInvestment,
   onShowToast,
 }) => {
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
   const [filter, setFilter] = useState<PortfolioFilter>('ALL');
   const [selectedHolding, setSelectedHolding] = useState<InvestmentHolding | null>(null);
   const [sips, setSips] = useState<ActiveSIP[]>([]);
@@ -199,11 +205,11 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: canvasBg }]}>
       {/* 1. Header with Add & AI Scan Buttons */}
       <View style={styles.sectionHeaderRow}>
         <View style={{ flex: 1, marginRight: 8 }}>
-          <Text style={styles.sectionHeaderTitle}>Investments & Demat</Text>
+          <Text style={[styles.sectionHeaderTitle, { color: textPrimary }]}>Investments & Demat</Text>
           <Text style={styles.sectionHeaderPnl}>
             Total P&L: {totalPnl >= 0 ? '+' : ''}{formatINR(totalPnl)} ({pnlPct.toFixed(1)}%)
           </Text>
@@ -238,7 +244,7 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
 
       {/* AI Document & Image Upload Quick Banner */}
       <TouchableOpacity
-        style={styles.aiUploadBanner}
+        style={[styles.aiUploadBanner, { backgroundColor: cardBg, borderColor }]}
         onPress={() => {
           setClassifierStep('SELECT');
           setIsDocClassifierOpen(true);
@@ -250,12 +256,14 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
         </View>
         <View style={{ flex: 1 }}>
           <View style={styles.aiUploadTitleRow}>
-            <Text style={styles.aiUploadBannerTitle}>Upload Statement or Screenshot</Text>
+            <Text style={[styles.aiUploadBannerTitle, { color: textPrimary }]}>
+              Upload Statement or Screenshot
+            </Text>
             <View style={styles.aiTagPill}>
               <Text style={styles.aiTagPillText}>AI OCR</Text>
             </View>
           </View>
-          <Text style={styles.aiUploadBannerSub}>
+          <Text style={[styles.aiUploadBannerSub, { color: textSecondary }]}>
             Auto-analyzes & classifies into Stocks, Mutual Funds, SIPs, Bonds & Gold
           </Text>
         </View>
@@ -263,7 +271,7 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
       </TouchableOpacity>
 
       {/* Portfolio Hero Card */}
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.heroTopRow}>
           <View>
             <Text style={styles.heroLabel}>INVESTMENT PORTFOLIO</Text>

@@ -96,7 +96,7 @@ export function RecentTransactionsTable() {
         action={
           <Link
             href="/transactions"
-            className="text-xs font-semibold text-[#16A36A] hover:text-[#087A50] inline-flex items-center gap-0.5"
+            className="text-xs font-semibold text-[#10B981] hover:text-[#059669] inline-flex items-center gap-0.5"
           >
             <span>Full Ledger</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -107,13 +107,13 @@ export function RecentTransactionsTable() {
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
         <div className="relative w-full sm:w-64">
-          <Search className="w-3.5 h-3.5 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 text-[#475569] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search recent activity..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl text-[#17231D] placeholder-[#9BA39D] focus:outline-none focus:ring-1 focus:ring-[#16A36A]"
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:ring-1 focus:ring-[#10B981]"
           />
         </div>
 
@@ -124,8 +124,8 @@ export function RecentTransactionsTable() {
               onClick={() => setFilter(tab)}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium transition ${
                 filter === tab
-                  ? 'bg-[#17231D] text-white shadow-sm'
-                  : 'bg-[#F7F9F7] text-[#758078] hover:text-[#17231D]'
+                  ? 'bg-[#0F172A] text-white shadow-sm'
+                  : 'bg-[#F8FAFC] text-[#475569] hover:text-[#0F172A]'
               }`}
             >
               {tab === 'ALL' ? 'All' : tab === 'INFLOW' ? 'Inflows' : 'Outflows'}
@@ -138,7 +138,7 @@ export function RecentTransactionsTable() {
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-[#E7ECE8] text-[#758078] uppercase tracking-wider font-semibold">
+            <tr className="border-b border-[#E2E8F0] text-[#475569] uppercase tracking-wider font-semibold">
               <th className="py-2.5 px-3">Transaction</th>
               <th className="py-2.5 px-3">Category</th>
               <th className="py-2.5 px-3">Account</th>
@@ -147,16 +147,16 @@ export function RecentTransactionsTable() {
               <th className="py-2.5 px-3 text-right">Amount</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E7ECE8]">
+          <tbody className="divide-y divide-[#E2E8F0]">
             {filtered.map((tx) => (
-              <tr key={tx.id} className="hover:bg-[#F7F9F7] transition-colors">
+              <tr key={tx.id} className="hover:bg-[#F8FAFC] transition-colors">
                 <td className="py-3 px-3">
-                  <div className="font-semibold text-[#17231D]">{tx.name}</div>
-                  <div className="text-[10px] text-[#758078] font-mono">{tx.id}</div>
+                  <div className="font-semibold text-[#0F172A]">{tx.name}</div>
+                  <div className="text-[10px] text-[#475569] font-mono">{tx.id}</div>
                 </td>
-                <td className="py-3 px-3 text-[#758078] font-medium">{tx.category}</td>
-                <td className="py-3 px-3 text-[#758078]">{tx.account}</td>
-                <td className="py-3 px-3 text-[#758078] font-mono">{tx.date}</td>
+                <td className="py-3 px-3 text-[#475569] font-medium">{tx.category}</td>
+                <td className="py-3 px-3 text-[#475569]">{tx.account}</td>
+                <td className="py-3 px-3 text-[#475569] font-mono">{tx.date}</td>
                 <td className="py-3 px-3">
                   <Badge
                     variant={
@@ -173,7 +173,7 @@ export function RecentTransactionsTable() {
                 </td>
                 <td className="py-3 px-3 text-right font-mono font-semibold">
                   <span
-                    className={tx.type === 'CREDIT' ? 'text-[#16A36A]' : 'text-[#17231D]'}
+                    className={tx.type === 'CREDIT' ? 'text-[#10B981]' : 'text-[#0F172A]'}
                   >
                     {tx.type === 'CREDIT' ? '+' : '-'}₹
                     {tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}

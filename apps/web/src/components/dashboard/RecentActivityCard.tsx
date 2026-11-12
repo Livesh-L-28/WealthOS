@@ -69,13 +69,13 @@ export function RecentActivityCard() {
           const Icon = act.icon;
 
           return (
-            <div key={act.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-[#F7F9F7] transition-colors">
+            <div key={act.id} className="flex items-start gap-3 p-3 rounded-xl hover:bg-[#F8FAFC] transition-colors">
               <div
                 className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
                   act.type === 'ALERT'
-                    ? 'bg-[#DC5B5B]/10 text-[#DC5B5B]'
+                    ? 'bg-[#EF4444]/10 text-[#EF4444]'
                     : act.type === 'RECONCILIATION'
-                    ? 'bg-[#16A36A]/10 text-[#16A36A]'
+                    ? 'bg-[#10B981]/10 text-[#10B981]'
                     : 'bg-[#6475D8]/10 text-[#6475D8]'
                 }`}
               >
@@ -83,13 +83,13 @@ export function RecentActivityCard() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-semibold text-[#17231D]">{act.title}</h4>
-                  <span className="text-[10px] text-[#758078] flex items-center gap-1 font-medium">
-                    <Clock className="w-3 h-3 text-[#758078]" />
+                  <h4 className="text-xs font-semibold text-[#0F172A]">{act.title}</h4>
+                  <span className="text-[10px] text-[#475569] flex items-center gap-1 font-medium">
+                    <Clock className="w-3 h-3 text-[#475569]" />
                     {act.timestamp}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#758078] mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-[#475569] mt-0.5 leading-relaxed">
                   {act.description}
                 </p>
               </div>

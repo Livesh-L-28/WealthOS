@@ -16,11 +16,11 @@ export function Badge({
   const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs';
 
   const variantClasses = {
-    positive: 'bg-[#16A36A]/10 text-[#087A50] border border-[#16A36A]/25 font-medium',
-    negative: 'bg-[#DC5B5B]/10 text-[#B91C1C] border border-[#DC5B5B]/25 font-medium',
-    warning: 'bg-[#D99A32]/10 text-[#B45309] border border-[#D99A32]/25 font-medium',
-    neutral: 'bg-[#F0F4F1] text-[#4A554E] border border-[#E7ECE8]',
-    brand: 'bg-[#16A36A]/15 text-[#087A50] border border-[#16A36A]/30 font-semibold',
+    positive: 'bg-[#10B981]/10 text-[#059669] border border-[#10B981]/25 font-medium',
+    negative: 'bg-[#EF4444]/10 text-[#B91C1C] border border-[#EF4444]/25 font-medium',
+    warning: 'bg-[#F59E0B]/10 text-[#B45309] border border-[#F59E0B]/25 font-medium',
+    neutral: 'bg-[#F1F5F9] text-[#4A554E] border border-[#E2E8F0]',
+    brand: 'bg-[#10B981]/15 text-[#059669] border border-[#10B981]/30 font-semibold',
   }[variant];
 
   return (

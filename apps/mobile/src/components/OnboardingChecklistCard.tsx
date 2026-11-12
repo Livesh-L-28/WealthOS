@@ -1,8 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 
 export const OnboardingChecklistCard: React.FC = () => {
+  const { theme, isDark } = useTheme();
+
   const tasks = [
     { label: 'Bank & Demat Accounts Connected', status: 'Active (6)' },
     { label: 'Double-Entry General Journal Balanced', status: '₹0.00 Variance' },
@@ -10,13 +12,20 @@ export const OnboardingChecklistCard: React.FC = () => {
     { label: 'Emergency Liquid Runway Set', status: '6.2 Months Target' },
   ];
 
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const emeraldPrimary = isDark ? '#34D399' : '#059669';
+  const emeraldBg = isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5';
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
       <View style={styles.headerRow}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>LEDGER COMPLIANCE & SETUP</Text>
-          <View style={styles.completeBadge}>
-            <Text style={styles.completeText}>4/4 COMPLETE</Text>
+          <Text style={[styles.title, { color: textSecondary }]}>LEDGER COMPLIANCE & SETUP</Text>
+          <View style={[styles.completeBadge, { backgroundColor: emeraldBg }]}>
+            <Text style={[styles.completeText, { color: emeraldPrimary }]}>4/4 COMPLETE</Text>
           </View>
         </View>
       </View>
@@ -24,11 +33,11 @@ export const OnboardingChecklistCard: React.FC = () => {
       <View style={styles.tasksContainer}>
         {tasks.map((task, idx) => (
           <View key={idx} style={styles.taskRow}>
-            <View style={styles.checkCircle}>
-              <Text style={styles.checkMark}>✓</Text>
+            <View style={[styles.checkCircle, { backgroundColor: emeraldBg }]}>
+              <Text style={[styles.checkMark, { color: emeraldPrimary }]}>✓</Text>
             </View>
-            <Text style={styles.taskLabel}>{task.label}</Text>
-            <Text style={styles.taskStatus}>{task.status}</Text>
+            <Text style={[styles.taskLabel, { color: textPrimary }]}>{task.label}</Text>
+            <Text style={[styles.taskStatus, { color: emeraldPrimary }]}>{task.status}</Text>
           </View>
         ))}
       </View>

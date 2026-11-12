@@ -66,18 +66,18 @@ export default function MfaChallengePage() {
     <div className="w-full max-w-md py-8">
       {/* Brand Header */}
       <div className="flex flex-col items-center mb-6 text-center">
-        <div className="w-12 h-12 rounded-xl bg-[#16A36A] flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/20 mb-3">
+        <div className="w-12 h-12 rounded-xl bg-[#10B981] flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/20 mb-3">
           <ShieldCheck className="w-6 h-6 text-white" />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#17231D]">
+        <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
           Two-Factor Verification
         </h1>
-        <p className="text-xs text-[#758078] mt-1">
+        <p className="text-xs text-[#475569] mt-1">
           High-assurance authentication required for this account
         </p>
       </div>
 
-      <Card className="bg-white border-[#E7ECE8] p-6 sm:p-8 shadow-2xl">
+      <Card className="bg-white border-[#E2E8F0] p-6 sm:p-8 shadow-2xl">
         {errorMessage && (
           <div
             role="alert"
@@ -108,10 +108,10 @@ export default function MfaChallengePage() {
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="000000"
-                  className="w-48 bg-[#F7F9F7] border border-[#E7ECE8] focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A] rounded-lg py-2.5 text-center font-mono text-2xl tracking-[0.4em] text-[#16A36A] focus:outline-none transition-colors"
+                  className="w-48 bg-[#F8FAFC] border border-[#E2E8F0] focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] rounded-lg py-2.5 text-center font-mono text-2xl tracking-[0.4em] text-[#10B981] focus:outline-none transition-colors"
                 />
               </div>
-              <p className="text-[11px] text-[#758078] text-center mt-2">
+              <p className="text-[11px] text-[#475569] text-center mt-2">
                 Open Google Authenticator, Authy, or 1Password to view your current temporary code.
               </p>
             </div>
@@ -121,7 +121,7 @@ export default function MfaChallengePage() {
                 Emergency Backup Recovery Code
               </label>
               <div className="relative">
-                <KeyRound className="w-4 h-4 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
+                <KeyRound className="w-4 h-4 text-[#475569] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   id="recovery-code"
                   type="text"
@@ -130,7 +130,7 @@ export default function MfaChallengePage() {
                   value={recoveryCode}
                   onChange={(e) => setRecoveryCode(e.target.value)}
                   placeholder="XXXX-XXXX-XX"
-                  className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-md pl-9 pr-4 py-2.5 text-xs font-mono text-[#17231D] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A] uppercase tracking-widest transition-colors"
+                  className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-md pl-9 pr-4 py-2.5 text-xs font-mono text-[#0F172A] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] uppercase tracking-widest transition-colors"
                 />
               </div>
               <p className="text-[11px] text-amber-300/80 mt-2">
@@ -157,17 +157,17 @@ export default function MfaChallengePage() {
                 setIsUsingRecovery(!isUsingRecovery);
                 setErrorMessage(null);
               }}
-              className="text-xs text-[#16A36A] hover:text-[#087A50] transition-colors"
+              className="text-xs text-[#10B981] hover:text-[#059669] transition-colors"
             >
               {isUsingRecovery ? '← Use Authenticator App Code' : 'Lost device? Use emergency recovery code'}
             </button>
           </div>
         </form>
 
-        <div className="mt-6 pt-5 border-t border-[#E7ECE8] text-center">
+        <div className="mt-6 pt-5 border-t border-[#E2E8F0] text-center">
           <Link
             href="/auth/login"
-            className="inline-flex items-center gap-1.5 text-xs text-[#758078] hover:text-[#17231D] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#0F172A] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Cancel and Return to Sign In</span>

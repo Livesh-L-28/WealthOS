@@ -67,9 +67,9 @@ export function FinancialSummaryCards() {
         const Icon = item.icon;
 
         return (
-          <Card key={item.id} className="hover:border-[#D1D9D3] transition-all">
+          <Card key={item.id} className="hover:border-[#CBD5E1] transition-all">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-[#717D74] uppercase tracking-wider flex items-center">
+              <span className="text-xs font-semibold text-[#64748B] uppercase tracking-wider flex items-center">
                 {item.label}
                 {item.termKey ? (
                   <InfoTooltip termKey={item.termKey} />
@@ -77,20 +77,20 @@ export function FinancialSummaryCards() {
                   <InfoTooltip title={item.label} content={item.explanation} />
                 ) : null}
               </span>
-              <div className="w-8 h-8 rounded-xl bg-[#F0F4F1] flex items-center justify-center text-[#16A36A]">
+              <div className="w-8 h-8 rounded-xl bg-[#F1F5F9] flex items-center justify-center text-[#10B981]">
                 <Icon className="w-4 h-4" />
               </div>
             </div>
 
             <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-2xl font-bold font-mono text-[#17231D] tracking-tight">
+              <span className="text-2xl font-bold font-mono text-[#0F172A] tracking-tight">
                 ₹{item.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
               </span>
             </div>
 
-            <div className="mt-3 flex items-center justify-between text-xs pt-2.5 border-t border-[#E7ECE8]">
-              <span className="text-[#717D74] truncate">{item.subtitle}</span>
-              <span className="inline-flex items-center font-semibold text-[#16A36A] bg-[#16A36A]/10 px-2 py-0.5 rounded-full text-[11px]">
+            <div className="mt-3 flex items-center justify-between text-xs pt-2.5 border-t border-[#E2E8F0]">
+              <span className="text-[#64748B] truncate">{item.subtitle}</span>
+              <span className="inline-flex items-center font-semibold text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-full text-[11px]">
                 {item.change}
               </span>
             </div>

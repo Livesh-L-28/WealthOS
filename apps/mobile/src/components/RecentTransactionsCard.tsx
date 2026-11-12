@@ -17,10 +17,12 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
   const cardBg = isDark ? '#111827' : '#FFFFFF';
-  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
   const titleColor = isDark ? '#94A3B8' : '#64748B';
   const subColor = isDark ? '#64748B' : '#94A3B8';
   const primaryText = isDark ? '#F8FAFC' : '#0F172A';
+  const modalBoxBg = isDark ? '#1E293B' : '#F8FAFC';
+  const dividerColor = isDark ? '#1E293B' : '#F1F5F9';
 
   return (
     <View style={styles.container}>
@@ -53,7 +55,10 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
               return (
                 <TouchableOpacity
                   key={tx.id}
-                  style={[styles.txRow, !isLast && styles.txRowBorder]}
+                  style={[
+                    styles.txRow,
+                    !isLast && [styles.txRowBorder, { borderBottomColor: dividerColor }],
+                  ]}
                   onPress={() => setSelectedTx(tx)}
                   activeOpacity={0.7}
                 >
@@ -61,23 +66,42 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                     <View
                       style={[
                         styles.txIconBadge,
-                        isCredit ? styles.iconBadgeCredit : styles.iconBadgeDebit,
+                        {
+                          backgroundColor: isCredit
+                            ? isDark
+                              ? 'rgba(16, 185, 129, 0.2)'
+                              : '#ECFDF5'
+                            : isDark
+                            ? 'rgba(239, 68, 68, 0.2)'
+                            : '#FEF2F2',
+                        },
                       ]}
                     >
                       <Text
                         style={[
                           styles.txIconText,
-                          isCredit ? styles.iconTextCredit : styles.iconTextDebit,
+                          {
+                            color: isCredit
+                              ? isDark
+                                ? '#34D399'
+                                : '#059669'
+                              : isDark
+                              ? '#F87171'
+                              : '#DC2626',
+                          },
                         ]}
                       >
                         {isCredit ? '↓' : '↑'}
                       </Text>
                     </View>
                     <View style={styles.txMeta}>
-                      <Text style={styles.txTitle} numberOfLines={1}>
+                      <Text
+                        style={[styles.txTitle, { color: primaryText }]}
+                        numberOfLines={1}
+                      >
                         {tx.title}
                       </Text>
-                      <Text style={styles.txSubtitle}>
+                      <Text style={[styles.txSubtitle, { color: subColor }]}>
                         {tx.category} · {tx.date}
                       </Text>
                     </View>
@@ -87,14 +111,25 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                     <Text
                       style={[
                         styles.txAmount,
-                        isCredit ? styles.amountCredit : styles.amountDebit,
+                        {
+                          color: isCredit
+                            ? isDark
+                              ? '#34D399'
+                              : '#059669'
+                            : primaryText,
+                        },
                       ]}
                     >
                       {isCredit ? '+' : '-'}
                       {formatINR(tx.amount)}
                     </Text>
-                    <View style={styles.reconciledPill}>
-                      <Text style={styles.reconciledText}>
+                    <View
+                      style={[
+                        styles.reconciledPill,
+                        { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' },
+                      ]}
+                    >
+                      <Text style={[styles.reconciledText, { color: subColor }]}>
                         {tx.status === 'RECONCILED' ? '✓ RECON' : 'SETTLED'}
                       </Text>
                     </View>
@@ -115,23 +150,54 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
           onRequestClose={() => setSelectedTx(null)}
         >
           <View style={styles.modalBackdrop}>
-            <View style={styles.detailBox}>
-              <View style={styles.modalBar} />
+            <View
+              style={[
+                styles.detailBox,
+                {
+                  backgroundColor: cardBg,
+                  borderColor,
+                  borderWidth: 1,
+                },
+              ]}
+            >
+              <View style={[styles.modalBar, { backgroundColor: borderColor }]} />
               <View style={styles.modalHeader}>
                 <View>
-                  <Text style={styles.modalTitle}>{selectedTx.title}</Text>
-                  <Text style={styles.modalSub}>{selectedTx.category} • {selectedTx.date}</Text>
+                  <Text style={[styles.modalTitle, { color: primaryText }]}>
+                    {selectedTx.title}
+                  </Text>
+                  <Text style={[styles.modalSub, { color: subColor }]}>
+                    {selectedTx.category} • {selectedTx.date}
+                  </Text>
                 </View>
                 <View
                   style={[
                     styles.modalBadge,
-                    selectedTx.type === 'CREDIT' ? styles.badgeCredit : styles.badgeDebit,
+                    {
+                      backgroundColor:
+                        selectedTx.type === 'CREDIT'
+                          ? isDark
+                            ? 'rgba(16, 185, 129, 0.2)'
+                            : '#ECFDF5'
+                          : isDark
+                          ? 'rgba(239, 68, 68, 0.2)'
+                          : '#FEF2F2',
+                    },
                   ]}
                 >
                   <Text
                     style={[
                       styles.modalBadgeText,
-                      selectedTx.type === 'CREDIT' ? styles.badgeTextCredit : styles.badgeTextDebit,
+                      {
+                        color:
+                          selectedTx.type === 'CREDIT'
+                            ? isDark
+                              ? '#34D399'
+                              : '#059669'
+                            : isDark
+                            ? '#F87171'
+                            : '#DC2626',
+                      },
                     ]}
                   >
                     {selectedTx.type === 'CREDIT' ? 'INFLOW' : 'OUTFLOW'}
@@ -139,35 +205,69 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                 </View>
               </View>
 
-              <View style={styles.modalAmountBox}>
-                <Text style={styles.modalAmountLabel}>POSTED LEDGER AMOUNT</Text>
+              <View
+                style={[
+                  styles.modalAmountBox,
+                  {
+                    backgroundColor: modalBoxBg,
+                    borderColor,
+                  },
+                ]}
+              >
+                <Text style={[styles.modalAmountLabel, { color: subColor }]}>
+                  POSTED LEDGER AMOUNT
+                </Text>
                 <Text
                   style={[
                     styles.modalAmountVal,
-                    { color: selectedTx.type === 'CREDIT' ? theme.colors.primary : '#DC2626' },
+                    {
+                      color:
+                        selectedTx.type === 'CREDIT'
+                          ? isDark
+                            ? '#34D399'
+                            : '#059669'
+                          : isDark
+                          ? '#F87171'
+                          : '#DC2626',
+                    },
                   ]}
                 >
-                  {selectedTx.type === 'CREDIT' ? '+' : '-'}{formatINR(selectedTx.amount)}
+                  {selectedTx.type === 'CREDIT' ? '+' : '-'}
+                  {formatINR(selectedTx.amount)}
                 </Text>
               </View>
 
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Settlement Account</Text>
-                <Text style={styles.detailValue}>{selectedTx.accountName}</Text>
+              <View style={[styles.detailRow, { borderBottomColor: dividerColor }]}>
+                <Text style={[styles.detailLabel, { color: subColor }]}>Settlement Account</Text>
+                <Text style={[styles.detailValue, { color: primaryText }]}>
+                  {selectedTx.accountName}
+                </Text>
               </View>
 
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Reconciliation Status</Text>
-                <Text style={styles.detailValueGreen}>● {selectedTx.status}</Text>
+              <View style={[styles.detailRow, { borderBottomColor: dividerColor }]}>
+                <Text style={[styles.detailLabel, { color: subColor }]}>Reconciliation Status</Text>
+                <Text
+                  style={[
+                    styles.detailValueGreen,
+                    { color: isDark ? '#34D399' : '#059669' },
+                  ]}
+                >
+                  ● {selectedTx.status}
+                </Text>
               </View>
 
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>General Journal ID</Text>
-                <Text style={styles.detailValueMono}>{selectedTx.id}</Text>
+              <View style={[styles.detailRow, { borderBottomColor: dividerColor }]}>
+                <Text style={[styles.detailLabel, { color: subColor }]}>General Journal ID</Text>
+                <Text style={[styles.detailValueMono, { color: subColor }]}>
+                  {selectedTx.id}
+                </Text>
               </View>
 
               <TouchableOpacity
-                style={styles.closeBtn}
+                style={[
+                  styles.closeBtn,
+                  { backgroundColor: isDark ? '#2563EB' : '#1D4ED8' },
+                ]}
                 onPress={() => setSelectedTx(null)}
                 activeOpacity={0.8}
               >

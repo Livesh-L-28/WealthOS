@@ -13,18 +13,18 @@ import {
 import { formatCurrency, formatPercentage } from '@/lib/formatters';
 
 const ALLOCATION_DATA: DonutSlice[] = [
-  { id: 'eq', label: 'Indian Equities (NSE/BSE)', value: 1941967.44, color: '#16A36A' },
+  { id: 'eq', label: 'Indian Equities (NSE/BSE)', value: 1941967.44, color: '#10B981' },
   { id: 'mf', label: 'Direct Mutual Funds', value: 1572068.88, color: '#6475D8' },
-  { id: 'debt', label: 'Fixed Deposits & Sovereign Debt', value: 739797.12, color: '#D99A32' },
+  { id: 'debt', label: 'Fixed Deposits & Sovereign Debt', value: 739797.12, color: '#F59E0B' },
   { id: 'gold', label: 'Gold & Sovereign Gold Bonds', value: 369898.56, color: '#0D9488' },
 ];
 
 const SECTOR_EXPOSURE: HorizontalBarItem[] = [
-  { id: 'bfsi', label: 'Banking & Financial Services', value: 1150000, secondaryValue: 1200000, color: '#16A36A' },
+  { id: 'bfsi', label: 'Banking & Financial Services', value: 1150000, secondaryValue: 1200000, color: '#10B981' },
   { id: 'it', label: 'Technology & Cloud IT', value: 920000, secondaryValue: 1000000, color: '#6475D8' },
   { id: 'cons', label: 'Consumer Goods & Retail', value: 680000, secondaryValue: 800000, color: '#0D9488' },
   { id: 'pharma', label: 'Healthcare & Pharmaceuticals', value: 540000, secondaryValue: 600000, color: '#8B5CF6' },
-  { id: 'energy', label: 'Renewable Energy & Power', value: 410000, secondaryValue: 500000, color: '#D99A32' },
+  { id: 'energy', label: 'Renewable Energy & Power', value: 410000, secondaryValue: 500000, color: '#F59E0B' },
 ];
 
 export function PortfolioAllocationChart() {
@@ -70,13 +70,13 @@ export function PortfolioAllocationChart() {
       valuationDate="BSE/NSE Close: Today 15:30 IST"
       summaryNarrative={narrativeText}
       rightAction={
-        <div className="flex items-center bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl p-0.5 ml-1">
+        <div className="flex items-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-0.5 ml-1">
           <button
             onClick={() => setViewMode('asset-class')}
             className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
               viewMode === 'asset-class'
-                ? 'bg-white text-[#17231D] shadow-xs border border-[#E7ECE8]'
-                : 'text-[#758078] hover:text-[#17231D]'
+                ? 'bg-white text-[#0F172A] shadow-xs border border-[#E2E8F0]'
+                : 'text-[#475569] hover:text-[#0F172A]'
             }`}
           >
             Asset Class
@@ -85,8 +85,8 @@ export function PortfolioAllocationChart() {
             onClick={() => setViewMode('sectors')}
             className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
               viewMode === 'sectors'
-                ? 'bg-white text-[#17231D] shadow-xs border border-[#E7ECE8]'
-                : 'text-[#758078] hover:text-[#17231D]'
+                ? 'bg-white text-[#0F172A] shadow-xs border border-[#E2E8F0]'
+                : 'text-[#475569] hover:text-[#0F172A]'
             }`}
           >
             Sectors
@@ -108,29 +108,29 @@ export function PortfolioAllocationChart() {
       }
     >
       {/* KPI Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
         <div>
-          <span className="text-[11px] text-[#717D74] font-medium block">Portfolio Value</span>
-          <span className="text-base font-bold font-mono text-[#17231D]">
+          <span className="text-[11px] text-[#64748B] font-medium block">Portfolio Value</span>
+          <span className="text-base font-bold font-mono text-[#0F172A]">
             {formatCurrency(totalValue)}
           </span>
         </div>
         <div>
-          <span className="text-[11px] text-[#717D74] font-medium block">Invested Capital</span>
-          <span className="text-base font-bold font-mono text-[#17231D]">
+          <span className="text-[11px] text-[#64748B] font-medium block">Invested Capital</span>
+          <span className="text-base font-bold font-mono text-[#0F172A]">
             {formatCurrency(investedCapital)}
           </span>
         </div>
         <div>
-          <span className="text-[11px] text-[#717D74] font-medium block">Unrealized P&L</span>
-          <span className="text-base font-bold font-mono text-[#16A36A] flex items-center">
+          <span className="text-[11px] text-[#64748B] font-medium block">Unrealized P&L</span>
+          <span className="text-base font-bold font-mono text-[#10B981] flex items-center">
             <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" />
             +{formatCurrency(unrealizedPl, { notation: 'compact' })} ({formatPercentage(unrealizedPlPct)})
           </span>
         </div>
         <div>
-          <span className="text-[11px] text-[#717D74] font-medium block">Realized Capital Gains</span>
-          <span className="text-base font-bold font-mono text-[#087A50]">
+          <span className="text-[11px] text-[#64748B] font-medium block">Realized Capital Gains</span>
+          <span className="text-base font-bold font-mono text-[#059669]">
             {formatCurrency(realizedPl)}
           </span>
         </div>
@@ -146,7 +146,7 @@ export function PortfolioAllocationChart() {
         />
       ) : (
         <div className="space-y-3 pt-2">
-          <p className="text-xs font-semibold text-[#758078] mb-2">
+          <p className="text-xs font-semibold text-[#475569] mb-2">
             Sector Weightings vs Target Allocation Limits
           </p>
           <FinancialHorizontalBarChart

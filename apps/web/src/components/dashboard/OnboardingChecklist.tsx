@@ -135,9 +135,9 @@ export function OnboardingChecklist({ onTriggerAction }: OnboardingChecklistProp
         <button
           type="button"
           onClick={handleRevisit}
-          className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-[#087A50] bg-[#16A36A]/10 hover:bg-[#16A36A]/20 rounded-xl transition-colors border border-[#16A36A]/20"
+          className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-[#059669] bg-[#10B981]/10 hover:bg-[#10B981]/20 rounded-xl transition-colors border border-[#10B981]/20"
         >
-          <Sparkles className="w-3.5 h-3.5 text-[#16A36A]" />
+          <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />
           <span>Onboarding Guide ({completedCount}/{steps.length})</span>
         </button>
       </div>
@@ -145,23 +145,23 @@ export function OnboardingChecklist({ onTriggerAction }: OnboardingChecklistProp
   }
 
   return (
-    <div className="p-5 rounded-2xl bg-white border border-[#E7ECE8] shadow-xs space-y-4">
+    <div className="p-5 rounded-2xl bg-white border border-[#E2E8F0] shadow-xs space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-xl bg-[#10B981]/10 text-[#10B981] flex items-center justify-center">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-[#17231D]">
+              <h3 className="text-sm font-bold text-[#0F172A]">
                 Getting Started with WealthOS
               </h3>
               <Badge variant="positive" size="sm">
                 {completedCount} of {steps.length} Complete ({progressPercent}%)
               </Badge>
             </div>
-            <p className="text-xs text-[#717D74] mt-0.5">
+            <p className="text-xs text-[#64748B] mt-0.5">
               Complete these steps to unlock full multi-account wealth intelligence.
             </p>
           </div>
@@ -171,7 +171,7 @@ export function OnboardingChecklist({ onTriggerAction }: OnboardingChecklistProp
           <button
             type="button"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="w-7 h-7 rounded-lg text-[#717D74] hover:text-[#17231D] hover:bg-[#F0F4F1] flex items-center justify-center"
+            className="w-7 h-7 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] flex items-center justify-center"
             aria-label={isCollapsed ? 'Expand checklist' : 'Collapse checklist'}
           >
             {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
@@ -179,7 +179,7 @@ export function OnboardingChecklist({ onTriggerAction }: OnboardingChecklistProp
           <button
             type="button"
             onClick={handleDismiss}
-            className="w-7 h-7 rounded-lg text-[#717D74] hover:text-[#17231D] hover:bg-[#F0F4F1] flex items-center justify-center"
+            className="w-7 h-7 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] flex items-center justify-center"
             title="Dismiss checklist"
             aria-label="Dismiss checklist"
           >
@@ -189,9 +189,9 @@ export function OnboardingChecklist({ onTriggerAction }: OnboardingChecklistProp
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-[#E7ECE8] rounded-full h-1.5 overflow-hidden">
+      <div className="w-full bg-[#E2E8F0] rounded-full h-1.5 overflow-hidden">
         <div
-          className="bg-[#16A36A] h-1.5 rounded-full transition-all duration-300"
+          className="bg-[#10B981] h-1.5 rounded-full transition-all duration-300"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
@@ -206,22 +206,22 @@ export function OnboardingChecklist({ onTriggerAction }: OnboardingChecklistProp
                 key={step.id}
                 className={`p-3.5 rounded-xl border transition-all ${
                   step.completed
-                    ? 'bg-[#FAFCFA] border-[#E7ECE8]/80 text-[#717D74]'
+                    ? 'bg-[#F8FAFC] border-[#E2E8F0]/80 text-[#64748B]'
                     : isSelected
-                    ? 'bg-white border-[#16A36A] shadow-xs ring-1 ring-[#16A36A]/20'
-                    : 'bg-white border-[#E7ECE8] hover:border-[#16A36A]/40'
+                    ? 'bg-white border-[#10B981] shadow-xs ring-1 ring-[#10B981]/20'
+                    : 'bg-white border-[#E2E8F0] hover:border-[#10B981]/40'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
                     {step.completed ? (
-                      <CheckCircle2 className="w-4 h-4 text-[#16A36A] flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-[#10B981] flex-shrink-0" />
                     ) : (
-                      <Circle className="w-4 h-4 text-[#D99A32] flex-shrink-0" />
+                      <Circle className="w-4 h-4 text-[#F59E0B] flex-shrink-0" />
                     )}
                     <span
                       className={`text-xs font-semibold ${
-                        step.completed ? 'text-[#717D74] line-through' : 'text-[#17231D]'
+                        step.completed ? 'text-[#64748B] line-through' : 'text-[#0F172A]'
                       }`}
                     >
                       {step.title}
@@ -229,17 +229,17 @@ export function OnboardingChecklist({ onTriggerAction }: OnboardingChecklistProp
                   </div>
                 </div>
 
-                <p className="text-[11px] text-[#717D74] mt-1.5 line-clamp-2">
+                <p className="text-[11px] text-[#64748B] mt-1.5 line-clamp-2">
                   {step.description}
                 </p>
 
                 {/* Why it matters note */}
-                <div className="mt-2 text-[10px] text-[#087A50] bg-[#16A36A]/5 px-2 py-1 rounded-md">
+                <div className="mt-2 text-[10px] text-[#059669] bg-[#10B981]/5 px-2 py-1 rounded-md">
                   <span className="font-semibold">Why: </span>
                   <span>{step.whyItMatters}</span>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-[#E7ECE8]/60 flex items-center justify-between">
+                <div className="mt-3 pt-2 border-t border-[#E2E8F0]/60 flex items-center justify-between">
                   <button
                     type="button"
                     onClick={() => {
@@ -247,7 +247,7 @@ export function OnboardingChecklist({ onTriggerAction }: OnboardingChecklistProp
                         prev.map((s) => (s.id === step.id ? { ...s, completed: !s.completed } : s))
                       );
                     }}
-                    className="text-[10px] text-[#717D74] hover:text-[#17231D] underline"
+                    className="text-[10px] text-[#64748B] hover:text-[#0F172A] underline"
                   >
                     {step.completed ? 'Mark incomplete' : 'Mark done'}
                   </button>

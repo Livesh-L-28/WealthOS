@@ -75,10 +75,10 @@ export function ChartContainer({
   return (
     <Card className={`relative overflow-hidden ${className}`}>
       {/* Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#758078] flex items-center">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#475569] flex items-center">
               {title}
               {termKey && <InfoTooltip termKey={termKey} />}
             </span>
@@ -89,13 +89,13 @@ export function ChartContainer({
               </Badge>
             )}
             {valuationDate && (
-              <span className="text-[10px] text-[#758078] flex items-center gap-1 font-mono">
+              <span className="text-[10px] text-[#475569] flex items-center gap-1 font-mono">
                 <Clock className="w-3 h-3" />
                 {valuationDate}
               </span>
             )}
           </div>
-          {subtitle && <p className="text-xs text-[#758078] mt-1">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-[#475569] mt-1">{subtitle}</p>}
         </div>
 
         {/* Controls: Time horizon pills, View Toggle, Right Actions */}
@@ -104,7 +104,7 @@ export function ChartContainer({
             <div
               role="radiogroup"
               aria-label="Select date range"
-              className="flex items-center bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl p-1"
+              className="flex items-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-1"
             >
               {availableRanges.map((r) => (
                 <button
@@ -114,8 +114,8 @@ export function ChartContainer({
                   onClick={() => onTimeRangeChange(r)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                     timeRange === r
-                      ? 'bg-white text-[#17231D] shadow-xs border border-[#E7ECE8]'
-                      : 'text-[#758078] hover:text-[#17231D]'
+                      ? 'bg-white text-[#0F172A] shadow-xs border border-[#E2E8F0]'
+                      : 'text-[#475569] hover:text-[#0F172A]'
                   }`}
                 >
                   {r}
@@ -132,8 +132,8 @@ export function ChartContainer({
               aria-label={showTable ? 'Switch to graphical chart view' : 'Switch to accessible tabular view'}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
                 showTable
-                  ? 'bg-[#16A36A] text-white border-[#16A36A]'
-                  : 'bg-white text-[#17231D] border-[#E7ECE8] hover:bg-[#F7F9F7]'
+                  ? 'bg-[#10B981] text-white border-[#10B981]'
+                  : 'bg-white text-[#0F172A] border-[#E2E8F0] hover:bg-[#F8FAFC]'
               }`}
             >
               {showTable ? (
@@ -158,7 +158,7 @@ export function ChartContainer({
       {staleDataWarning && (
         <div
           role="alert"
-          className="mt-3 px-3 py-2 bg-[#D99A32]/10 border border-[#D99A32]/30 rounded-xl flex items-center gap-2 text-xs text-[#B45309]"
+          className="mt-3 px-3 py-2 bg-[#F59E0B]/10 border border-[#F59E0B]/30 rounded-xl flex items-center gap-2 text-xs text-[#B45309]"
         >
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
           <span>{staleDataWarning}</span>
@@ -168,32 +168,32 @@ export function ChartContainer({
       {/* Body: Loading / Error / Empty / Chart or Table View */}
       <div className="mt-4">
         {isLoading ? (
-          <div className="h-48 flex flex-col items-center justify-center gap-3 animate-pulse bg-[#F7F9F7] rounded-xl border border-[#E7ECE8]">
-            <RefreshCw className="w-6 h-6 text-[#16A36A] animate-spin" />
-            <span className="text-xs font-medium text-[#758078]">
+          <div className="h-48 flex flex-col items-center justify-center gap-3 animate-pulse bg-[#F8FAFC] rounded-xl border border-[#E2E8F0]">
+            <RefreshCw className="w-6 h-6 text-[#10B981] animate-spin" />
+            <span className="text-xs font-medium text-[#475569]">
               Computing double-entry financial metrics...
             </span>
           </div>
         ) : error ? (
           <div
             role="alert"
-            className="h-48 flex flex-col items-center justify-center gap-3 bg-[#DC5B5B]/5 rounded-xl border border-[#DC5B5B]/20 p-6 text-center"
+            className="h-48 flex flex-col items-center justify-center gap-3 bg-[#EF4444]/5 rounded-xl border border-[#EF4444]/20 p-6 text-center"
           >
-            <AlertTriangle className="w-6 h-6 text-[#DC5B5B]" />
-            <p className="text-xs font-semibold text-[#17231D]">{error}</p>
+            <AlertTriangle className="w-6 h-6 text-[#EF4444]" />
+            <p className="text-xs font-semibold text-[#0F172A]">{error}</p>
             {onRetry && (
               <button
                 onClick={onRetry}
-                className="mt-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#17231D] rounded-lg hover:bg-[#243042]"
+                className="mt-2 px-3 py-1.5 text-xs font-semibold text-white bg-[#0F172A] rounded-lg hover:bg-[#243042]"
               >
                 Retry Calculation
               </button>
             )}
           </div>
         ) : isEmpty ? (
-          <div className="h-48 flex flex-col items-center justify-center gap-2 bg-[#F7F9F7] rounded-xl border border-[#E7ECE8] p-6 text-center">
-            <span className="text-xs font-semibold text-[#17231D]">No Financial Activity</span>
-            <p className="text-xs text-[#758078] max-w-sm">{emptyMessage}</p>
+          <div className="h-48 flex flex-col items-center justify-center gap-2 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] p-6 text-center">
+            <span className="text-xs font-semibold text-[#0F172A]">No Financial Activity</span>
+            <p className="text-xs text-[#475569] max-w-sm">{emptyMessage}</p>
           </div>
         ) : showTable && tableView ? (
           <div>{tableView}</div>
@@ -204,14 +204,14 @@ export function ChartContainer({
 
       {/* Plain-English Financial Summary Footer */}
       {summaryNarrative && !isLoading && !error && !isEmpty && (
-        <div className="mt-4 pt-3 text-[11px] text-[#717D74] bg-[#FAFCFA] px-3.5 py-2.5 rounded-xl border border-[#E7ECE8] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="mt-4 pt-3 text-[11px] text-[#64748B] bg-[#F8FAFC] px-3.5 py-2.5 rounded-xl border border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#16A36A] flex-shrink-0" />
+            <Sparkles className="w-3.5 h-3.5 text-[#10B981] flex-shrink-0" />
             <span>
               <strong>Financial Insight:</strong> {summaryNarrative}
             </span>
           </div>
-          <span className="text-[10px] font-mono text-[#16A36A] font-semibold flex-shrink-0">
+          <span className="text-[10px] font-mono text-[#10B981] font-semibold flex-shrink-0">
             Unit: {currency}
           </span>
         </div>

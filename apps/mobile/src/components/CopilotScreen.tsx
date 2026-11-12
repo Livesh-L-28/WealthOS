@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { CopilotMessage } from '../types';
 
 interface CopilotScreenProps {
@@ -25,6 +25,14 @@ export const CopilotScreen: React.FC<CopilotScreenProps> = ({
   onChatInputChange,
   onSendMessage,
 }) => {
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const assistantBubbleBg = isDark ? '#1E293B' : '#FFFFFF';
+
   const scrollViewRef = useRef<ScrollView>(null);
 
   const suggestedQueries = [
@@ -35,9 +43,9 @@ export const CopilotScreen: React.FC<CopilotScreenProps> = ({
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: canvasBg }]}>
       {/* Header Card */}
-      <View style={styles.headerCard}>
+      <View style={[styles.headerCard, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.badgeRow}>
           <View style={styles.aiBadge}>
             <Text style={styles.aiBadgeText}>AI FINANCIAL DIGITAL TWIN</Text>
@@ -47,8 +55,10 @@ export const CopilotScreen: React.FC<CopilotScreenProps> = ({
           </View>
         </View>
 
-        <Text style={styles.headerTitle}>WealthOS Autonomous Copilot</Text>
-        <Text style={styles.headerSubtitle}>
+        <Text style={[styles.headerTitle, { color: textPrimary }]}>
+          WealthOS Autonomous Copilot
+        </Text>
+        <Text style={[styles.headerSubtitle, { color: textSecondary }]}>
           Mathematically verified responses grounded directly in your double-entry accounts, FIFO lots, and cash flow history.
         </Text>
       </View>

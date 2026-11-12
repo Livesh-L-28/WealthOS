@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { DashboardPeriod } from '../types';
 import { formatINR } from '../formatters';
 
@@ -27,6 +27,7 @@ export const ExecutiveClarityBar: React.FC<ExecutiveClarityBarProps> = ({
   goalsFundedPct,
   onOpenNetWorth,
 }) => {
+  const { theme, isDark } = useTheme();
   const netCashFlow = monthlyInflows - monthlyOutflows;
   const savingsRate = monthlyInflows > 0 ? ((netCashFlow / monthlyInflows) * 100).toFixed(1) : '0';
   const solvencyRatio = totalLiabilities > 0 ? (totalAssets / totalLiabilities).toFixed(2) : '∞';
@@ -38,20 +39,46 @@ export const ExecutiveClarityBar: React.FC<ExecutiveClarityBarProps> = ({
     { id: 'ALL', label: 'All Time' },
   ];
 
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const splitBg = isDark ? '#1E293B' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   return (
     <View style={styles.container}>
       {/* Period Segmented Control */}
-      <View style={styles.segmentedControl}>
+      <View
+        style={[
+          styles.segmentedControl,
+          {
+            backgroundColor: isDark ? '#111827' : '#F1F5F9',
+            borderColor: isDark ? '#1E293B' : '#E2E8F0',
+          },
+        ]}
+      >
         {periods.map((p) => {
           const isSelected = period === p.id;
           return (
             <TouchableOpacity
               key={p.id}
-              style={[styles.segmentBtn, isSelected && styles.segmentBtnActive]}
+              style={[
+                styles.segmentBtn,
+                isSelected && [
+                  styles.segmentBtnActive,
+                  { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' },
+                ],
+              ]}
               onPress={() => onPeriodChange(p.id)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.segmentText, isSelected && styles.segmentTextActive]}>
+              <Text
+                style={[
+                  styles.segmentText,
+                  { color: textSecondary },
+                  isSelected && [styles.segmentTextActive, { color: textPrimary }],
+                ]}
+              >
                 {p.label}
               </Text>
             </TouchableOpacity>
@@ -60,32 +87,62 @@ export const ExecutiveClarityBar: React.FC<ExecutiveClarityBarProps> = ({
       </View>
 
       {/* Hero Net Worth Card */}
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.heroHeader}>
           <View style={styles.labelGroup}>
-            <Text style={styles.heroLabel}>TOTAL NET WORTH</Text>
-            <View style={styles.actualBadge}>
-              <Text style={styles.actualBadgeText}>ACTUAL</Text>
+            <Text style={[styles.heroLabel, { color: textSecondary }]}>TOTAL NET WORTH</Text>
+            <View
+              style={[
+                styles.actualBadge,
+                { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF' },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.actualBadgeText,
+                  { color: isDark ? '#60A5FA' : '#1D4ED8' },
+                ]}
+              >
+                ACTUAL
+              </Text>
             </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <View style={styles.changeBadge}>
-              <Text style={styles.changeBadgeText}>+5.2% MoM</Text>
+            <View
+              style={[
+                styles.changeBadge,
+                { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5' },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.changeBadgeText,
+                  { color: isDark ? '#34D399' : '#059669' },
+                ]}
+              >
+                +5.2% MoM
+              </Text>
             </View>
             {onOpenNetWorth && (
               <TouchableOpacity
                 onPress={onOpenNetWorth}
                 style={{
-                  backgroundColor: theme.colors.surfaceElevated,
+                  backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
                   paddingHorizontal: 8,
                   paddingVertical: 3,
                   borderRadius: 6,
                   borderWidth: 1,
-                  borderColor: theme.colors.border,
+                  borderColor: isDark ? '#334155' : '#E2E8F0',
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={{ fontSize: 9.5, fontWeight: '700', color: theme.colors.primaryDark }}>
+                <Text
+                  style={{
+                    fontSize: 9.5,
+                    fontWeight: '700',
+                    color: isDark ? '#60A5FA' : '#1D4ED8',
+                  }}
+                >
                   Sheet ›
                 </Text>
               </TouchableOpacity>
@@ -93,41 +150,47 @@ export const ExecutiveClarityBar: React.FC<ExecutiveClarityBarProps> = ({
           </View>
         </View>
 
-        <Text style={styles.heroAmount}>{formatINR(netWorth)}</Text>
-        <Text style={styles.heroSubtitle}>
+        <Text style={[styles.heroAmount, { color: textPrimary }]}>{formatINR(netWorth)}</Text>
+        <Text style={[styles.heroSubtitle, { color: textSecondary }]}>
           +₹3,72,400 surplus growth across 6 connected institutions
         </Text>
 
         {/* Balance Sheet Split Row */}
-        <View style={styles.splitRow}>
+        <View style={[styles.splitRow, { backgroundColor: splitBg, borderColor }]}>
           <View style={styles.splitCol}>
-            <Text style={styles.splitLabel}>TOTAL ASSETS</Text>
-            <Text style={styles.assetVal}>{formatINR(totalAssets)}</Text>
-            <Text style={styles.splitSub}>Cash, Demat & SGBs</Text>
+            <Text style={[styles.splitLabel, { color: textSecondary }]}>TOTAL ASSETS</Text>
+            <Text style={[styles.assetVal, { color: isDark ? '#34D399' : '#059669' }]}>
+              {formatINR(totalAssets)}
+            </Text>
+            <Text style={[styles.splitSub, { color: textSecondary }]}>Cash, Demat & SGBs</Text>
           </View>
 
-          <View style={styles.splitDivider} />
+          <View style={[styles.splitDivider, { backgroundColor: borderColor }]} />
 
           <View style={styles.splitCol}>
-            <Text style={styles.splitLabel}>TOTAL LIABILITIES</Text>
-            <Text style={styles.debtVal}>{formatINR(totalLiabilities)}</Text>
-            <Text style={styles.splitSub}>Home Loan & Card</Text>
+            <Text style={[styles.splitLabel, { color: textSecondary }]}>TOTAL LIABILITIES</Text>
+            <Text style={[styles.debtVal, { color: isDark ? '#F87171' : '#DC2626' }]}>
+              {formatINR(totalLiabilities)}
+            </Text>
+            <Text style={[styles.splitSub, { color: textSecondary }]}>Home Loan & Card</Text>
           </View>
         </View>
 
         {/* 3-Pill Clarity Bar */}
         <View style={styles.clarityPillRow}>
-          <View style={styles.clarityPill}>
-            <Text style={styles.clarityPillLabel}>Solvency</Text>
-            <Text style={styles.clarityPillValue}>{solvencyRatio}x</Text>
+          <View style={[styles.clarityPill, { backgroundColor: splitBg, borderColor }]}>
+            <Text style={[styles.clarityPillLabel, { color: textSecondary }]}>Solvency</Text>
+            <Text style={[styles.clarityPillValue, { color: textPrimary }]}>{solvencyRatio}x</Text>
           </View>
-          <View style={styles.clarityPill}>
-            <Text style={styles.clarityPillLabel}>Savings</Text>
-            <Text style={styles.clarityPillValue}>{savingsRate}%</Text>
+          <View style={[styles.clarityPill, { backgroundColor: splitBg, borderColor }]}>
+            <Text style={[styles.clarityPillLabel, { color: textSecondary }]}>Savings</Text>
+            <Text style={[styles.clarityPillValue, { color: textPrimary }]}>{savingsRate}%</Text>
           </View>
-          <View style={styles.clarityPill}>
-            <Text style={styles.clarityPillLabel}>Goals</Text>
-            <Text style={styles.clarityPillValue}>{goalsFundedPct.toFixed(0)}%</Text>
+          <View style={[styles.clarityPill, { backgroundColor: splitBg, borderColor }]}>
+            <Text style={[styles.clarityPillLabel, { color: textSecondary }]}>Goals</Text>
+            <Text style={[styles.clarityPillValue, { color: textPrimary }]}>
+              {goalsFundedPct.toFixed(0)}%
+            </Text>
           </View>
         </View>
       </View>

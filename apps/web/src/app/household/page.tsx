@@ -229,16 +229,16 @@ export default function HouseholdPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Household Wealth Management</h1>
+            <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Household Wealth Management</h1>
             <Badge variant="positive" size="sm">
               <Users className="w-3.5 h-3.5 mr-1 inline" />
               Collaborative Hub
             </Badge>
           </div>
-          <p className="text-xs text-[#717D74] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Privacy-preserving family finance: 3-tier visibility scopes, single-deduplication net worth, and transfer neutrality.
           </p>
         </div>
@@ -250,7 +250,7 @@ export default function HouseholdPage() {
             onClick={() => setShowSettleModal(true)}
             className="flex items-center gap-1.5"
           >
-            <ArrowRightLeft className="w-3.5 h-3.5 text-[#16A36A]" />
+            <ArrowRightLeft className="w-3.5 h-3.5 text-[#10B981]" />
             <span>Record Settlement</span>
           </Button>
           <Button
@@ -267,50 +267,50 @@ export default function HouseholdPage() {
 
       {/* KPI Cards: Consolidated Household Net Worth */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4 bg-white border border-[#E7ECE8]">
-          <div className="flex items-center justify-between text-[#717D74] text-xs mb-1">
+        <Card className="p-4 bg-white border border-[#E2E8F0]">
+          <div className="flex items-center justify-between text-[#64748B] text-xs mb-1">
             <span className="font-medium">Consolidated Net Worth</span>
-            <Scale className="w-4 h-4 text-[#16A36A]" />
+            <Scale className="w-4 h-4 text-[#10B981]" />
           </div>
-          <div className="text-2xl font-bold text-[#17231D]">₹{netWorthNum.toLocaleString('en-IN')}.00</div>
-          <div className="text-[11px] text-[#16A36A] font-medium mt-1 flex items-center gap-1">
+          <div className="text-2xl font-bold text-[#0F172A]">₹{netWorthNum.toLocaleString('en-IN')}.00</div>
+          <div className="text-[11px] text-[#10B981] font-medium mt-1 flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3" />
             <span>Single-deduplication verified</span>
           </div>
         </Card>
 
-        <Card className="p-4 bg-white border border-[#E7ECE8]">
-          <div className="flex items-center justify-between text-[#717D74] text-xs mb-1">
+        <Card className="p-4 bg-white border border-[#E2E8F0]">
+          <div className="flex items-center justify-between text-[#64748B] text-xs mb-1">
             <span className="font-medium">Total Shared Assets</span>
-            <TrendingUp className="w-4 h-4 text-[#16A36A]" />
+            <TrendingUp className="w-4 h-4 text-[#10B981]" />
           </div>
-          <div className="text-2xl font-bold text-[#17231D]">₹{totalAssetsNum.toLocaleString('en-IN')}.00</div>
-          <div className="text-[11px] text-[#717D74] mt-1">
+          <div className="text-2xl font-bold text-[#0F172A]">₹{totalAssetsNum.toLocaleString('en-IN')}.00</div>
+          <div className="text-[11px] text-[#64748B] mt-1">
             Across {resources.filter((r) => r.type !== 'LIABILITY').length} shared accounts & properties
           </div>
         </Card>
 
-        <Card className="p-4 bg-white border border-[#E7ECE8]">
-          <div className="flex items-center justify-between text-[#717D74] text-xs mb-1">
+        <Card className="p-4 bg-white border border-[#E2E8F0]">
+          <div className="flex items-center justify-between text-[#64748B] text-xs mb-1">
             <span className="font-medium">Total Shared Debt</span>
             <Landmark className="w-4 h-4 text-[#DC2626]" />
           </div>
           <div className="text-2xl font-bold text-[#DC2626]">₹{totalLiabNum.toLocaleString('en-IN')}.00</div>
-          <div className="text-[11px] text-[#717D74] mt-1">Home Loan (100% household obligation)</div>
+          <div className="text-[11px] text-[#64748B] mt-1">Home Loan (100% household obligation)</div>
         </Card>
 
-        <Card className="p-4 bg-white border border-[#E7ECE8]">
-          <div className="flex items-center justify-between text-[#717D74] text-xs mb-1">
+        <Card className="p-4 bg-white border border-[#E2E8F0]">
+          <div className="flex items-center justify-between text-[#64748B] text-xs mb-1">
             <span className="font-medium">Active Members</span>
-            <Users className="w-4 h-4 text-[#16A36A]" />
+            <Users className="w-4 h-4 text-[#10B981]" />
           </div>
-          <div className="text-2xl font-bold text-[#17231D]">{members.length} Members</div>
-          <div className="text-[11px] text-[#717D74] mt-1">1 Owner · 1 Admin · 0 Pending Invites</div>
+          <div className="text-2xl font-bold text-[#0F172A]">{members.length} Members</div>
+          <div className="text-[11px] text-[#64748B] mt-1">1 Owner · 1 Admin · 0 Pending Invites</div>
         </Card>
       </div>
 
       {/* Household Members Table */}
-      <Card className="border border-[#E7ECE8] overflow-hidden">
+      <Card className="border border-[#E2E8F0] overflow-hidden">
         <CardHeader
           title="Household Members & Equity Share"
           subtitle="Role-based permissions allow members to view or administer shared assets"
@@ -318,7 +318,7 @@ export default function HouseholdPage() {
         />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#FAFBF9] border-b border-[#E7ECE8] text-[#717D74]">
+            <thead className="bg-[#FAFBF9] border-b border-[#E2E8F0] text-[#64748B]">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Member</th>
                 <th className="px-4 py-2.5 font-medium">Role</th>
@@ -328,22 +328,22 @@ export default function HouseholdPage() {
                 <th className="px-4 py-2.5 font-medium">Joined Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E7ECE8]">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {members.map((m) => (
                 <tr key={m.id} className="hover:bg-[#FAFBF9]">
                   <td className="px-4 py-3">
-                    <div className="font-semibold text-[#17231D]">{m.name}</div>
-                    <div className="text-[11px] text-[#717D74]">{m.email}</div>
+                    <div className="font-semibold text-[#0F172A]">{m.name}</div>
+                    <div className="text-[11px] text-[#64748B]">{m.email}</div>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={m.role === 'OWNER' ? 'positive' : 'neutral'} size="sm">
                       {m.role}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 font-medium text-[#17231D]">{m.sharedAssets}</td>
+                  <td className="px-4 py-3 font-medium text-[#0F172A]">{m.sharedAssets}</td>
                   <td className="px-4 py-3 font-medium text-[#DC2626]">{m.sharedLiabilities}</td>
-                  <td className="px-4 py-3 font-bold text-[#16A36A]">{m.netContribution}</td>
-                  <td className="px-4 py-3 text-[#717D74]">{m.joinedAt}</td>
+                  <td className="px-4 py-3 font-bold text-[#10B981]">{m.netContribution}</td>
+                  <td className="px-4 py-3 text-[#64748B]">{m.joinedAt}</td>
                 </tr>
               ))}
             </tbody>
@@ -352,14 +352,14 @@ export default function HouseholdPage() {
       </Card>
 
       {/* Shared Resources & Visibility Matrix */}
-      <Card className="border border-[#E7ECE8] overflow-hidden">
+      <Card className="border border-[#E2E8F0] overflow-hidden">
         <CardHeader
           title="Shared Resources & Visibility Matrix"
           subtitle="3-Tier Containment Guarantee (Personal Only, Household Shared, Limited Shared)"
         />
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#FAFBF9] border-b border-[#E7ECE8] text-[#717D74]">
+            <thead className="bg-[#FAFBF9] border-b border-[#E2E8F0] text-[#64748B]">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Resource</th>
                 <th className="px-4 py-2.5 font-medium">Type</th>
@@ -369,18 +369,18 @@ export default function HouseholdPage() {
                 <th className="px-4 py-2.5 font-medium">Visibility Scope</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E7ECE8]">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {resources.map((r) => (
                 <tr key={r.id} className="hover:bg-[#FAFBF9]">
-                  <td className="px-4 py-3 font-medium text-[#17231D]">{r.name}</td>
+                  <td className="px-4 py-3 font-medium text-[#0F172A]">{r.name}</td>
                   <td className="px-4 py-3">
                     <Badge variant="neutral" size="sm">
                       {r.type}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-[#717D74]">{r.ownerName}</td>
-                  <td className="px-4 py-3 font-semibold text-[#17231D]">{r.amount}</td>
-                  <td className="px-4 py-3 font-medium text-[#17231D]">{r.allocationPct}%</td>
+                  <td className="px-4 py-3 text-[#64748B]">{r.ownerName}</td>
+                  <td className="px-4 py-3 font-semibold text-[#0F172A]">{r.amount}</td>
+                  <td className="px-4 py-3 font-medium text-[#0F172A]">{r.allocationPct}%</td>
                   <td className="px-4 py-3">
                     {r.visibility === 'HOUSEHOLD_SHARED' && (
                       <Badge variant="positive" size="sm">
@@ -410,7 +410,7 @@ export default function HouseholdPage() {
       {/* Grid: Shared Goals & Transfer-Neutral Reimbursements */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Shared Goals */}
-        <Card className="border border-[#E7ECE8]">
+        <Card className="border border-[#E2E8F0]">
           <CardHeader
             title="Collaborative Household Goals"
             subtitle="Multi-member milestone progress tracking"
@@ -422,17 +422,17 @@ export default function HouseholdPage() {
               const pct = Math.min(100, Math.round((current / target) * 100));
 
               return (
-                <div key={g.id} className="p-3 bg-[#FAFBF9] rounded-xl border border-[#E7ECE8] space-y-2">
+                <div key={g.id} className="p-3 bg-[#FAFBF9] rounded-xl border border-[#E2E8F0] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-[#17231D]">{g.name}</span>
+                    <span className="font-semibold text-xs text-[#0F172A]">{g.name}</span>
                     <Badge variant={pct >= 100 ? 'positive' : 'neutral'} size="sm">
                       {pct}%
                     </Badge>
                   </div>
-                  <div className="w-full bg-[#E7ECE8] rounded-full h-2 overflow-hidden">
-                    <div className="bg-[#16A36A] h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                  <div className="w-full bg-[#E2E8F0] rounded-full h-2 overflow-hidden">
+                    <div className="bg-[#10B981] h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-[#717D74]">
+                  <div className="flex items-center justify-between text-[11px] text-[#64748B]">
                     <span>
                       {g.currentAmount} of {g.targetAmount}
                     </span>
@@ -445,7 +445,7 @@ export default function HouseholdPage() {
         </Card>
 
         {/* Transfer-Neutral Reimbursements */}
-        <Card className="border border-[#E7ECE8]">
+        <Card className="border border-[#E2E8F0]">
           <CardHeader
             title="Internal Settlement Log"
             subtitle="Transfer Neutral (Zero Double-Counting)"
@@ -454,20 +454,20 @@ export default function HouseholdPage() {
             {settlements.map((s) => (
               <div
                 key={s.id}
-                className="p-3 bg-white rounded-xl border border-[#E7ECE8] flex items-center justify-between"
+                className="p-3 bg-white rounded-xl border border-[#E2E8F0] flex items-center justify-between"
               >
                 <div>
-                  <div className="text-xs font-semibold text-[#17231D]">
+                  <div className="text-xs font-semibold text-[#0F172A]">
                     {s.payerName} → {s.payeeName}
                   </div>
-                  <div className="text-[11px] text-[#717D74] mt-0.5">{s.description}</div>
-                  <div className="text-[10px] text-[#717D74] mt-1 flex items-center gap-1">
+                  <div className="text-[11px] text-[#64748B] mt-0.5">{s.description}</div>
+                  <div className="text-[10px] text-[#64748B] mt-1 flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
                     <span>{s.date}</span>
-                    <span className="text-[#16A36A] font-medium ml-2">● Zero Double-Counting</span>
+                    <span className="text-[#10B981] font-medium ml-2">● Zero Double-Counting</span>
                   </div>
                 </div>
-                <div className="text-sm font-bold text-[#17231D]">{s.amount}</div>
+                <div className="text-sm font-bold text-[#0F172A]">{s.amount}</div>
               </div>
             ))}
           </div>
@@ -477,46 +477,46 @@ export default function HouseholdPage() {
       {/* Invite Modal */}
       {showInviteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <Card className="w-full max-w-md p-6 bg-white border border-[#E7ECE8] shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#E7ECE8]">
-              <h3 className="text-base font-bold text-[#17231D] flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#16A36A]" />
+          <Card className="w-full max-w-md p-6 bg-white border border-[#E2E8F0] shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+              <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#10B981]" />
                 <span>Invite Household Member</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setShowInviteModal(false)}
-                className="text-[#717D74] hover:text-[#17231D] text-sm"
+                className="text-[#64748B] hover:text-[#0F172A] text-sm"
               >
                 ✕
               </button>
             </div>
 
             {inviteSuccessMsg ? (
-              <div className="p-3 bg-[#EAF7EE] text-[#16A36A] text-xs rounded-xl flex items-center gap-2">
+              <div className="p-3 bg-[#EAF7EE] text-[#10B981] text-xs rounded-xl flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
                 <span>{inviteSuccessMsg}</span>
               </div>
             ) : (
               <form onSubmit={handleSendInvite} className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-medium text-[#17231D] mb-1">Member Email Address</label>
+                  <label className="block font-medium text-[#0F172A] mb-1">Member Email Address</label>
                   <input
                     type="email"
                     required
                     placeholder="partner@family.com"
                     value={inviteEmail}
                     onChange={(e) => setInviteEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-[#E7ECE8] rounded-xl focus:outline-none focus:border-[#16A36A]"
+                    className="w-full px-3 py-2 border border-[#E2E8F0] rounded-xl focus:outline-none focus:border-[#10B981]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-medium text-[#17231D] mb-1">Household Role</label>
+                  <label className="block font-medium text-[#0F172A] mb-1">Household Role</label>
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-[#E7ECE8] rounded-xl focus:outline-none focus:border-[#16A36A]"
+                    className="w-full px-3 py-2 border border-[#E2E8F0] rounded-xl focus:outline-none focus:border-[#10B981]"
                   >
                     <option value="MEMBER">MEMBER (Can view shared, contribute to goals)</option>
                     <option value="ADMIN">ADMIN (Can invite others, adjust budgets)</option>
@@ -524,7 +524,7 @@ export default function HouseholdPage() {
                   </select>
                 </div>
 
-                <div className="p-3 bg-[#FAFBF9] border border-[#E7ECE8] rounded-xl text-[11px] text-[#717D74]">
+                <div className="p-3 bg-[#FAFBF9] border border-[#E2E8F0] rounded-xl text-[11px] text-[#64748B]">
                   🔒 A 256-bit single-use cryptographic token will be created. The token automatically expires in 7 days.
                 </div>
 
@@ -545,16 +545,16 @@ export default function HouseholdPage() {
       {/* Record Settlement Modal */}
       {showSettleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <Card className="w-full max-w-md p-6 bg-white border border-[#E7ECE8] shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#E7ECE8]">
-              <h3 className="text-base font-bold text-[#17231D] flex items-center gap-2">
-                <ArrowRightLeft className="w-4 h-4 text-[#16A36A]" />
+          <Card className="w-full max-w-md p-6 bg-white border border-[#E2E8F0] shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
+              <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
+                <ArrowRightLeft className="w-4 h-4 text-[#10B981]" />
                 <span>Record Internal Reimbursement</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setShowSettleModal(false)}
-                className="text-[#717D74] hover:text-[#17231D] text-sm"
+                className="text-[#64748B] hover:text-[#0F172A] text-sm"
               >
                 ✕
               </button>
@@ -562,7 +562,7 @@ export default function HouseholdPage() {
 
             <form onSubmit={handleRecordSettlement} className="space-y-4 text-xs">
               <div>
-                <label className="block font-medium text-[#17231D] mb-1">Reimbursement Amount (₹)</label>
+                <label className="block font-medium text-[#0F172A] mb-1">Reimbursement Amount (₹)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -570,23 +570,23 @@ export default function HouseholdPage() {
                   placeholder="5000.00"
                   value={settleAmount}
                   onChange={(e) => setSettleAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#E7ECE8] rounded-xl focus:outline-none focus:border-[#16A36A]"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-xl focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
               <div>
-                <label className="block font-medium text-[#17231D] mb-1">Description / Bill Reference</label>
+                <label className="block font-medium text-[#0F172A] mb-1">Description / Bill Reference</label>
                 <input
                   type="text"
                   required
                   placeholder="Electricity & broadband bill share"
                   value={settleDesc}
                   onChange={(e) => setSettleDesc(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#E7ECE8] rounded-xl focus:outline-none focus:border-[#16A36A]"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-xl focus:outline-none focus:border-[#10B981]"
                 />
               </div>
 
-              <div className="p-3 bg-[#EAF7EE] border border-[#16A36A]/20 rounded-xl text-[11px] text-[#16A36A]">
+              <div className="p-3 bg-[#EAF7EE] border border-[#10B981]/20 rounded-xl text-[11px] text-[#10B981]">
                 ✓ Transfer Neutrality Guarantee: This reimbursement is categorized as an internal settlement. It does
                 not create artificial income or duplicate living expenses.
               </div>

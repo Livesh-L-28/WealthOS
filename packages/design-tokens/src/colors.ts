@@ -61,31 +61,31 @@ export const colors = {
 /**
  * WealthOS Premium Fintech Light Theme Palette
  * Inspired by high-end financial wealth SaaS platforms (Brex, Mercury, Monarch, Stripe).
- * Features white card surfaces on soft neutral canvas (#F7F9F7) with financial green (#16A36A) accents.
+ * Features white card surfaces on soft neutral platinum slate canvas (#F8FAFC) with vibrant emerald (#10B981) accents.
  */
 export const fintechLight = {
-  bg: '#F7F9F7',
+  bg: '#F8FAFC',
   card: '#FFFFFF',
-  cardHover: '#FAFCFA',
-  primary: '#16A36A',
-  primaryDark: '#087A50',
-  text: '#17231D',
-  textSecondary: '#758078',
-  textMuted: '#9BA39D',
-  border: '#E7ECE8',
-  borderStrong: '#D1D9D3',
-  positive: '#16A36A',
-  negative: '#DC5B5B',
-  warning: '#D99A32',
-  accent: '#6475D8',
+  cardHover: '#F1F5F9',
+  primary: '#10B981',
+  primaryDark: '#059669',
+  text: '#0F172A',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
+  border: '#E2E8F0',
+  borderStrong: '#CBD5E1',
+  positive: '#10B981',
+  negative: '#EF4444',
+  warning: '#F59E0B',
+  accent: '#6366F1',
   charts: {
-    green: '#16A36A',
-    darkGreen: '#087A50',
-    indigo: '#6475D8',
-    amber: '#D99A32',
+    green: '#10B981',
+    darkGreen: '#059669',
+    indigo: '#6366F1',
+    amber: '#F59E0B',
     teal: '#0D9488',
-    rose: '#DC5B5B',
-    slate: '#758078',
+    rose: '#EF4444',
+    slate: '#475569',
   },
 } as const;
 
@@ -95,34 +95,34 @@ export const fintechLight = {
  */
 export const chartTokens = {
   series: {
-    primary: '#16A36A',      // Emerald Green (Net Worth, Inflow, Equities)
-    primaryDark: '#087A50',  // Deep Green (Surplus, Retained Cash)
-    secondary: '#6475D8',    // Indigo (Expenses, Outflow, Mutual Funds)
-    warning: '#D99A32',      // Amber (Fixed Income, Debt, Amortization)
-    danger: '#DC5B5B',       // Rose Red (Deficit, Overspending, Liabilities)
+    primary: '#10B981',      // Emerald Green (Net Worth, Inflow, Equities)
+    primaryDark: '#059669',  // Deep Green (Surplus, Retained Cash)
+    secondary: '#6366F1',    // Indigo (Expenses, Outflow, Mutual Funds)
+    warning: '#F59E0B',      // Amber (Fixed Income, Debt, Amortization)
+    danger: '#EF4444',       // Rose Red (Deficit, Overspending, Liabilities)
     teal: '#0D9488',         // Deep Teal (Gold, SGBs, Commodities)
     purple: '#8B5CF6',       // Purple (Real Estate, Alternative Assets)
     blue: '#0284C7',         // Sky Blue (Cash, Liquid Accounts)
-    neutral: '#758078',      // Slate (Benchmark, Historical Average)
+    neutral: '#475569',      // Slate (Benchmark, Historical Average)
   },
   assetClasses: {
-    EQUITY: '#16A36A',
-    MUTUAL_FUND: '#6475D8',
-    DEBT: '#D99A32',
+    EQUITY: '#10B981',
+    MUTUAL_FUND: '#6366F1',
+    DEBT: '#F59E0B',
     GOLD: '#0D9488',
     REAL_ESTATE: '#8B5CF6',
     CASH: '#0284C7',
-    LIABILITY: '#DC5B5B',
+    LIABILITY: '#EF4444',
   },
   ui: {
-    gridline: '#E7ECE8',
-    axisLabel: '#758078',
+    gridline: '#E2E8F0',
+    axisLabel: '#475569',
     crosshair: '#94A3B8',
     zeroBaseline: '#475569',
-    tooltipBg: '#17231D',
+    tooltipBg: '#0F172A',
     tooltipText: '#F8FAFC',
     cardBg: '#FFFFFF',
-    border: '#E7ECE8',
+    border: '#E2E8F0',
   },
 } as const;
 

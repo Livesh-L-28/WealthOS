@@ -102,46 +102,46 @@ export function FinancialHealthCard() {
         {HEALTH_METRICS.map((m, idx) => (
           <div
             key={idx}
-            className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] flex flex-col justify-between"
+            className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-[#17231D] flex items-center">
+                <span className="text-xs font-semibold text-[#0F172A] flex items-center">
                   {m.label}
                   {m.termKey && <InfoTooltip termKey={m.termKey} />}
                 </span>
                 <span
                   className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
                     m.status === 'EXCELLENT'
-                      ? 'bg-[#16A36A]/10 text-[#087A50]'
+                      ? 'bg-[#10B981]/10 text-[#059669]'
                       : m.status === 'GOOD'
                       ? 'bg-[#6475D8]/10 text-[#6475D8]'
-                      : 'bg-[#D99A32]/10 text-[#D99A32]'
+                      : 'bg-[#F59E0B]/10 text-[#F59E0B]'
                   }`}
                 >
                   {m.status === 'EXCELLENT' ? 'Optimal' : m.status === 'GOOD' ? 'Good' : 'Approaching'}
                 </span>
               </div>
               <div className="flex items-baseline gap-2 mt-1">
-                <span className="text-xl font-bold font-mono text-[#17231D]">{m.value}</span>
-                <span className="text-[11px] text-[#717D74]">Goal: {m.target}</span>
+                <span className="text-xl font-bold font-mono text-[#0F172A]">{m.value}</span>
+                <span className="text-[11px] text-[#64748B]">Goal: {m.target}</span>
               </div>
 
               {/* Visual Health Score Bar */}
-              <div className="mt-2.5 h-1.5 w-full bg-[#E7ECE8] rounded-full overflow-hidden">
+              <div className="mt-2.5 h-1.5 w-full bg-[#E2E8F0] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
                     m.status === 'EXCELLENT'
-                      ? 'bg-[#16A36A]'
+                      ? 'bg-[#10B981]'
                       : m.status === 'GOOD'
                       ? 'bg-[#6475D8]'
-                      : 'bg-[#D99A32]'
+                      : 'bg-[#F59E0B]'
                   }`}
                   style={{ width: `${m.score}%` }}
                 />
               </div>
             </div>
-            <p className="text-[11px] text-[#717D74] mt-2 pt-2 border-t border-[#E7ECE8]">
+            <p className="text-[11px] text-[#64748B] mt-2 pt-2 border-t border-[#E2E8F0]">
               {m.explanation}
             </p>
           </div>

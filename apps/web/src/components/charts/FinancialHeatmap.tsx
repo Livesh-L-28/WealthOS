@@ -32,7 +32,7 @@ export function FinancialHeatmap({
 
   if (!cells || cells.length === 0) {
     return (
-      <div className="py-6 text-center text-xs text-[#758078]">
+      <div className="py-6 text-center text-xs text-[#475569]">
         No activity heatmap data available.
       </div>
     );
@@ -105,15 +105,15 @@ export function FinancialHeatmap({
               onMouseLeave={() => setHoveredCell(null)}
               className={`h-9 rounded-lg border transition-all cursor-pointer flex flex-col items-center justify-center p-1 ${
                 isHovered
-                  ? 'ring-2 ring-[#17231D] scale-105 z-10'
-                  : 'border-[#E7ECE8]/50 hover:border-[#17231D]/40'
+                  ? 'ring-2 ring-[#0F172A] scale-105 z-10'
+                  : 'border-[#E2E8F0]/50 hover:border-[#0F172A]/40'
               }`}
               style={{ backgroundColor: bg }}
             >
-              <span className="text-[9px] font-semibold text-[#17231D]/80">
+              <span className="text-[9px] font-semibold text-[#0F172A]/80">
                 {cell.label}
               </span>
-              <span className="text-[8px] font-mono font-bold text-[#17231D]">
+              <span className="text-[8px] font-mono font-bold text-[#0F172A]">
                 {cell.value > 0
                   ? formatCurrency(cell.value, { currency, notation: 'compact' })
                   : '—'}
@@ -124,10 +124,10 @@ export function FinancialHeatmap({
       </div>
 
       {/* Scale Legend */}
-      <div className="flex items-center justify-between text-[10px] text-[#758078] pt-2 border-t border-[#E7ECE8]">
+      <div className="flex items-center justify-between text-[10px] text-[#475569] pt-2 border-t border-[#E2E8F0]">
         <span>Low / Zero Intensity</span>
         <div className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded bg-[#F1F5F9] border border-[#E7ECE8]" />
+          <span className="w-3 h-3 rounded bg-[#F1F5F9] border border-[#E2E8F0]" />
           <span className="w-3 h-3 rounded" style={{ backgroundColor: getCellColor(maxVal * 0.2) }} />
           <span className="w-3 h-3 rounded" style={{ backgroundColor: getCellColor(maxVal * 0.5) }} />
           <span className="w-3 h-3 rounded" style={{ backgroundColor: getCellColor(maxVal * 0.8) }} />

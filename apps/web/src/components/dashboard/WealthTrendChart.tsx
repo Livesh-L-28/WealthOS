@@ -61,11 +61,11 @@ const HISTORICAL_DATA: Record<ChartTimeRange, DataPoint[]> = {
 
 const WATERFALL_STEPS: WaterfallStep[] = [
   { label: 'Oct 10 Net', sublabel: 'Starting Net Worth', amount: 7195050, isTotal: true, color: '#475569' },
-  { label: 'Income', sublabel: 'Salary & Inflows', amount: 212000, color: '#16A36A' },
-  { label: 'Expenses', sublabel: 'Living Costs & Burn', amount: -151550, color: '#DC5B5B' },
-  { label: 'Market Gains', sublabel: 'Unrealized MF/Equity Gains', amount: 324401.25, color: '#16A36A' },
-  { label: 'Debt EMI', sublabel: 'Principal Amortization', amount: -42000, color: '#D99A32' },
-  { label: 'Nov 08 Net', sublabel: 'Current Reconciled Net Worth', amount: 7537901.25, isTotal: true, color: '#087A50' },
+  { label: 'Income', sublabel: 'Salary & Inflows', amount: 212000, color: '#10B981' },
+  { label: 'Expenses', sublabel: 'Living Costs & Burn', amount: -151550, color: '#EF4444' },
+  { label: 'Market Gains', sublabel: 'Unrealized MF/Equity Gains', amount: 324401.25, color: '#10B981' },
+  { label: 'Debt EMI', sublabel: 'Principal Amortization', amount: -42000, color: '#F59E0B' },
+  { label: 'Nov 08 Net', sublabel: 'Current Reconciled Net Worth', amount: 7537901.25, isTotal: true, color: '#059669' },
 ];
 
 export function WealthOverviewCard() {
@@ -113,13 +113,13 @@ export function WealthOverviewCard() {
       onTimeRangeChange={setRange}
       summaryNarrative={narrativeText}
       rightAction={
-        <div className="flex items-center bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl p-0.5 ml-1">
+        <div className="flex items-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-0.5 ml-1">
           <button
             onClick={() => setViewMode('trend')}
             className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
               viewMode === 'trend'
-                ? 'bg-white text-[#17231D] shadow-xs border border-[#E7ECE8]'
-                : 'text-[#758078] hover:text-[#17231D]'
+                ? 'bg-white text-[#0F172A] shadow-xs border border-[#E2E8F0]'
+                : 'text-[#475569] hover:text-[#0F172A]'
             }`}
           >
             Trend
@@ -128,8 +128,8 @@ export function WealthOverviewCard() {
             onClick={() => setViewMode('waterfall')}
             className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
               viewMode === 'waterfall'
-                ? 'bg-white text-[#17231D] shadow-xs border border-[#E7ECE8]'
-                : 'text-[#758078] hover:text-[#17231D]'
+                ? 'bg-white text-[#0F172A] shadow-xs border border-[#E2E8F0]'
+                : 'text-[#475569] hover:text-[#0F172A]'
             }`}
           >
             Waterfall
@@ -147,10 +147,10 @@ export function WealthOverviewCard() {
     >
       {/* KPI Display Header */}
       <div className="flex items-baseline gap-3 mb-4">
-        <span className="text-3xl font-bold tracking-tight text-[#17231D] font-mono">
+        <span className="text-3xl font-bold tracking-tight text-[#0F172A] font-mono">
           {formatCurrency(currentVal)}
         </span>
-        <span className="inline-flex items-center text-xs font-semibold text-[#16A36A] bg-[#16A36A]/10 px-2 py-0.5 rounded-full border border-[#16A36A]/20">
+        <span className="inline-flex items-center text-xs font-semibold text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-full border border-[#10B981]/20">
           <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" />
           {formatCurrency(delta, { showSign: true })} ({formatPercentage(deltaPct)})
         </span>
@@ -160,7 +160,7 @@ export function WealthOverviewCard() {
       {viewMode === 'trend' ? (
         <FinancialAreaChart
           data={data}
-          color="#16A36A"
+          color="#10B981"
           gradientId="netWorthTrendGradient"
           metricName="Net Worth"
           accessibleDescription="Consolidated Net Worth Historical Trajectory Area Chart"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 
 interface IncomeExpenseActionBarProps {
   onAddExpense: () => void;
@@ -11,48 +11,94 @@ export const IncomeExpenseActionBar: React.FC<IncomeExpenseActionBarProps> = ({
   onAddExpense,
   onAddIncome,
 }) => {
+  const { theme, isDark } = useTheme();
+
   return (
     <View style={styles.container}>
       <View style={styles.actionRow}>
         {/* Primary Add Expense Button */}
         <TouchableOpacity
-          style={styles.expenseCard}
+          style={[
+            styles.expenseCard,
+            {
+              backgroundColor: isDark ? '#111827' : '#FFFFFF',
+              borderColor: isDark ? 'rgba(239, 68, 68, 0.35)' : '#FECACA',
+            },
+          ]}
           onPress={onAddExpense}
           activeOpacity={0.8}
           accessibilityLabel="Add Expense (Outflow)"
         >
-          <View style={styles.iconCircleRed}>
-            <Text style={styles.iconArrowRed}>↑</Text>
+          <View
+            style={[
+              styles.iconCircleRed,
+              { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2' },
+            ]}
+          >
+            <Text style={[styles.iconArrowRed, { color: isDark ? '#F87171' : '#DC2626' }]}>↑</Text>
           </View>
           <View style={styles.textCol}>
             <View style={styles.titleBadgeRow}>
-              <Text style={styles.actionTitleRed}>− Add Expense</Text>
-              <View style={styles.tagRed}>
-                <Text style={styles.tagTextRed}>OUTFLOW</Text>
+              <Text style={[styles.actionTitleRed, { color: isDark ? '#FCA5A5' : '#991B1B' }]}>
+                − Add Expense
+              </Text>
+              <View
+                style={[
+                  styles.tagRed,
+                  { backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2' },
+                ]}
+              >
+                <Text style={[styles.tagTextRed, { color: isDark ? '#F87171' : '#DC2626' }]}>
+                  OUTFLOW
+                </Text>
               </View>
             </View>
-            <Text style={styles.actionSubtext}>Spend, bills, EMIs & dining</Text>
+            <Text style={[styles.actionSubtext, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              Spend, bills, EMIs & dining
+            </Text>
           </View>
         </TouchableOpacity>
 
         {/* Primary Add Income Button */}
         <TouchableOpacity
-          style={styles.incomeCard}
+          style={[
+            styles.incomeCard,
+            {
+              backgroundColor: isDark ? '#111827' : '#FFFFFF',
+              borderColor: isDark ? 'rgba(16, 185, 129, 0.35)' : '#BBF7D0',
+            },
+          ]}
           onPress={onAddIncome}
           activeOpacity={0.8}
           accessibilityLabel="Add Income (Inflow)"
         >
-          <View style={styles.iconCircleGreen}>
-            <Text style={styles.iconArrowGreen}>↓</Text>
+          <View
+            style={[
+              styles.iconCircleGreen,
+              { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : '#DCFCE7' },
+            ]}
+          >
+            <Text style={[styles.iconArrowGreen, { color: isDark ? '#34D399' : '#059669' }]}>↓</Text>
           </View>
           <View style={styles.textCol}>
             <View style={styles.titleBadgeRow}>
-              <Text style={styles.actionTitleGreen}>+ Add Income</Text>
-              <View style={styles.tagGreen}>
-                <Text style={styles.tagTextGreen}>INFLOW</Text>
+              <Text style={[styles.actionTitleGreen, { color: isDark ? '#6EE7B7' : '#047857' }]}>
+                + Add Income
+              </Text>
+              <View
+                style={[
+                  styles.tagGreen,
+                  { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : '#ECFDF5' },
+                ]}
+              >
+                <Text style={[styles.tagTextGreen, { color: isDark ? '#34D399' : '#059669' }]}>
+                  INFLOW
+                </Text>
               </View>
             </View>
-            <Text style={styles.actionSubtext}>Salary, dividend & yield</Text>
+            <Text style={[styles.actionSubtext, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              Salary, dividend & yield
+            </Text>
           </View>
         </TouchableOpacity>
       </View>

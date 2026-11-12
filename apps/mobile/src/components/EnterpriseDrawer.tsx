@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   Platform,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { ActiveScreen } from '../types';
 
 interface EnterpriseDrawerProps {
@@ -158,12 +158,18 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
   onLoadSampleData,
   onLogout,
 }) => {
+  const { isDark } = useTheme();
+  const drawerBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   return (
     <Modal visible={isOpen} animationType="slide" transparent={true} onRequestClose={onClose}>
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
 
-        <SafeAreaView style={styles.drawerContainer}>
+        <SafeAreaView style={[styles.drawerContainer, { backgroundColor: drawerBg }]}>
           {/* Header Drag Pill & Close Button */}
           <View style={styles.drawerTopBar}>
             <View style={styles.dragPill} />

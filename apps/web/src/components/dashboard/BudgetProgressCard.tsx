@@ -40,10 +40,10 @@ export function BudgetProgressCard() {
     secondaryValue: cat.allocated,
     color:
       cat.status === 'EXCEEDED'
-        ? '#DC5B5B'
+        ? '#EF4444'
         : cat.status === 'WARNING'
-        ? '#D99A32'
-        : '#16A36A',
+        ? '#F59E0B'
+        : '#10B981',
   }));
 
   const tableColumns = [
@@ -96,34 +96,34 @@ export function BudgetProgressCard() {
       }
     >
       {/* Main Budget Aggregate Progress Bar */}
-      <div className="mb-5 p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+      <div className="mb-5 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
         <div className="flex justify-between items-baseline mb-2">
           <div>
-            <span className="text-xs text-[#758078] font-medium">Spent so far: </span>
-            <span className="text-base font-bold font-mono text-[#17231D]">
+            <span className="text-xs text-[#475569] font-medium">Spent so far: </span>
+            <span className="text-base font-bold font-mono text-[#0F172A]">
               {formatCurrency(totalSpent)}
             </span>
           </div>
           <div>
-            <span className="text-xs text-[#758078] font-medium">Remaining: </span>
-            <span className="text-base font-bold font-mono text-[#16A36A]">
+            <span className="text-xs text-[#475569] font-medium">Remaining: </span>
+            <span className="text-base font-bold font-mono text-[#10B981]">
               {formatCurrency(remaining)}
             </span>
           </div>
         </div>
-        <div className="w-full bg-[#E7ECE8] rounded-full h-2.5 overflow-hidden">
+        <div className="w-full bg-[#E2E8F0] rounded-full h-2.5 overflow-hidden">
           <div
             className={`h-2.5 rounded-full transition-all duration-500 ${
               utilization > 90
-                ? 'bg-[#DC5B5B]'
+                ? 'bg-[#EF4444]'
                 : utilization > 80
-                ? 'bg-[#D99A32]'
-                : 'bg-[#16A36A]'
+                ? 'bg-[#F59E0B]'
+                : 'bg-[#10B981]'
             }`}
             style={{ width: `${Math.min(utilization, 100)}%` }}
           />
         </div>
-        <div className="flex justify-between text-[11px] text-[#758078] mt-1.5 font-medium">
+        <div className="flex justify-between text-[11px] text-[#475569] mt-1.5 font-medium">
           <span>Budget Pool: {formatCurrency(totalAllocated)}</span>
           <span>Target Period: November 2026</span>
         </div>

@@ -31,7 +31,7 @@ export function FinancialTooltip({
   return (
     <div
       role="tooltip"
-      className={`bg-[#17231D] text-white px-3.5 py-2.5 rounded-xl shadow-xl border border-slate-700/60 text-xs min-w-[180px] pointer-events-none z-30 transition-all ${className}`}
+      className={`bg-[#0F172A] text-white px-3.5 py-2.5 rounded-xl shadow-xl border border-slate-700/60 text-xs min-w-[180px] pointer-events-none z-30 transition-all ${className}`}
     >
       <div className="border-b border-slate-700 pb-1.5 mb-2">
         <p className="font-semibold text-slate-100 text-[11px]">{title}</p>

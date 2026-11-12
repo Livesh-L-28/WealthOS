@@ -99,13 +99,13 @@ export default function NetWorthPage() {
         key: 'principal',
         label: 'Principal Amortized',
         value: s.principal,
-        color: '#16A36A',
+        color: '#10B981',
       },
       {
         key: 'interest',
         label: 'Interest Cost',
         value: s.interest,
-        color: '#DC5B5B',
+        color: '#EF4444',
       },
     ],
   }));
@@ -123,44 +123,44 @@ export default function NetWorthPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Consolidated Net Worth Statement</h1>
+            <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Consolidated Net Worth Statement</h1>
             <Badge variant="positive" size="sm">
               <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
               Audited Ledger Invariant
             </Badge>
           </div>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#475569] mt-1">
             Real-time balance sheet statement: Net Worth = Total Assets - Total Liabilities.
           </p>
         </div>
       </div>
 
       {/* KPI Net Worth Card */}
-      <div className="p-6 rounded-2xl bg-white border border-[#E7ECE8] shadow-[0_1px_3px_0_rgba(23,35,29,0.04)] flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] shadow-[0_1px_3px_0_rgba(23,35,29,0.04)] flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#758078]">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[#475569]">
             Total Consolidated Net Worth
           </span>
-          <p className="text-4xl font-extrabold text-[#17231D] mt-2 font-mono tracking-tight">
+          <p className="text-4xl font-extrabold text-[#0F172A] mt-2 font-mono tracking-tight">
             ₹{netWorth.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#475569] mt-1">
             Assets: ₹{totalAssets.toLocaleString('en-IN', { minimumFractionDigits: 2 })} &bull; Liabilities: ₹{totalLiabilities.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
         </div>
         <div className="flex gap-4">
-          <div className="text-center p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <p className="text-xs text-[#758078]">Solvency Ratio</p>
-            <p className="text-xl font-bold text-[#16A36A] font-mono mt-0.5">
+          <div className="text-center p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <p className="text-xs text-[#475569]">Solvency Ratio</p>
+            <p className="text-xl font-bold text-[#10B981] font-mono mt-0.5">
               {((totalAssets / (totalLiabilities || 1))).toFixed(2)}x
             </p>
           </div>
-          <div className="text-center p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <p className="text-xs text-[#758078]">Debt-to-Asset</p>
-            <p className="text-xl font-bold text-[#17231D] font-mono mt-0.5">
+          <div className="text-center p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <p className="text-xs text-[#475569]">Debt-to-Asset</p>
+            <p className="text-xl font-bold text-[#0F172A] font-mono mt-0.5">
               {((totalLiabilities / totalAssets) * 100).toFixed(1)}%
             </p>
           </div>
@@ -168,24 +168,24 @@ export default function NetWorthPage() {
       </div>
 
       {/* ================= ROADMAP ITEM 1-10: SINGLE FINANCIAL OVERVIEW — WHY DID WEALTH CHANGE? ================= */}
-      <div className="p-6 rounded-2xl bg-white border border-[#16A36A]/30 shadow-[0_1px_3px_0_rgba(23,35,29,0.04)] space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E7ECE8]">
+      <div className="p-6 rounded-2xl bg-white border border-[#10B981]/30 shadow-[0_1px_3px_0_rgba(23,35,29,0.04)] space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#E8F5EE] text-[#087A50] flex items-center justify-center font-bold text-lg">
+            <div className="w-10 h-10 rounded-xl bg-[#E8F5EE] text-[#059669] flex items-center justify-center font-bold text-lg">
               📊
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-[#17231D]">Why Did Wealth Change?</h2>
+                <h2 className="text-base font-bold text-[#0F172A]">Why Did Wealth Change?</h2>
                 <Badge variant="positive" size="sm">Double-Entry Attribution</Badge>
               </div>
-              <p className="text-xs text-[#758078]">
+              <p className="text-xs text-[#475569]">
                 Audited monthly reconciliation: 10 Oct 2026 to 08 Nov 2026 across 6 connected institutions
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="text-xs font-mono font-bold text-[#087A50] bg-[#DCFCE7] px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-mono font-bold text-[#059669] bg-[#DCFCE7] px-2.5 py-1 rounded-lg">
               +₹3,42,851.25 (+4.76%)
             </span>
           </div>
@@ -193,46 +193,46 @@ export default function NetWorthPage() {
 
         {/* Waterfall Table / Grid */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <span className="text-[10px] font-bold text-[#758078] uppercase block">Starting Net Worth</span>
-            <span className="text-xs text-[#758078] block mt-0.5">10 Oct 2026 Balance</span>
-            <span className="text-base font-bold font-mono text-[#17231D] mt-2 block">₹71,95,050.00</span>
+          <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <span className="text-[10px] font-bold text-[#475569] uppercase block">Starting Net Worth</span>
+            <span className="text-xs text-[#475569] block mt-0.5">10 Oct 2026 Balance</span>
+            <span className="text-base font-bold font-mono text-[#0F172A] mt-2 block">₹71,95,050.00</span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-[#F0FDF4] border border-[#BBF7D0]">
             <span className="text-[10px] font-bold text-[#15803D] uppercase block">+ Inflows & Salary</span>
-            <span className="text-xs text-[#758078] block mt-0.5">Infosys & TCS Dividend</span>
+            <span className="text-xs text-[#475569] block mt-0.5">Infosys & TCS Dividend</span>
             <span className="text-base font-bold font-mono text-[#15803D] mt-2 block">+₹2,12,000.00</span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-[#FEF2F2] border border-[#FECACA]">
             <span className="text-[10px] font-bold text-[#DC2626] uppercase block">− Living Outflows</span>
-            <span className="text-xs text-[#758078] block mt-0.5">Rent, Dues & Living</span>
+            <span className="text-xs text-[#475569] block mt-0.5">Rent, Dues & Living</span>
             <span className="text-base font-bold font-mono text-[#DC2626] mt-2 block">−₹1,51,550.00</span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-[#F0FDF4] border border-[#BBF7D0]">
             <span className="text-[10px] font-bold text-[#15803D] uppercase block">+ Market Appreciation</span>
-            <span className="text-xs text-[#758078] block mt-0.5">PPFAS & Direct Equity</span>
+            <span className="text-xs text-[#475569] block mt-0.5">PPFAS & Direct Equity</span>
             <span className="text-base font-bold font-mono text-[#15803D] mt-2 block">+₹3,24,401.25</span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-[#FFFBEB] border border-[#FDE68A]">
             <span className="text-[10px] font-bold text-[#D97706] uppercase block">− Debt Principal Paid</span>
-            <span className="text-xs text-[#758078] block mt-0.5">Home Loan Amortization</span>
+            <span className="text-xs text-[#475569] block mt-0.5">Home Loan Amortization</span>
             <span className="text-base font-bold font-mono text-[#D97706] mt-2 block">−₹42,000.00</span>
           </div>
         </div>
 
         {/* Closing Certification Banner */}
-        <div className="p-3 rounded-xl bg-[#FAFCFA] border border-[#E7ECE8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-[#758078]">
+        <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-[#475569]">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-[#16A36A] shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-[#10B981] shrink-0" />
             <span>
               Internal transfers between checking and savings (₹2,50,000) are zero-sum and excluded to prevent duplicate wealth inflation.
             </span>
           </div>
-          <span className="font-mono font-bold text-[#17231D] shrink-0">
+          <span className="font-mono font-bold text-[#0F172A] shrink-0">
             Closing: ₹75,37,901.25
           </span>
         </div>
@@ -250,17 +250,17 @@ export default function NetWorthPage() {
             {assets.map((asset) => {
               const Icon = asset.icon;
               return (
-                <div key={asset.name} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+                <div key={asset.name} className="flex items-center justify-between p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-white border border-[#E7ECE8] text-[#16A36A]">
+                    <div className="p-2 rounded-lg bg-white border border-[#E2E8F0] text-[#10B981]">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-[#17231D]">{asset.name}</p>
-                      <p className="text-[10px] text-[#758078]">{asset.share} of total assets</p>
+                      <p className="text-xs font-semibold text-[#0F172A]">{asset.name}</p>
+                      <p className="text-[10px] text-[#475569]">{asset.share} of total assets</p>
                     </div>
                   </div>
-                  <p className="text-xs font-mono font-bold text-[#17231D]">
+                  <p className="text-xs font-mono font-bold text-[#0F172A]">
                     ₹{asset.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
@@ -279,17 +279,17 @@ export default function NetWorthPage() {
             {liabilities.map((liability) => {
               const Icon = liability.icon;
               return (
-                <div key={liability.name} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+                <div key={liability.name} className="flex items-center justify-between p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-white border border-[#E7ECE8] text-[#DC5B5B]">
+                    <div className="p-2 rounded-lg bg-white border border-[#E2E8F0] text-[#EF4444]">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-[#17231D]">{liability.name}</p>
-                      <p className="text-[10px] text-[#758078]">{liability.share} of total debt &bull; EMI: ₹{liability.emi.toLocaleString('en-IN')}</p>
+                      <p className="text-xs font-semibold text-[#0F172A]">{liability.name}</p>
+                      <p className="text-[10px] text-[#475569]">{liability.share} of total debt &bull; EMI: ₹{liability.emi.toLocaleString('en-IN')}</p>
                     </div>
                   </div>
-                  <p className="text-xs font-mono font-bold text-[#DC5B5B]">
+                  <p className="text-xs font-mono font-bold text-[#EF4444]">
                     ₹{liability.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
@@ -305,14 +305,14 @@ export default function NetWorthPage() {
           title="Debt Optimization & Payoff Strategy Engine"
           subtitle="Compare mathematical optimization strategies and prepayment acceleration schedules."
           action={
-            <div className="flex items-center gap-2 bg-[#F7F9F7] p-1 rounded-xl border border-[#E7ECE8]">
+            <div className="flex items-center gap-2 bg-[#F8FAFC] p-1 rounded-xl border border-[#E2E8F0]">
               <button
                 type="button"
                 onClick={() => setStrategy('AVALANCHE')}
                 className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
                   strategy === 'AVALANCHE'
-                    ? 'bg-[#16A36A] text-white shadow-sm'
-                    : 'text-[#758078] hover:text-[#17231D]'
+                    ? 'bg-[#10B981] text-white shadow-sm'
+                    : 'text-[#475569] hover:text-[#0F172A]'
                 }`}
               >
                 Avalanche (Highest APR First)
@@ -322,8 +322,8 @@ export default function NetWorthPage() {
                 onClick={() => setStrategy('SNOWBALL')}
                 className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
                   strategy === 'SNOWBALL'
-                    ? 'bg-[#16A36A] text-white shadow-sm'
-                    : 'text-[#758078] hover:text-[#17231D]'
+                    ? 'bg-[#10B981] text-white shadow-sm'
+                    : 'text-[#475569] hover:text-[#0F172A]'
                 }`}
               >
                 Snowball (Lowest Balance First)
@@ -333,8 +333,8 @@ export default function NetWorthPage() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <span className="text-xs text-[#758078]">Extra Monthly Contribution</span>
+          <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <span className="text-xs text-[#475569]">Extra Monthly Contribution</span>
             <div className="flex items-center gap-2 mt-2">
               <input
                 type="range"
@@ -343,30 +343,30 @@ export default function NetWorthPage() {
                 step="2500"
                 value={extraPayment}
                 onChange={(e) => setExtraPayment(Number(e.target.value))}
-                className="w-full accent-[#16A36A]"
+                className="w-full accent-[#10B981]"
               />
-              <span className="text-xs font-mono font-bold text-[#17231D] whitespace-nowrap">
+              <span className="text-xs font-mono font-bold text-[#0F172A] whitespace-nowrap">
                 ₹{extraPayment.toLocaleString('en-IN')}
               </span>
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-[#F0FDF4] border border-[#DCFCE7]">
-            <span className="text-xs text-[#16A36A] font-medium">Estimated Interest Saved</span>
-            <p className="text-xl font-bold font-mono text-[#16A36A] mt-1">
+            <span className="text-xs text-[#10B981] font-medium">Estimated Interest Saved</span>
+            <p className="text-xl font-bold font-mono text-[#10B981] mt-1">
               ₹{Math.round(currentInterestSaved).toLocaleString('en-IN')}
             </p>
-            <p className="text-[10px] text-[#758078] mt-0.5">
+            <p className="text-[10px] text-[#475569] mt-0.5">
               {strategy === 'AVALANCHE' ? 'Optimal interest reduction' : 'Psychological wins priority'}
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <span className="text-xs text-[#758078]">Tenure Compression</span>
-            <p className="text-xl font-bold font-mono text-[#17231D] mt-1">
+          <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <span className="text-xs text-[#475569]">Tenure Compression</span>
+            <p className="text-xl font-bold font-mono text-[#0F172A] mt-1">
               {monthsReduced} Months Earlier
             </p>
-            <p className="text-[10px] text-[#758078] mt-0.5">Accelerates debt freedom date</p>
+            <p className="text-[10px] text-[#475569] mt-0.5">Accelerates debt freedom date</p>
           </div>
         </div>
 
@@ -405,62 +405,62 @@ export default function NetWorthPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="text-xs font-semibold text-[#758078] uppercase block mb-1.5">Purchase Name</label>
+              <label className="text-xs font-semibold text-[#475569] uppercase block mb-1.5">Purchase Name</label>
               <input
                 type="text"
                 value={simItemName}
                 onChange={(e) => setSimItemName(e.target.value)}
-                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl px-3 py-2 text-sm font-semibold text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 text-sm font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[#758078] uppercase block mb-1.5">Total Acquisition Cost (₹)</label>
+              <label className="text-xs font-semibold text-[#475569] uppercase block mb-1.5">Total Acquisition Cost (₹)</label>
               <input
                 type="number"
                 value={simCost}
                 onChange={(e) => setSimCost(Number(e.target.value))}
-                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[#758078] uppercase block mb-1.5">Down Payment Outflow (₹)</label>
+              <label className="text-xs font-semibold text-[#475569] uppercase block mb-1.5">Down Payment Outflow (₹)</label>
               <input
                 type="number"
                 value={simDownPayment}
                 onChange={(e) => setSimDownPayment(Number(e.target.value))}
-                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl px-3 py-2 text-sm font-mono font-bold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
               />
             </div>
           </div>
 
           {/* Metric Comparison Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-              <span className="text-xs text-[#758078]">Emergency Cash Runway Post-Purchase</span>
-              <p className={`text-xl font-bold font-mono mt-1 ${Number(simRunwayMonths) >= 6.0 ? 'text-[#16A36A]' : Number(simRunwayMonths) >= 3.0 ? 'text-[#D97706]' : 'text-[#DC5B5B]'}`}>
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+              <span className="text-xs text-[#475569]">Emergency Cash Runway Post-Purchase</span>
+              <p className={`text-xl font-bold font-mono mt-1 ${Number(simRunwayMonths) >= 6.0 ? 'text-[#10B981]' : Number(simRunwayMonths) >= 3.0 ? 'text-[#D97706]' : 'text-[#EF4444]'}`}>
                 {simRunwayMonths} Months
               </p>
-              <p className="text-[10px] text-[#758078] mt-0.5">
+              <p className="text-[10px] text-[#475569] mt-0.5">
                 Safe threshold: &gt; 6.0 Months (Remaining cash: ₹{simRemainingLiquid.toLocaleString('en-IN')})
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-              <span className="text-xs text-[#758078]">Estimated Monthly Loan EMI</span>
-              <p className="text-xl font-bold font-mono text-[#17231D] mt-1">
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+              <span className="text-xs text-[#475569]">Estimated Monthly Loan EMI</span>
+              <p className="text-xl font-bold font-mono text-[#0F172A] mt-1">
                 ₹{Math.round(simEmi).toLocaleString('en-IN')} / mo
               </p>
-              <p className="text-[10px] text-[#758078] mt-0.5">
+              <p className="text-[10px] text-[#475569] mt-0.5">
                 Financing ₹{simLoan.toLocaleString('en-IN')} @ 8.8% p.a. over 36 months
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-              <span className="text-xs text-[#758078]">FIRE Goal Timeline Impact</span>
+            <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+              <span className="text-xs text-[#475569]">FIRE Goal Timeline Impact</span>
               <p className="text-xl font-bold font-mono text-[#D97706] mt-1">
                 +2.1 Months Delay
               </p>
-              <p className="text-[10px] text-[#758078] mt-0.5">
+              <p className="text-[10px] text-[#475569] mt-0.5">
                 Absorbed within current monthly discretionary surplus
               </p>
             </div>
@@ -474,16 +474,16 @@ export default function NetWorthPage() {
               ? 'bg-[#FFFBEB] border-[#FDE68A]' 
               : 'bg-[#F0FDF4] border-[#86EFAC]'
           }`}>
-            <Sparkles className="w-5 h-5 text-[#087A50] shrink-0 mt-0.5" />
+            <Sparkles className="w-5 h-5 text-[#059669] shrink-0 mt-0.5" />
             <div>
-              <span className="text-xs font-bold text-[#17231D] block">
+              <span className="text-xs font-bold text-[#0F172A] block">
                 {simDownPayment > simBaseLiquid
                   ? 'CRITICAL DEFICIT: INSUFFICIENT LIQUID RESERVES'
                   : Number(simRunwayMonths) < 3.0
                   ? 'ELEVATED RISK: EMERGENCY BUFFER DEPLETED'
                   : `VERDICT: AFFORDABLE WITH ₹${(simDownPayment / 100000).toFixed(2)}L DOWN PAYMENT`}
               </span>
-              <p className="text-xs text-[#505D54] mt-1 leading-relaxed">
+              <p className="text-xs text-[#334155] mt-1 leading-relaxed">
                 {simDownPayment > simBaseLiquid
                   ? `Required down payment of ₹${simDownPayment.toLocaleString('en-IN')} exceeds current liquid cash (₹13,27,650.00).`
                   : `You can comfortably purchase this ₹${(simCost / 100000).toFixed(2)} Lakh asset without impairing your long-term FIRE goals. Liquid emergency reserves remain at ₹${(simRemainingLiquid / 100000).toFixed(2)}L (${simRunwayMonths} months runway).`}

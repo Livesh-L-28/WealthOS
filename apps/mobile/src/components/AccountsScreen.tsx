@@ -8,7 +8,7 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { BankAccount, Transaction } from '../types';
 import { formatINR } from '../formatters';
 
@@ -31,6 +31,14 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
   onAddIncome,
   initialSubTab,
 }) => {
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const boxBg = isDark ? '#1E293B' : '#F8FAFC';
+
   const [activeSubTab, setActiveSubTab] = useState<'ACCOUNTS' | 'TRANSACTIONS'>(
     initialSubTab || 'ACCOUNTS'
   );
@@ -85,32 +93,60 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: canvasBg }]}>
       {/* Top Cockpit Mode Switcher */}
-      <View style={styles.modeTabs}>
+      <View
+        style={[
+          styles.modeTabs,
+          {
+            backgroundColor: isDark ? '#111827' : '#F1F5F9',
+            borderColor,
+          },
+        ]}
+      >
         <TouchableOpacity
-          style={[styles.modeTab, activeSubTab === 'ACCOUNTS' && styles.modeTabActive]}
+          style={[
+            styles.modeTab,
+            activeSubTab === 'ACCOUNTS' && [
+              styles.modeTabActive,
+              { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' },
+            ],
+          ]}
           onPress={() => setActiveSubTab('ACCOUNTS')}
           activeOpacity={0.7}
         >
           <Text
             style={[
               styles.modeTabText,
-              activeSubTab === 'ACCOUNTS' && styles.modeTabTextActive,
+              { color: textSecondary },
+              activeSubTab === 'ACCOUNTS' && [
+                styles.modeTabTextActive,
+                { color: isDark ? '#60A5FA' : '#2563EB' },
+              ],
             ]}
           >
             Connected Accounts ({accounts.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.modeTab, activeSubTab === 'TRANSACTIONS' && styles.modeTabActive]}
+          style={[
+            styles.modeTab,
+            activeSubTab === 'TRANSACTIONS' && [
+              styles.modeTabActive,
+              { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' },
+            ],
+          ]}
           onPress={() => setActiveSubTab('TRANSACTIONS')}
           activeOpacity={0.7}
         >
           <Text
             style={[
               styles.modeTabText,
-              activeSubTab === 'TRANSACTIONS' && styles.modeTabTextActive,
+              { color: textSecondary },
+              activeSubTab === 'TRANSACTIONS' && [
+                styles.modeTabTextActive,
+                { color: isDark ? '#60A5FA' : '#2563EB' },
+              ],
             ]}
           >
             Transactions Ledger ({transactions.length})
@@ -121,7 +157,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
       {activeSubTab === 'ACCOUNTS' ? (
         <>
           {/* Summary Card */}
-          <View style={styles.summaryCard}>
+          <View style={[styles.summaryCard, { backgroundColor: cardBg, borderColor }]}>
             <View style={styles.summaryTop}>
               <Text style={styles.summaryLabel}>CONNECTED INSTITUTION ACCOUNTS</Text>
               <View style={styles.syncBadge}>
@@ -210,7 +246,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                 return (
                   <TouchableOpacity
                     key={acc.id}
-                    style={styles.accountCard}
+                    style={[styles.accountCard, { backgroundColor: cardBg, borderColor }]}
                     onPress={() => setSelectedAccount(acc)}
                     activeOpacity={0.75}
                   >
@@ -459,7 +495,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                 return (
                   <TouchableOpacity
                     key={tx.id}
-                    style={styles.txCard}
+                    style={[styles.txCard, { backgroundColor: cardBg, borderColor }]}
                     onPress={() => setSelectedTx(tx)}
                     activeOpacity={0.7}
                   >
@@ -475,7 +511,10 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
 
                       <View style={styles.txInfoCol}>
                         <View style={styles.txTitleRow}>
-                          <Text style={styles.txTitle} numberOfLines={1}>
+                          <Text
+                            style={[styles.txTitle, { color: textPrimary }]}
+                            numberOfLines={1}
+                          >
                             {tx.title}
                           </Text>
                           <Text

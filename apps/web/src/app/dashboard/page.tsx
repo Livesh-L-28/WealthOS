@@ -90,10 +90,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page Title & Context Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">
+            <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">
               Executive Financial Overview
             </h1>
             <Badge variant="positive" size="sm" className="gap-1">
@@ -101,13 +101,13 @@ export default function DashboardPage() {
               <span>Real-Time Sync</span>
             </Badge>
           </div>
-          <p className="text-xs text-[#717D74] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Consolidated double-entry ledger state and multi-asset wealth intelligence.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 flex-wrap">
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E7ECE8] text-xs font-medium text-[#17231D]">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#E2E8F0] text-xs font-medium text-[#0F172A]">
             <span>Onboarding Setup Checklist</span>
             <Badge variant="positive" size="sm">4/4 Complete</Badge>
           </div>
@@ -118,7 +118,7 @@ export default function DashboardPage() {
             onClick={() => setActiveModal('transaction')}
             className="gap-1.5"
           >
-            <PlusCircle className="w-3.5 h-3.5 text-[#16A36A]" />
+            <PlusCircle className="w-3.5 h-3.5 text-[#10B981]" />
             <span>Add Transaction</span>
           </Button>
 
@@ -128,7 +128,7 @@ export default function DashboardPage() {
             onClick={() => setActiveModal('document')}
             className="gap-2"
           >
-            <UploadCloud className="w-3.5 h-3.5 text-[#16A36A]" />
+            <UploadCloud className="w-3.5 h-3.5 text-[#10B981]" />
             <span>Import Statement</span>
           </Button>
 

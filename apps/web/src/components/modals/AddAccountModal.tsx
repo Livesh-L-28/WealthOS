@@ -160,18 +160,18 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
       aria-labelledby="add-account-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in"
     >
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E7ECE8] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E2E8F0] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="px-6 py-4 border-b border-[#E7ECE8] flex items-center justify-between bg-[#FAFCFA]">
+        <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#10B981]/10 text-[#10B981] flex items-center justify-center">
               <Landmark className="w-4 h-4" />
             </div>
             <div>
-              <h3 id="add-account-title" className="text-sm font-bold text-[#17231D]">
+              <h3 id="add-account-title" className="text-sm font-bold text-[#0F172A]">
                 Add Financial Account
               </h3>
-              <p className="text-[11px] text-[#717D74]">
+              <p className="text-[11px] text-[#64748B]">
                 Step {step} of 3 &bull;{' '}
                 {step === 1 ? 'Select Type' : step === 2 ? 'Account Details' : 'Review & Confirm'}
               </p>
@@ -179,7 +179,7 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#717D74] hover:text-[#17231D] hover:bg-[#F0F4F1] flex items-center justify-center"
+            className="w-8 h-8 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] flex items-center justify-center"
             aria-label="Close modal"
           >
             <X className="w-4 h-4" />
@@ -187,9 +187,9 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
         </div>
 
         {/* Step Progress Bar */}
-        <div className="w-full bg-[#E7ECE8] h-1">
+        <div className="w-full bg-[#E2E8F0] h-1">
           <div
-            className="bg-[#16A36A] h-1 transition-all duration-300"
+            className="bg-[#10B981] h-1 transition-all duration-300"
             style={{ width: `${(step / 3) * 100}%` }}
           />
         </div>
@@ -199,11 +199,11 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
           {/* Success state */}
           {success && (
             <div className="p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-[#16A36A]/15 text-[#16A36A] mx-auto flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-[#10B981]/15 text-[#10B981] mx-auto flex items-center justify-center">
                 <Check className="w-6 h-6" />
               </div>
-              <h4 className="text-base font-bold text-[#17231D]">Account Connected!</h4>
-              <p className="text-xs text-[#717D74]">
+              <h4 className="text-base font-bold text-[#0F172A]">Account Connected!</h4>
+              <p className="text-xs text-[#64748B]">
                 {accountName} ({institution}) is now linked to your general ledger.
               </p>
             </div>
@@ -211,7 +211,7 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
 
           {!success && step === 1 && (
             <div className="space-y-3">
-              <label className="text-xs font-semibold text-[#17231D] block">
+              <label className="text-xs font-semibold text-[#0F172A] block">
                 Choose Account Category
               </label>
               <div className="grid grid-cols-1 gap-2.5">
@@ -225,26 +225,26 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                       onClick={() => setAccountType(t.type)}
                       className={`w-full flex items-center gap-3.5 p-3.5 rounded-xl border text-left transition-all ${
                         isSelected
-                          ? 'border-[#16A36A] bg-[#16A36A]/5 ring-1 ring-[#16A36A]'
-                          : 'border-[#E7ECE8] hover:bg-[#F7F9F7] hover:border-[#16A36A]/50'
+                          ? 'border-[#10B981] bg-[#10B981]/5 ring-1 ring-[#10B981]'
+                          : 'border-[#E2E8F0] hover:bg-[#F8FAFC] hover:border-[#10B981]/50'
                       }`}
                     >
                       <div
                         className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                           isSelected
-                            ? 'bg-[#16A36A] text-white'
-                            : 'bg-[#F0F4F1] text-[#717D74]'
+                            ? 'bg-[#10B981] text-white'
+                            : 'bg-[#F1F5F9] text-[#64748B]'
                         }`}
                       >
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                        <span className="text-xs font-semibold text-[#17231D] block">
+                        <span className="text-xs font-semibold text-[#0F172A] block">
                           {t.label}
                         </span>
-                        <span className="text-[11px] text-[#717D74]">{t.description}</span>
+                        <span className="text-[11px] text-[#64748B]">{t.description}</span>
                       </div>
-                      {isSelected && <Check className="w-4 h-4 text-[#16A36A]" />}
+                      {isSelected && <Check className="w-4 h-4 text-[#10B981]" />}
                     </button>
                   );
                 })}
@@ -256,7 +256,7 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
             <div className="space-y-4">
               {/* Institution Selection */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Financial Institution / Bank
                 </label>
                 <input
@@ -267,7 +267,7 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                     if (errors.institution) setErrors((prev) => ({ ...prev, institution: '' }));
                   }}
                   placeholder="e.g. HDFC Bank, Zerodha, ICICI"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 />
                 {/* Popular chips */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
@@ -276,20 +276,20 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                       key={inst}
                       type="button"
                       onClick={() => setInstitution(inst)}
-                      className="px-2 py-0.5 rounded-lg text-[10px] bg-[#F0F4F1] text-[#717D74] hover:text-[#17231D] hover:bg-[#E7ECE8]"
+                      className="px-2 py-0.5 rounded-lg text-[10px] bg-[#F1F5F9] text-[#64748B] hover:text-[#0F172A] hover:bg-[#E2E8F0]"
                     >
                       {inst}
                     </button>
                   ))}
                 </div>
                 {errors.institution && (
-                  <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.institution}</p>
+                  <p className="text-[11px] text-[#EF4444] mt-1">{errors.institution}</p>
                 )}
               </div>
 
               {/* Account Nickname */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Account Nickname
                 </label>
                 <input
@@ -300,16 +300,16 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                     if (errors.accountName) setErrors((prev) => ({ ...prev, accountName: '' }));
                   }}
                   placeholder="e.g. Salary Account, Emergency Fund, Trading Demat"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 />
                 {errors.accountName && (
-                  <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.accountName}</p>
+                  <p className="text-[11px] text-[#EF4444] mt-1">{errors.accountName}</p>
                 )}
               </div>
 
               {/* Last 4 digits */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Last 4 Digits of Account Number
                 </label>
                 <input
@@ -321,21 +321,21 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                     if (errors.accountNumber) setErrors((prev) => ({ ...prev, accountNumber: '' }));
                   }}
                   placeholder="e.g. 4092"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] font-mono focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] font-mono focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 />
                 {errors.accountNumber && (
-                  <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.accountNumber}</p>
+                  <p className="text-[11px] text-[#EF4444] mt-1">{errors.accountNumber}</p>
                 )}
               </div>
 
               {/* Opening Balance & Currency */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-1">
-                  <label className="text-xs font-semibold text-[#17231D] block mb-1">Currency</label>
+                  <label className="text-xs font-semibold text-[#0F172A] block mb-1">Currency</label>
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                   >
                     <option value="INR">INR (₹)</option>
                     <option value="USD">USD ($)</option>
@@ -344,7 +344,7 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                  <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                     Current Balance
                     <InfoTooltip
                       content={
@@ -355,7 +355,7 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                     />
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#717D74]">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#64748B]">
                       {currency === 'INR' ? '₹' : currency}
                     </span>
                     <input
@@ -367,18 +367,18 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                         if (errors.balance) setErrors((prev) => ({ ...prev, balance: '' }));
                       }}
                       placeholder="0.00"
-                      className="w-full pl-7 pr-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] font-mono focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                      className="w-full pl-7 pr-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] font-mono focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                     />
                   </div>
                   {errors.balance && (
-                    <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.balance}</p>
+                    <p className="text-[11px] text-[#EF4444] mt-1">{errors.balance}</p>
                   )}
                 </div>
               </div>
 
               {/* Security reassurance banner */}
-              <div className="p-3 rounded-xl bg-[#FAFCFA] border border-[#E7ECE8] flex items-center gap-2.5 text-[11px] text-[#717D74]">
-                <ShieldCheck className="w-4 h-4 text-[#16A36A] flex-shrink-0" />
+              <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center gap-2.5 text-[11px] text-[#64748B]">
+                <ShieldCheck className="w-4 h-4 text-[#10B981] flex-shrink-0" />
                 <span>
                   WealthOS never asks for bank passwords, UPI PINs, or debit card PINs. Read-only ledger tracking.
                 </span>
@@ -388,35 +388,35 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
 
           {!success && step === 3 && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] space-y-3">
-                <h4 className="text-xs font-bold text-[#17231D] uppercase tracking-wider">
+              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
+                <h4 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">
                   Review Account Information
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-[#717D74] block">Account Type:</span>
-                    <span className="font-semibold text-[#17231D]">{accountType}</span>
+                    <span className="text-[#64748B] block">Account Type:</span>
+                    <span className="font-semibold text-[#0F172A]">{accountType}</span>
                   </div>
                   <div>
-                    <span className="text-[#717D74] block">Institution:</span>
-                    <span className="font-semibold text-[#17231D]">{institution}</span>
+                    <span className="text-[#64748B] block">Institution:</span>
+                    <span className="font-semibold text-[#0F172A]">{institution}</span>
                   </div>
                   <div>
-                    <span className="text-[#717D74] block">Account Name:</span>
-                    <span className="font-semibold text-[#17231D]">{accountName}</span>
+                    <span className="text-[#64748B] block">Account Name:</span>
+                    <span className="font-semibold text-[#0F172A]">{accountName}</span>
                   </div>
                   <div>
-                    <span className="text-[#717D74] block">Masked Identifier:</span>
-                    <span className="font-mono font-semibold text-[#17231D]">•••• {accountNumber}</span>
+                    <span className="text-[#64748B] block">Masked Identifier:</span>
+                    <span className="font-mono font-semibold text-[#0F172A]">•••• {accountNumber}</span>
                   </div>
-                  <div className="col-span-2 pt-2 border-t border-[#E7ECE8]">
-                    <span className="text-[#717D74] block">Initial Balance:</span>
-                    <span className="text-base font-mono font-bold text-[#16A36A]">
+                  <div className="col-span-2 pt-2 border-t border-[#E2E8F0]">
+                    <span className="text-[#64748B] block">Initial Balance:</span>
+                    <span className="text-base font-mono font-bold text-[#10B981]">
                       {currency === 'INR' ? '₹' : currency}{' '}
                       {Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
                     {(accountType === 'CREDIT_CARD' || accountType === 'LOAN') && (
-                      <span className="text-[10px] text-[#DC5B5B] block mt-0.5">
+                      <span className="text-[10px] text-[#EF4444] block mt-0.5">
                         Recorded as Liability (Owed)
                       </span>
                     )}
@@ -424,7 +424,7 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
                 </div>
               </div>
 
-              <div className="text-[11px] text-[#717D74]">
+              <div className="text-[11px] text-[#64748B]">
                 By clicking <strong>Confirm & Link Account</strong>, an opening general journal entry will be created in your workspace ledger.
               </div>
             </div>
@@ -433,7 +433,7 @@ export function AddAccountModal({ isOpen, onClose, onAccountAdded }: AddAccountM
 
         {/* Modal Footer */}
         {!success && (
-          <div className="px-6 py-4 border-t border-[#E7ECE8] bg-[#FAFCFA] flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between">
             {step > 1 ? (
               <Button variant="outline" size="sm" onClick={handleBack} className="gap-1">
                 <ChevronLeft className="w-3.5 h-3.5" />

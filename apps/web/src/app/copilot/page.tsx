@@ -210,42 +210,42 @@ export default function CopilotPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Financial Copilot</h1>
+            <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Financial Copilot</h1>
             <Badge variant="positive" size="sm">
               <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
               Read-Only Ledger Grounded
             </Badge>
           </div>
-          <p className="text-xs text-[#717D74] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Grounded financial intelligence with mathematical citations, privacy containment, and zero hallucinations.
           </p>
         </div>
 
         {/* Digital Twin State Pill */}
-        <div className="flex items-center gap-3 bg-[#FAFBF9] border border-[#E7ECE8] px-3 py-2 rounded-xl text-xs">
+        <div className="flex items-center gap-3 bg-[#FAFBF9] border border-[#E2E8F0] px-3 py-2 rounded-xl text-xs">
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#16A36A] animate-pulse" />
-            <span className="font-semibold text-[#17231D]">Digital Twin:</span>
+            <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
+            <span className="font-semibold text-[#0F172A]">Digital Twin:</span>
             <Badge variant="positive" size="sm">CURRENT</Badge>
           </div>
-          <div className="h-3 w-px bg-[#E7ECE8]" />
-          <div className="text-[11px] text-[#717D74]">
-            Net Worth: <span className="font-semibold text-[#17231D]">₹75,37,901.25</span>
+          <div className="h-3 w-px bg-[#E2E8F0]" />
+          <div className="text-[11px] text-[#64748B]">
+            Net Worth: <span className="font-semibold text-[#0F172A]">₹75,37,901.25</span>
           </div>
-          <div className="h-3 w-px bg-[#E7ECE8]" />
-          <div className="text-[11px] text-[#717D74]">
-            Health: <span className="font-semibold text-[#16A36A]">94/100</span>
+          <div className="h-3 w-px bg-[#E2E8F0]" />
+          <div className="text-[11px] text-[#64748B]">
+            Health: <span className="font-semibold text-[#10B981]">94/100</span>
           </div>
         </div>
       </div>
 
       {/* Suggested Questions Grid */}
       <div>
-        <p className="text-xs font-semibold text-[#17231D] mb-2 flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-[#16A36A]" />
+        <p className="text-xs font-semibold text-[#0F172A] mb-2 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-[#10B981]" />
           <span>Suggested Questions (Click any question to ask):</span>
         </p>
         <div className="flex flex-wrap gap-2">
@@ -254,7 +254,7 @@ export default function CopilotPage() {
               key={idx}
               type="button"
               onClick={() => handleSend(q)}
-              className="px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-[#F0F4F1] border border-[#E7ECE8] text-[#17231D] hover:border-[#16A36A]/50 transition-all text-left shadow-xs"
+              className="px-3 py-1.5 rounded-xl text-xs font-medium bg-white hover:bg-[#F1F5F9] border border-[#E2E8F0] text-[#0F172A] hover:border-[#10B981]/50 transition-all text-left shadow-xs"
             >
               {q}
             </button>
@@ -273,7 +273,7 @@ export default function CopilotPage() {
               }`}
             >
               {msg.role === 'assistant' && (
-                <div className="w-8 h-8 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-[#10B981]/10 text-[#10B981] flex items-center justify-center flex-shrink-0">
                   <Bot className="w-4 h-4" />
                 </div>
               )}
@@ -281,21 +281,21 @@ export default function CopilotPage() {
               <div
                 className={`max-w-xl rounded-2xl p-4 text-xs space-y-2 ${
                   msg.role === 'user'
-                    ? 'bg-[#17231D] text-white shadow-xs'
-                    : 'bg-[#F7F9F7] text-[#17231D] border border-[#E7ECE8]'
+                    ? 'bg-[#0F172A] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#0F172A] border border-[#E2E8F0]'
                 }`}
               >
                 <div className="whitespace-pre-line leading-relaxed">{msg.content}</div>
 
                 {/* Citations & Evidence Pill */}
                 {msg.citations && msg.citations.length > 0 && (
-                  <div className="mt-3 pt-2.5 border-t border-[#E7ECE8] text-[10px] text-[#717D74] space-y-1">
-                    <span className="font-semibold text-[#17231D] flex items-center gap-1">
-                      <Database className="w-3 h-3 text-[#16A36A]" />
+                  <div className="mt-3 pt-2.5 border-t border-[#E2E8F0] text-[10px] text-[#64748B] space-y-1">
+                    <span className="font-semibold text-[#0F172A] flex items-center gap-1">
+                      <Database className="w-3 h-3 text-[#10B981]" />
                       Verified Source Citation:
                     </span>
                     {msg.citations.map((c, i) => (
-                      <div key={i} className="font-mono bg-white p-1.5 rounded border border-[#E7ECE8]">
+                      <div key={i} className="font-mono bg-white p-1.5 rounded border border-[#E2E8F0]">
                         Source: {c.source} &bull; Data: {JSON.stringify(c.data)}
                       </div>
                     ))}
@@ -306,8 +306,8 @@ export default function CopilotPage() {
           ))}
 
           {isLoading && (
-            <div className="flex gap-3 items-center text-xs text-[#717D74]">
-              <div className="w-8 h-8 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center animate-pulse">
+            <div className="flex gap-3 items-center text-xs text-[#64748B]">
+              <div className="w-8 h-8 rounded-xl bg-[#10B981]/10 text-[#10B981] flex items-center justify-center animate-pulse">
                 <Bot className="w-4 h-4" />
               </div>
               <span>Querying verified general ledger...</span>
@@ -316,7 +316,7 @@ export default function CopilotPage() {
         </div>
 
         {/* Input Bar */}
-        <div className="pt-4 border-t border-[#E7ECE8] flex gap-2">
+        <div className="pt-4 border-t border-[#E2E8F0] flex gap-2">
           <input
             type="text"
             value={inputQuery}
@@ -325,7 +325,7 @@ export default function CopilotPage() {
               if (e.key === 'Enter') handleSend();
             }}
             placeholder="Ask a question about your net worth, expenses, investments, or goals..."
-            className="flex-1 px-4 py-2 text-xs bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl text-[#17231D] placeholder-[#9BA39D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+            className="flex-1 px-4 py-2 text-xs bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
           />
           <Button
             variant="primary"

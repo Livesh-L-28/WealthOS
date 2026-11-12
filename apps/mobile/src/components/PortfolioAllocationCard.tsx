@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { formatINR } from '../formatters';
 
 interface PortfolioAllocationCardProps {
@@ -12,6 +12,7 @@ export const PortfolioAllocationCard: React.FC<PortfolioAllocationCardProps> = (
   totalValue,
   totalInvested,
 }) => {
+  const { theme, isDark } = useTheme();
   const totalPnl = totalValue - totalInvested;
   const pnlPct = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
 
@@ -22,16 +23,25 @@ export const PortfolioAllocationCard: React.FC<PortfolioAllocationCardProps> = (
     { label: 'Fixed Income', pct: 10, color: theme.colors.charts.fixedIncome },
   ];
 
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const pnlBg = isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5';
+  const pnlTextColor = isDark ? '#34D399' : '#059669';
+
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.title}>PORTFOLIO ALLOCATION</Text>
-            <Text style={styles.subtitle}>Multi-Asset Distribution & Returns</Text>
+            <Text style={[styles.title, { color: textSecondary }]}>PORTFOLIO ALLOCATION</Text>
+            <Text style={[styles.subtitle, { color: isDark ? '#64748B' : '#94A3B8' }]}>
+              Multi-Asset Distribution & Returns
+            </Text>
           </View>
-          <View style={styles.pnlBadge}>
-            <Text style={styles.pnlBadgeText}>
+          <View style={[styles.pnlBadge, { backgroundColor: pnlBg }]}>
+            <Text style={[styles.pnlBadgeText, { color: pnlTextColor }]}>
               {totalPnl >= 0 ? '+' : ''}
               {pnlPct.toFixed(1)}% All-Time
             </Text>
@@ -40,12 +50,17 @@ export const PortfolioAllocationCard: React.FC<PortfolioAllocationCardProps> = (
 
         <View style={styles.valueRow}>
           <View>
-            <Text style={styles.valueLabel}>Current Valuation</Text>
-            <Text style={styles.valueText}>{formatINR(totalValue)}</Text>
+            <Text style={[styles.valueLabel, { color: textSecondary }]}>Current Valuation</Text>
+            <Text style={[styles.valueText, { color: textPrimary }]}>{formatINR(totalValue)}</Text>
           </View>
           <View style={styles.pnlBox}>
-            <Text style={styles.pnlLabel}>Unrealized Gain</Text>
-            <Text style={styles.pnlText}>
+            <Text style={[styles.pnlLabel, { color: textSecondary }]}>Unrealized Gain</Text>
+            <Text
+              style={[
+                styles.pnlText,
+                { color: totalPnl >= 0 ? (isDark ? '#34D399' : '#059669') : (isDark ? '#F87171' : '#DC2626') },
+              ]}
+            >
               {totalPnl >= 0 ? '+' : ''}
               {formatINR(totalPnl)}
             </Text>
@@ -53,7 +68,7 @@ export const PortfolioAllocationCard: React.FC<PortfolioAllocationCardProps> = (
         </View>
 
         {/* Segmented Color Allocation Bar */}
-        <View style={styles.stackedBar}>
+        <View style={[styles.stackedBar, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
           {allocations.map((a) => (
             <View
               key={a.label}
@@ -70,8 +85,8 @@ export const PortfolioAllocationCard: React.FC<PortfolioAllocationCardProps> = (
           {allocations.map((a) => (
             <View key={a.label} style={styles.legendItem}>
               <View style={[styles.legendDot, { backgroundColor: a.color }]} />
-              <Text style={styles.legendLabel}>{a.label}</Text>
-              <Text style={styles.legendPct}>{a.pct}%</Text>
+              <Text style={[styles.legendLabel, { color: textSecondary }]}>{a.label}</Text>
+              <Text style={[styles.legendPct, { color: textPrimary }]}>{a.pct}%</Text>
             </View>
           ))}
         </View>

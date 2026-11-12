@@ -9,7 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { config, setRuntimeApiUrl } from '../config';
 import { localStore } from '../storage/localStore';
 
@@ -28,6 +28,13 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onShowToast,
   onLogout,
 }) => {
+  const { isDark, toggleTheme } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   const [biometricsEnabled, setBiometricsEnabled] = useState(true);
   const [offlineSync, setOfflineSync] = useState(true);
   const [pushAlerts, setPushAlerts] = useState(true);
@@ -100,21 +107,24 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: canvasBg }]}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Top Bar */}
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backLabel}>Overview</Text>
+          <Text style={[styles.backArrow, { color: isDark ? '#60A5FA' : '#2563EB' }]}>‹</Text>
+          <Text style={[styles.backLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Overview</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Settings & Security</Text>
+        <Text style={[styles.screenTitle, { color: textPrimary }]}>Settings & Security</Text>
         <View style={styles.topRightBadge}>
           <Text style={styles.topRightBadgeText}>ENCRYPTED</Text>
         </View>
       </View>
 
       {/* Hardware Security Enclave Card */}
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.heroTopRow}>
           <View style={styles.lockIconBox}>
             <Text style={styles.lockIcon}>🛡️</Text>

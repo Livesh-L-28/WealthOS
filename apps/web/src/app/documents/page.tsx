@@ -142,16 +142,16 @@ export default function DocumentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Financial Document Vault & OCR</h1>
+            <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Financial Document Vault & OCR</h1>
             <Badge variant="positive" size="sm">
               <ShieldCheck className="w-3.5 h-3.5 mr-1 inline" />
               MinIO S3 Encrypted
             </Badge>
           </div>
-          <p className="text-xs text-[#717D74] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Automated financial statement parsing, deterministic arithmetic validation, and human-in-the-loop approval.
           </p>
         </div>
@@ -160,15 +160,15 @@ export default function DocumentsPage() {
       {/* Upload Zone */}
       <div
         onClick={() => setIsUploadModalOpen(true)}
-        className="border-2 border-dashed border-[#E7ECE8] rounded-2xl p-8 text-center bg-white hover:bg-[#F7F9F7] hover:border-[#16A36A] transition-all flex flex-col items-center justify-center shadow-xs group cursor-pointer"
+        className="border-2 border-dashed border-[#E2E8F0] rounded-2xl p-8 text-center bg-white hover:bg-[#F8FAFC] hover:border-[#10B981] transition-all flex flex-col items-center justify-center shadow-xs group cursor-pointer"
       >
-        <div className="p-4 rounded-2xl bg-[#16A36A]/10 text-[#16A36A] border border-[#16A36A]/20 mb-3 group-hover:scale-105 transition-transform">
+        <div className="p-4 rounded-2xl bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 mb-3 group-hover:scale-105 transition-transform">
           <UploadCloud className="w-8 h-8" />
         </div>
-        <h3 className="text-base font-semibold text-[#17231D]">
+        <h3 className="text-base font-semibold text-[#0F172A]">
           Upload Financial Statements, Invoices or Receipts
         </h3>
-        <p className="text-xs text-[#717D74] mt-1 max-w-md">
+        <p className="text-xs text-[#64748B] mt-1 max-w-md">
           Supported formats: PDF (%PDF-1.x), PNG, JPEG, Excel, CSV up to 50 MB. Files are quarantined in MinIO and processed with deterministic math validation before approval.
         </p>
         <div className="mt-4 flex gap-3">
@@ -197,7 +197,7 @@ export default function DocumentsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#E7ECE8] text-[#758078] uppercase tracking-wider font-semibold">
+              <tr className="border-b border-[#E2E8F0] text-[#475569] uppercase tracking-wider font-semibold">
                 <th className="py-3 px-4">Filename</th>
                 <th className="py-3 px-4">Size & Format</th>
                 <th className="py-3 px-4">Arithmetic Check</th>
@@ -207,18 +207,18 @@ export default function DocumentsPage() {
                 <th className="py-3 px-4 text-center">Review Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E7ECE8]">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {documents.map((doc) => (
-                <tr key={doc.id} className="hover:bg-[#F7F9F7] transition-colors">
+                <tr key={doc.id} className="hover:bg-[#F8FAFC] transition-colors">
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2.5">
-                      <div className="p-1.5 rounded-lg bg-[#F0F4F1] text-[#16A36A] border border-[#E7ECE8]">
+                      <div className="p-1.5 rounded-lg bg-[#F1F5F9] text-[#10B981] border border-[#E2E8F0]">
                         <FileText className="w-4 h-4" />
                       </div>
-                      <span className="font-semibold text-[#17231D]">{doc.name}</span>
+                      <span className="font-semibold text-[#0F172A]">{doc.name}</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-[#758078]">{doc.size} &bull; {doc.mimeType}</td>
+                  <td className="py-3 px-4 text-[#475569]">{doc.size} &bull; {doc.mimeType}</td>
                   <td className="py-3 px-4">
                     <Badge variant="positive" size="sm">
                       <CheckCircle2 className="w-3 h-3 mr-1 inline" />
@@ -227,22 +227,22 @@ export default function DocumentsPage() {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex items-center gap-2">
-                      <div className="w-16 bg-[#E7ECE8] rounded-full h-1.5 overflow-hidden">
+                      <div className="w-16 bg-[#E2E8F0] rounded-full h-1.5 overflow-hidden">
                         <div
-                          className="bg-[#16A36A] h-1.5 rounded-full"
+                          className="bg-[#10B981] h-1.5 rounded-full"
                           style={{ width: `${doc.confidence * 100}%` }}
                         />
                       </div>
-                      <span className="font-mono font-medium text-[#17231D]">
+                      <span className="font-mono font-medium text-[#0F172A]">
                         {(doc.confidence * 100).toFixed(0)}%
                       </span>
                     </div>
                   </td>
                   <td className="py-3 px-4 font-mono text-xs">
                     {doc.journalRef ? (
-                      <span className="text-[#16A36A] font-medium">{doc.journalRef}</span>
+                      <span className="text-[#10B981] font-medium">{doc.journalRef}</span>
                     ) : (
-                      <span className="text-[#9BA39D]">—</span>
+                      <span className="text-[#64748B]">—</span>
                     )}
                   </td>
                   <td className="py-3 px-4 text-center">
@@ -275,13 +275,13 @@ export default function DocumentsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleReject(doc.id)}
-                          className="px-2 py-1 text-[11px] text-[#DC5B5B] hover:bg-[#FEF2F2]"
+                          className="px-2 py-1 text-[11px] text-[#EF4444] hover:bg-[#FEF2F2]"
                         >
                           <X className="w-3 h-3" />
                         </Button>
                       </div>
                     ) : (
-                      <span className="text-xs text-[#758078] font-medium">Locked</span>
+                      <span className="text-xs text-[#475569] font-medium">Locked</span>
                     )}
                   </td>
                 </tr>
@@ -299,17 +299,17 @@ export default function DocumentsPage() {
         />
         <div className="space-y-2.5">
           {auditLogs.map((log) => (
-            <div key={log.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+            <div key={log.id} className="flex items-center justify-between p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
               <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-white border border-[#E7ECE8] text-[#16A36A]">
+                <div className="p-2 rounded-lg bg-white border border-[#E2E8F0] text-[#10B981]">
                   <History className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-[#17231D]">{log.docName}</p>
-                  <p className="text-[10px] text-[#16A36A] font-medium">{log.action}</p>
+                  <p className="text-xs font-semibold text-[#0F172A]">{log.docName}</p>
+                  <p className="text-[10px] text-[#10B981] font-medium">{log.action}</p>
                 </div>
               </div>
-              <span className="text-[10px] font-mono text-[#758078]">{log.timestamp}</span>
+              <span className="text-[10px] font-mono text-[#475569]">{log.timestamp}</span>
             </div>
           ))}
         </div>

@@ -39,7 +39,7 @@ export function FinancialLineChart({
 
   if (!series || series.length === 0 || !series[0].data || series[0].data.length === 0) {
     return (
-      <div className="h-44 flex items-center justify-center text-xs text-[#758078]">
+      <div className="h-44 flex items-center justify-center text-xs text-[#475569]">
         No series data available.
       </div>
     );
@@ -163,14 +163,14 @@ export function FinancialLineChart({
                   y1={yPos}
                   x2={width - paddingRight}
                   y2={yPos}
-                  stroke="#E7ECE8"
+                  stroke="#E2E8F0"
                   strokeDasharray="4 4"
                 />
                 <text
                   x={paddingLeft - 8}
                   y={yPos + 3.5}
                   textAnchor="end"
-                  className="text-[10px] fill-[#758078] font-mono select-none"
+                  className="text-[10px] fill-[#475569] font-mono select-none"
                 >
                   {formatAxisTick(val, currency)}
                 </text>
@@ -265,7 +265,7 @@ export function FinancialLineChart({
           y1={height - paddingBottom}
           x2={width - paddingRight}
           y2={height - paddingBottom}
-          stroke="#E7ECE8"
+          stroke="#E2E8F0"
         />
         {primaryData.map((d, i) => {
           // Display labels with reasonable spacing
@@ -279,7 +279,7 @@ export function FinancialLineChart({
               x={getX(i)}
               y={height - paddingBottom + 16}
               textAnchor="middle"
-              className="text-[10px] fill-[#758078] font-medium select-none"
+              className="text-[10px] fill-[#475569] font-medium select-none"
             >
               {d.label}
             </text>
@@ -291,7 +291,7 @@ export function FinancialLineChart({
       {series.length > 1 && (
         <div className="flex items-center justify-center gap-4 mt-2">
           {series.map((s) => (
-            <div key={s.id} className="flex items-center gap-1.5 text-xs text-[#17231D]">
+            <div key={s.id} className="flex items-center gap-1.5 text-xs text-[#0F172A]">
               <span
                 className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: s.color }}

@@ -63,21 +63,21 @@ export function AddSavingsModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in">
-      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-[#E7ECE8] overflow-hidden">
+      <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-[#E2E8F0] overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-[#E7ECE8] flex items-center justify-between bg-[#FAFCFA]">
+        <div className="px-6 py-5 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#E8F5EE] text-[#087A50] flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-xl bg-[#E8F5EE] text-[#059669] flex items-center justify-center font-bold">
               💰
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#17231D] tracking-tight">Add Savings to Goal</h3>
-              <p className="text-xs text-[#758078]">Direct-post savings to {goalTitle}</p>
+              <h3 className="text-base font-bold text-[#0F172A] tracking-tight">Add Savings to Goal</h3>
+              <p className="text-xs text-[#475569]">Direct-post savings to {goalTitle}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#758078] hover:text-[#17231D] hover:bg-[#F0F4F1] flex items-center justify-center transition"
+            className="w-8 h-8 rounded-lg text-[#475569] hover:text-[#0F172A] hover:bg-[#F1F5F9] flex items-center justify-center transition"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
@@ -87,11 +87,11 @@ export function AddSavingsModal({
         {/* Form Body */}
         {successMsg ? (
           <div className="p-8 text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-[#E8F5EE] text-[#087A50] flex items-center justify-center text-2xl mx-auto">
+            <div className="w-14 h-14 rounded-full bg-[#E8F5EE] text-[#059669] flex items-center justify-center text-2xl mx-auto">
               ✓
             </div>
-            <h4 className="text-base font-bold text-[#17231D]">Deposit Reconciled</h4>
-            <p className="text-xs text-[#758078]">{successMsg}</p>
+            <h4 className="text-base font-bold text-[#0F172A]">Deposit Reconciled</h4>
+            <p className="text-xs text-[#475569]">{successMsg}</p>
             <Badge variant="positive" size="sm">
               <ShieldCheck className="w-3 h-3 mr-1 inline" />
               Journal Entry Posted & Verified
@@ -100,33 +100,33 @@ export function AddSavingsModal({
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {/* Goal Progress Preview */}
-            <div className="bg-[#F7F9F7] border border-[#E7ECE8] rounded-2xl p-4 space-y-2">
+            <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-[#17231D]">{goalTitle}</span>
-                <span className="font-mono font-bold text-[#087A50]">
+                <span className="font-semibold text-[#0F172A]">{goalTitle}</span>
+                <span className="font-mono font-bold text-[#059669]">
                   {newProgress.toFixed(1)}% Completed
                 </span>
               </div>
-              <div className="w-full h-2.5 bg-[#E7ECE8] rounded-full overflow-hidden">
+              <div className="w-full h-2.5 bg-[#E2E8F0] rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-[#16A36A] to-[#087A50] transition-all duration-300"
+                  className="h-full bg-gradient-to-r from-[#10B981] to-[#059669] transition-all duration-300"
                   style={{ width: `${newProgress}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-[11px] text-[#758078]">
+              <div className="flex items-center justify-between text-[11px] text-[#475569]">
                 <span>Current: {formatCurrency(currentAmount)}</span>
-                <ArrowRight className="w-3 h-3 text-[#16A36A]" />
-                <span className="font-bold text-[#17231D]">New: {formatCurrency(newBalance)}</span>
+                <ArrowRight className="w-3 h-3 text-[#10B981]" />
+                <span className="font-bold text-[#0F172A]">New: {formatCurrency(newBalance)}</span>
               </div>
             </div>
 
             {/* Deposit Amount Input */}
             <div>
-              <label className="block text-xs font-semibold text-[#17231D] mb-1.5">
+              <label className="block text-xs font-semibold text-[#0F172A] mb-1.5">
                 Deposit Amount (₹)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#758078]">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-[#475569]">
                   ₹
                 </span>
                 <input
@@ -135,7 +135,7 @@ export function AddSavingsModal({
                   step="100"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full pl-8 pr-4 py-2.5 bg-white border border-[#E7ECE8] rounded-xl text-sm font-bold text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A] tabular-nums"
+                  className="w-full pl-8 pr-4 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-sm font-bold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981] tabular-nums"
                   required
                 />
               </div>
@@ -148,8 +148,8 @@ export function AddSavingsModal({
                     onClick={() => setAmount(preset)}
                     className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition ${
                       amount === preset
-                        ? 'bg-[#E8F5EE] border-[#16A36A] text-[#087A50]'
-                        : 'bg-white border-[#E7ECE8] text-[#505D54] hover:bg-[#F0F4F1]'
+                        ? 'bg-[#E8F5EE] border-[#10B981] text-[#059669]'
+                        : 'bg-white border-[#E2E8F0] text-[#334155] hover:bg-[#F1F5F9]'
                     }`}
                   >
                     +₹{parseInt(preset).toLocaleString('en-IN')}
@@ -160,13 +160,13 @@ export function AddSavingsModal({
 
             {/* Funding Account Selection */}
             <div>
-              <label className="block text-xs font-semibold text-[#17231D] mb-1.5">
+              <label className="block text-xs font-semibold text-[#0F172A] mb-1.5">
                 Source Funding Account
               </label>
               <select
                 value={selectedAccount}
                 onChange={(e) => setSelectedAccount(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-white border border-[#E7ECE8] rounded-xl text-xs font-semibold text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                className="w-full px-3.5 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-semibold text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
               >
                 {CONNECTED_FUNDING_ACCOUNTS.map((acc) => (
                   <option key={acc.id} value={acc.name}>
@@ -177,8 +177,8 @@ export function AddSavingsModal({
             </div>
 
             {/* Accounting Traceability Note */}
-            <div className="p-3 bg-[#FAFCFA] border border-[#E7ECE8] rounded-xl flex items-center gap-2.5 text-[11px] text-[#758078]">
-              <ShieldCheck className="w-4 h-4 text-[#16A36A] shrink-0" />
+            <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center gap-2.5 text-[11px] text-[#475569]">
+              <ShieldCheck className="w-4 h-4 text-[#10B981] shrink-0" />
               <span>
                 Double-entry settlement automatically debits funding account and credits strategic goal reserve.
               </span>

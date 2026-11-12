@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { formatINR } from '../formatters';
 
 interface CashFlowCardProps {
@@ -14,21 +14,32 @@ export const CashFlowCard: React.FC<CashFlowCardProps> = ({
   monthlyOutflows,
   onOpenAnalytics,
 }) => {
+  const { theme, isDark } = useTheme();
   const surplus = monthlyInflows - monthlyOutflows;
   const outflowRatio = monthlyInflows > 0 ? (monthlyOutflows / monthlyInflows) * 100 : 0;
   const savingsRate = monthlyInflows > 0 ? ((surplus / monthlyInflows) * 100).toFixed(0) : '0';
 
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const statBoxBg = isDark ? '#1E293B' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const surplusBg = isDark ? 'rgba(16, 185, 129, 0.15)' : '#ECFDF5';
+  const surplusTextColor = isDark ? '#34D399' : '#059669';
+
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.title}>MONTHLY CASH FLOW</Text>
-            <Text style={styles.subtitle}>Double-Entry Verified Ledger Postings</Text>
+            <Text style={[styles.title, { color: textSecondary }]}>MONTHLY CASH FLOW</Text>
+            <Text style={[styles.subtitle, { color: isDark ? '#64748B' : '#94A3B8' }]}>
+              Double-Entry Verified Ledger Postings
+            </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <View style={styles.surplusBadge}>
-              <Text style={styles.surplusText}>
+            <View style={[styles.surplusBadge, { backgroundColor: surplusBg }]}>
+              <Text style={[styles.surplusText, { color: surplusTextColor }]}>
                 Surplus: {surplus >= 0 ? '+' : ''}
                 {formatINR(surplus)}
               </Text>
@@ -37,16 +48,22 @@ export const CashFlowCard: React.FC<CashFlowCardProps> = ({
               <TouchableOpacity
                 onPress={onOpenAnalytics}
                 style={{
-                  backgroundColor: theme.colors.surfaceElevated,
+                  backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
                   paddingHorizontal: 7,
                   paddingVertical: 3,
                   borderRadius: 6,
                   borderWidth: 1,
-                  borderColor: theme.colors.border,
+                  borderColor: isDark ? '#334155' : '#E2E8F0',
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={{ fontSize: 9.5, fontWeight: '700', color: theme.colors.primaryDark }}>
+                <Text
+                  style={{
+                    fontSize: 9.5,
+                    fontWeight: '700',
+                    color: isDark ? '#60A5FA' : '#1D4ED8',
+                  }}
+                >
                   Analytics ›
                 </Text>
               </TouchableOpacity>
@@ -55,42 +72,52 @@ export const CashFlowCard: React.FC<CashFlowCardProps> = ({
         </View>
 
         <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.inflowLabel}>Total Inflows (+)</Text>
-            <Text style={styles.inflowValue}>{formatINR(monthlyInflows)}</Text>
-            <Text style={styles.statHelp}>Salary & Dividends</Text>
+          <View style={[styles.statBox, { backgroundColor: statBoxBg, borderColor }]}>
+            <Text style={[styles.inflowLabel, { color: textSecondary }]}>Total Inflows (+)</Text>
+            <Text style={[styles.inflowValue, { color: isDark ? '#34D399' : '#059669' }]}>
+              {formatINR(monthlyInflows)}
+            </Text>
+            <Text style={[styles.statHelp, { color: isDark ? '#64748B' : '#94A3B8' }]}>Salary & Dividends</Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: borderColor }]} />
 
-          <View style={styles.statBox}>
-            <Text style={styles.outflowLabel}>Total Outflows (-)</Text>
-            <Text style={styles.outflowValue}>{formatINR(monthlyOutflows)}</Text>
-            <Text style={styles.statHelp}>Rent, EMIs & Bills</Text>
+          <View style={[styles.statBox, { backgroundColor: statBoxBg, borderColor }]}>
+            <Text style={[styles.outflowLabel, { color: textSecondary }]}>Total Outflows (-)</Text>
+            <Text style={[styles.outflowValue, { color: isDark ? '#F87171' : '#DC2626' }]}>
+              {formatINR(monthlyOutflows)}
+            </Text>
+            <Text style={[styles.statHelp, { color: isDark ? '#64748B' : '#94A3B8' }]}>Rent, EMIs & Bills</Text>
           </View>
         </View>
 
         {/* Visual Proportion Bar */}
-        <View style={styles.progressTrack}>
+        <View style={[styles.progressTrack, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9' }]}>
           <View
             style={[
               styles.progressFillInflow,
-              { width: `${Math.min(100, Math.max(10, 100 - outflowRatio))}%` },
+              {
+                width: `${Math.min(100, Math.max(10, 100 - outflowRatio))}%`,
+                backgroundColor: isDark ? '#10B981' : '#059669',
+              },
             ]}
           />
           <View
             style={[
               styles.progressFillOutflow,
-              { width: `${Math.min(100, Math.max(10, outflowRatio))}%` },
+              {
+                width: `${Math.min(100, Math.max(10, outflowRatio))}%`,
+                backgroundColor: isDark ? '#EF4444' : '#DC2626',
+              },
             ]}
           />
         </View>
 
         <View style={styles.footerRow}>
-          <Text style={styles.footerText}>
-            Retaining <Text style={styles.boldText}>{savingsRate}%</Text> of cash income as surplus
+          <Text style={[styles.footerText, { color: textSecondary }]}>
+            Retaining <Text style={[styles.boldText, { color: textPrimary }]}>{savingsRate}%</Text> of cash income as surplus
           </Text>
-          <Text style={styles.ratioText}>{outflowRatio.toFixed(0)}% Spent</Text>
+          <Text style={[styles.ratioText, { color: surplusTextColor }]}>{outflowRatio.toFixed(0)}% Spent</Text>
         </View>
       </View>
     </View>

@@ -35,7 +35,7 @@ export function FinancialWaterfallChart({
 
   if (!steps || steps.length === 0) {
     return (
-      <div className="h-44 flex items-center justify-center text-xs text-[#758078]">
+      <div className="h-44 flex items-center justify-center text-xs text-[#475569]">
         No waterfall data available.
       </div>
     );
@@ -138,7 +138,7 @@ export function FinancialWaterfallChart({
               {
                 label: hoveredStep.isTotal ? 'Balance' : 'Movement',
                 value: hoveredStep.delta,
-                color: hoveredStep.color || (hoveredStep.delta >= 0 ? '#16A36A' : '#DC5B5B'),
+                color: hoveredStep.color || (hoveredStep.delta >= 0 ? '#10B981' : '#EF4444'),
                 currency,
               },
               ...(!hoveredStep.isTotal
@@ -173,14 +173,14 @@ export function FinancialWaterfallChart({
                   y1={yPos}
                   x2={width - paddingRight}
                   y2={yPos}
-                  stroke="#E7ECE8"
+                  stroke="#E2E8F0"
                   strokeDasharray="4 4"
                 />
                 <text
                   x={paddingLeft - 8}
                   y={yPos + 3.5}
                   textAnchor="end"
-                  className="text-[10px] fill-[#758078] font-mono select-none"
+                  className="text-[10px] fill-[#475569] font-mono select-none"
                 >
                   {formatAxisTick(val, currency)}
                 </text>
@@ -242,8 +242,8 @@ export function FinancialWaterfallChart({
           const defaultColor = step.isTotal
             ? '#334155' // Slate navy for totals
             : step.delta >= 0
-            ? '#16A36A' // Positive emerald
-            : '#DC5B5B'; // Negative rose
+            ? '#10B981' // Positive emerald
+            : '#EF4444'; // Negative rose
 
           const barColor = step.color || defaultColor;
           const isHovered = hoverIndex === idx;
@@ -282,7 +282,7 @@ export function FinancialWaterfallChart({
                 x={centerX}
                 y={step.delta >= 0 ? topY - 5 : botY + 12}
                 textAnchor="middle"
-                className="text-[9px] font-mono font-bold fill-[#17231D] select-none"
+                className="text-[9px] font-mono font-bold fill-[#0F172A] select-none"
               >
                 {step.isTotal
                   ? formatCurrency(step.endVal, { currency, notation: 'compact' })
@@ -304,7 +304,7 @@ export function FinancialWaterfallChart({
               x={centerX}
               y={height - paddingBottom + 16}
               textAnchor="middle"
-              className="text-[10px] fill-[#758078] font-medium select-none"
+              className="text-[10px] fill-[#475569] font-medium select-none"
             >
               {step.label}
             </text>

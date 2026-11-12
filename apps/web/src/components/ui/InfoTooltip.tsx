@@ -163,7 +163,7 @@ export function InfoTooltip({
         aria-label={`Explain ${displayTitle}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
-        className="text-[#758078] hover:text-[#16A36A] focus:text-[#16A36A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#16A36A] rounded-full p-0.5 transition-colors"
+        className="text-[#475569] hover:text-[#10B981] focus:text-[#10B981] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#10B981] rounded-full p-0.5 transition-colors"
       >
         <HelpCircle className={sizeClasses} />
       </button>
@@ -173,18 +173,18 @@ export function InfoTooltip({
           role="dialog"
           aria-label={displayTitle}
           onMouseLeave={() => setIsOpen(false)}
-          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 max-w-[90vw] p-3.5 bg-white text-[#17231D] text-xs rounded-xl shadow-xl border border-[#E7ECE8] z-50 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 max-w-[90vw] p-3.5 bg-white text-[#0F172A] text-xs rounded-xl shadow-xl border border-[#E2E8F0] z-50 animate-in fade-in zoom-in-95 duration-150"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-1.5 border-b border-[#E7ECE8]/60 mb-2">
-            <div className="flex items-center gap-1.5 font-semibold text-[#16A36A]">
-              <Info className="w-3.5 h-3.5 text-[#16A36A]" />
+          <div className="flex items-center justify-between pb-1.5 border-b border-[#E2E8F0]/60 mb-2">
+            <div className="flex items-center gap-1.5 font-semibold text-[#10B981]">
+              <Info className="w-3.5 h-3.5 text-[#10B981]" />
               <span>{displayTitle}</span>
             </div>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="text-[#758078] hover:text-[#17231D] p-0.5 rounded-md"
+              className="text-[#475569] hover:text-[#0F172A] p-0.5 rounded-md"
               aria-label="Close tooltip"
             >
               <X className="w-3 h-3" />
@@ -198,8 +198,8 @@ export function InfoTooltip({
 
           {/* Practical Example */}
           {displayExample && (
-            <div className="mt-2 pt-2 border-t border-[#E7ECE8]/60 bg-[#F7F9F7] p-2 rounded-lg text-[10px] text-[#758078]">
-              <span className="font-semibold text-[#17231D] block mb-0.5">Example:</span>
+            <div className="mt-2 pt-2 border-t border-[#E2E8F0]/60 bg-[#F8FAFC] p-2 rounded-lg text-[10px] text-[#475569]">
+              <span className="font-semibold text-[#0F172A] block mb-0.5">Example:</span>
               <span>{displayExample}</span>
             </div>
           )}

@@ -32,7 +32,7 @@ export function FinancialHorizontalBarChart({
 }: FinancialHorizontalBarChartProps) {
   if (!items || items.length === 0) {
     return (
-      <div className="py-6 text-center text-xs text-[#758078]">
+      <div className="py-6 text-center text-xs text-[#475569]">
         No category ranking data available.
       </div>
     );
@@ -59,27 +59,27 @@ export function FinancialHorizontalBarChart({
             : null;
 
         // Semantic status color
-        let barColor = item.color || '#16A36A';
+        let barColor = item.color || '#10B981';
         let statusBadge = null;
 
         if (showComparison && utilizationPct !== null) {
           if (utilizationPct > 100) {
-            barColor = '#DC5B5B'; // Over budget
+            barColor = '#EF4444'; // Over budget
             statusBadge = (
-              <span className="text-[10px] font-bold text-[#DC5B5B] bg-[#DC5B5B]/10 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] font-bold text-[#EF4444] bg-[#EF4444]/10 px-1.5 py-0.5 rounded">
                 Over by {formatPercentage(utilizationPct - 100, { showSign: false })}
               </span>
             );
           } else if (utilizationPct >= 85) {
-            barColor = '#D99A32'; // Warning
+            barColor = '#F59E0B'; // Warning
             statusBadge = (
-              <span className="text-[10px] font-bold text-[#D99A32] bg-[#D99A32]/10 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] font-bold text-[#F59E0B] bg-[#F59E0B]/10 px-1.5 py-0.5 rounded">
                 {formatPercentage(utilizationPct, { showSign: false })} Used
               </span>
             );
           } else {
             statusBadge = (
-              <span className="text-[10px] font-bold text-[#16A36A] bg-[#16A36A]/10 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] font-bold text-[#10B981] bg-[#10B981]/10 px-1.5 py-0.5 rounded">
                 {formatPercentage(utilizationPct, { showSign: false })} Used
               </span>
             );
@@ -90,18 +90,18 @@ export function FinancialHorizontalBarChart({
           <div key={item.id || idx} className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-[#758078] w-4">{idx + 1}.</span>
-                {item.icon && <span className="text-[#16A36A]">{item.icon}</span>}
-                <span className="font-semibold text-[#17231D]">{item.label}</span>
+                <span className="text-[11px] font-bold text-[#475569] w-4">{idx + 1}.</span>
+                {item.icon && <span className="text-[#10B981]">{item.icon}</span>}
+                <span className="font-semibold text-[#0F172A]">{item.label}</span>
                 {statusBadge}
               </div>
 
               <div className="text-right flex items-baseline gap-2">
-                <span className="font-mono font-bold text-[#17231D]">
+                <span className="font-mono font-bold text-[#0F172A]">
                   {formatCurrency(item.value, { currency })}
                 </span>
                 {item.secondaryValue !== undefined && (
-                  <span className="font-mono text-[11px] text-[#758078]">
+                  <span className="font-mono text-[11px] text-[#475569]">
                     / {formatCurrency(item.secondaryValue, { currency })}
                   </span>
                 )}

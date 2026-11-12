@@ -61,24 +61,24 @@ export default function LoginPage() {
     <div className="w-full max-w-md py-8">
       {/* Brand Header */}
       <div className="flex flex-col items-center mb-8 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#16A36A] to-[#087A50] flex items-center justify-center font-bold text-xl text-white shadow-md mb-4">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#10B981] to-[#059669] flex items-center justify-center font-bold text-xl text-white shadow-md mb-4">
           W
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#17231D]">
-          Sign in to <span className="text-[#16A36A]">WealthOS</span>
+        <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
+          Sign in to <span className="text-[#10B981]">WealthOS</span>
         </h1>
-        <p className="text-xs text-[#758078] mt-1">
+        <p className="text-xs text-[#475569] mt-1">
           Enterprise Multi-Tenant Personal Wealth Intelligence
         </p>
       </div>
 
-      <Card className="bg-white border-[#E7ECE8] p-6 sm:p-8 shadow-sm rounded-2xl">
+      <Card className="bg-white border-[#E2E8F0] p-6 sm:p-8 shadow-sm rounded-2xl">
         {errorMessage && (
           <div
             role="alert"
-            className="mb-6 p-3 rounded-xl bg-[#DC5B5B]/10 border border-[#DC5B5B]/30 flex items-start gap-3 text-xs text-[#B91C1C]"
+            className="mb-6 p-3 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/30 flex items-start gap-3 text-xs text-[#B91C1C]"
           >
-            <AlertCircle className="w-4 h-4 text-[#DC5B5B] flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <span className="font-semibold block">Authentication Failed</span>
               <span>{errorMessage}</span>
@@ -89,11 +89,11 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email Address */}
           <div>
-            <label htmlFor="login-email" className="block text-xs font-medium text-[#17231D] mb-1.5">
+            <label htmlFor="login-email" className="block text-xs font-medium text-[#0F172A] mb-1.5">
               Work or Personal Email
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-[#475569] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 id="login-email"
                 type="email"
@@ -102,7 +102,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#17231D] placeholder-[#9BA39D] focus:outline-none focus:ring-1 focus:ring-[#16A36A] transition-colors"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-9 pr-4 py-2.5 text-xs text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:ring-1 focus:ring-[#10B981] transition-colors"
               />
             </div>
           </div>
@@ -110,18 +110,18 @@ export default function LoginPage() {
           {/* Password */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label htmlFor="login-password" className="block text-xs font-medium text-[#17231D]">
+              <label htmlFor="login-password" className="block text-xs font-medium text-[#0F172A]">
                 Password
               </label>
               <Link
                 href="/auth/forgot-password"
-                className="text-xs text-[#16A36A] hover:text-[#087A50] transition-colors font-medium"
+                className="text-xs text-[#10B981] hover:text-[#059669] transition-colors font-medium"
               >
                 Forgot password?
               </Link>
             </div>
             <div className="relative">
-              <Lock className="w-4 h-4 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-[#475569] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 id="login-password"
                 type={showPassword ? 'text' : 'password'}
@@ -130,13 +130,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-xl pl-9 pr-10 py-2.5 text-xs text-[#17231D] placeholder-[#9BA39D] focus:outline-none focus:ring-1 focus:ring-[#16A36A] transition-colors"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl pl-9 pr-10 py-2.5 text-xs text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:ring-1 focus:ring-[#10B981] transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="p-1.5 text-[#758078] hover:text-[#17231D] absolute right-2.5 top-1/2 -translate-y-1/2 rounded focus:outline-none"
+                className="p-1.5 text-[#475569] hover:text-[#0F172A] absolute right-2.5 top-1/2 -translate-y-1/2 rounded focus:outline-none"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -150,9 +150,9 @@ export default function LoginPage() {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 rounded bg-[#F7F9F7] border-[#E7ECE8] text-[#16A36A] focus:ring-[#16A36A]"
+              className="h-4 w-4 rounded bg-[#F8FAFC] border-[#E2E8F0] text-[#10B981] focus:ring-[#10B981]"
             />
-            <label htmlFor="remember-me" className="ml-2 block text-xs text-[#758078]">
+            <label htmlFor="remember-me" className="ml-2 block text-xs text-[#475569]">
               Remember this device for 30 days
             </label>
           </div>
@@ -190,18 +190,18 @@ export default function LoginPage() {
               await login('demo-token', demoUser);
               router.push('/dashboard');
             }}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[#16A36A]/40 bg-[#E8F5EE] hover:bg-[#D4EEDB] text-[#087A50] text-xs font-bold transition shadow-xs"
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[#10B981]/40 bg-[#E8F5EE] hover:bg-[#D4EEDB] text-[#059669] text-xs font-bold transition shadow-xs"
           >
             <span>⚡ Instant Preview Sign In (Livesh J)</span>
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-[#E7ECE8] text-center">
-          <p className="text-xs text-[#758078]">
+        <div className="mt-6 pt-6 border-t border-[#E2E8F0] text-center">
+          <p className="text-xs text-[#475569]">
             Don&apos;t have an account?{' '}
             <Link
               href="/auth/register"
-              className="font-medium text-[#16A36A] hover:text-[#087A50] transition-colors"
+              className="font-medium text-[#10B981] hover:text-[#059669] transition-colors"
             >
               Register & create workspace
             </Link>

@@ -134,13 +134,13 @@ export function AddTransactionModal({
       aria-labelledby="add-transaction-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in"
     >
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E7ECE8] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E2E8F0] overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E7ECE8] flex items-center justify-between bg-[#FAFCFA]">
+        <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
           <div className="flex items-center gap-2">
             <div
               className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                type === 'DEBIT' ? 'bg-[#DC5B5B]/10 text-[#DC5B5B]' : 'bg-[#16A36A]/10 text-[#16A36A]'
+                type === 'DEBIT' ? 'bg-[#EF4444]/10 text-[#EF4444]' : 'bg-[#10B981]/10 text-[#10B981]'
               }`}
             >
               {type === 'DEBIT' ? (
@@ -150,17 +150,17 @@ export function AddTransactionModal({
               )}
             </div>
             <div>
-              <h3 id="add-transaction-title" className="text-sm font-bold text-[#17231D]">
+              <h3 id="add-transaction-title" className="text-sm font-bold text-[#0F172A]">
                 Record Financial Transaction
               </h3>
-              <p className="text-[11px] text-[#717D74]">
+              <p className="text-[11px] text-[#64748B]">
                 {step === 1 ? 'Enter Details' : 'Review Double-Entry Posting'}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#717D74] hover:text-[#17231D] hover:bg-[#F0F4F1] flex items-center justify-center"
+            className="w-8 h-8 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] flex items-center justify-center"
             aria-label="Close modal"
           >
             <X className="w-4 h-4" />
@@ -171,11 +171,11 @@ export function AddTransactionModal({
         <div className="p-6 overflow-y-auto space-y-4 flex-1">
           {success && (
             <div className="p-8 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-[#16A36A]/15 text-[#16A36A] mx-auto flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-[#10B981]/15 text-[#10B981] mx-auto flex items-center justify-center">
                 <Check className="w-6 h-6" />
               </div>
-              <h4 className="text-base font-bold text-[#17231D]">Transaction Recorded!</h4>
-              <p className="text-xs text-[#717D74]">
+              <h4 className="text-base font-bold text-[#0F172A]">Transaction Recorded!</h4>
+              <p className="text-xs text-[#64748B]">
                 Journal entry posted with Σ(Dr - Cr) = 0.0000 balance guarantee.
               </p>
             </div>
@@ -184,7 +184,7 @@ export function AddTransactionModal({
           {!success && step === 1 && (
             <div className="space-y-4">
               {/* Type Switcher: Expense vs Income */}
-              <div className="grid grid-cols-2 gap-2 p-1 bg-[#F0F4F1] rounded-xl">
+              <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F5F9] rounded-xl">
                 <button
                   type="button"
                   onClick={() => {
@@ -193,8 +193,8 @@ export function AddTransactionModal({
                   }}
                   className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition ${
                     type === 'DEBIT'
-                      ? 'bg-white text-[#DC5B5B] shadow-xs'
-                      : 'text-[#717D74] hover:text-[#17231D]'
+                      ? 'bg-white text-[#EF4444] shadow-xs'
+                      : 'text-[#64748B] hover:text-[#0F172A]'
                   }`}
                 >
                   <ArrowDownRight className="w-3.5 h-3.5" />
@@ -208,8 +208,8 @@ export function AddTransactionModal({
                   }}
                   className={`py-2 px-3 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition ${
                     type === 'CREDIT'
-                      ? 'bg-white text-[#16A36A] shadow-xs'
-                      : 'text-[#717D74] hover:text-[#17231D]'
+                      ? 'bg-white text-[#10B981] shadow-xs'
+                      : 'text-[#64748B] hover:text-[#0F172A]'
                   }`}
                 >
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -219,11 +219,11 @@ export function AddTransactionModal({
 
               {/* Amount */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Amount (INR)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#717D74]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#64748B]">
                     ₹
                   </span>
                   <input
@@ -235,23 +235,23 @@ export function AddTransactionModal({
                       if (errors.amount) setErrors((prev) => ({ ...prev, amount: '' }));
                     }}
                     placeholder="0.00"
-                    className="w-full pl-8 pr-3 py-2.5 text-base rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                    className="w-full pl-8 pr-3 py-2.5 text-base rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] font-mono font-bold focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                   />
                 </div>
                 {errors.amount && (
-                  <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.amount}</p>
+                  <p className="text-[11px] text-[#EF4444] mt-1">{errors.amount}</p>
                 )}
               </div>
 
               {/* Account Selection */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Financial Account
                 </label>
                 <select
                   value={account}
                   onChange={(e) => setAccount(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 >
                   {accountsList.map((acc) => (
                     <option key={acc} value={acc}>
@@ -264,8 +264,8 @@ export function AddTransactionModal({
               {/* Category */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-[#17231D]">Category</label>
-                  <span className="text-[10px] text-[#717D74]">Click chip to select</span>
+                  <label className="text-xs font-semibold text-[#0F172A]">Category</label>
+                  <span className="text-[10px] text-[#64748B]">Click chip to select</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {availableCategories.map((cat) => (
@@ -275,8 +275,8 @@ export function AddTransactionModal({
                       onClick={() => setCategory(cat)}
                       className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition ${
                         category === cat
-                          ? 'bg-[#16A36A] text-white shadow-xs'
-                          : 'bg-[#F0F4F1] text-[#717D74] hover:text-[#17231D]'
+                          ? 'bg-[#10B981] text-white shadow-xs'
+                          : 'bg-[#F1F5F9] text-[#64748B] hover:text-[#0F172A]'
                       }`}
                     >
                       {cat}
@@ -288,7 +288,7 @@ export function AddTransactionModal({
               {/* Description & Date */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                  <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                     Description / Merchant
                   </label>
                   <input
@@ -300,19 +300,19 @@ export function AddTransactionModal({
                         setErrors((prev) => ({ ...prev, description: '' }));
                     }}
                     placeholder="e.g. Swiggy, Netflix, Amazon"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                   />
                   {errors.description && (
-                    <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.description}</p>
+                    <p className="text-[11px] text-[#EF4444] mt-1">{errors.description}</p>
                   )}
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#17231D] block mb-1">Date</label>
+                  <label className="text-xs font-semibold text-[#0F172A] block mb-1">Date</label>
                   <input
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                   />
                 </div>
               </div>
@@ -321,9 +321,9 @@ export function AddTransactionModal({
 
           {!success && step === 2 && (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] space-y-3">
+              <div className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#17231D] uppercase tracking-wider">
+                  <span className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">
                     Ledger Posting Preview
                   </span>
                   <Badge variant={type === 'DEBIT' ? 'neutral' : 'positive'} size="sm">
@@ -331,31 +331,31 @@ export function AddTransactionModal({
                   </Badge>
                 </div>
 
-                <div className="text-2xl font-bold font-mono text-[#17231D]">
+                <div className="text-2xl font-bold font-mono text-[#0F172A]">
                   {type === 'DEBIT' ? '-' : '+'}₹
                   {parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[#E7ECE8]">
+                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[#E2E8F0]">
                   <div>
-                    <span className="text-[#717D74] block">Account:</span>
-                    <span className="font-semibold text-[#17231D]">{account}</span>
+                    <span className="text-[#64748B] block">Account:</span>
+                    <span className="font-semibold text-[#0F172A]">{account}</span>
                   </div>
                   <div>
-                    <span className="text-[#717D74] block">Category:</span>
-                    <span className="font-semibold text-[#17231D]">{category}</span>
+                    <span className="text-[#64748B] block">Category:</span>
+                    <span className="font-semibold text-[#0F172A]">{category}</span>
                   </div>
                   <div>
-                    <span className="text-[#717D74] block">Merchant / Note:</span>
-                    <span className="font-semibold text-[#17231D]">{description}</span>
+                    <span className="text-[#64748B] block">Merchant / Note:</span>
+                    <span className="font-semibold text-[#0F172A]">{description}</span>
                   </div>
                   <div>
-                    <span className="text-[#717D74] block">Transaction Date:</span>
-                    <span className="font-semibold text-[#17231D]">{date}</span>
+                    <span className="text-[#64748B] block">Transaction Date:</span>
+                    <span className="font-semibold text-[#0F172A]">{date}</span>
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-white border border-[#E7ECE8] text-[11px] text-[#717D74] space-y-1">
+                <div className="p-2.5 rounded-lg bg-white border border-[#E2E8F0] text-[11px] text-[#64748B] space-y-1">
                   <div className="flex justify-between font-mono">
                     <span>
                       {type === 'DEBIT' ? `Dr. Expense: ${category}` : `Dr. Asset: ${account}`}
@@ -368,7 +368,7 @@ export function AddTransactionModal({
                     </span>
                     <span>₹{parseFloat(amount).toFixed(2)}</span>
                   </div>
-                  <div className="text-[10px] text-[#16A36A] font-semibold text-right pt-0.5">
+                  <div className="text-[10px] text-[#10B981] font-semibold text-right pt-0.5">
                     Net Balance = ₹0.00
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export function AddTransactionModal({
 
         {/* Footer */}
         {!success && (
-          <div className="px-6 py-4 border-t border-[#E7ECE8] bg-[#FAFCFA] flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between">
             {step === 2 ? (
               <Button variant="outline" size="sm" onClick={() => setStep(1)} className="gap-1">
                 <ChevronLeft className="w-3.5 h-3.5" />

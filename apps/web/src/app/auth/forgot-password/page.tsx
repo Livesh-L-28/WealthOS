@@ -36,26 +36,26 @@ export default function ForgotPasswordPage() {
     <div className="w-full max-w-md py-8">
       {/* Brand Header */}
       <div className="flex flex-col items-center mb-6 text-center">
-        <div className="w-12 h-12 rounded-xl bg-[#16A36A] flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/20 mb-3">
+        <div className="w-12 h-12 rounded-xl bg-[#10B981] flex items-center justify-center font-bold text-xl text-white shadow-lg shadow-indigo-500/20 mb-3">
           W
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#17231D]">
+        <h1 className="text-2xl font-bold tracking-tight text-[#0F172A]">
           Reset Password
         </h1>
-        <p className="text-xs text-[#758078] mt-1">
+        <p className="text-xs text-[#475569] mt-1">
           Recover access to your WealthOS account and isolated workspace
         </p>
       </div>
 
-      <Card className="bg-white border-[#E7ECE8] p-6 sm:p-8 shadow-2xl">
+      <Card className="bg-white border-[#E2E8F0] p-6 sm:p-8 shadow-2xl">
         {isSubmitted ? (
           <div className="text-center py-2">
             <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h2 className="text-base font-semibold text-[#17231D]">Check your inbox</h2>
-            <p className="text-xs text-[#758078] mt-2 leading-relaxed">
-              If an active WealthOS account is associated with <span className="text-[#17231D] font-medium">{email}</span>, you will receive password reset instructions within moments.
+            <h2 className="text-base font-semibold text-[#0F172A]">Check your inbox</h2>
+            <p className="text-xs text-[#475569] mt-2 leading-relaxed">
+              If an active WealthOS account is associated with <span className="text-[#0F172A] font-medium">{email}</span>, you will receive password reset instructions within moments.
             </p>
             <div className="mt-6">
               <Link href="/auth/login">
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
-            <p className="text-xs text-[#758078] mb-5 leading-relaxed">
+            <p className="text-xs text-[#475569] mb-5 leading-relaxed">
               Enter the email address tied to your WealthOS account. We will issue a cryptographic, single-use token valid for 1 hour.
             </p>
 
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage() {
                   Account Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-[#758078] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-[#475569] absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     id="reset-email"
                     type="email"
@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@company.com"
-                    className="w-full bg-[#F7F9F7] border border-[#E7ECE8] rounded-md pl-9 pr-4 py-2.5 text-xs text-[#17231D] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#16A36A] focus:border-[#16A36A] transition-colors"
+                    className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-md pl-9 pr-4 py-2.5 text-xs text-[#0F172A] placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-[#10B981] focus:border-[#10B981] transition-colors"
                   />
                 </div>
               </div>
@@ -115,10 +115,10 @@ export default function ForgotPasswordPage() {
               </Button>
             </form>
 
-            <div className="mt-6 pt-5 border-t border-[#E7ECE8] text-center">
+            <div className="mt-6 pt-5 border-t border-[#E2E8F0] text-center">
               <Link
                 href="/auth/login"
-                className="inline-flex items-center gap-1.5 text-xs text-[#758078] hover:text-[#17231D] transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs text-[#475569] hover:text-[#0F172A] transition-colors"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>Back to Sign In</span>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 
 interface QuickActionsSectionProps {
   onConnectBank: () => void;
@@ -21,6 +21,8 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
   onAddInvestment,
   onAskCopilot,
 }) => {
+  const { theme, isDark } = useTheme();
+
   const actions = [
     {
       id: 'connect',
@@ -54,7 +56,15 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
 
   return (
     <View style={styles.container}>
-      <View style={styles.dock}>
+      <View
+        style={[
+          styles.dock,
+          {
+            backgroundColor: isDark ? '#111827' : '#FFFFFF',
+            borderColor: isDark ? '#1E293B' : '#E2E8F0',
+          },
+        ]}
+      >
         {actions.map((act) => (
           <TouchableOpacity
             key={act.id}
@@ -62,11 +72,23 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
             onPress={act.onPress}
             activeOpacity={0.7}
           >
-            <View style={styles.iconBox}>
+            <View
+              style={[
+                styles.iconBox,
+                {
+                  backgroundColor: isDark ? '#1E293B' : '#F8FAFC',
+                  borderColor: isDark ? '#334155' : '#E2E8F0',
+                },
+              ]}
+            >
               <Text style={styles.iconText}>{act.icon}</Text>
             </View>
-            <Text style={styles.actionLabel}>{act.label}</Text>
-            <Text style={styles.actionSublabel}>{act.sublabel}</Text>
+            <Text style={[styles.actionLabel, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+              {act.label}
+            </Text>
+            <Text style={[styles.actionSublabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+              {act.sublabel}
+            </Text>
           </TouchableOpacity>
         ))}
       </View>

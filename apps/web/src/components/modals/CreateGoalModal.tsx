@@ -113,23 +113,23 @@ export function CreateGoalModal({
       aria-labelledby="create-goal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in"
     >
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E7ECE8] overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E2E8F0] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E7ECE8] flex items-center justify-between bg-[#FAFCFA]">
+        <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-[#16A36A]/10 text-[#16A36A] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#10B981]/10 text-[#10B981] flex items-center justify-center">
               <Target className="w-4 h-4" />
             </div>
             <div>
-              <h3 id="create-goal-title" className="text-sm font-bold text-[#17231D]">
+              <h3 id="create-goal-title" className="text-sm font-bold text-[#0F172A]">
                 Create Financial Goal
               </h3>
-              <p className="text-[11px] text-[#717D74]">Plan and track wealth milestones</p>
+              <p className="text-[11px] text-[#64748B]">Plan and track wealth milestones</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#717D74] hover:text-[#17231D] hover:bg-[#F0F4F1] flex items-center justify-center"
+            className="w-8 h-8 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] flex items-center justify-center"
             aria-label="Close modal"
           >
             <X className="w-4 h-4" />
@@ -140,11 +140,11 @@ export function CreateGoalModal({
         <div className="p-6 space-y-4">
           {success && (
             <div className="p-6 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-[#16A36A]/15 text-[#16A36A] mx-auto flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-[#10B981]/15 text-[#10B981] mx-auto flex items-center justify-center">
                 <Check className="w-6 h-6" />
               </div>
-              <h4 className="text-base font-bold text-[#17231D]">Financial Goal Active!</h4>
-              <p className="text-xs text-[#717D74]">
+              <h4 className="text-base font-bold text-[#0F172A]">Financial Goal Active!</h4>
+              <p className="text-xs text-[#64748B]">
                 Target ₹{parsedTarget.toLocaleString('en-IN')} by {targetDate}.
               </p>
             </div>
@@ -154,7 +154,7 @@ export function CreateGoalModal({
             <>
               {/* Name */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Goal Name
                 </label>
                 <input
@@ -165,7 +165,7 @@ export function CreateGoalModal({
                     if (errors.name) setErrors((prev) => ({ ...prev, name: '' }));
                   }}
                   placeholder="e.g. Dream Home Down Payment"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 />
                 {/* Templates */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
@@ -177,21 +177,21 @@ export function CreateGoalModal({
                         setName(tmpl.name);
                         setTargetAmount(tmpl.defaultTarget);
                       }}
-                      className="px-2 py-0.5 rounded-lg text-[10px] bg-[#F0F4F1] text-[#717D74] hover:text-[#17231D] hover:bg-[#E7ECE8]"
+                      className="px-2 py-0.5 rounded-lg text-[10px] bg-[#F1F5F9] text-[#64748B] hover:text-[#0F172A] hover:bg-[#E2E8F0]"
                     >
                       {tmpl.name.split(' (')[0]}
                     </button>
                   ))}
                 </div>
                 {errors.name && (
-                  <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.name}</p>
+                  <p className="text-[11px] text-[#EF4444] mt-1">{errors.name}</p>
                 )}
               </div>
 
               {/* Target & Current Amount */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                  <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                     Target Amount (₹)
                   </label>
                   <input
@@ -203,14 +203,14 @@ export function CreateGoalModal({
                       if (errors.targetAmount) setErrors((prev) => ({ ...prev, targetAmount: '' }));
                     }}
                     placeholder="e.g. 1000000"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] font-mono focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] font-mono focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                   />
                   {errors.targetAmount && (
-                    <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.targetAmount}</p>
+                    <p className="text-[11px] text-[#EF4444] mt-1">{errors.targetAmount}</p>
                   )}
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                  <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                     Already Saved (₹)
                   </label>
                   <input
@@ -223,36 +223,36 @@ export function CreateGoalModal({
                         setErrors((prev) => ({ ...prev, currentAmount: '' }));
                     }}
                     placeholder="0"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] font-mono focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] font-mono focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                   />
                   {errors.currentAmount && (
-                    <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.currentAmount}</p>
+                    <p className="text-[11px] text-[#EF4444] mt-1">{errors.currentAmount}</p>
                   )}
                 </div>
               </div>
 
               {/* Target Date */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Target Date
                 </label>
                 <input
                   type="date"
                   value={targetDate}
                   onChange={(e) => setTargetDate(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 />
               </div>
 
               {/* Automatic Trajectory Projection Card */}
               {parsedTarget > 0 && (
-                <div className="p-3.5 rounded-xl bg-[#16A36A]/5 border border-[#16A36A]/20 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-semibold text-[#087A50]">
+                <div className="p-3.5 rounded-xl bg-[#10B981]/5 border border-[#10B981]/20 space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[#059669]">
                     <span className="flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5" />
                       Recommended Monthly Contribution:
                     </span>
-                    <span className="font-mono text-sm font-bold text-[#16A36A]">
+                    <span className="font-mono text-sm font-bold text-[#10B981]">
                       ₹
                       {requiredMonthly.toLocaleString('en-IN', {
                         maximumFractionDigits: 0,
@@ -260,7 +260,7 @@ export function CreateGoalModal({
                       /mo
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#717D74]">
+                  <p className="text-[11px] text-[#64748B]">
                     Saving ₹{Math.round(requiredMonthly).toLocaleString('en-IN')} each month for{' '}
                     {diffMonths} months will hit your goal of ₹
                     {parsedTarget.toLocaleString('en-IN')}.
@@ -273,7 +273,7 @@ export function CreateGoalModal({
 
         {/* Footer */}
         {!success && (
-          <div className="px-6 py-4 border-t border-[#E7ECE8] bg-[#FAFCFA] flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between">
             <Button variant="outline" size="sm" onClick={onClose}>
               Cancel
             </Button>

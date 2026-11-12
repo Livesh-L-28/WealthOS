@@ -25,7 +25,7 @@ export interface FinancialAreaChartProps {
 
 export function FinancialAreaChart({
   data,
-  color = '#16A36A',
+  color = '#10B981',
   gradientId = 'financialAreaGradient',
   currency = 'INR',
   height = 200,
@@ -39,7 +39,7 @@ export function FinancialAreaChart({
 
   if (!data || data.length === 0) {
     return (
-      <div className="h-44 flex items-center justify-center text-xs text-[#758078]">
+      <div className="h-44 flex items-center justify-center text-xs text-[#475569]">
         No area chart data available.
       </div>
     );
@@ -153,14 +153,14 @@ export function FinancialAreaChart({
                   y1={yPos}
                   x2={width - paddingRight}
                   y2={yPos}
-                  stroke="#E7ECE8"
+                  stroke="#E2E8F0"
                   strokeDasharray="4 4"
                 />
                 <text
                   x={paddingLeft - 8}
                   y={yPos + 3.5}
                   textAnchor="end"
-                  className="text-[10px] fill-[#758078] font-mono select-none"
+                  className="text-[10px] fill-[#475569] font-mono select-none"
                 >
                   {formatAxisTick(val, currency)}
                 </text>
@@ -237,7 +237,7 @@ export function FinancialAreaChart({
           y1={areaBottom}
           x2={width - paddingRight}
           y2={areaBottom}
-          stroke="#E7ECE8"
+          stroke="#E2E8F0"
         />
         {data.map((d, i) => {
           const step = Math.ceil(data.length / 7);
@@ -250,7 +250,7 @@ export function FinancialAreaChart({
               x={getX(i)}
               y={areaBottom + 16}
               textAnchor="middle"
-              className="text-[10px] fill-[#758078] font-medium select-none"
+              className="text-[10px] fill-[#475569] font-medium select-none"
             >
               {d.label}
             </text>

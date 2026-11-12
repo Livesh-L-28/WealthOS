@@ -38,7 +38,7 @@ export function CashFlowChart() {
         key: 'income',
         label: 'Inflow (Earned)',
         value: d.income,
-        color: '#16A36A',
+        color: '#10B981',
       },
       {
         key: 'expenses',
@@ -91,22 +91,22 @@ export function CashFlowChart() {
       }
     >
       {/* KPI Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5 p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
         <div>
-          <span className="text-[11px] text-[#717D74] font-medium block">Monthly Income</span>
-          <span className="text-lg font-bold font-mono text-[#16A36A]">
+          <span className="text-[11px] text-[#64748B] font-medium block">Monthly Income</span>
+          <span className="text-lg font-bold font-mono text-[#10B981]">
             {formatCurrency(current.income)}
           </span>
         </div>
         <div>
-          <span className="text-[11px] text-[#717D74] font-medium block">Monthly Expenses</span>
+          <span className="text-[11px] text-[#64748B] font-medium block">Monthly Expenses</span>
           <span className="text-lg font-bold font-mono text-[#6475D8]">
             {formatCurrency(current.expenses)}
           </span>
         </div>
         <div>
-          <span className="text-[11px] text-[#717D74] font-medium block">Remaining Cash Flow</span>
-          <span className="text-lg font-bold font-mono text-[#087A50] flex items-center gap-1">
+          <span className="text-[11px] text-[#64748B] font-medium block">Remaining Cash Flow</span>
+          <span className="text-lg font-bold font-mono text-[#059669] flex items-center gap-1">
             <ArrowUpRight className="w-4 h-4" />
             +{formatCurrency(current.net)} ({formatPercentage(savingsRate, { showSign: false })})
           </span>

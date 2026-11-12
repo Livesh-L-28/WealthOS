@@ -8,7 +8,7 @@ import {
   ScrollView,
   TextInput,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { BudgetEnvelope, FinancialGoal, Transaction } from '../types';
 import { formatINR } from '../formatters';
 
@@ -69,6 +69,13 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
     }
   }, [initialSubTab]);
 
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   const totalBudgeted = budgets.reduce((s, b) => s + b.budgeted, 0);
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0);
   const remainingBuffer = totalBudgeted - totalSpent;
@@ -77,33 +84,86 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   const safeDailySpend = remainingBuffer > 0 ? Math.round(remainingBuffer / daysRemainingInMonth) : 0;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: canvasBg }]}>
       {/* Top Segmented Mode Switcher */}
-      <View style={styles.modeTabs}>
+      <View
+        style={[
+          styles.modeTabs,
+          {
+            backgroundColor: isDark ? '#111827' : '#F1F5F9',
+            borderColor,
+          },
+        ]}
+      >
         <TouchableOpacity
-          style={[styles.modeTab, activeSubTab === 'ALL' && styles.modeTabActive]}
+          style={[
+            styles.modeTab,
+            activeSubTab === 'ALL' && [
+              styles.modeTabActive,
+              { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' },
+            ],
+          ]}
           onPress={() => setActiveSubTab('ALL')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.modeTabText, activeSubTab === 'ALL' && styles.modeTabTextActive]}>
+          <Text
+            style={[
+              styles.modeTabText,
+              { color: textSecondary },
+              activeSubTab === 'ALL' && [
+                styles.modeTabTextActive,
+                { color: isDark ? '#60A5FA' : '#2563EB' },
+              ],
+            ]}
+          >
             All
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.modeTab, activeSubTab === 'BUDGETS' && styles.modeTabActive]}
+          style={[
+            styles.modeTab,
+            activeSubTab === 'BUDGETS' && [
+              styles.modeTabActive,
+              { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' },
+            ],
+          ]}
           onPress={() => setActiveSubTab('BUDGETS')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.modeTabText, activeSubTab === 'BUDGETS' && styles.modeTabTextActive]}>
+          <Text
+            style={[
+              styles.modeTabText,
+              { color: textSecondary },
+              activeSubTab === 'BUDGETS' && [
+                styles.modeTabTextActive,
+                { color: isDark ? '#60A5FA' : '#2563EB' },
+              ],
+            ]}
+          >
             Envelopes ({budgets.length})
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.modeTab, activeSubTab === 'GOALS' && styles.modeTabActive]}
+          style={[
+            styles.modeTab,
+            activeSubTab === 'GOALS' && [
+              styles.modeTabActive,
+              { backgroundColor: isDark ? '#1E293B' : '#FFFFFF' },
+            ],
+          ]}
           onPress={() => setActiveSubTab('GOALS')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.modeTabText, activeSubTab === 'GOALS' && styles.modeTabTextActive]}>
+          <Text
+            style={[
+              styles.modeTabText,
+              { color: textSecondary },
+              activeSubTab === 'GOALS' && [
+                styles.modeTabTextActive,
+                { color: isDark ? '#60A5FA' : '#2563EB' },
+              ],
+            ]}
+          >
             Goals ({goals.length})
           </Text>
         </TouchableOpacity>
@@ -112,7 +172,7 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
       {/* 1. Monthly Budget Cockpit Utilization Card (Show when ALL or BUDGETS) */}
       {(activeSubTab === 'ALL' || activeSubTab === 'BUDGETS') && (
         <>
-          <View style={styles.utilizationCard}>
+          <View style={[styles.utilizationCard, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.cardHeaderRow}>
           <View style={styles.cardHeaderLeft}>
             <Text style={styles.cardLabel}>MONTHLY BUDGET UTILIZATION</Text>

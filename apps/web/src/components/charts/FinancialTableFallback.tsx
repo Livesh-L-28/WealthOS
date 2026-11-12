@@ -66,15 +66,15 @@ export function FinancialTableFallback({
   };
 
   return (
-    <div className={`space-y-3 bg-white rounded-xl border border-[#E7ECE8] p-4 ${className}`}>
-      <div className="flex items-center justify-between pb-2 border-b border-[#E7ECE8]">
+    <div className={`space-y-3 bg-white rounded-xl border border-[#E2E8F0] p-4 ${className}`}>
+      <div className="flex items-center justify-between pb-2 border-b border-[#E2E8F0]">
         <div className="flex items-center gap-2">
-          <TableIcon className="w-4 h-4 text-[#16A36A]" />
-          <h4 className="text-xs font-bold text-[#17231D] tracking-tight">{title} (Audit Ledger)</h4>
+          <TableIcon className="w-4 h-4 text-[#10B981]" />
+          <h4 className="text-xs font-bold text-[#0F172A] tracking-tight">{title} (Audit Ledger)</h4>
         </div>
         <button
           onClick={handleExport}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-[#16A36A] bg-[#16A36A]/10 hover:bg-[#16A36A]/20 border border-[#16A36A]/20 rounded-lg transition-colors focus:ring-2 focus:ring-[#16A36A]/30"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-[#10B981] bg-[#10B981]/10 hover:bg-[#10B981]/20 border border-[#10B981]/20 rounded-lg transition-colors focus:ring-2 focus:ring-[#10B981]/30"
           title="Download data as CSV"
         >
           <Download className="w-3.5 h-3.5" />
@@ -85,12 +85,12 @@ export function FinancialTableFallback({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse" role="table" aria-label={title}>
           <thead>
-            <tr className="border-b border-[#E7ECE8] bg-[#F7F9F7]">
+            <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   scope="col"
-                  className={`py-2 px-3 text-[11px] font-semibold text-[#758078] ${
+                  className={`py-2 px-3 text-[11px] font-semibold text-[#475569] ${
                     col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'
                   }`}
                 >
@@ -99,16 +99,16 @@ export function FinancialTableFallback({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E7ECE8]">
+          <tbody className="divide-y divide-[#E2E8F0]">
             {data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="py-6 text-center text-[#758078]">
+                <td colSpan={columns.length} className="py-6 text-center text-[#475569]">
                   No records to display.
                 </td>
               </tr>
             ) : (
               data.map((row, rowIdx) => (
-                <tr key={rowIdx} className="hover:bg-[#FAFCFA] transition-colors">
+                <tr key={rowIdx} className="hover:bg-[#F8FAFC] transition-colors">
                   {columns.map((col) => {
                     const val = row[col.key];
                     let displayVal = val;
@@ -119,13 +119,13 @@ export function FinancialTableFallback({
                       extraClass = 'font-mono';
                     } else if (col.isPercentage) {
                       displayVal = formatPercentage(val);
-                      extraClass = `font-mono ${Number(val) >= 0 ? 'text-[#16A36A]' : 'text-[#DC5B5B]'}`;
+                      extraClass = `font-mono ${Number(val) >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`;
                     }
 
                     return (
                       <td
                         key={col.key}
-                        className={`py-2 px-3 text-[#17231D] ${extraClass} ${
+                        className={`py-2 px-3 text-[#0F172A] ${extraClass} ${
                           col.align === 'right'
                             ? 'text-right'
                             : col.align === 'center'
@@ -142,7 +142,7 @@ export function FinancialTableFallback({
             )}
 
             {summaryRow && (
-              <tr className="bg-[#F7F9F7] font-semibold border-t-2 border-[#E7ECE8]">
+              <tr className="bg-[#F8FAFC] font-semibold border-t-2 border-[#E2E8F0]">
                 {columns.map((col) => {
                   const val = summaryRow[col.key];
                   let displayVal = val;
@@ -154,7 +154,7 @@ export function FinancialTableFallback({
                   return (
                     <td
                       key={col.key}
-                      className={`py-2.5 px-3 text-[#17231D] ${
+                      className={`py-2.5 px-3 text-[#0F172A] ${
                         col.isCurrency ? 'font-mono' : ''
                       } ${
                         col.align === 'right'

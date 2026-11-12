@@ -75,7 +75,7 @@ const EXPENSE_DATA: Record<TimeCadence, {
     ],
     categories: [
       { name: 'Dining & Groceries', amount: 2050, percentage: 42.3, color: 'bg-emerald-500' },
-      { name: 'Transportation & Fuel', amount: 1450, percentage: 29.9, color: 'bg-[#16A36A]' },
+      { name: 'Transportation & Fuel', amount: 1450, percentage: 29.9, color: 'bg-[#10B981]' },
       { name: 'Coffee & Incidentals', amount: 850, percentage: 17.5, color: 'bg-amber-500' },
       { name: 'Digital Subscriptions', amount: 500, percentage: 10.3, color: 'bg-violet-500' },
     ],
@@ -103,7 +103,7 @@ const EXPENSE_DATA: Record<TimeCadence, {
       { label: 'Sun (Est)', amount: 3200, isProjected: true },
     ],
     categories: [
-      { name: 'Housing & Utilities', amount: 12500, percentage: 36.5, color: 'bg-[#16A36A]' },
+      { name: 'Housing & Utilities', amount: 12500, percentage: 36.5, color: 'bg-[#10B981]' },
       { name: 'Food & Dining Out', amount: 9800, percentage: 28.7, color: 'bg-emerald-500' },
       { name: 'Technology & Cloud', amount: 5400, percentage: 15.8, color: 'bg-blue-500' },
       { name: 'Lifestyle & Shopping', amount: 4200, percentage: 12.3, color: 'bg-amber-500' },
@@ -129,7 +129,7 @@ const EXPENSE_DATA: Record<TimeCadence, {
       { label: 'Week 4 (Est)', amount: 36850, isProjected: true },
     ],
     categories: [
-      { name: 'Rent & Real Estate Lease', amount: 85000, percentage: 56.1, color: 'bg-[#16A36A]' },
+      { name: 'Rent & Real Estate Lease', amount: 85000, percentage: 56.1, color: 'bg-[#10B981]' },
       { name: 'Food, Groceries & Dining', amount: 31500, percentage: 20.8, color: 'bg-emerald-500' },
       { name: 'Technology & Cloud Tools', amount: 22800, percentage: 15.0, color: 'bg-blue-500' },
       { name: 'Mobility & Fuel', amount: 8500, percentage: 5.6, color: 'bg-amber-500' },
@@ -155,7 +155,7 @@ const EXPENSE_DATA: Record<TimeCadence, {
       { label: 'Q4 (Projected)', amount: 395000, isProjected: true },
     ],
     categories: [
-      { name: 'Housing & Mortgages', amount: 1020000, percentage: 55.3, color: 'bg-[#16A36A]' },
+      { name: 'Housing & Mortgages', amount: 1020000, percentage: 55.3, color: 'bg-[#10B981]' },
       { name: 'Living Expenses & Food', amount: 380000, percentage: 20.6, color: 'bg-emerald-500' },
       { name: 'Business Tech & Cloud', amount: 245000, percentage: 13.3, color: 'bg-blue-500' },
       { name: 'Vacations & Travel', amount: 120000, percentage: 6.5, color: 'bg-amber-500' },
@@ -203,9 +203,9 @@ const NOVEMBER_DAILY_HEATMAP: HeatmapCell[] = [
 ];
 
 const CAPITAL_GAINS_ITEMS: HorizontalBarItem[] = [
-  { id: 'ltcg', label: 'LTCG (Sec 112A) — ₹1.25L Exemption Applied', value: 285400, secondaryValue: 125000, color: '#16A36A' },
+  { id: 'ltcg', label: 'LTCG (Sec 112A) — ₹1.25L Exemption Applied', value: 285400, secondaryValue: 125000, color: '#10B981' },
   { id: 'stcg', label: 'STCG (Sec 111A) — 20% Flat Rate', value: 98000, color: '#6475D8' },
-  { id: 'div', label: 'Ordinary Income (Dividend & Fixed Income)', value: 42500, color: '#D99A32' },
+  { id: 'div', label: 'Ordinary Income (Dividend & Fixed Income)', value: 42500, color: '#F59E0B' },
 ];
 
 export default function AnalyticsPage() {
@@ -229,7 +229,7 @@ export default function AnalyticsPage() {
         key: 'amount',
         label: bar.isProjected ? 'Projected Run-Rate' : 'Actual Settled Expense',
         value: bar.amount,
-        color: bar.isProjected ? '#758078' : '#16A36A',
+        color: bar.isProjected ? '#475569' : '#10B981',
       },
     ],
   }));
@@ -240,13 +240,13 @@ export default function AnalyticsPage() {
     value: cat.amount,
     color:
       idx === 0
-        ? '#16A36A'
+        ? '#10B981'
         : idx === 1
         ? '#6475D8'
         : idx === 2
         ? '#0D9488'
         : idx === 3
-        ? '#D99A32'
+        ? '#F59E0B'
         : '#8B5CF6',
   }));
 
@@ -265,31 +265,31 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       {/* Header & Cadence Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Expense Intelligence & Burn Radar</h1>
+            <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Expense Intelligence & Burn Radar</h1>
             <Badge variant="positive" className="gap-1">
               <Sparkles className="w-3 h-3" />
               <span>Real-Time</span>
             </Badge>
             <InfoTooltip termKey="cash-flow" />
           </div>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#475569] mt-1">
             Deterministic cash flow tracking across daily, weekly, monthly, and annual billing cadences.
           </p>
         </div>
 
         {/* Time Cadence Switcher */}
-        <div className="flex items-center bg-[#F7F9F7] border border-[#E7ECE8] rounded-lg p-1">
+        <div className="flex items-center bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg p-1">
           {(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'] as TimeCadence[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setCadence(tab)}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                 cadence === tab
-                  ? 'bg-[#16A36A] text-white shadow-sm'
-                  : 'text-[#758078] hover:text-[#17231D]'
+                  ? 'bg-[#10B981] text-white shadow-sm'
+                  : 'text-[#475569] hover:text-[#0F172A]'
               }`}
             >
               {tab.charAt(0) + tab.slice(1).toLowerCase()}
@@ -303,13 +303,13 @@ export default function AnalyticsPage() {
         {/* Total Spend */}
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               {current.cadenceLabel}
             </span>
             <Flame className="w-4 h-4 text-amber-400" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-[#17231D]">
+            <span className="text-2xl font-bold text-[#0F172A]">
               ₹{current.totalSpend.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
           </div>
@@ -329,31 +329,31 @@ export default function AnalyticsPage() {
                 </span>
               </>
             )}
-            <span className="text-[#9BA39D]">{current.comparisonLabel}</span>
+            <span className="text-[#64748B]">{current.comparisonLabel}</span>
           </div>
         </Card>
 
         {/* Budget Ceiling & Burn Runway */}
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               Budget Ceiling
             </span>
-            <BarChart3 className="w-4 h-4 text-[#16A36A]" />
+            <BarChart3 className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-[#17231D]">
+            <span className="text-2xl font-bold text-[#0F172A]">
               ₹{current.budgetCeiling.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
           </div>
           <div className="mt-2">
-            <div className="flex justify-between text-xs text-[#758078] mb-1">
+            <div className="flex justify-between text-xs text-[#475569] mb-1">
               <span>Utilization</span>
-              <span className={utilizationPct > 90 ? 'text-rose-400 font-bold' : 'text-[#17231D]'}>
+              <span className={utilizationPct > 90 ? 'text-rose-400 font-bold' : 'text-[#0F172A]'}>
                 {utilizationPct.toFixed(1)}%
               </span>
             </div>
-            <div className="w-full bg-[#F0F4F1] rounded-full h-1.5 overflow-hidden">
+            <div className="w-full bg-[#F1F5F9] rounded-full h-1.5 overflow-hidden">
               <div
                 className={`h-1.5 rounded-full ${
                   utilizationPct > 90
@@ -371,7 +371,7 @@ export default function AnalyticsPage() {
         {/* Needs vs Wants Breakdown */}
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               50/30/20 Discipline
             </span>
             <PieChart className="w-4 h-4 text-emerald-400" />
@@ -379,9 +379,9 @@ export default function AnalyticsPage() {
           <div className="mt-2">
             <div className="flex justify-between items-baseline">
               <span className="text-lg font-bold text-emerald-400">76% Needs</span>
-              <span className="text-xs text-[#758078]">24% Wants</span>
+              <span className="text-xs text-[#475569]">24% Wants</span>
             </div>
-            <p className="text-xs text-[#9BA39D] mt-1">
+            <p className="text-xs text-[#64748B] mt-1">
               Healthy essential cost containment within 80% ceiling.
             </p>
           </div>
@@ -390,7 +390,7 @@ export default function AnalyticsPage() {
         {/* Estimated Savings */}
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               Headroom Remaining
             </span>
             <DollarSign className="w-4 h-4 text-teal-400" />
@@ -400,7 +400,7 @@ export default function AnalyticsPage() {
               ₹{(current.budgetCeiling - current.totalSpend).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
             </span>
           </div>
-          <p className="text-xs text-[#9BA39D] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Available surplus for investment deployment.
           </p>
         </Card>
@@ -480,13 +480,13 @@ export default function AnalyticsPage() {
 
       {/* Itemized Expense Log */}
       <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E7ECE8]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
           <div>
-            <h2 className="text-base font-semibold text-[#17231D]">Itemized Expense Log ({current.cadenceLabel})</h2>
-            <p className="text-xs text-[#758078]">Line-item journal entries linked to primary bank accounts</p>
+            <h2 className="text-base font-semibold text-[#0F172A]">Itemized Expense Log ({current.cadenceLabel})</h2>
+            <p className="text-xs text-[#475569]">Line-item journal entries linked to primary bank accounts</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-[#758078]">Filter:</span>
+            <span className="text-xs text-[#475569]">Filter:</span>
             {(['ALL', 'NEED', 'WANT'] as const).map((ft) => (
               <button
                 key={ft}
@@ -494,7 +494,7 @@ export default function AnalyticsPage() {
                 className={`px-2.5 py-1 rounded text-xs font-medium transition ${
                   filterType === ft
                     ? 'bg-slate-700 text-white'
-                    : 'text-[#758078] hover:text-[#17231D]'
+                    : 'text-[#475569] hover:text-[#0F172A]'
                 }`}
               >
                 {ft === 'ALL' ? 'All' : ft === 'NEED' ? 'Needs' : 'Wants'}
@@ -506,7 +506,7 @@ export default function AnalyticsPage() {
         <div className="overflow-x-auto mt-2">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#E7ECE8] text-[#758078] font-semibold uppercase tracking-wider">
+              <tr className="border-b border-[#E2E8F0] text-[#475569] font-semibold uppercase tracking-wider">
                 <th className="py-3 px-4">Merchant / Description</th>
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4">Classification</th>
@@ -515,24 +515,24 @@ export default function AnalyticsPage() {
                 <th className="py-3 px-4 text-right">Amount</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E7ECE8]">
+            <tbody className="divide-y divide-[#E2E8F0]">
               {filteredExpenses.map((expense) => (
-                <tr key={expense.id} className="hover:bg-[#F0F4F1] transition-colors">
-                  <td className="py-3 px-4 font-medium text-[#17231D]">{expense.name}</td>
-                  <td className="py-3 px-4 text-[#758078]">{expense.category}</td>
+                <tr key={expense.id} className="hover:bg-[#F1F5F9] transition-colors">
+                  <td className="py-3 px-4 font-medium text-[#0F172A]">{expense.name}</td>
+                  <td className="py-3 px-4 text-[#475569]">{expense.category}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
                         expense.type === 'NEED'
-                          ? 'bg-[#16A36A]/10 text-[#16A36A] border border-[#16A36A]/20'
+                          ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
                           : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                       }`}
                     >
                       {expense.type}
                     </span>
                   </td>
-                  <td className="py-3 px-4 text-[#758078]">{expense.account}</td>
-                  <td className="py-3 px-4 text-[#9BA39D] font-mono">{expense.date}</td>
+                  <td className="py-3 px-4 text-[#475569]">{expense.account}</td>
+                  <td className="py-3 px-4 text-[#64748B] font-mono">{expense.date}</td>
                   <td className="py-3 px-4 text-right font-mono font-semibold text-rose-400">
                     -₹{expense.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </td>
@@ -545,17 +545,17 @@ export default function AnalyticsPage() {
 
       {/* SECTION: INDIA TAX READINESS (FY 2026-27 / AY 2027-28) */}
       <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E7ECE8]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#16A36A]/10 flex items-center justify-center text-[#16A36A]">
+            <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 flex items-center justify-center text-[#10B981]">
               <FileText className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-[#17231D]">India Tax Readiness & Planning</h2>
+                <h2 className="text-base font-bold text-[#0F172A]">India Tax Readiness & Planning</h2>
                 <Badge variant="brand" size="sm">FY 2026-27 &bull; AY 2027-28</Badge>
               </div>
-              <p className="text-xs text-[#758078] mt-0.5">
+              <p className="text-xs text-[#475569] mt-0.5">
                 Statutory heads of income, transfer neutrality filtering, and dual-regime tax optimization
               </p>
             </div>
@@ -574,70 +574,70 @@ export default function AnalyticsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <span className="text-xs font-semibold text-[#758078] uppercase">Gross Total Income</span>
-            <p className="text-xl font-bold text-[#17231D] mt-1">₹20,70,000</p>
-            <p className="text-[11px] text-[#758078] mt-0.5">Salary + Capital Gains + Other</p>
+          <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <span className="text-xs font-semibold text-[#475569] uppercase">Gross Total Income</span>
+            <p className="text-xl font-bold text-[#0F172A] mt-1">₹20,70,000</p>
+            <p className="text-[11px] text-[#475569] mt-0.5">Salary + Capital Gains + Other</p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <span className="text-xs font-semibold text-[#758078] uppercase">Transfer Neutrality</span>
-            <p className="text-xl font-bold text-[#16A36A] mt-1">₹2,50,000 Excluded</p>
-            <p className="text-[11px] text-[#758078] mt-0.5">Self-transfers excluded from income</p>
+          <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <span className="text-xs font-semibold text-[#475569] uppercase">Transfer Neutrality</span>
+            <p className="text-xl font-bold text-[#10B981] mt-1">₹2,50,000 Excluded</p>
+            <p className="text-[11px] text-[#475569] mt-0.5">Self-transfers excluded from income</p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <span className="text-xs font-semibold text-[#758078] uppercase">Standard Deduction</span>
-            <p className="text-xl font-bold text-[#17231D] mt-1">₹75,000</p>
+          <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <span className="text-xs font-semibold text-[#475569] uppercase">Standard Deduction</span>
+            <p className="text-xl font-bold text-[#0F172A] mt-1">₹75,000</p>
             <p className="text-[11px] text-emerald-600 mt-0.5">Section 115BAC default</p>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-            <span className="text-xs font-semibold text-[#758078] uppercase">Dual-Regime Tax Savings</span>
-            <p className="text-xl font-bold text-[#16A36A] mt-1">₹24,800 Saved</p>
-            <p className="text-[11px] text-[#758078] mt-0.5">New Regime vs Old Regime</p>
+          <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+            <span className="text-xs font-semibold text-[#475569] uppercase">Dual-Regime Tax Savings</span>
+            <p className="text-xl font-bold text-[#10B981] mt-1">₹24,800 Saved</p>
+            <p className="text-[11px] text-[#475569] mt-0.5">New Regime vs Old Regime</p>
           </div>
         </div>
 
         {/* Regime Comparison Table */}
-        <div className="mt-4 p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8]">
-          <h4 className="text-xs font-bold text-[#17231D] uppercase tracking-wider mb-3">
+        <div className="mt-4 p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+          <h4 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider mb-3">
             Regime Comparison Matrix (Finance Act 2024 / 2026.1)
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="p-3 rounded-lg bg-white border border-[#16A36A]/30 space-y-2">
+            <div className="p-3 rounded-lg bg-white border border-[#10B981]/30 space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-[#17231D]">New Tax Regime (Section 115BAC)</span>
+                <span className="font-bold text-[#0F172A]">New Tax Regime (Section 115BAC)</span>
                 <Badge variant="positive">Active Choice</Badge>
               </div>
-              <div className="flex justify-between text-[#758078]">
+              <div className="flex justify-between text-[#475569]">
                 <span>Standard Deduction:</span>
-                <span className="font-mono text-[#17231D]">₹75,000</span>
+                <span className="font-mono text-[#0F172A]">₹75,000</span>
               </div>
-              <div className="flex justify-between text-[#758078]">
+              <div className="flex justify-between text-[#475569]">
                 <span>Taxable Ordinary Income:</span>
-                <span className="font-mono text-[#17231D]">₹18,70,000</span>
+                <span className="font-mono text-[#0F172A]">₹18,70,000</span>
               </div>
-              <div className="flex justify-between text-[#758078]">
+              <div className="flex justify-between text-[#475569]">
                 <span>Tax on Income + Cess (4%):</span>
-                <span className="font-mono font-bold text-[#17231D]">₹2,69,360</span>
+                <span className="font-mono font-bold text-[#0F172A]">₹2,69,360</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-lg bg-white border border-[#E7ECE8] space-y-2">
+            <div className="p-3 rounded-lg bg-white border border-[#E2E8F0] space-y-2">
               <div className="flex justify-between items-center">
-                <span className="font-bold text-[#758078]">Old Tax Regime</span>
+                <span className="font-bold text-[#475569]">Old Tax Regime</span>
                 <Badge variant="neutral">Optional</Badge>
               </div>
-              <div className="flex justify-between text-[#758078]">
+              <div className="flex justify-between text-[#475569]">
                 <span>Deductions (80C, 80D, Std):</span>
-                <span className="font-mono text-[#17231D]">₹2,35,000</span>
+                <span className="font-mono text-[#0F172A]">₹2,35,000</span>
               </div>
-              <div className="flex justify-between text-[#758078]">
+              <div className="flex justify-between text-[#475569]">
                 <span>Taxable Ordinary Income:</span>
-                <span className="font-mono text-[#17231D]">₹17,10,000</span>
+                <span className="font-mono text-[#0F172A]">₹17,10,000</span>
               </div>
-              <div className="flex justify-between text-[#758078]">
+              <div className="flex justify-between text-[#475569]">
                 <span>Tax on Income + Cess (4%):</span>
                 <span className="font-mono font-bold text-rose-600">₹2,94,160</span>
               </div>
@@ -646,13 +646,13 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Capital Gains Classification Visualizer */}
-        <div className="mt-4 p-4 rounded-xl bg-white border border-[#E7ECE8]">
+        <div className="mt-4 p-4 rounded-xl bg-white border border-[#E2E8F0]">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h4 className="text-xs font-bold text-[#17231D] uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">
                 Capital Gains Classification & Statutory Thresholds (FY 2026-27)
               </h4>
-              <p className="text-[11px] text-[#758078]">
+              <p className="text-[11px] text-[#475569]">
                 Realized equity capital gains separated into LTCG and STCG with automatic Section 112A ₹1.25L exemption applied
               </p>
             </div>
@@ -668,17 +668,17 @@ export default function AnalyticsPage() {
 
       {/* SECTION: FINANCIAL RISK INTELLIGENCE & HEALTH SCORE */}
       <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E7ECE8]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-[#17231D]">Financial Health & Risk Intelligence</h2>
+                <h2 className="text-base font-bold text-[#0F172A]">Financial Health & Risk Intelligence</h2>
                 <Badge variant="positive">Score: 88 / 100 &bull; EXCELLENT</Badge>
               </div>
-              <p className="text-xs text-[#758078] mt-0.5">
+              <p className="text-xs text-[#475569] mt-0.5">
                 Deterministic risk monitoring across liquidity, debt service, concentration, and reconciliation
               </p>
             </div>
@@ -687,49 +687,49 @@ export default function AnalyticsPage() {
 
         {/* 5-Pillar Score Weights Breakdown */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
-          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
-            <span className="text-[11px] text-[#758078] block">Emergency (25%)</span>
-            <span className="text-lg font-bold text-[#17231D] mt-1 block">100 / 100</span>
+          <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-center">
+            <span className="text-[11px] text-[#475569] block">Emergency (25%)</span>
+            <span className="text-lg font-bold text-[#0F172A] mt-1 block">100 / 100</span>
             <span className="text-[10px] text-emerald-600 font-medium">Optimal (6.2m)</span>
           </div>
-          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
-            <span className="text-[11px] text-[#758078] block">Debt Service (25%)</span>
-            <span className="text-lg font-bold text-[#17231D] mt-1 block">85 / 100</span>
+          <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-center">
+            <span className="text-[11px] text-[#475569] block">Debt Service (25%)</span>
+            <span className="text-lg font-bold text-[#0F172A] mt-1 block">85 / 100</span>
             <span className="text-[10px] text-emerald-600 font-medium">Moderate (26%)</span>
           </div>
-          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
-            <span className="text-[11px] text-[#758078] block">Cash Flow (20%)</span>
-            <span className="text-lg font-bold text-[#17231D] mt-1 block">85 / 100</span>
+          <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-center">
+            <span className="text-[11px] text-[#475569] block">Cash Flow (20%)</span>
+            <span className="text-lg font-bold text-[#0F172A] mt-1 block">85 / 100</span>
             <span className="text-[10px] text-emerald-600 font-medium">Net Surplus</span>
           </div>
-          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
-            <span className="text-[11px] text-[#758078] block">Diversification (15%)</span>
-            <span className="text-lg font-bold text-[#17231D] mt-1 block">85 / 100</span>
+          <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-center">
+            <span className="text-[11px] text-[#475569] block">Diversification (15%)</span>
+            <span className="text-lg font-bold text-[#0F172A] mt-1 block">85 / 100</span>
             <span className="text-[10px] text-emerald-600 font-medium">Balanced</span>
           </div>
-          <div className="p-3 rounded-lg bg-[#F7F9F7] border border-[#E7ECE8] text-center">
-            <span className="text-[11px] text-[#758078] block">Data Quality (15%)</span>
-            <span className="text-lg font-bold text-[#17231D] mt-1 block">95 / 100</span>
+          <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] text-center">
+            <span className="text-[11px] text-[#475569] block">Data Quality (15%)</span>
+            <span className="text-lg font-bold text-[#0F172A] mt-1 block">95 / 100</span>
             <span className="text-[10px] text-emerald-600 font-medium">Reconciled</span>
           </div>
         </div>
 
         {/* Evidence-Backed Active Risk Signals */}
         <div className="mt-4 space-y-3">
-          <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600 shrink-0 mt-0.5">
                 <Clock className="w-4 h-4" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-semibold text-xs text-[#17231D]">Loan Maturity Approaching</span>
+                  <span className="font-semibold text-xs text-[#0F172A]">Loan Maturity Approaching</span>
                   <Badge variant="neutral" size="sm">INFORMATIONAL</Badge>
                 </div>
-                <p className="text-xs text-[#758078] mt-0.5">
+                <p className="text-xs text-[#475569] mt-0.5">
                   Executive EV Loan with State Bank of India reaches final installment on 15-Dec-2026. Verify closure NOC.
                 </p>
-                <div className="flex gap-3 text-[11px] text-[#758078] mt-1 font-mono">
+                <div className="flex gap-3 text-[11px] text-[#475569] mt-1 font-mono">
                   <span>Maturity: 15-Dec-2026</span>
                   <span>Principal Remaining: ₹21,500</span>
                 </div>

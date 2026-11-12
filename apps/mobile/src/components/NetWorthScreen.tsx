@@ -7,7 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { formatINR } from '../formatters';
 import { analyticsService, liabilitiesService } from '../api/domainServices';
 import {
@@ -31,6 +31,13 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({
   totalLiabilities: propLiabilities,
   netWorth: propNetWorth,
 }) => {
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1E293B' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   const [strategy, setStrategy] = useState<'AVALANCHE' | 'SNOWBALL'>('AVALANCHE');
   const [extraPayment, setExtraPayment] = useState<number>(10000);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -71,14 +78,17 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({
     : Math.min(48, Math.round(18 + extraPayment / 750));
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: canvasBg }]}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Top Navigation Bar */}
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backLabel}>Overview</Text>
+          <Text style={[styles.backArrow, { color: isDark ? '#60A5FA' : '#2563EB' }]}>‹</Text>
+          <Text style={[styles.backLabel, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Overview</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Net Worth & Balance Sheet</Text>
+        <Text style={[styles.screenTitle, { color: textPrimary }]}>Net Worth & Balance Sheet</Text>
         <View style={styles.topActionsRow}>
           <View style={styles.topRightBadge}>
             <Text style={styles.topRightBadgeText}>AUDITED</Text>
@@ -95,7 +105,7 @@ export const NetWorthScreen: React.FC<NetWorthScreenProps> = ({
       </View>
 
       {/* Hero Balance Sheet Card */}
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, { backgroundColor: cardBg, borderColor }]}>
         <Text style={styles.heroEyebrow}>CONSOLIDATED NET EQUITY</Text>
         <Text style={styles.heroValue}>{formatINR(netWorth)}</Text>
         <View style={styles.heroGrowthRow}>

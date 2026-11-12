@@ -38,7 +38,7 @@ export function FinancialBarChart({
 
   if (!groups || groups.length === 0) {
     return (
-      <div className="h-44 flex items-center justify-center text-xs text-[#758078]">
+      <div className="h-44 flex items-center justify-center text-xs text-[#475569]">
         No bar chart data available.
       </div>
     );
@@ -131,14 +131,14 @@ export function FinancialBarChart({
                   y1={yPos}
                   x2={width - paddingRight}
                   y2={yPos}
-                  stroke="#E7ECE8"
+                  stroke="#E2E8F0"
                   strokeDasharray="4 4"
                 />
                 <text
                   x={paddingLeft - 8}
                   y={yPos + 3.5}
                   textAnchor="end"
-                  className="text-[10px] fill-[#758078] font-mono select-none"
+                  className="text-[10px] fill-[#475569] font-mono select-none"
                 >
                   {formatAxisTick(val, currency)}
                 </text>
@@ -214,7 +214,7 @@ export function FinancialBarChart({
               x={groupCenterX}
               y={height - paddingBottom + 16}
               textAnchor="middle"
-              className="text-[10px] fill-[#758078] font-medium select-none"
+              className="text-[10px] fill-[#475569] font-medium select-none"
             >
               {group.label}
             </text>
@@ -226,7 +226,7 @@ export function FinancialBarChart({
       {groups[0].values.length > 1 && (
         <div className="flex items-center justify-center gap-4 mt-2">
           {groups[0].values.map((v) => (
-            <div key={v.key} className="flex items-center gap-1.5 text-xs text-[#17231D]">
+            <div key={v.key} className="flex items-center gap-1.5 text-xs text-[#0F172A]">
               <span
                 className="w-2.5 h-2.5 rounded-sm"
                 style={{ backgroundColor: v.color }}

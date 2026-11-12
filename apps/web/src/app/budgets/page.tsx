@@ -125,16 +125,16 @@ export default function BudgetsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E7ECE8]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-3 border-b border-[#E2E8F0]">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[#17231D] tracking-tight">Budgets & Envelope Tracking</h1>
+            <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Budgets & Envelope Tracking</h1>
             <Badge variant="positive" size="sm">
               <Calendar className="w-3 h-3 mr-1 inline" />
               November 2026
             </Badge>
           </div>
-          <p className="text-xs text-[#717D74] mt-1">
+          <p className="text-xs text-[#64748B] mt-1">
             Category spend envelope allocations with real-time overspending alerts.
           </p>
         </div>
@@ -155,49 +155,49 @@ export default function BudgetsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               Total Budget Pool
             </span>
             <div className="w-8 h-8 rounded-xl bg-[#6475D8]/10 flex items-center justify-center text-[#6475D8]">
               <PieChart className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-[#17231D] mt-2">
+          <p className="text-2xl font-bold text-[#0F172A] mt-2">
             ₹{totalAllocated.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-[#758078] mt-1">Allocated across 5 active envelopes</p>
+          <p className="text-xs text-[#475569] mt-1">Allocated across 5 active envelopes</p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               Settled Expenditure
             </span>
-            <div className="w-8 h-8 rounded-xl bg-[#F7F9F7] flex items-center justify-center text-[#17231D]">
+            <div className="w-8 h-8 rounded-xl bg-[#F8FAFC] flex items-center justify-center text-[#0F172A]">
               <TrendingDown className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-[#17231D] mt-2">
+          <p className="text-2xl font-bold text-[#0F172A] mt-2">
             ₹{totalSpent.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-[#758078] mt-1">
+          <p className="text-xs text-[#475569] mt-1">
             {overallUtilization.toFixed(1)}% of total allocation consumed
           </p>
         </Card>
 
         <Card>
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#758078] uppercase tracking-wider">
+            <span className="text-xs font-semibold text-[#475569] uppercase tracking-wider">
               Budget Headroom
             </span>
-            <div className="w-8 h-8 rounded-xl bg-[#16A36A]/10 flex items-center justify-center text-[#16A36A]">
+            <div className="w-8 h-8 rounded-xl bg-[#10B981]/10 flex items-center justify-center text-[#10B981]">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-[#16A36A] mt-2">
+          <p className="text-2xl font-bold text-[#10B981] mt-2">
             ₹{surplus.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-xs text-[#16A36A] font-medium mt-1">Available spending capacity</p>
+          <p className="text-xs text-[#10B981] font-medium mt-1">Available spending capacity</p>
         </Card>
       </div>
 
@@ -237,24 +237,24 @@ export default function BudgetsPage() {
             return (
               <div
                 key={b.id}
-                className="p-4 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] space-y-2.5"
+                className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2.5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                   <div className="flex items-center gap-2">
                     {isOverspent && (
-                      <AlertCircle className="w-4 h-4 text-[#DC5B5B] flex-shrink-0" />
+                      <AlertCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0" />
                     )}
                     {isWarning && (
-                      <AlertTriangle className="w-4 h-4 text-[#D99A32] flex-shrink-0" />
+                      <AlertTriangle className="w-4 h-4 text-[#F59E0B] flex-shrink-0" />
                     )}
                     {!isOverspent && !isWarning && (
-                      <CheckCircle2 className="w-4 h-4 text-[#16A36A] flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-[#10B981] flex-shrink-0" />
                     )}
-                    <span className="font-semibold text-sm text-[#17231D]">{b.category}</span>
+                    <span className="font-semibold text-sm text-[#0F172A]">{b.category}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-medium text-[#758078]">
+                    <span className="text-xs font-mono font-medium text-[#475569]">
                       ₹{b.spent.toLocaleString('en-IN')} / ₹{b.allocated.toLocaleString('en-IN')}
                     </span>
                     <Badge
@@ -272,26 +272,26 @@ export default function BudgetsPage() {
                   </div>
                 </div>
 
-                <div className="w-full bg-[#E7ECE8] rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-[#E2E8F0] rounded-full h-2.5 overflow-hidden">
                   <div
                     className={`h-2.5 rounded-full transition-all duration-500 ${
                       isOverspent
-                        ? 'bg-[#DC5B5B]'
+                        ? 'bg-[#EF4444]'
                         : isWarning
-                        ? 'bg-[#D99A32]'
-                        : 'bg-[#16A36A]'
+                        ? 'bg-[#F59E0B]'
+                        : 'bg-[#10B981]'
                     }`}
                     style={{ width: `${Math.min(ratio, 100)}%` }}
                   />
                 </div>
 
-                <div className="flex justify-between items-center text-[11px] text-[#758078] pt-1">
+                <div className="flex justify-between items-center text-[11px] text-[#475569] pt-1">
                   <span>
                     {isOverspent
                       ? `Overspent by ₹${(b.spent - b.allocated).toLocaleString('en-IN')}`
                       : `Remaining: ₹${(b.allocated - b.spent).toLocaleString('en-IN')}`}
                   </span>
-                  <span className="font-medium text-[#17231D]">
+                  <span className="font-medium text-[#0F172A]">
                     {isOverspent ? 'Budget Exceeded' : isWarning ? 'Close to Limit' : 'Within Budget'}
                   </span>
                 </div>

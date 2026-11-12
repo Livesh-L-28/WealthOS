@@ -96,23 +96,23 @@ export function CreateBudgetModal({
       aria-labelledby="create-budget-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in"
     >
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-[#E7ECE8] overflow-hidden flex flex-col">
+      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-[#E2E8F0] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#E7ECE8] flex items-center justify-between bg-[#FAFCFA]">
+        <div className="px-6 py-4 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-[#6475D8]/10 text-[#6475D8] flex items-center justify-center">
               <PieChart className="w-4 h-4" />
             </div>
             <div>
-              <h3 id="create-budget-title" className="text-sm font-bold text-[#17231D]">
+              <h3 id="create-budget-title" className="text-sm font-bold text-[#0F172A]">
                 Create Spending Envelope
               </h3>
-              <p className="text-[11px] text-[#717D74]">Set monthly expenditure thresholds</p>
+              <p className="text-[11px] text-[#64748B]">Set monthly expenditure thresholds</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg text-[#717D74] hover:text-[#17231D] hover:bg-[#F0F4F1] flex items-center justify-center"
+            className="w-8 h-8 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] flex items-center justify-center"
             aria-label="Close modal"
           >
             <X className="w-4 h-4" />
@@ -123,11 +123,11 @@ export function CreateBudgetModal({
         <div className="p-6 space-y-4">
           {success && (
             <div className="p-6 text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-[#16A36A]/15 text-[#16A36A] mx-auto flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-[#10B981]/15 text-[#10B981] mx-auto flex items-center justify-center">
                 <Check className="w-6 h-6" />
               </div>
-              <h4 className="text-base font-bold text-[#17231D]">Budget Envelope Created!</h4>
-              <p className="text-xs text-[#717D74]">
+              <h4 className="text-base font-bold text-[#0F172A]">Budget Envelope Created!</h4>
+              <p className="text-xs text-[#64748B]">
                 ₹{parsedAmount.toLocaleString('en-IN')} allocated for {category}.
               </p>
             </div>
@@ -137,13 +137,13 @@ export function CreateBudgetModal({
             <>
               {/* Category */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Budget Category
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 >
                   {AVAILABLE_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -155,11 +155,11 @@ export function CreateBudgetModal({
 
               {/* Monthly Spending Limit */}
               <div>
-                <label className="text-xs font-semibold text-[#17231D] block mb-1">
+                <label className="text-xs font-semibold text-[#0F172A] block mb-1">
                   Monthly Limit (₹ INR)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#717D74]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#64748B]">
                     ₹
                   </span>
                   <input
@@ -171,22 +171,22 @@ export function CreateBudgetModal({
                       if (errors.allocated) setErrors((prev) => ({ ...prev, allocated: '' }));
                     }}
                     placeholder="e.g. 15000"
-                    className="w-full pl-8 pr-3 py-2 text-sm rounded-xl border border-[#E7ECE8] bg-white text-[#17231D] font-mono focus:outline-none focus:ring-2 focus:ring-[#16A36A]"
+                    className="w-full pl-8 pr-3 py-2 text-sm rounded-xl border border-[#E2E8F0] bg-white text-[#0F172A] font-mono focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                   />
                 </div>
                 {errors.allocated && (
-                  <p className="text-[11px] text-[#DC5B5B] mt-1">{errors.allocated}</p>
+                  <p className="text-[11px] text-[#EF4444] mt-1">{errors.allocated}</p>
                 )}
               </div>
 
               {/* Threshold Slider */}
-              <div className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] space-y-2">
+              <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[#17231D] flex items-center gap-1.5">
-                    <BellRing className="w-3.5 h-3.5 text-[#D99A32]" />
+                  <span className="font-semibold text-[#0F172A] flex items-center gap-1.5">
+                    <BellRing className="w-3.5 h-3.5 text-[#F59E0B]" />
                     Warning Alert Threshold
                   </span>
-                  <span className="font-mono font-bold text-[#16A36A]">{threshold}%</span>
+                  <span className="font-mono font-bold text-[#10B981]">{threshold}%</span>
                 </div>
                 <input
                   type="range"
@@ -195,9 +195,9 @@ export function CreateBudgetModal({
                   step="5"
                   value={threshold}
                   onChange={(e) => setThreshold(Number(e.target.value))}
-                  className="w-full accent-[#16A36A]"
+                  className="w-full accent-[#10B981]"
                 />
-                <p className="text-[11px] text-[#717D74]">
+                <p className="text-[11px] text-[#64748B]">
                   WealthOS will flag warning alerts when spend crosses ₹
                   {((parsedAmount * threshold) / 100).toLocaleString('en-IN', {
                     maximumFractionDigits: 0,
@@ -211,7 +211,7 @@ export function CreateBudgetModal({
 
         {/* Footer */}
         {!success && (
-          <div className="px-6 py-4 border-t border-[#E7ECE8] bg-[#FAFCFA] flex items-center justify-between">
+          <div className="px-6 py-4 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between">
             <Button variant="outline" size="sm" onClick={onClose}>
               Cancel
             </Button>

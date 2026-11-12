@@ -51,7 +51,7 @@ export function FinancialGoalsCard() {
         action={
           <Link
             href="/goals"
-            className="text-xs font-semibold text-[#16A36A] hover:text-[#087A50] inline-flex items-center gap-0.5"
+            className="text-xs font-semibold text-[#10B981] hover:text-[#059669] inline-flex items-center gap-0.5"
           >
             <span>View All</span>
             <ChevronRight className="w-3.5 h-3.5" />
@@ -64,31 +64,31 @@ export function FinancialGoalsCard() {
           const pct = (goal.current / goal.target) * 100;
 
           return (
-            <div key={goal.id} className="p-3.5 rounded-xl bg-[#F7F9F7] border border-[#E7ECE8] space-y-2">
+            <div key={goal.id} className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2">
               <div className="flex justify-between items-baseline">
-                <span className="text-xs font-semibold text-[#17231D]">{goal.title}</span>
-                <span className="text-xs font-mono font-bold text-[#16A36A]">{pct.toFixed(0)}%</span>
+                <span className="text-xs font-semibold text-[#0F172A]">{goal.title}</span>
+                <span className="text-xs font-mono font-bold text-[#10B981]">{pct.toFixed(0)}%</span>
               </div>
 
-              <div className="w-full bg-[#E7ECE8] rounded-full h-2 overflow-hidden">
+              <div className="w-full bg-[#E2E8F0] rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-[#16A36A] h-2 rounded-full transition-all duration-500"
+                  className="bg-[#10B981] h-2 rounded-full transition-all duration-500"
                   style={{ width: `${pct}%` }}
                 />
               </div>
 
-              <div className="flex justify-between items-center text-[11px] text-[#717D74] pt-1">
+              <div className="flex justify-between items-center text-[11px] text-[#64748B] pt-1">
                 <span className="font-mono">
                   ₹{goal.current.toLocaleString('en-IN')} of ₹{goal.target.toLocaleString('en-IN')}
                 </span>
-                <span className="font-semibold text-[#16A36A] text-[10px]">
+                <span className="font-semibold text-[#10B981] text-[10px]">
                   ₹{(goal.target - goal.current).toLocaleString('en-IN')} remaining
                 </span>
               </div>
-              <div className="flex justify-between items-center text-[10px] text-[#717D74]">
+              <div className="flex justify-between items-center text-[10px] text-[#64748B]">
                 <span>Paced at ₹{goal.monthly.toLocaleString('en-IN')}/mo</span>
                 <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-[#717D74]" />
+                  <Calendar className="w-3 h-3 text-[#64748B]" />
                   Target: {goal.targetDate}
                 </span>
               </div>

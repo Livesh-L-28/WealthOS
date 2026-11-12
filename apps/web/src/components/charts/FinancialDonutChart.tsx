@@ -36,7 +36,7 @@ export function FinancialDonutChart({
 
   if (!slices || slices.length === 0) {
     return (
-      <div className="py-8 text-center text-xs text-[#758078]">
+      <div className="py-8 text-center text-xs text-[#475569]">
         No distribution data available.
       </div>
     );
@@ -96,17 +96,17 @@ export function FinancialDonutChart({
 
         {/* Center Label & Metric */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#758078]">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#475569]">
             {hoveredSlice ? hoveredSlice.label : centerLabel}
           </span>
-          <span className="text-sm sm:text-base font-bold font-mono text-[#17231D] tracking-tight mt-0.5">
+          <span className="text-sm sm:text-base font-bold font-mono text-[#0F172A] tracking-tight mt-0.5">
             {formatCurrency(hoveredSlice ? hoveredSlice.value : computedTotal, {
               currency,
               notation: 'compact',
             })}
           </span>
           {hoveredSlice && (
-            <span className="text-[10px] font-bold font-mono text-[#16A36A] mt-0.5">
+            <span className="text-[10px] font-bold font-mono text-[#10B981] mt-0.5">
               {formatPercentage(hoveredSlice.percentage, { showSign: false })}
             </span>
           )}
@@ -124,8 +124,8 @@ export function FinancialDonutChart({
               onMouseLeave={() => setHoveredSlice(null)}
               className={`p-2 rounded-xl transition-all cursor-pointer flex items-center justify-between border ${
                 isHovered
-                  ? 'bg-[#F7F9F7] border-[#16A36A]/40 shadow-xs'
-                  : 'border-transparent hover:bg-[#FAFCFA]'
+                  ? 'bg-[#F8FAFC] border-[#10B981]/40 shadow-xs'
+                  : 'border-transparent hover:bg-[#F8FAFC]'
               }`}
             >
               <div className="flex items-center gap-2.5 min-w-0">
@@ -134,17 +134,17 @@ export function FinancialDonutChart({
                   style={{ backgroundColor: slice.color }}
                 />
                 <div className="truncate">
-                  <span className="text-xs font-semibold text-[#17231D] block truncate">
+                  <span className="text-xs font-semibold text-[#0F172A] block truncate">
                     {slice.label}
                   </span>
-                  <span className="text-[10px] text-[#758078] font-mono">
+                  <span className="text-[10px] text-[#475569] font-mono">
                     {formatPercentage(slice.percentage, { showSign: false })} of Total
                   </span>
                 </div>
               </div>
 
               <div className="text-right flex-shrink-0 ml-3">
-                <span className="text-xs font-bold font-mono text-[#17231D] block">
+                <span className="text-xs font-bold font-mono text-[#0F172A] block">
                   {formatCurrency(slice.value, { currency })}
                 </span>
               </div>
