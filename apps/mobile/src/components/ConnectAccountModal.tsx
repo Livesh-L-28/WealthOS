@@ -55,10 +55,10 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
   const [customName, setCustomName] = useState('');
   const [type, setType] = useState<'SAVINGS' | 'TERM_DEPOSIT' | 'DEMAT' | 'CREDIT_CARD' | 'LOAN'>('SAVINGS');
   const [balance, setBalance] = useState('');
-  const [mask, setMask] = useState('•••• 6720');
+  const [mask, setMask] = useState('');
 
   const handleConnect = () => {
-    const bal = parseFloat(balance) || 50000;
+    const bal = parseFloat(balance) || 0;
     const isLiability = type === 'LOAN' || type === 'CREDIT_CARD';
     const isManual = bank === 'Manual / Custom';
     const accName = isManual
@@ -207,7 +207,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
               <Text style={[styles.currencyPrefix, { color: isDark ? '#10B981' : '#059669' }]}>₹</Text>
               <TextInput
                 style={[styles.textInput, { color: textPrimary }]}
-                placeholder="50,000.00"
+                placeholder="0.00"
                 placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                 keyboardType="numeric"
                 value={balance}

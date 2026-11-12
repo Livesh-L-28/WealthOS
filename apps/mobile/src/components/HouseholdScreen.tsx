@@ -74,18 +74,20 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
         <Text style={styles.heroEyebrow}>COMBINED HOUSEHOLD NET WEALTH</Text>
         <Text style={styles.heroValue}>{formatINR(totalJointWealth)}</Text>
         <Text style={styles.heroSubtext}>
-          Unified multi-entity ledger across 3 family members & legal trusts
+          {members.length === 0
+            ? 'Unified multi-entity ledger for your family & shared wealth'
+            : `Unified multi-entity ledger across ${members.length} family members`}
         </Text>
 
         <View style={styles.quickStatsRow}>
           <View style={styles.statCol}>
             <Text style={styles.statLabel}>Active Members</Text>
-            <Text style={styles.statValue}>3 Persons</Text>
+            <Text style={styles.statValue}>{members.length} Persons</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCol}>
             <Text style={styles.statLabel}>Shared Envelopes</Text>
-            <Text style={styles.statValue}>4 Joint Budgets</Text>
+            <Text style={styles.statValue}>{members.length === 0 ? '0 Envelopes' : '4 Joint Budgets'}</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCol}>
@@ -195,35 +197,47 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
       </View>
 
       <View style={[styles.envelopesCard, { backgroundColor: cardBg, borderColor }]}>
-        <View style={styles.envelopeItem}>
-          <View style={styles.envelopeTopRow}>
-            <Text style={styles.envelopeName}>Shared Family Residence & Living</Text>
-            <Text style={styles.envelopeAmount}>{formatINR(95000)} / {formatINR(120000)}</Text>
+        {members.length === 0 ? (
+          <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+            <Text style={{ fontSize: 26, marginBottom: 6 }}>🎯</Text>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: textPrimary, marginBottom: 4 }}>No Shared Budgets Configured</Text>
+            <Text style={{ fontSize: 12, color: textSecondary, textAlign: 'center' }}>
+              Create joint household envelopes to manage pooled family expenses and goals.
+            </Text>
           </View>
-          <View style={styles.envelopeTrack}>
-            <View style={[styles.envelopeFill, { width: '79%' }]} />
-          </View>
-          <View style={styles.envelopeSubRow}>
-            <Text style={styles.envelopeSub}>79% utilized</Text>
-            <Text style={styles.envelopeSurplus}>₹25,000 remaining</Text>
-          </View>
-        </View>
+        ) : (
+          <>
+            <View style={styles.envelopeItem}>
+              <View style={styles.envelopeTopRow}>
+                <Text style={styles.envelopeName}>Shared Family Residence & Living</Text>
+                <Text style={styles.envelopeAmount}>{formatINR(95000)} / {formatINR(120000)}</Text>
+              </View>
+              <View style={styles.envelopeTrack}>
+                <View style={[styles.envelopeFill, { width: '79%' }]} />
+              </View>
+              <View style={styles.envelopeSubRow}>
+                <Text style={styles.envelopeSub}>79% utilized</Text>
+                <Text style={styles.envelopeSurplus}>₹25,000 remaining</Text>
+              </View>
+            </View>
 
-        <View style={styles.envelopeDivider} />
+            <View style={styles.envelopeDivider} />
 
-        <View style={styles.envelopeItem}>
-          <View style={styles.envelopeTopRow}>
-            <Text style={styles.envelopeName}>Child Higher Education Trust Fund</Text>
-            <Text style={styles.envelopeAmount}>{formatINR(45000)} / {formatINR(50000)}</Text>
-          </View>
-          <View style={styles.envelopeTrack}>
-            <View style={[styles.envelopeFillBlue, { width: '90%' }]} />
-          </View>
-          <View style={styles.envelopeSubRow}>
-            <Text style={styles.envelopeSub}>90% funded for month</Text>
-            <Text style={styles.envelopeSurplus}>₹5,000 needed</Text>
-          </View>
-        </View>
+            <View style={styles.envelopeItem}>
+              <View style={styles.envelopeTopRow}>
+                <Text style={styles.envelopeName}>Child Higher Education Trust Fund</Text>
+                <Text style={styles.envelopeAmount}>{formatINR(45000)} / {formatINR(50000)}</Text>
+              </View>
+              <View style={styles.envelopeTrack}>
+                <View style={[styles.envelopeFillBlue, { width: '90%' }]} />
+              </View>
+              <View style={styles.envelopeSubRow}>
+                <Text style={styles.envelopeSub}>90% funded for month</Text>
+                <Text style={styles.envelopeSurplus}>₹5,000 needed</Text>
+              </View>
+            </View>
+          </>
+        )}
       </View>
 
       <View style={{ height: 40 }} />

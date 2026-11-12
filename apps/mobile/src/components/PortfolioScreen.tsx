@@ -90,73 +90,12 @@ export const PortfolioScreen: React.FC<PortfolioScreenProps> = ({
 
   // Daily Savings & Daily Invest State
   const [dailyInvestAmount, setDailyInvestAmount] = useState<number>(250);
-  const [investStreakDays, setInvestStreakDays] = useState<number>(18);
-  const [isInvestedToday, setIsInvestedToday] = useState<boolean>(true);
-  const [dailyVaultBalance, setDailyVaultBalance] = useState<number>(48250);
-  const [autoRoundUpActive, setAutoRoundUpActive] = useState<boolean>(true);
+  const [investStreakDays, setInvestStreakDays] = useState<number>(0);
+  const [isInvestedToday, setIsInvestedToday] = useState<boolean>(false);
+  const [dailyVaultBalance, setDailyVaultBalance] = useState<number>(0);
+  const [autoRoundUpActive, setAutoRoundUpActive] = useState<boolean>(false);
 
-  const [extractedAssets, setExtractedAssets] = useState<ExtractedAsset[]>([
-    {
-      id: 'ext-1',
-      category: 'STOCKS',
-      name: 'Infosys Limited',
-      symbol: 'INFY.NS',
-      quantity: '60 Shares',
-      price: 1850.0,
-      totalValue: 111000.0,
-      selected: true,
-    },
-    {
-      id: 'ext-2',
-      category: 'STOCKS',
-      name: 'HDFC Bank Ltd',
-      symbol: 'HDFCBANK.NS',
-      quantity: '100 Shares',
-      price: 1560.0,
-      totalValue: 156000.0,
-      selected: true,
-    },
-    {
-      id: 'ext-3',
-      category: 'MUTUAL_FUNDS',
-      name: 'UTI Nifty 50 Index Fund Direct-Growth',
-      symbol: 'UTI_NIFTY_IDX',
-      quantity: '450 Units',
-      price: 162.4,
-      totalValue: 73080.0,
-      selected: true,
-    },
-    {
-      id: 'ext-4',
-      category: 'SIPS',
-      name: 'Tata Digital India Fund Direct-G',
-      symbol: 'TATA_TECH_SIP',
-      quantity: '₹15,000 / mo',
-      price: 15000.0,
-      totalValue: 15000.0,
-      selected: true,
-    },
-    {
-      id: 'ext-5',
-      category: 'BONDS',
-      name: 'GoI 7.38% GS 2027 Sovereign Bond',
-      symbol: '738GS2027',
-      quantity: '100 Bonds',
-      price: 1000.0,
-      totalValue: 100000.0,
-      selected: true,
-    },
-    {
-      id: 'ext-6',
-      category: 'OTHERS',
-      name: 'HDFC Overnight Liquid Surplus Cash Fund',
-      symbol: 'HDFC_OVN',
-      quantity: '500 Units',
-      price: 100.0,
-      totalValue: 50000.0,
-      selected: true,
-    },
-  ]);
+  const [extractedAssets, setExtractedAssets] = useState<ExtractedAsset[]>([]);
 
   const filteredHoldings = holdings.filter(
     (h) => filter === 'ALL' || h.type === filter
