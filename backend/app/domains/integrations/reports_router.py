@@ -101,3 +101,4 @@ async def generate_financial_report(
             media_type="text/csv",
             headers={"Content-Disposition": f'attachment; filename="wealthos_{rtype.lower()}_{payload.fiscal_year}.csv"'},
         )
+
