@@ -28,7 +28,8 @@
       "versionCode": 7,
       "permissions": [
         "INTERNET",
-        "ACCESS_NETWORK_STATE"
+        "ACCESS_NETWORK_STATE",
+        "CAMERA"
       ],
       "blockedPermissions": [
         "android.permission.READ_PHONE_STATE",
@@ -47,6 +48,13 @@
     "owner": "livesh28",
     "plugins": [
       "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "WealthOS accesses your photos to import receipt invoices.",
+          "cameraPermission": "WealthOS accesses your camera to scan receipt invoices in real time."
+        }
+      ],
       [
         "expo-build-properties",
         {

@@ -10,9 +10,18 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { theme, useTheme } from '../theme';
 import { BankAccount } from '../types';
+import {
+  ScannedReceiptData,
+  SAMPLE_RECEIPTS,
+  PresetReceipt,
+  captureReceiptFromCamera,
+  pickReceiptFromLibrary,
+  scanReceiptWithHybridOCR,
+} from '../receiptScannerService';
 
 interface AddTransactionModalProps {
   visible: boolean;
@@ -163,6 +172,75 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     accounts[0]?.name || 'Primary Operating Savings'
   );
 
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [showPresets, setShowPresets] = useState(false);
+  const [scannedReceipt, setScannedReceipt] = useState<ScannedReceiptData | null>(null);
+
+  const handleCameraScan = async () => {
+    try {
+      setIsScanning(true);
+      const photo = await captureReceiptFromCamera();
+      if (!photo) {
+        setIsScanning(false);
+        return;
+      }
+      const data = await scanReceiptWithHybridOCR({
+        imageUri: photo.uri,
+        imageBase64: photo.base64,
+        source: 'CAMERA',
+      });
+      setScannedReceipt(data);
+    } catch (err: any) {
+      Alert.alert('Camera Notice', err.message || 'Unable to access camera.');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleGalleryScan = async () => {
+    try {
+      setIsScanning(true);
+      const photo = await pickReceiptFromLibrary();
+      if (!photo) {
+        setIsScanning(false);
+        return;
+      }
+      const data = await scanReceiptWithHybridOCR({
+        imageUri: photo.uri,
+        imageBase64: photo.base64,
+        source: 'GALLERY',
+      });
+      setScannedReceipt(data);
+    } catch (err: any) {
+      Alert.alert('Gallery Notice', err.message || 'Unable to access photo library.');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleSelectPreset = async (preset: PresetReceipt) => {
+    setIsScanning(true);
+    setShowPresets(false);
+    setTimeout(async () => {
+      const data = await scanReceiptWithHybridOCR({
+        rawText: preset.rawText,
+        source: 'PRESET',
+      });
+      setScannedReceipt(data);
+      setIsScanning(false);
+    }, 400);
+  };
+
+  const handleApplyScannedReceipt = () => {
+    if (!scannedReceipt) return;
+    setAmount(scannedReceipt.amount.toString());
+    setTitle(scannedReceipt.merchantName);
+    setCategory(scannedReceipt.category);
+    setType('DEBIT');
+    setIsScannerOpen(false);
+  };
+
   const handleApplyHabit = (habit: HabitChip) => {
     setType('DEBIT');
     setTitle(habit.label);
@@ -312,6 +390,178 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* Receipt OCR Scanner Hero Bar */}
+            {!isIncome && (
+              <View style={{ marginBottom: 12 }}>
+                <TouchableOpacity
+                  style={[
+                    styles.scannerTrigger,
+                    {
+                      backgroundColor: isDark ? 'rgba(99, 102, 241, 0.12)' : '#EEF2FF',
+                      borderColor: isDark ? 'rgba(99, 102, 241, 0.35)' : '#C7D2FE',
+                    },
+                  ]}
+                  onPress={() => setIsScannerOpen(!isScannerOpen)}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.scannerTriggerLeft}>
+                    <View style={[styles.scannerIconBadge, { backgroundColor: isDark ? '#4F46E5' : '#6366F1' }]}>
+                      <Text style={styles.scannerIconText}>📷</Text>
+                    </View>
+                    <View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={[styles.scannerTriggerTitle, { color: textPrimary }]}>
+                          Scan Receipt / Invoice
+                        </Text>
+                        <View style={styles.ocrPill}>
+                          <Text style={styles.ocrPillText}>AI OCR</Text>
+                        </View>
+                      </View>
+                      <Text style={[styles.scannerTriggerSubtitle, { color: textSecondary }]}>
+                        Auto-extract merchant, total, category & GST
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.scannerChevron, { color: isDark ? '#A5B4FC' : '#4F46E5' }]}>
+                    {isScannerOpen ? '▲' : '▼'}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Expanded Scanner Card */}
+                {isScannerOpen && (
+                  <View style={[styles.scannerCard, { backgroundColor: cardSubtle, borderColor: borderSubtle }]}>
+                    <View style={styles.scannerActionsRow}>
+                      <TouchableOpacity
+                        style={[styles.scannerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: borderSubtle }]}
+                        onPress={handleCameraScan}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.scannerActionIcon}>📸</Text>
+                        <Text style={[styles.scannerActionText, { color: textPrimary }]}>Camera</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.scannerActionBtn, { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: borderSubtle }]}
+                        onPress={handleGalleryScan}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.scannerActionIcon}>🖼️</Text>
+                        <Text style={[styles.scannerActionText, { color: textPrimary }]}>Gallery</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[
+                          styles.scannerActionBtn,
+                          { backgroundColor: isDark ? '#1E293B' : '#FFFFFF', borderColor: borderSubtle },
+                          showPresets && { borderColor: isDark ? '#818CF8' : '#4F46E5', borderWidth: 1.5 },
+                        ]}
+                        onPress={() => setShowPresets(!showPresets)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.scannerActionIcon}>⚡</Text>
+                        <Text style={[styles.scannerActionText, { color: textPrimary }]}>Samples</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* Presets List */}
+                    {showPresets && (
+                      <View style={styles.presetsContainer}>
+                        <Text style={[styles.presetHelperText, { color: textSecondary }]}>
+                          Instant sample receipts (test without camera):
+                        </Text>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetsList}>
+                          {SAMPLE_RECEIPTS.map((preset) => (
+                            <TouchableOpacity
+                              key={preset.id}
+                              style={[
+                                styles.presetButton,
+                                {
+                                  backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
+                                  borderColor: borderSubtle,
+                                },
+                              ]}
+                              onPress={() => handleSelectPreset(preset)}
+                              activeOpacity={0.75}
+                            >
+                              <Text style={{ fontSize: 18 }}>{preset.icon}</Text>
+                              <View>
+                                <Text style={[styles.presetButtonTitle, { color: textPrimary }]}>{preset.label}</Text>
+                                <Text style={[styles.presetButtonAmount, { color: isDark ? '#34D399' : '#059669' }]}>
+                                  ₹{preset.amount}
+                                </Text>
+                              </View>
+                            </TouchableOpacity>
+                          ))}
+                        </ScrollView>
+                      </View>
+                    )}
+
+                    {/* Scanning in progress HUD */}
+                    {isScanning && (
+                      <View style={styles.scanningHud}>
+                        <ActivityIndicator size="small" color={isDark ? '#818CF8' : '#4F46E5'} />
+                        <Text style={[styles.scanningHudText, { color: textPrimary }]}>
+                          Scanning receipt with AI OCR engine...
+                        </Text>
+                      </View>
+                    )}
+
+                    {/* Extracted Receipt Card */}
+                    {scannedReceipt && !isScanning && (
+                      <View style={[styles.extractedCard, { backgroundColor: isDark ? '#0B0F19' : '#FFFFFF', borderColor: isDark ? '#059669' : '#10B981' }]}>
+                        <View style={styles.extractedHeader}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <Text style={{ fontSize: 13, color: isDark ? '#34D399' : '#059669', fontWeight: '800' }}>✓</Text>
+                            <Text style={[styles.extractedBadgeText, { color: isDark ? '#34D399' : '#059669' }]}>
+                              RECEIPT PARSED ({Math.round(scannedReceipt.confidence * 100)}% CONFIDENCE)
+                            </Text>
+                          </View>
+                          <TouchableOpacity onPress={() => setScannedReceipt(null)}>
+                            <Text style={{ color: textSecondary, fontSize: 11, fontWeight: '700' }}>✕ Dismiss</Text>
+                          </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.extractedGrid}>
+                          <View style={styles.extractedItem}>
+                            <Text style={[styles.extractedItemLabel, { color: textSecondary }]}>MERCHANT</Text>
+                            <Text style={[styles.extractedItemValue, { color: textPrimary }]}>{scannedReceipt.merchantName}</Text>
+                          </View>
+
+                          <View style={styles.extractedItem}>
+                            <Text style={[styles.extractedItemLabel, { color: textSecondary }]}>TOTAL AMOUNT</Text>
+                            <Text style={[styles.extractedItemValue, { color: isDark ? '#F87171' : '#DC2626', fontWeight: '800' }]}>
+                              ₹{scannedReceipt.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </Text>
+                          </View>
+
+                          <View style={styles.extractedItem}>
+                            <Text style={[styles.extractedItemLabel, { color: textSecondary }]}>CATEGORY</Text>
+                            <Text style={[styles.extractedItemValue, { color: textPrimary }]}>{scannedReceipt.category}</Text>
+                          </View>
+
+                          <View style={styles.extractedItem}>
+                            <Text style={[styles.extractedItemLabel, { color: textSecondary }]}>TAXES / GST</Text>
+                            <Text style={[styles.extractedItemValue, { color: textPrimary }]}>
+                              {scannedReceipt.taxes ? `₹${scannedReceipt.taxes.toFixed(2)}` : 'Included'}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* Apply Button */}
+                        <TouchableOpacity
+                          style={[styles.applyReceiptBtn, { backgroundColor: isDark ? '#059669' : '#10B981' }]}
+                          onPress={handleApplyScannedReceipt}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={styles.applyReceiptBtnText}>✓ Apply Extracted Details to Form</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
 
             {/* 1-Tap Frictionless Habit Chips (Daily Spends) */}
             {!isIncome && (
@@ -845,5 +1095,173 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     color: '#FFFFFF',
+  },
+  scannerTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  scannerTriggerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  scannerIconBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scannerIconText: {
+    fontSize: 18,
+  },
+  scannerTriggerTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  ocrPill: {
+    backgroundColor: '#4F46E5',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  ocrPillText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  scannerTriggerSubtitle: {
+    fontSize: 11,
+    marginTop: 2,
+  },
+  scannerChevron: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  scannerCard: {
+    marginTop: 8,
+    padding: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  scannerActionsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  scannerActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 9,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  scannerActionIcon: {
+    fontSize: 14,
+  },
+  scannerActionText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  presetsContainer: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(150, 150, 150, 0.2)',
+  },
+  presetHelperText: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  presetsList: {
+    flexDirection: 'row',
+  },
+  presetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginRight: 8,
+  },
+  presetButtonTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  presetButtonAmount: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  scanningHud: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+  },
+  scanningHudText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  extractedCard: {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  extractedHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  extractedBadgeText: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  extractedGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+  },
+  extractedItem: {
+    width: '48%',
+    padding: 6,
+    borderRadius: 6,
+  },
+  extractedItemLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  extractedItemValue: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  applyReceiptBtn: {
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyReceiptBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
 });

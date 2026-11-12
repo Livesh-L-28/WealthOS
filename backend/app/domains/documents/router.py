@@ -16,6 +16,8 @@ from app.domains.documents.schemas import (
     DocumentReconciliationResponse,
     FinancialDocumentCreate,
     FinancialDocumentResponse,
+    ReceiptScanRequest,
+    ReceiptScanResult,
 )
 from app.domains.documents.service import DocumentIntelligenceService
 
@@ -58,6 +60,26 @@ async def register_document(
         doc = await service.ingest_document(context.tenant.id, payload)
         return FinancialDocumentResponse.model_validate(doc)
     except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post(
+    "/scan-receipt",
+    response_model=ReceiptScanResult,
+    status_code=status.HTTP_200_OK,
+    summary="Scan and extract receipt or invoice with OCR intelligence",
+)
+async def scan_receipt(
+    payload: ReceiptScanRequest,
+    context: TenantContext = Depends(get_current_tenant_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> ReceiptScanResult:
+    """Extract merchant, amount, category, date, and taxes from receipt OCR / image / UPI QR."""
+    service = DocumentIntelligenceService(session)
+    try:
+        return await service.scan_receipt(context.tenant.id, payload)
+    except Exception as e:
+        logger.error(f"Receipt scan failed: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 

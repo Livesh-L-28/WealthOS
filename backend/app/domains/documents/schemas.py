@@ -232,3 +232,39 @@ class DocumentReconciliationResponse(BaseModel):
     new_transactions: int
     matches: list[ReconciliationMatchItem]
 
+
+class ReceiptScanRequest(BaseModel):
+    """Payload to scan a receipt via OCR, photo upload, or text/UPI representation."""
+
+    image_base64: str | None = None
+    filename: str | None = "receipt.jpg"
+    raw_text: str | None = None
+    qr_payload: str | None = None  # e.g. UPI QR code string
+
+
+class ScannedReceiptLineItem(BaseModel):
+    """Line item extracted from receipt."""
+
+    description: str
+    amount: Decimal = Field(default=Decimal("0.0000"))
+    quantity: Decimal = Field(default=Decimal("1.0000"))
+
+
+class ReceiptScanResult(BaseModel):
+    """Result of receipt OCR scanning with institutional-grade categorization."""
+
+    merchant_name: str
+    amount: Decimal
+    currency: str = "INR"
+    date: date
+    category: str
+    taxes: Decimal = Decimal("0.0000")
+    gstin: str | None = None
+    invoice_number: str | None = None
+    line_items: list[ScannedReceiptLineItem] = Field(default_factory=list)
+    confidence: Decimal = Decimal("0.9500")
+    document_id: uuid.UUID | None = None
+    raw_text: str | None = None
+    suggested_account_type: str = "EXPENSE"
+
+
