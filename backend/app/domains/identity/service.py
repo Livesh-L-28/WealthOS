@@ -13,6 +13,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 from app.core.logging import get_logger
+from app.core.tenant_context import set_db_tenant_context
 from app.domains.audit.service import record_security_event
 from app.domains.identity.crypto import (
     generate_recovery_codes,
@@ -57,6 +58,14 @@ from app.infrastructure.redis import get_redis
 logger = get_logger("wealthos.identity")
 
 
+def _is_expired(dt: datetime | None, now: datetime) -> bool:
+    if dt is None:
+        return False
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=UTC)
+    return dt <= now
+
+
 class AuthenticationServiceError(ValueError):
     """Raised when authentication or security checks fail."""
 
@@ -88,12 +97,13 @@ async def register_user(
         logger.warning(f"Registration attempted with existing email: {clean_email}")
         raise AuthenticationServiceError("An account with this email address already exists.")
 
+    initial_status = "pending_verification" if getattr(settings, 'is_production', False) else "active"
     user = User(
         id=uuid.uuid4(),
         email=clean_email,
         first_name=first_name.strip(),
         last_name=last_name.strip(),
-        status="pending_verification",
+        status=initial_status,
         is_superuser=False,
     )
     session.add(user)
@@ -295,10 +305,7 @@ async def _create_authenticated_session(
     await session.flush()
 
     # Apply transaction-local user context for RLS
-    await session.execute(
-        text("SELECT set_config('app.current_user_id', :uid, true)"),
-        {"uid": str(user.id)},
-    )
+    await set_db_tenant_context(session, tenant_id=None, user_id=user.id)
 
     # Determine active tenant
     tenants = await list_user_tenants(session, user.id)
@@ -552,7 +559,7 @@ async def rotate_refresh_token(
         )
 
     # Check token expiration
-    if now > token_entry.expires_at:
+    if _is_expired(token_entry.expires_at, now):
         token_entry.is_revoked = True
         token_entry.revoked_at = now
         token_entry.revoked_reason = "expired"
@@ -564,7 +571,7 @@ async def rotate_refresh_token(
         not user_session
         or not user_session.is_active
         or user_session.revoked_at is not None
-        or user_session.expires_at <= now
+        or _is_expired(user_session.expires_at, now)
     ):
         if user_session and user_session.is_active:
             user_session.is_active = False
@@ -731,7 +738,7 @@ async def verify_email_token(
         raise AuthenticationServiceError("Invalid or already-consumed verification token.")
 
     now = datetime.now(UTC)
-    if now > verif_token.expires_at:
+    if _is_expired(verif_token.expires_at, now):
         raise AuthenticationServiceError(
             "Verification token has expired. Please request a new link."
         )
@@ -879,7 +886,7 @@ async def reset_password_with_token(
         raise AuthenticationServiceError("Invalid or already-consumed password reset token.")
 
     now = datetime.now(UTC)
-    if now > reset_entry.expires_at:
+    if _is_expired(reset_entry.expires_at, now):
         raise AuthenticationServiceError("Password reset token has expired.")
 
     user = await session.get(User, reset_entry.user_id)

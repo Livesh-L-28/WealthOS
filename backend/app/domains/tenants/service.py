@@ -42,10 +42,38 @@ def _generate_slug(name: str) -> str:
 
 
 async def get_system_role_by_name(session: AsyncSession, role_name: str) -> Role:
-    """Retrieve built-in system role by name."""
+    """Retrieve built-in system role by name, auto-seeding baseline roles on demand if clean."""
     stmt = select(Role).where(Role.is_system_role == True, Role.name == role_name)  # noqa: E712
     result = await session.execute(stmt)
     role = result.scalar_one_or_none()
+    if not role:
+        roles_to_seed = [
+            ("owner", "Tenant owner with unrestricted management and custody permissions."),
+            ("admin", "Workspace administrator with operational privileges."),
+            ("member", "Standard workspace member with financial view and entry permissions."),
+            ("viewer", "Read-only auditor with view access to ledgers and statements."),
+        ]
+        now = datetime.now(UTC)
+        for r_name, r_desc in roles_to_seed:
+            chk = await session.execute(
+                select(Role).where(Role.is_system_role == True, Role.name == r_name)  # noqa: E712
+            )
+            if not chk.scalar_one_or_none():
+                new_r = Role(
+                    id=uuid.uuid4(),
+                    tenant_id=None,
+                    name=r_name,
+                    description=r_desc,
+                    is_system_role=True,
+                    created_at=now,
+                    updated_at=now,
+                )
+                session.add(new_r)
+        await session.flush()
+        stmt = select(Role).where(Role.is_system_role == True, Role.name == role_name)  # noqa: E712
+        result = await session.execute(stmt)
+        role = result.scalar_one_or_none()
+
     if not role:
         raise TenantServiceError(f"System role '{role_name}' not found.")
     return role
@@ -298,10 +326,7 @@ async def accept_invitation(
     raw_token: str,
 ) -> TenantMembership:
     """Accept pending invitation and create workspace membership."""
-    await session.execute(
-        text("SELECT set_config('app.current_user_id', :uid, true)"),
-        {"uid": str(user.id)},
-    )
+    await set_db_tenant_context(session, tenant_id=None, user_id=user.id)
     token_digest = hash_token(raw_token.strip())
 
     stmt = select(TenantInvitation).where(

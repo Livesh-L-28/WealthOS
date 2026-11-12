@@ -297,6 +297,8 @@ export const darkTheme: AppTheme = {
   },
 };
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // Default export maintains seamless backward compatibility
 export const theme = lightTheme;
 
@@ -308,17 +310,43 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: darkTheme,
-  isDark: true,
+  theme: lightTheme,
+  isDark: false,
   toggleTheme: () => {},
   setThemeMode: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDark, setIsDark] = useState(true);
+  // First default UI color is White / Light theme
+  const [isDark, setIsDark] = useState(false);
 
-  const toggleTheme = () => setIsDark((prev) => !prev);
-  const setThemeMode = (dark: boolean) => setIsDark(dark);
+  useEffect(() => {
+    let isMounted = true;
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem('@wealthos_theme_mode');
+        if (isMounted && saved !== null) {
+          setIsDark(saved === 'dark');
+        }
+      } catch {}
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const toggleTheme = () => {
+    setIsDark((prev) => {
+      const next = !prev;
+      AsyncStorage.setItem('@wealthos_theme_mode', next ? 'dark' : 'light').catch(() => {});
+      return next;
+    });
+  };
+
+  const setThemeMode = (dark: boolean) => {
+    setIsDark(dark);
+    AsyncStorage.setItem('@wealthos_theme_mode', dark ? 'dark' : 'light').catch(() => {});
+  };
 
   const currentTheme = isDark ? darkTheme : lightTheme;
 
@@ -339,8 +367,8 @@ export const useTheme = () => {
     // Graceful fallback
   }
   return {
-    theme: darkTheme,
-    isDark: true,
+    theme: lightTheme,
+    isDark: false,
     toggleTheme: () => {},
     setThemeMode: () => {},
   };

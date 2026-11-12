@@ -161,7 +161,11 @@ async def register(
                 email=user.email,
                 status=user.status,
                 personal_tenant_id=tenant_id,
-                message="Registration successful. Please verify your email address before logging in.",
+                message=(
+                    "Registration successful. Please verify your email address before logging in."
+                    if settings.is_production
+                    else "Registration successful. Your account is active."
+                ),
             ).model_dump(mode="json"),
         }
     except PasswordPolicyError as exc:

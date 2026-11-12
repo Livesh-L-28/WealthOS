@@ -20,6 +20,38 @@ _redis_client: Any = None
 _is_fallback_active: bool = False
 
 
+class InMemoryPipeline:
+    """Async pipeline emulator for InMemoryRedisFallback."""
+
+    def __init__(self, fallback: 'InMemoryRedisFallback'):
+        self._fallback = fallback
+        self._commands: list[tuple[str, tuple, dict]] = []
+
+    def zremrangebyscore(self, key: str, min_score: float, max_score: float) -> 'InMemoryPipeline':
+        self._commands.append(('zremrangebyscore', (key, min_score, max_score), {}))
+        return self
+
+    def zadd(self, key: str, mapping: dict[str, float]) -> 'InMemoryPipeline':
+        self._commands.append(('zadd', (key, mapping), {}))
+        return self
+
+    def zcard(self, key: str) -> 'InMemoryPipeline':
+        self._commands.append(('zcard', (key,), {}))
+        return self
+
+    def expire(self, key: str, seconds: int) -> 'InMemoryPipeline':
+        self._commands.append(('expire', (key, seconds), {}))
+        return self
+
+    async def execute(self) -> list[Any]:
+        results = []
+        for cmd_name, args, kwargs in self._commands:
+            fn = getattr(self._fallback, cmd_name)
+            res = await fn(*args, **kwargs)
+            results.append(res)
+        return results
+
+
 class InMemoryRedisFallback:
     """Thread-safe async in-memory key-value cache with TTL expiration.
 
@@ -28,7 +60,36 @@ class InMemoryRedisFallback:
 
     def __init__(self):
         self._store: dict[str, tuple[str, float | None]] = {}
+        self._zsets: dict[str, dict[str, float]] = {}
         self._lock = asyncio.Lock()
+
+    def pipeline(self) -> 'InMemoryPipeline':
+        return InMemoryPipeline(self)
+
+    async def zremrangebyscore(self, key: str, min_score: float, max_score: float) -> int:
+        async with self._lock:
+            if key not in self._zsets:
+                return 0
+            z = self._zsets[key]
+            to_remove = [m for m, score in z.items() if min_score <= score <= max_score]
+            for m in to_remove:
+                del z[m]
+            return len(to_remove)
+
+    async def zadd(self, key: str, mapping: dict[str, float]) -> int:
+        async with self._lock:
+            if key not in self._zsets:
+                self._zsets[key] = {}
+            added = 0
+            for m, score in mapping.items():
+                if m not in self._zsets[key]:
+                    added += 1
+                self._zsets[key][m] = float(score)
+            return added
+
+    async def zcard(self, key: str) -> int:
+        async with self._lock:
+            return len(self._zsets.get(key, {}))
 
     def _cleanup_expired(self, key: str) -> bool:
         """Return True if key exists and is valid, False if expired or missing."""

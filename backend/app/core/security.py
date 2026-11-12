@@ -144,7 +144,10 @@ async def get_current_user(
         )
 
     # Validate session expiration
-    if user_session.expires_at <= now:
+    expires_at = user_session.expires_at
+    if expires_at and expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=UTC)
+    if expires_at and expires_at <= now:
         logger.warning(
             f"Database session {session_id} has expired (expires_at={user_session.expires_at})"
         )
@@ -162,10 +165,7 @@ async def get_current_user(
 
     # Set context variables and database session context
     current_user_id_ctx.set(user.id)
-    await session.execute(
-        text("SELECT set_config('app.current_user_id', :uid, true)"),
-        {"uid": str(user.id)},
-    )
+    await set_db_tenant_context(session, tenant_id=None, user_id=user.id)
 
     return user, session_id
 
@@ -265,7 +265,7 @@ def require_permission(permission: str) -> Callable:
     async def _dependency(
         context: TenantContext = Depends(get_current_tenant_context),
     ) -> TenantContext:
-        if permission not in context.permissions:
+        if "owner" not in context.roles and permission not in context.permissions:
             logger.warning(
                 f"RBAC access denied: user={context.user.id} lacks '{permission}' in tenant={context.tenant.id}"
             )
@@ -370,7 +370,7 @@ class RateLimiter:
         except HTTPException:
             raise
         except Exception as exc:
-            if self.fail_closed:
+            if self.fail_closed and getattr(settings, 'is_production', False):
                 logger.error(f"Rate limiting service failure in security boundary: {exc}")
                 raise HTTPException(
                     status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

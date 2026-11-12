@@ -61,6 +61,10 @@ async def set_db_tenant_context(
     Uses `set_config` with is_local=true so settings automatically expire at the end of the transaction.
     Gracefully bypassed on SQLite fallback environments where `set_config` is not defined.
     """
+    bind = getattr(session, "bind", None) or getattr(session, "_bind", None)
+    if bind is not None and getattr(bind.dialect, "name", "") != "postgresql":
+        return
+
     tid_str = str(tenant_id) if tenant_id is not None else ""
     uid_str = str(user_id) if user_id is not None else ""
     try:
@@ -77,6 +81,10 @@ async def set_db_tenant_context(
 
 async def reset_db_session_state(session: AsyncSession) -> None:
     """Sanitize database connection state before returning to pool."""
+    bind = getattr(session, "bind", None) or getattr(session, "_bind", None)
+    if bind is not None and getattr(bind.dialect, "name", "") != "postgresql":
+        return
+
     try:
         await session.execute(
             text(

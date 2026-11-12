@@ -165,8 +165,8 @@ function WealthOSContent() {
   const [period, setPeriod] = useState<DashboardPeriod>('1M');
   const [refreshing, setRefreshing] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
-  const [isRestoringSession, setIsRestoringSession] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isRestoringSession, setIsRestoringSession] = useState<boolean>(true);
 
   // Core Financial State - Persistent Offline-First Architecture (Clean Initial State)
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
@@ -258,20 +258,28 @@ function WealthOSContent() {
     }
   };
 
-  // Background non-blocking session check
+  // Session verification on app launch
   useEffect(() => {
     let isMounted = true;
     async function checkExistingSession() {
       try {
         const session = await restoreActiveSession();
-        if (isMounted && session) {
-          if (session.activeTenant?.name) {
-            setActiveWorkspace(session.activeTenant.name);
+        if (isMounted) {
+          if (session && session.tokens?.accessToken) {
+            setIsAuthenticated(true);
+            if (session.activeTenant?.name) {
+              setActiveWorkspace(session.activeTenant.name);
+            }
+            await loadLiveLedgerData();
+          } else {
+            setIsAuthenticated(false);
           }
-          await loadLiveLedgerData();
         }
       } catch (err) {
         console.warn('Session check notice:', err);
+        if (isMounted) setIsAuthenticated(false);
+      } finally {
+        if (isMounted) setIsRestoringSession(false);
       }
     }
     checkExistingSession();

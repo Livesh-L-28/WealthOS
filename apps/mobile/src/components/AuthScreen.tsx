@@ -147,7 +147,47 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
       const data = await response.json().catch(() => null);
 
       if (response.ok && data?.success) {
-        onShowToast?.('✓ Account provisioned! Please sign in with your credentials.');
+        onShowToast?.('✓ Account provisioned! Authenticating session...');
+        try {
+          const loginRes = await fetch(`${config.apiUrl}/api/v1/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: regEmail.trim().toLowerCase(),
+              password: regPassword,
+            }),
+          });
+          const loginData = await loginRes.json().catch(() => null);
+          if (loginRes.ok && loginData?.success && loginData?.data?.access_token) {
+            const result = loginData.data;
+            const tenant = result.active_tenant || {
+              id: result.tenant_id || data.data.personal_tenant_id,
+              name: regWorkspace.trim() || `${regFirstName}'s Workspace`,
+            };
+            const sessionData: UserSessionData = {
+              user: {
+                id: result.user?.id || data.data.user_id,
+                email: result.user?.email || regEmail.trim().toLowerCase(),
+                name: `${regFirstName} ${regLastName}`.trim(),
+              },
+              activeTenant: {
+                id: tenant.id,
+                name: tenant.name || 'Personal Holdings',
+                slug: tenant.slug,
+                role: tenant.role,
+              },
+              tokens: {
+                accessToken: result.access_token,
+                refreshToken: result.refresh_token || '',
+              },
+            };
+            await setAuthenticatedSession(sessionData);
+            if (tenant.name) onSelectWorkspace(tenant.name);
+            onShowToast?.('✓ Account created & authenticated! Loading your ledger...');
+            onUnlock(sessionData);
+            return;
+          }
+        } catch {}
         setLoginEmail(regEmail.trim().toLowerCase());
         setLoginPassword(regPassword);
         setAuthMode('SIGNIN');
@@ -341,6 +381,21 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
               </Text>
             </TouchableOpacity>
 
+            {/* Offline Mode / Instant Preview */}
+            <TouchableOpacity
+              style={[styles.offlineBtn, { borderColor: theme.colors.border, backgroundColor: theme.colors.cardSubtle }]}
+              onPress={() => {
+                onShowToast?.('✓ Continuing in Offline Mode with local ledger.');
+                onUnlock();
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.offlineBtnIcon}>⚡</Text>
+              <Text style={[styles.offlineBtnText, { color: theme.colors.textPrimary }]}>
+                Continue in Offline Mode / Instant Preview
+              </Text>
+            </TouchableOpacity>
+
             {/* Switch to Register footer */}
             <TouchableOpacity
               style={styles.switchModeFooter}
@@ -416,6 +471,21 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             >
               <Text style={styles.primaryActionText}>
                 {isSubmitting ? 'Provisioning...' : 'Create Account & Initialize Ledger'}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Offline Mode / Instant Preview */}
+            <TouchableOpacity
+              style={[styles.offlineBtn, { borderColor: theme.colors.border, backgroundColor: theme.colors.cardSubtle }]}
+              onPress={() => {
+                onShowToast?.('✓ Continuing in Offline Mode with local ledger.');
+                onUnlock();
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.offlineBtnIcon}>⚡</Text>
+              <Text style={[styles.offlineBtnText, { color: theme.colors.textPrimary }]}>
+                Continue in Offline Mode / Instant Preview
               </Text>
             </TouchableOpacity>
 
@@ -628,6 +698,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   biometricBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  offlineBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginTop: 8,
+  },
+  offlineBtnIcon: {
+    fontSize: 14,
+  },
+  offlineBtnText: {
     fontSize: 12,
     fontWeight: '700',
   },
