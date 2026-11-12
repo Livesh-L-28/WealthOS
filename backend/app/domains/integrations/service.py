@@ -265,6 +265,58 @@ class EnterpriseIntegrationService:
         }
 
     @staticmethod
+    async def revoke_connection(
+        session: AsyncSession,
+        tenant_id: uuid.UUID,
+        user_id: uuid.UUID,
+        connection_id: uuid.UUID,
+    ) -> dict[str, Any]:
+        """Revoke provider connection, shred encrypted credentials, and revoke DPDP consent."""
+        from sqlalchemy import delete
+        from app.domains.integrations.models import ProviderCredential
+
+        stmt = select(ProviderConnection).where(
+            ProviderConnection.id == connection_id,
+            ProviderConnection.tenant_id == tenant_id,
+        )
+        res = await session.execute(stmt)
+        conn = res.scalar_one_or_none()
+        if not conn:
+            raise NotFoundError(f"Provider connection {connection_id} not found.")
+
+        provider_id = conn.provider_id
+        conn.status = "REVOKED"
+        conn.error_summary = "Access revoked by user. Credentials shredded."
+
+        # Shred encrypted credentials
+        cred_stmt = delete(ProviderCredential).where(
+            ProviderCredential.tenant_id == tenant_id,
+            ProviderCredential.provider_id == provider_id,
+        )
+        await session.execute(cred_stmt)
+
+        # Revoke active DPDP consents
+        consent_stmt = select(ProviderConsent).where(
+            ProviderConsent.tenant_id == tenant_id,
+            ProviderConsent.user_id == user_id,
+            ProviderConsent.provider_id == provider_id,
+        )
+        c_res = await session.execute(consent_stmt)
+        consents = c_res.scalars().all()
+        now = datetime.now(UTC)
+        for c in consents:
+            c.revoked_at = now
+
+        await session.flush()
+        return {
+            "status": "REVOKED",
+            "connection_id": connection_id,
+            "provider_id": provider_id,
+            "credentials_shredded": True,
+            "revoked_at": now.isoformat(),
+        }
+
+    @staticmethod
     def verify_webhook_signature_and_freshness(
         payload_bytes: bytes,
         signature_header: str | None,

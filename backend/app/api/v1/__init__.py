@@ -12,6 +12,7 @@ from app.domains.cash.router import router as cash_router
 from app.domains.copilot.router import router as copilot_router
 from app.domains.documents.router import router as documents_router
 from app.domains.household.router import router as household_router
+from app.domains.integrations.reports_router import reports_router
 from app.domains.integrations.router import router as integrations_router
 from app.domains.investments.router import router as investments_router
 from app.domains.liabilities.router import router as liabilities_router
@@ -67,6 +68,9 @@ api_v1_router.include_router(
 )
 api_v1_router.include_router(
     integrations_router, prefix="/integrations", tags=["Enterprise Financial Integrations"]
+)
+api_v1_router.include_router(
+    reports_router, prefix="/reports", tags=["Financial Reports & Certified Exports"]
 )
 api_v1_router.include_router(copilot_router, prefix="/copilot", tags=["AI Financial Copilot"])
 api_v1_router.include_router(

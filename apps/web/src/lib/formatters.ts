@@ -243,3 +243,17 @@ export function generateAccessibleChartSummary(
     `Overall ${direction} by ${formatCurrency(Math.abs(delta), { currency })} (${formatPercentage(pct)}).`;
 }
 
+/**
+ * Convenience helper for standard Indian Rupee (₹) formatting.
+ */
+export function formatINR(
+  amount: number | string | null | undefined,
+  compact = false
+): string {
+  return formatCurrency(amount, {
+    currency: 'INR',
+    notation: compact ? 'compact' : 'standard',
+  });
+}
+
+

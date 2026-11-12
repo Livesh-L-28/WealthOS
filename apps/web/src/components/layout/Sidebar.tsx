@@ -21,6 +21,9 @@ import {
   X,
   Sparkles,
   Users,
+  Coins,
+  FileCheck,
+  Link2,
 } from 'lucide-react';
 import { useNav } from './NavContext';
 
@@ -58,7 +61,9 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Investments & Reports',
     items: [
       { label: 'Investments', href: '/investments', icon: TrendingUp },
-      { label: 'Reports', href: '/net-worth', icon: FileSpreadsheet },
+      { label: 'Dividends', href: '/dividends', icon: Coins, badge: 'Sec 194' },
+      { label: 'Net Worth', href: '/net-worth', icon: FileSpreadsheet },
+      { label: 'Certified Reports', href: '/reports', icon: FileCheck },
     ],
   },
   {
@@ -74,6 +79,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Preferences',
     items: [
       { label: 'Security & Audit', href: '/settings/security', icon: ShieldCheck },
+      { label: 'Connected Providers', href: '/settings/providers', icon: Link2, badge: 'DPDP' },
       { label: 'Workspace Settings', href: '/settings/workspaces', icon: Settings },
     ],
   },

@@ -93,9 +93,12 @@ export function Header() {
     if (pathname === '/analytics') return 'Cash Flow';
     if (pathname === '/budgets') return 'Budgets';
     if (pathname === '/goals') return 'Goals';
+    if (pathname === '/dividends') return 'Dividends & Passive Income';
+    if (pathname === '/reports') return 'Certified Reports & Tax Schedules';
     if (pathname === '/documents') return 'Documents';
     if (pathname === '/copilot') return 'Financial Copilot';
-    if (pathname === '/net-worth') return 'Reports';
+    if (pathname === '/net-worth') return 'Net Worth';
+    if (pathname === '/settings/providers') return 'Connected Providers & Consents';
     if (pathname?.startsWith('/settings')) return 'Settings';
     return 'Wealth Intelligence';
   };

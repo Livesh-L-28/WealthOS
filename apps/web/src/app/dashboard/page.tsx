@@ -11,6 +11,8 @@ import {
   Layers,
   ArrowRight,
   TrendingUp,
+  ArrowRightLeft,
+  DollarSign,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -39,6 +41,8 @@ import { AddInvestmentModal } from '@/components/modals/AddInvestmentModal';
 import { CreateBudgetModal } from '@/components/modals/CreateBudgetModal';
 import { CreateGoalModal } from '@/components/modals/CreateGoalModal';
 import { UploadDocumentModal } from '@/components/modals/UploadDocumentModal';
+import { TransferFundsModal } from '@/components/modals/TransferFundsModal';
+import { RecordIncomeModal } from '@/components/modals/RecordIncomeModal';
 
 const DEFAULT_CARD_CONFIG: DashboardCardConfig[] = [
   { id: 'wealth-trend', label: 'Net Worth Trajectory', description: 'Consolidated area chart with historical milestones', visible: true },
@@ -60,7 +64,7 @@ export default function DashboardPage() {
 
   // Modal states
   const [activeModal, setActiveModal] = useState<
-    'account' | 'transaction' | 'investment' | 'budget' | 'goal' | 'document' | null
+    'account' | 'transaction' | 'investment' | 'budget' | 'goal' | 'document' | 'transfer' | 'income' | null
   >(null);
 
   // Global keyboard shortcuts for fast executive usability
@@ -85,6 +89,12 @@ export default function DashboardPage() {
       } else if (e.key === 'd' || e.key === 'D') {
         e.preventDefault();
         setActiveModal('document');
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        setActiveModal('transfer');
+      } else if (e.key === 'i' || e.key === 'I') {
+        e.preventDefault();
+        setActiveModal('income');
       } else if (e.key === 'Escape') {
         setActiveModal(null);
       }
@@ -153,6 +163,30 @@ export default function DashboardPage() {
             <PlusCircle className="w-3.5 h-3.5 text-[#10B981]" />
             <span>Add Transaction</span>
             <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-slate-100 text-slate-500 rounded border border-slate-200">T</kbd>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveModal('transfer')}
+            className="gap-1.5"
+            title="Press 'F' anywhere"
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5 text-blue-400" />
+            <span>Transfer</span>
+            <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-slate-100 text-slate-500 rounded border border-slate-200">F</kbd>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setActiveModal('income')}
+            className="gap-1.5"
+            title="Press 'I' anywhere"
+          >
+            <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Salary Split</span>
+            <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-slate-100 text-slate-500 rounded border border-slate-200">I</kbd>
           </Button>
 
           <Button
@@ -268,6 +302,16 @@ export default function DashboardPage() {
 
       <UploadDocumentModal
         isOpen={activeModal === 'document'}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <TransferFundsModal
+        isOpen={activeModal === 'transfer'}
+        onClose={() => setActiveModal(null)}
+      />
+
+      <RecordIncomeModal
+        isOpen={activeModal === 'income'}
         onClose={() => setActiveModal(null)}
       />
     </div>

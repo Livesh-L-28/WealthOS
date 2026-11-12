@@ -66,6 +66,7 @@ import { AuthScreen } from './src/components/AuthScreen';
 import { FinancialCalendarScreen } from './src/components/FinancialCalendarScreen';
 import { DividendsScreen } from './src/components/DividendsScreen';
 import { LiabilitiesScreen } from './src/components/LiabilitiesScreen';
+import { ReportsScreen } from './src/components/ReportsScreen';
 import { ReconciliationModal } from './src/components/ReconciliationModal';
 import { AddTransactionModal } from './src/components/AddTransactionModal';
 import { ConnectAccountModal } from './src/components/ConnectAccountModal';
@@ -941,13 +942,20 @@ function WealthOSContent() {
           />
         )}
 
-        {(activeScreen === 'net-worth' || activeScreen === 'reports') && (
+        {activeScreen === 'net-worth' && (
           <NetWorthScreen
             onBack={() => setActiveScreen('overview')}
             onShowToast={showNotification}
             totalAssets={totalAssets}
             totalLiabilities={totalLiabilities}
             netWorth={netWorth}
+          />
+        )}
+
+        {activeScreen === 'reports' && (
+          <ReportsScreen
+            onBack={() => setActiveScreen('overview')}
+            onShowToast={showNotification}
           />
         )}
 
