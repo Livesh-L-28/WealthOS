@@ -85,17 +85,29 @@ export const HeroWealthCard: React.FC<HeroWealthCardProps> = ({
         activeOpacity={onOpenNetWorth ? 0.8 : 1}
         disabled={!onOpenNetWorth}
       >
-        <Text
-          style={[
-            styles.amountText,
-            { color: isDark ? '#F8FAFC' : '#0F172A' },
-            isPrivacyMode && styles.amountHidden,
-          ]}
-          numberOfLines={1}
-          adjustsFontSizeToFit
-        >
-          {isPrivacyMode ? '••••••••' : formatINR(netWorth)}
-        </Text>
+        {isPrivacyMode ? (
+          <Text
+            style={[
+              styles.amountText,
+              { color: isDark ? '#F8FAFC' : '#0F172A' },
+              styles.amountHidden,
+            ]}
+          >
+            ••••••••
+          </Text>
+        ) : (
+          <Text
+            style={[
+              styles.amountText,
+              { color: isDark ? '#F8FAFC' : '#0F172A' },
+            ]}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            <Text style={[styles.currencyPrefix, { color: isDark ? '#94A3B8' : '#64748B' }]}>₹</Text>
+            {formatINR(netWorth).replace(/^₹\s?/, '')}
+          </Text>
+        )}
       </TouchableOpacity>
 
       {/* Trajectory / Health Status Pill */}
@@ -146,7 +158,7 @@ export const HeroWealthCard: React.FC<HeroWealthCardProps> = ({
           <View
             style={[
               styles.actionIconCircle,
-              { backgroundColor: isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' },
+              { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.18)' : '#ECFDF5' },
             ]}
           >
             <Text style={styles.actionEmoji}>➕</Text>
@@ -168,7 +180,7 @@ export const HeroWealthCard: React.FC<HeroWealthCardProps> = ({
             <View
               style={[
                 styles.actionIconCircle,
-                { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : '#ECFDF5' },
+                { backgroundColor: isDark ? 'rgba(14, 165, 233, 0.18)' : '#F0F9FF' },
               ]}
             >
               <Text style={styles.actionEmoji}>⇄</Text>
@@ -291,6 +303,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '900',
     letterSpacing: -1,
+  },
+  currencyPrefix: {
+    fontSize: 22,
+    fontWeight: '600',
+    letterSpacing: 0,
   },
   amountHidden: {
     fontSize: 26,

@@ -62,6 +62,18 @@ interface HabitChip {
   category: string;
 }
 
+const getHabitTint = (index: number, isDark: boolean) => {
+  const tints = [
+    { bg: isDark ? 'rgba(245, 158, 11, 0.12)' : '#FEF3C7', border: isDark ? 'rgba(245, 158, 11, 0.35)' : '#FDE68A', accent: isDark ? '#FBBF24' : '#D97706' }, // Coffee (Caramel)
+    { bg: isDark ? 'rgba(234, 88, 12, 0.12)' : '#FFEDD5', border: isDark ? 'rgba(234, 88, 12, 0.35)' : '#FED7AA', accent: isDark ? '#FB923C' : '#EA580C' }, // Fuel (Orange)
+    { bg: isDark ? 'rgba(16, 185, 129, 0.12)' : '#D1FAE5', border: isDark ? 'rgba(16, 185, 129, 0.35)' : '#A7F3D0', accent: isDark ? '#34D399' : '#059669' }, // Groceries (Emerald)
+    { bg: isDark ? 'rgba(244, 63, 94, 0.12)' : '#FFE4E6', border: isDark ? 'rgba(244, 63, 94, 0.35)' : '#FECDD3', accent: isDark ? '#FB7185' : '#E11D48' }, // Dining (Rose)
+    { bg: isDark ? 'rgba(14, 165, 233, 0.12)' : '#E0F2FE', border: isDark ? 'rgba(14, 165, 233, 0.35)' : '#BAE6FD', accent: isDark ? '#38BDF8' : '#0284C7' }, // Cab (Sky)
+    { bg: isDark ? 'rgba(139, 92, 246, 0.12)' : '#EDE9FE', border: isDark ? 'rgba(139, 92, 246, 0.35)' : '#DDD6FE', accent: isDark ? '#A78BFA' : '#7C3AED' }, // Mobile (Purple)
+  ];
+  return tints[index % tints.length];
+};
+
 const QUICK_HABITS: HabitChip[] = [
   { icon: '☕', label: 'Coffee', amount: 150, category: 'Dining & Restaurants' },
   { icon: '⛽', label: 'Fuel', amount: 1000, category: 'Transport & Fuel' },
@@ -306,26 +318,31 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               <View style={styles.habitsSection}>
                 <Text style={[styles.habitsLabel, { color: textSecondary }]}>⚡ 1-TAP QUICK LOG HABITS</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.habitsScroll}>
-                  {QUICK_HABITS.map((h, i) => (
-                    <TouchableOpacity
-                      key={i}
-                      style={[
-                        styles.habitChip,
-                        {
-                          backgroundColor: cardSubtle,
-                          borderColor: borderSubtle,
-                        },
-                      ]}
-                      onPress={() => handleApplyHabit(h)}
-                      activeOpacity={0.75}
-                    >
-                      <Text style={styles.habitChipIcon}>{h.icon}</Text>
-                      <Text style={[styles.habitChipText, { color: textPrimary }]}>{h.label}</Text>
-                      <Text style={[styles.habitChipAmount, { color: isDark ? '#38BDF8' : '#2563EB' }]}>
-                        ₹{h.amount}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  {QUICK_HABITS.map((h, i) => {
+                    const tint = getHabitTint(i, isDark);
+                    return (
+                      <TouchableOpacity
+                        key={i}
+                        style={[
+                          styles.habitChip,
+                          {
+                            backgroundColor: tint.bg,
+                            borderColor: tint.border,
+                          },
+                        ]}
+                        onPress={() => handleApplyHabit(h)}
+                        activeOpacity={0.75}
+                      >
+                        <Text style={styles.habitChipIcon}>{h.icon}</Text>
+                        <Text style={[styles.habitChipText, { color: textPrimary }]}>{h.label}</Text>
+                        <View style={{ backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.7)', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                          <Text style={[styles.habitChipAmount, { color: tint.accent, fontWeight: '700' }]}>
+                            ₹{h.amount}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </ScrollView>
               </View>
             )}
@@ -387,18 +404,41 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 
             {/* Quick Presets & Increment Buttons */}
             <View style={styles.presetsRow}>
-              {currentPresets.map((val) => (
-                <TouchableOpacity
-                  key={val}
-                  style={[styles.presetChip, { backgroundColor: cardSubtle, borderColor: borderSubtle }]}
-                  onPress={() => handleAddIncrement(val)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.presetChipText, { color: textPrimary }]}>
-                    +₹{val >= 100000 ? `${val / 100000}L` : val >= 1000 ? `${val / 1000}k` : val}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+              {currentPresets.map((val) => {
+                const isLarge = val >= 1000;
+                return (
+                  <TouchableOpacity
+                    key={val}
+                    style={[
+                      styles.presetChip,
+                      {
+                        backgroundColor: isLarge
+                          ? (isDark ? 'rgba(16, 185, 129, 0.12)' : '#ECFDF5')
+                          : cardSubtle,
+                        borderColor: isLarge
+                          ? (isDark ? 'rgba(16, 185, 129, 0.3)' : '#A7F3D0')
+                          : borderSubtle,
+                      },
+                    ]}
+                    onPress={() => handleAddIncrement(val)}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.presetChipText,
+                        {
+                          color: isLarge
+                            ? (isDark ? '#34D399' : '#059669')
+                            : textPrimary,
+                          fontWeight: isLarge ? '700' : '600',
+                        },
+                      ]}
+                    >
+                      +₹{val >= 100000 ? `${val / 100000}L` : val >= 1000 ? `${val / 1000}k` : val}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             {/* Description / Merchant */}

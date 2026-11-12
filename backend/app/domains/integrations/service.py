@@ -17,7 +17,6 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.core.logging import get_logger
 from app.domains.integrations.adapters import (
     get_provider_adapter,
@@ -27,7 +26,6 @@ from app.domains.integrations.models import (
     FinancialProvider,
     ProviderConnection,
     ProviderConsent,
-    ProviderSyncCursor,
 )
 from app.domains.integrations.providers import FinancialProviderService
 
@@ -39,33 +37,27 @@ MAX_WEBHOOK_AGE_SECONDS = 300
 
 class IntegrationError(Exception):
     """Base error for enterprise integrations."""
+
     pass
 
 
 class AuthenticationError(IntegrationError):
     """Authentication or webhook signature failure."""
+
     pass
 
 
 class NotFoundError(IntegrationError):
     """Requested provider or resource not found."""
+
     pass
 
 
 class BusinessLogicError(IntegrationError):
     """Business logic or missing consent constraint violation."""
+
     pass
-from app.domains.integrations.adapters import (
-    get_provider_adapter,
-    list_registered_adapters,
-)
-from app.domains.integrations.models import (
-    FinancialProvider,
-    ProviderConnection,
-    ProviderConsent,
-    ProviderSyncCursor,
-)
-from app.domains.integrations.providers import FinancialProviderService
+
 
 logger = get_logger("wealthos.integrations.service")
 
@@ -233,12 +225,17 @@ class EnterpriseIntegrationService:
 
         adapter = get_provider_adapter(provider.provider_key)
         if not adapter:
-            raise BusinessLogicError(f"No adapter registered for provider key: {provider.provider_key}")
+            raise BusinessLogicError(
+                f"No adapter registered for provider key: {provider.provider_key}"
+            )
 
         # Decrypt credentials
-        credentials = await FinancialProviderService.decrypt_provider_credentials(
-            session, tenant_id, conn.provider_id
-        ) or {}
+        credentials = (
+            await FinancialProviderService.decrypt_provider_credentials(
+                session, tenant_id, conn.provider_id
+            )
+            or {}
+        )
 
         # Fetch accounts & transactions
         accounts = await adapter.fetch_accounts(credentials)
@@ -273,6 +270,7 @@ class EnterpriseIntegrationService:
     ) -> dict[str, Any]:
         """Revoke provider connection, shred encrypted credentials, and revoke DPDP consent."""
         from sqlalchemy import delete
+
         from app.domains.integrations.models import ProviderCredential
 
         stmt = select(ProviderConnection).where(
@@ -324,7 +322,7 @@ class EnterpriseIntegrationService:
         secret: str,
     ) -> bool:
         """Verify HMAC-SHA256 signature and replay prevention timestamp window.
-        
+
         Header format expected:
         - X-WealthOS-Signature: hex string of HMAC-SHA256(secret, timestamp + "." + body)
         - X-WealthOS-Timestamp: unix timestamp string (seconds)
@@ -344,10 +342,8 @@ class EnterpriseIntegrationService:
             )
 
         # Compute HMAC over "{ts}.{payload}"
-        signed_payload = f"{ts}.".encode("utf-8") + payload_bytes
-        expected_sig = hmac.new(
-            secret.encode("utf-8"), signed_payload, hashlib.sha256
-        ).hexdigest()
+        signed_payload = f"{ts}.".encode() + payload_bytes
+        expected_sig = hmac.new(secret.encode("utf-8"), signed_payload, hashlib.sha256).hexdigest()
 
         if not hmac.compare_digest(expected_sig, signature_header):
             raise AuthenticationError("Invalid webhook HMAC-SHA256 signature.")

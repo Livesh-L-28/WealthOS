@@ -21,13 +21,64 @@
     --accent: #6475D8;
   }
 
+  .dark {
+    --canvas: #0B0F17;
+    --surface: #111827;
+    --card: #111827;
+    --card-hover: #161F30;
+    --border-subtle: #1E293B;
+    --border-default: rgba(255, 255, 255, 0.08);
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+    --primary: #10B981;
+    --primary-dark: #059669;
+    --positive: #10B981;
+    --negative: #FB7185;
+    --warning: #FBBF24;
+    --accent: #818CF8;
+  }
+
   body {
-    background-color: #F8FAFC;
-    color: #0F172A;
+    background-color: var(--canvas);
+    color: var(--text-primary);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+  }
+
+  /* Glassmorphic border and card depth utilities */
+  .glass-card {
+    background: var(--card);
+    border: 1px solid var(--border-default);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    border-color: rgba(16, 185, 129, 0.25);
+  }
+
+  /* Interactive tactile micro-press */
+  .interactive-press {
+    transition: transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .interactive-press:active {
+    transform: scale(0.98);
+  }
+
+  /* Subtle ambient milestone glow */
+  .glow-emerald {
+    box-shadow: 0 0 24px -4px rgba(16, 185, 129, 0.15);
+  }
+
+  /* Currency symbol de-emphasis for financial scannability */
+  .currency-symbol {
+    font-size: 0.82em;
+    opacity: 0.75;
+    font-weight: 500;
+    margin-right: 0.1em;
   }
 
   /* Accessible focus indicators for keyboard navigation */

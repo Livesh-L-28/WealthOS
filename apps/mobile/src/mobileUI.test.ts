@@ -21,11 +21,11 @@ describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
       expect(theme.colors.canvas).toBe('#F8FAFC');
       expect(theme.colors.surface).toBe('#FFFFFF');
       expect(theme.colors.border).toBe('#E2E8F0');
-      expect(theme.colors.primary).toBe('#2563EB');
-      expect(theme.colors.primaryDark).toBe('#1D4ED8');
+      expect(theme.colors.primary).toBe('#059669');
+      expect(theme.colors.primaryDark).toBe('#047857');
       expect(theme.colors.textPrimary).toBe('#0F172A');
       expect(theme.colors.textSecondary).toBe('#475569');
-      expect(theme.colors.negative).toBe('#DC2626');
+      expect(theme.colors.negative).toBe('#E11D48');
     });
 
     it('provides chart and asset class series colors matching web standards', () => {
@@ -210,9 +210,9 @@ describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
     it('verifies theme surface and primary contrast foundation', () => {
       expect(theme.colors.surface).toBe('#FFFFFF');
       expect(theme.colors.canvas).toBe('#F8FAFC');
-      expect(theme.colors.primary).toBe('#2563EB');
-      expect(theme.colors.primaryDark).toBe('#1D4ED8');
-      expect(theme.colors.danger).toBe('#DC2626');
+      expect(theme.colors.primary).toBe('#059669');
+      expect(theme.colors.primaryDark).toBe('#047857');
+      expect(theme.colors.danger).toBe('#E11D48');
     });
 
     it('verifies transaction ledger initial categories and presets', () => {

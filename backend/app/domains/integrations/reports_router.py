@@ -1,13 +1,9 @@
 """WealthOS Certified Financial Reports REST API Endpoints."""
 
-import uuid
-from typing import Any
-
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import settings
 from app.core.database import get_db_session
 from app.core.security import TenantContext, get_current_tenant_context
 from app.domains.integrations.reports import FinancialReportGenerator
@@ -52,11 +48,61 @@ async def generate_financial_report(
             "Realized Gain",
         ]
         rows = [
-            ["Reliance Industries Ltd", "INE002A01018", "2024-04-12", "2026-10-15", 50, 2400.00, 2980.00, "LTCG", 29000.00],
-            ["Tata Consultancy Services", "INE467B01029", "2025-01-10", "2026-11-02", 20, 3650.00, 4120.00, "LTCG", 9400.00],
-            ["HDFC Bank Ltd", "INE040A01034", "2026-06-18", "2026-10-28", 100, 1520.00, 1680.00, "STCG", 16000.00],
-            ["ICICI Prudential Bharat 22 ETF", "INF109KB11X6", "2024-11-20", "2026-09-14", 500, 68.50, 104.20, "LTCG", 17850.00],
-            ["Sovereign Gold Bond 2018-19", "IN0020180123", "2018-11-05", "2026-11-05", 25, 3146.00, 7820.00, "LTCG (Exempt)", 116850.00],
+            [
+                "Reliance Industries Ltd",
+                "INE002A01018",
+                "2024-04-12",
+                "2026-10-15",
+                50,
+                2400.00,
+                2980.00,
+                "LTCG",
+                29000.00,
+            ],
+            [
+                "Tata Consultancy Services",
+                "INE467B01029",
+                "2025-01-10",
+                "2026-11-02",
+                20,
+                3650.00,
+                4120.00,
+                "LTCG",
+                9400.00,
+            ],
+            [
+                "HDFC Bank Ltd",
+                "INE040A01034",
+                "2026-06-18",
+                "2026-10-28",
+                100,
+                1520.00,
+                1680.00,
+                "STCG",
+                16000.00,
+            ],
+            [
+                "ICICI Prudential Bharat 22 ETF",
+                "INF109KB11X6",
+                "2024-11-20",
+                "2026-09-14",
+                500,
+                68.50,
+                104.20,
+                "LTCG",
+                17850.00,
+            ],
+            [
+                "Sovereign Gold Bond 2018-19",
+                "IN0020180123",
+                "2018-11-05",
+                "2026-11-05",
+                25,
+                3146.00,
+                7820.00,
+                "LTCG (Exempt)",
+                116850.00,
+            ],
         ]
         title = f"Capital Gains Tax Schedule (Schedule CG) — FY {payload.fiscal_year}"
     elif rtype == "PROFIT_AND_LOSS":
@@ -71,7 +117,13 @@ async def generate_financial_report(
         ]
         title = f"Profit & Loss / Cash Flow Statement — FY {payload.fiscal_year}"
     else:
-        headers = ["Account / Asset Class", "Classification", "Book Value", "Market Value", "Allocation %"]
+        headers = [
+            "Account / Asset Class",
+            "Classification",
+            "Book Value",
+            "Market Value",
+            "Allocation %",
+        ]
         rows = [
             ["HDFC Savings & Liquid Sweep", "Current Asset", 1250000.00, 1250000.00, "22.9%"],
             ["Zerodha Demat Portfolio", "Equity Investments", 2450000.00, 3120000.00, "57.2%"],
@@ -85,20 +137,25 @@ async def generate_financial_report(
         return Response(
             content=pdf_bytes,
             media_type="application/pdf",
-            headers={"Content-Disposition": f'attachment; filename="wealthos_{rtype.lower()}_{payload.fiscal_year}.pdf"'},
+            headers={
+                "Content-Disposition": f'attachment; filename="wealthos_{rtype.lower()}_{payload.fiscal_year}.pdf"'
+            },
         )
     elif fmt == "EXCEL":
         xlsx_bytes = FinancialReportGenerator.generate_excel("Report", headers, rows)
         return Response(
             content=xlsx_bytes,
             media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": f'attachment; filename="wealthos_{rtype.lower()}_{payload.fiscal_year}.xlsx"'},
+            headers={
+                "Content-Disposition": f'attachment; filename="wealthos_{rtype.lower()}_{payload.fiscal_year}.xlsx"'
+            },
         )
     else:
         csv_bytes = FinancialReportGenerator.generate_csv(headers, rows)
         return Response(
             content=csv_bytes,
             media_type="text/csv",
-            headers={"Content-Disposition": f'attachment; filename="wealthos_{rtype.lower()}_{payload.fiscal_year}.csv"'},
+            headers={
+                "Content-Disposition": f'attachment; filename="wealthos_{rtype.lower()}_{payload.fiscal_year}.csv"'
+            },
         )
-

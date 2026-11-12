@@ -267,10 +267,10 @@ describe('WealthOS Master Mobile Functions & Interactive Integrity Suite', () =>
     it('validates light and dark theme contrast tokens', () => {
       expect(lightTheme.isDark).toBe(false);
       expect(darkTheme.isDark).toBe(true);
-      expect(lightTheme.colors.primary).toBe('#2563EB'); // Fintech Blue
-      expect(darkTheme.colors.primary).toBe('#3B82F6'); // Bright Blue in Dark
+      expect(lightTheme.colors.primary).toBe('#059669'); // Precision Emerald Light
+      expect(darkTheme.colors.primary).toBe('#10B981'); // Radiant Emerald Dark
       expect(lightTheme.colors.canvas).toBe('#F8FAFC'); // Neutral Slate
-      expect(darkTheme.colors.canvas).toBe('#0B0F19'); // Deep Slate
+      expect(darkTheme.colors.canvas).toBe('#0B0F17'); // Deep Obsidian Canvas
     });
   });
 });
