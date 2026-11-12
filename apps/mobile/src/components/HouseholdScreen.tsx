@@ -7,7 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { formatINR } from '../formatters';
 import { householdService } from '../api/domainServices';
 import { HouseholdMember } from '../types';
@@ -43,27 +43,34 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
     return () => { isMounted = false; };
   }, []);
 
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   const totalJointWealth = members.reduce(
     (sum, m) => sum + (m.sharedAssets - m.sharedLiabilities),
     0
   );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={[styles.container, { backgroundColor: canvasBg }]} showsVerticalScrollIndicator={false}>
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { borderBottomColor: borderColor }]}>
         <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backLabel}>Overview</Text>
+          <Text style={[styles.backArrow, { color: textSecondary }]}>‹</Text>
+          <Text style={[styles.backLabel, { color: textSecondary }]}>Overview</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Household & Shared Wealth</Text>
+        <Text style={[styles.screenTitle, { color: textPrimary }]}>Household & Shared Wealth</Text>
         <View style={styles.topRightBadge}>
           <Text style={styles.topRightBadgeText}>JOINT</Text>
         </View>
       </View>
 
       {/* Joint Wealth Hero Card */}
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, { backgroundColor: cardBg, borderColor }]}>
         <Text style={styles.heroEyebrow}>COMBINED HOUSEHOLD NET WEALTH</Text>
         <Text style={styles.heroValue}>{formatINR(totalJointWealth)}</Text>
         <Text style={styles.heroSubtext}>
@@ -119,7 +126,7 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
           </View>
         ) : (
           members.map((m) => (
-          <View key={m.id} style={styles.memberCard}>
+          <View key={m.id} style={[styles.memberCard, { backgroundColor: cardBg, borderColor }]}>
             <View style={styles.memberTopRow}>
               <View style={styles.memberAvatar}>
                 <Text style={styles.memberAvatarText}>
@@ -187,7 +194,7 @@ export const HouseholdScreen: React.FC<HouseholdScreenProps> = ({
         <Text style={styles.sectionCount}>Joint Commitments</Text>
       </View>
 
-      <View style={styles.envelopesCard}>
+      <View style={[styles.envelopesCard, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.envelopeItem}>
           <View style={styles.envelopeTopRow}>
             <Text style={styles.envelopeName}>Shared Family Residence & Living</Text>

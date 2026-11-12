@@ -8,7 +8,7 @@ import {
   LayoutChangeEvent,
 } from 'react-native';
 import Svg, { Rect, Line, Text as SvgText } from 'react-native-svg';
-import { theme } from '../../theme';
+import { theme, useTheme } from '../../theme';
 import { formatINR } from '../../formatters';
 import { Transaction } from '../../types';
 
@@ -132,24 +132,31 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
   const barW = Math.min(18, (plotW / Math.max(1, cashFlowHistory.length)) * 0.28);
   const groupSpacing = plotW / Math.max(1, cashFlowHistory.length);
 
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const boxBg = isDark ? '#1E293B' : '#F8FAFC';
+
   return (
-    <View style={styles.card} onLayout={onLayout}>
+    <View style={[styles.card, { backgroundColor: cardBg, borderColor }]} onLayout={onLayout}>
       {/* Header */}
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.title}>CASH FLOW INFLOW VS OUTFLOW</Text>
-          <Text style={styles.subtitle}>Net Monthly Savings Trajectory</Text>
+          <Text style={[styles.title, { color: textSecondary }]}>CASH FLOW INFLOW VS OUTFLOW</Text>
+          <Text style={[styles.subtitle, { color: isDark ? '#64748B' : '#94A3B8' }]}>Net Monthly Savings Trajectory</Text>
         </View>
 
         {onOpenAnalytics && (
           <TouchableOpacity
-            style={styles.analyticsBtn}
+            style={[styles.analyticsBtn, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0' }]}
             onPress={onOpenAnalytics}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Open Cash Flow Analytics"
           >
-            <Text style={styles.analyticsBtnText}>Analytics ›</Text>
+            <Text style={[styles.analyticsBtnText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Analytics ›</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -157,17 +164,17 @@ export const MobileCashFlowBarChart: React.FC<MobileCashFlowBarChartProps> = ({
       {!hasData || cashFlowHistory.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📊</Text>
-          <Text style={styles.emptyTitle}>No Cash Flow Data Yet</Text>
-          <Text style={styles.emptySubtitle}>
+          <Text style={[styles.emptyTitle, { color: textPrimary }]}>No Cash Flow Data Yet</Text>
+          <Text style={[styles.emptySubtitle, { color: textSecondary }]}>
             Monthly cash inflows and expenditure burn will be automatically plotted here as you record income and expenses.
           </Text>
         </View>
       ) : (
         <>
           {/* Active Month KPI Summary */}
-          <View style={styles.kpiRow}>
+          <View style={[styles.kpiRow, { backgroundColor: boxBg }]}>
             <View>
-              <Text style={styles.kpiMonthLabel}>{activeMonth.fullLabel}</Text>
+              <Text style={[styles.kpiMonthLabel, { color: textPrimary }]}>{activeMonth.fullLabel}</Text>
               <View style={styles.inOutRow}>
                 <View style={styles.metricItem}>
                   <View style={[styles.dot, { backgroundColor: '#16A36A' }]} />

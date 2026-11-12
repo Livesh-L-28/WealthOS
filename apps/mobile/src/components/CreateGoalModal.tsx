@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { FinancialGoal } from '../types';
 
 interface CreateGoalModalProps {
@@ -25,7 +25,7 @@ const GOAL_PRESETS = [
   { title: 'Global Vacation', target: '750000', year: '2027', icon: '🏖️', color: '#F59E0B' },
   { title: 'Child Higher Education', target: '5000000', year: '2030', icon: '🎓', color: '#8B5CF6' },
   { title: 'Beach Villa Downpayment', target: '8000000', year: '2029', icon: '🏡', color: '#EC4899' },
-  { title: 'Other / Custom Goal', target: '1000000', year: '2030', icon: '✨', color: '#16A36A' },
+  { title: 'Other / Custom Goal', target: '1000000', year: '2030', icon: '✨', color: '#10B981' },
 ];
 
 export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
@@ -33,6 +33,15 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { isDark } = useTheme();
+  const sheetBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const inputBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const cardSubtle = isDark ? '#1E293B' : '#F1F5F9';
+  const borderSubtle = isDark ? '#334155' : '#CBD5E1';
+
   const [selectedPreset, setSelectedPreset] = useState(GOAL_PRESETS[1]);
   const [goalTitle, setGoalTitle] = useState(GOAL_PRESETS[1].title);
   const [targetAmount, setTargetAmount] = useState(GOAL_PRESETS[1].target);
@@ -49,134 +58,133 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
   const handleSubmit = () => {
     const target = parseFloat(targetAmount) || 1000000;
     const current = parseFloat(savedAmount) || 0;
+    const progress = target > 0 ? (current / target) * 100 : 0;
+
     const newGoal: FinancialGoal = {
       id: `goal-${Date.now()}`,
       title: goalTitle.trim() || selectedPreset.title,
       targetAmount: target,
       currentAmount: current,
       targetYear: parseInt(targetYear, 10) || 2028,
-      category: 'Strategic Corpus',
-      monthlySavingsTarget: Math.round(target / 36),
+      category: 'WEALTH_CREATION',
     };
+
     onSubmit(newGoal);
     onClose();
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView
-        style={styles.modalOverlay}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.modalOverlay}
       >
-        <View style={styles.sheetContainer}>
-          <View style={styles.handleBar} />
+        <View style={[styles.modalSheet, { backgroundColor: sheetBg, borderColor }]}>
+          <View style={[styles.handleBar, { backgroundColor: borderSubtle }]} />
 
-          <View style={styles.modalHeader}>
+          <View style={[styles.headerRow, { borderBottomColor: borderColor }]}>
             <View>
-              <Text style={styles.modalTitle}>Set Financial Milestone</Text>
-              <Text style={styles.modalSubtitle}>Strategic Horizon & Capital Allocation</Text>
+              <Text style={[styles.modalTitle, { color: textPrimary }]}>Create Financial Milestone</Text>
+              <Text style={[styles.modalSubtitle, { color: textSecondary }]}>Model required SIP & target horizon</Text>
             </View>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
-              <Text style={styles.closeBtnText}>✕</Text>
+            <TouchableOpacity style={[styles.closeBtn, { backgroundColor: cardSubtle }]} onPress={onClose} activeOpacity={0.7}>
+              <Text style={[styles.closeBtnText, { color: textSecondary }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-            {/* Quick Presets */}
-            <Text style={styles.fieldLabel}>MILESTONE TEMPLATES</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.presetsRow}
-            >
+          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
+            {/* Presets Grid */}
+            <Text style={[styles.label, { color: textSecondary }]}>MILESTONE BLUEPRINTS</Text>
+            <View style={styles.presetsGrid}>
               {GOAL_PRESETS.map((p) => {
-                const isSelected = selectedPreset.title === p.title;
+                const isActive = selectedPreset.title === p.title;
                 return (
                   <TouchableOpacity
                     key={p.title}
-                    style={[styles.presetChip, isSelected && styles.presetChipActive]}
+                    style={[
+                      styles.presetCard,
+                      {
+                        backgroundColor: isActive
+                          ? isDark ? 'rgba(59, 130, 246, 0.25)' : '#EFF6FF'
+                          : cardSubtle,
+                        borderColor: isActive
+                          ? isDark ? '#3B82F6' : '#2563EB'
+                          : borderSubtle,
+                      },
+                    ]}
                     onPress={() => handleSelectPreset(p)}
                     activeOpacity={0.7}
                   >
                     <Text style={styles.presetIcon}>{p.icon}</Text>
-                    <Text style={[styles.presetText, isSelected && styles.presetTextActive]}>
-                      {p.title.split(' ')[0]}
+                    <Text
+                      style={[
+                        styles.presetCardTitle,
+                        { color: isActive ? (isDark ? '#60A5FA' : '#2563EB') : textPrimary },
+                        isActive && { fontWeight: '800' },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {p.title}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
-            </ScrollView>
+            </View>
 
-            {/* Goal Title */}
-            <Text style={styles.fieldLabel}>GOAL TITLE</Text>
+            {/* Custom Goal Name */}
+            <Text style={[styles.label, { color: textSecondary }]}>GOAL TITLE</Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
+              placeholder="e.g. Dream House Fund"
+              placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
               value={goalTitle}
               onChangeText={setGoalTitle}
-              placeholder="e.g. Electric SUV Purchase"
-              placeholderTextColor={theme.colors.textTertiary}
             />
 
             {/* Target Amount */}
-            <Text style={styles.fieldLabel}>TARGET CORPUS (₹)</Text>
-            <View style={styles.amountInputRow}>
-              <Text style={styles.currencyPrefix}>₹</Text>
+            <Text style={[styles.label, { color: textSecondary }]}>TARGET CORPUS (INR)</Text>
+            <View style={[styles.amountInputRow, { backgroundColor: inputBg, borderColor: borderSubtle }]}>
+              <Text style={[styles.currencyPrefix, { color: isDark ? '#3B82F6' : '#2563EB' }]}>₹</Text>
               <TextInput
-                style={styles.amountInput}
+                style={[styles.amountInput, { color: textPrimary }]}
+                keyboardType="numeric"
                 value={targetAmount}
                 onChangeText={setTargetAmount}
-                keyboardType="numeric"
-                placeholder="2500000"
-                placeholderTextColor={theme.colors.textTertiary}
+                placeholder="25,00,000"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
               />
             </View>
 
-            {/* Current Saved Initial */}
-            <Text style={styles.fieldLabel}>INITIAL CAPITAL ALLOCATED (₹)</Text>
-            <View style={styles.amountInputRow}>
-              <Text style={styles.currencyPrefix}>₹</Text>
-              <TextInput
-                style={styles.amountInput}
-                value={savedAmount}
-                onChangeText={setSavedAmount}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={theme.colors.textTertiary}
-              />
+            {/* Row: Currently Saved & Target Year */}
+            <View style={styles.rowTwoCols}>
+              <View style={styles.col}>
+                <Text style={[styles.label, { color: textSecondary }]}>CURRENT CAPITAL (₹)</Text>
+                <TextInput
+                  style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
+                  placeholder="0"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  keyboardType="numeric"
+                  value={savedAmount}
+                  onChangeText={setSavedAmount}
+                />
+              </View>
+
+              <View style={styles.col}>
+                <Text style={[styles.label, { color: textSecondary }]}>TARGET YEAR</Text>
+                <TextInput
+                  style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
+                  placeholder="2028"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  keyboardType="numeric"
+                  value={targetYear}
+                  onChangeText={setTargetYear}
+                />
+              </View>
             </View>
 
-            {/* Target Year Selector */}
-            <Text style={styles.fieldLabel}>HORIZON TARGET YEAR</Text>
-            <View style={styles.yearsRow}>
-              {['2026', '2027', '2028', '2030', '2035'].map((y) => {
-                const isSelected = targetYear === y;
-                return (
-                  <TouchableOpacity
-                    key={y}
-                    style={[styles.yearBtn, isSelected && styles.yearBtnActive]}
-                    onPress={() => setTargetYear(y)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[styles.yearText, isSelected && styles.yearTextActive]}>
-                      {y}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Submit */}
-            <TouchableOpacity
-              style={styles.submitBtn}
-              onPress={handleSubmit}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.submitBtnText}>+ Establish Strategic Goal</Text>
+            {/* Submit Button */}
+            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.8}>
+              <Text style={styles.submitBtnText}>+ Activate Goal Tracking</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -188,175 +196,138 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(23, 35, 29, 0.65)',
+    backgroundColor: 'rgba(9, 13, 22, 0.75)',
     justifyContent: 'flex-end',
   },
-  sheetContainer: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
+  modalSheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    maxHeight: '90%',
     paddingBottom: 24,
   },
   handleBar: {
-    width: 40,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: theme.colors.borderStrong,
     alignSelf: 'center',
-    marginTop: 8,
+    marginTop: 10,
     marginBottom: 6,
   },
-  modalHeader: {
+  headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 18,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   modalTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: theme.colors.textPrimary,
   },
   modalSubtitle: {
     fontSize: 11,
-    color: theme.colors.textTertiary,
     marginTop: 2,
   },
   closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surfaceElevated,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: theme.colors.textSecondary,
   },
-  modalBody: {
-    paddingHorizontal: 18,
-    paddingTop: 12,
+  formBody: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
   },
-  fieldLabel: {
-    fontSize: 10,
+  label: {
+    fontSize: 11,
     fontWeight: '800',
-    color: theme.colors.textSecondary,
     letterSpacing: 0.5,
-    marginTop: 12,
+    marginTop: 10,
     marginBottom: 6,
   },
-  presetsRow: {
+  presetsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
-    paddingBottom: 4,
+    marginBottom: 10,
   },
-  presetChip: {
+  presetCard: {
+    width: '48%',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: theme.colors.canvas,
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  presetChipActive: {
-    backgroundColor: theme.colors.primaryLightSolid,
-    borderColor: theme.colors.primary,
   },
   presetIcon: {
-    fontSize: 13,
+    fontSize: 15,
   },
-  presetText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-  },
-  presetTextActive: {
-    color: theme.colors.primaryDark,
+  presetCardTitle: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    flex: 1,
   },
   textInput: {
-    backgroundColor: theme.colors.canvas,
     borderWidth: 1,
-    borderColor: theme.colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
+    marginBottom: 10,
   },
   amountInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.canvas,
     borderWidth: 1,
-    borderColor: theme.colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
+    marginBottom: 10,
   },
   currencyPrefix: {
     fontSize: 18,
     fontWeight: '800',
-    color: theme.colors.primaryDark,
     marginRight: 6,
   },
   amountInput: {
     flex: 1,
     fontSize: 18,
     fontWeight: '800',
-    color: theme.colors.textPrimary,
-    fontFamily: theme.typography.monoFont,
     paddingVertical: 10,
+    fontVariant: ['tabular-nums'],
   },
-  yearsRow: {
+  rowTwoCols: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 12,
   },
-  yearBtn: {
+  col: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.canvas,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  yearBtnActive: {
-    backgroundColor: theme.colors.primaryLightSolid,
-    borderColor: theme.colors.primary,
-  },
-  yearText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-  },
-  yearTextActive: {
-    color: theme.colors.primaryDark,
   },
   submitBtn: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#2563EB',
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 18,
+    marginTop: 8,
     marginBottom: 20,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: '#2563EB',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 5,
+    shadowRadius: 4,
     elevation: 3,
   },
   submitBtnText: {
-    color: theme.colors.textWhite,
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '800',
   },

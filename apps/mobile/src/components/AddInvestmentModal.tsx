@@ -10,7 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { InvestmentHolding } from '../types';
 
 interface AddInvestmentModalProps {
@@ -20,10 +20,10 @@ interface AddInvestmentModalProps {
 }
 
 const ASSET_CLASSES: { id: InvestmentHolding['type']; label: string; icon: string; color: string }[] = [
-  { id: 'EQUITY', label: 'Equities', icon: '📈', color: '#16A36A' },
-  { id: 'MUTUAL_FUND', label: 'Mutual Funds', icon: '📊', color: '#6475D8' },
-  { id: 'GOLD', label: 'Gold (SGB)', icon: '🪙', color: '#D99A32' },
-  { id: 'FIXED_INCOME', label: 'Fixed Income', icon: '🏦', color: '#0D9488' },
+  { id: 'EQUITY', label: 'Equities', icon: '📈', color: '#10B981' },
+  { id: 'MUTUAL_FUND', label: 'Mutual Funds', icon: '📊', color: '#3B82F6' },
+  { id: 'GOLD', label: 'Gold (SGB)', icon: '🪙', color: '#F59E0B' },
+  { id: 'FIXED_INCOME', label: 'Fixed Income', icon: '🏦', color: '#06B6D4' },
 ];
 
 export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
@@ -31,6 +31,15 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const { isDark } = useTheme();
+  const sheetBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const inputBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const cardSubtle = isDark ? '#1E293B' : '#F1F5F9';
+  const borderSubtle = isDark ? '#334155' : '#CBD5E1';
+
   const [assetClass, setAssetClass] = useState<InvestmentHolding['type']>('EQUITY');
   const [assetName, setAssetName] = useState('');
   const [symbol, setSymbol] = useState('');
@@ -48,9 +57,9 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
     const pnlPercent = invested > 0 ? (pnl / invested) * 100 : 0;
 
     const newHolding: InvestmentHolding = {
-      id: `hold-${Date.now()}`,
-      symbol: symbol.trim().toUpperCase() || 'NEWASSET',
-      name: assetName.trim() || 'New Holding',
+      id: `inv-${Date.now()}`,
+      symbol: symbol.toUpperCase() || 'EQUITY',
+      name: assetName.trim() || 'Investment Asset',
       type: assetClass,
       quantity: qty,
       avgBuyPrice: avgPrice,
@@ -59,53 +68,66 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
       currentValue: current,
       pnl: pnl,
       pnlPercentage: pnlPercent,
-      fifoLotAge: 'LTCG (> 365d)',
+      fifoLotAge: 'Recent',
     };
 
     onSubmit(newHolding);
+    setAssetName('');
+    setSymbol('');
     onClose();
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView
-        style={styles.modalOverlay}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.modalOverlay}
       >
-        <View style={styles.sheetContainer}>
-          <View style={styles.handleBar} />
+        <View style={[styles.modalSheet, { backgroundColor: sheetBg, borderColor }]}>
+          <View style={[styles.handleBar, { backgroundColor: borderSubtle }]} />
 
-          <View style={styles.modalHeader}>
+          <View style={[styles.headerRow, { borderBottomColor: borderColor }]}>
             <View>
-              <Text style={styles.modalTitle}>Record Portfolio Asset</Text>
-              <Text style={styles.modalSubtitle}>FIFO Cost-Basis Ledger Accounting</Text>
+              <Text style={[styles.modalTitle, { color: textPrimary }]}>Add Portfolio Asset</Text>
+              <Text style={[styles.modalSubtitle, { color: textSecondary }]}>Track equities, mutual funds, or sovereign debt</Text>
             </View>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
-              <Text style={styles.closeBtnText}>✕</Text>
+            <TouchableOpacity style={[styles.closeBtn, { backgroundColor: cardSubtle }]} onPress={onClose} activeOpacity={0.7}>
+              <Text style={[styles.closeBtnText, { color: textSecondary }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
             {/* Asset Class Selector */}
-            <Text style={styles.fieldLabel}>ASSET CLASS</Text>
+            <Text style={[styles.label, { color: textSecondary }]}>ASSET CLASS</Text>
             <View style={styles.classesRow}>
-              {ASSET_CLASSES.map((ac) => {
-                const isSelected = assetClass === ac.id;
+              {ASSET_CLASSES.map((c) => {
+                const isActive = assetClass === c.id;
                 return (
                   <TouchableOpacity
-                    key={ac.id}
-                    style={[styles.classChip, isSelected && styles.classChipActive]}
-                    onPress={() => setAssetClass(ac.id)}
+                    key={c.id}
+                    style={[
+                      styles.classChip,
+                      {
+                        backgroundColor: isActive
+                          ? isDark ? 'rgba(16, 185, 129, 0.25)' : '#DCFCE7'
+                          : cardSubtle,
+                        borderColor: isActive
+                          ? isDark ? '#10B981' : '#059669'
+                          : borderSubtle,
+                      },
+                    ]}
+                    onPress={() => setAssetClass(c.id)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.classIcon}>{ac.icon}</Text>
-                    <Text style={[styles.classText, isSelected && styles.classTextActive]}>
-                      {ac.label}
+                    <Text style={styles.classIcon}>{c.icon}</Text>
+                    <Text
+                      style={[
+                        styles.classText,
+                        { color: isActive ? (isDark ? '#34D399' : '#059669') : textSecondary },
+                        isActive && { fontWeight: '800' },
+                      ]}
+                    >
+                      {c.label}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -113,71 +135,67 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
             </View>
 
             {/* Asset Name */}
-            <Text style={styles.fieldLabel}>ASSET / FUND NAME</Text>
+            <Text style={[styles.label, { color: textSecondary }]}>ASSET / SCHEME NAME</Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
+              placeholder="e.g. HDFC Bank Ltd, Parag Parikh Flexi Cap"
+              placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
               value={assetName}
               onChangeText={setAssetName}
-              placeholder="e.g. Tata Consultancy Services"
-              placeholderTextColor={theme.colors.textTertiary}
             />
 
-            {/* Ticker / Symbol */}
-            <Text style={styles.fieldLabel}>TICKER / ISIN CODE</Text>
+            {/* Symbol / Ticker */}
+            <Text style={[styles.label, { color: textSecondary }]}>SYMBOL / TICKER / ISIN</Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
+              placeholder="e.g. HDFCBANK, PPFAS, INF200K01VG3"
+              placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
               value={symbol}
               onChangeText={setSymbol}
-              placeholder="e.g. TCS.NS or INE467B01029"
-              placeholderTextColor={theme.colors.textTertiary}
               autoCapitalize="characters"
             />
 
-            {/* Units & Buy Price */}
+            {/* Row with Qty and Buy Price */}
             <View style={styles.rowTwoCols}>
               <View style={styles.col}>
-                <Text style={styles.fieldLabel}>QUANTITY (UNITS)</Text>
+                <Text style={[styles.label, { color: textSecondary }]}>QUANTITY</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
+                  placeholder="10"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  keyboardType="numeric"
                   value={quantity}
                   onChangeText={setQuantity}
-                  keyboardType="numeric"
-                  placeholder="10"
-                  placeholderTextColor={theme.colors.textTertiary}
                 />
               </View>
 
               <View style={styles.col}>
-                <Text style={styles.fieldLabel}>BUY PRICE (₹)</Text>
+                <Text style={[styles.label, { color: textSecondary }]}>BUY AVG PRICE (₹)</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
+                  placeholder="2500"
+                  placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+                  keyboardType="numeric"
                   value={buyPrice}
                   onChangeText={setBuyPrice}
-                  keyboardType="numeric"
-                  placeholder="2500"
-                  placeholderTextColor={theme.colors.textTertiary}
                 />
               </View>
             </View>
 
             {/* Current Market Price */}
-            <Text style={styles.fieldLabel}>CURRENT MARKET PRICE (LTP ₹)</Text>
+            <Text style={[styles.label, { color: textSecondary }]}>CURRENT MARKET PRICE / NAV (₹)</Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
+              placeholder="2750"
+              placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
+              keyboardType="numeric"
               value={currentPrice}
               onChangeText={setCurrentPrice}
-              keyboardType="numeric"
-              placeholder="2750"
-              placeholderTextColor={theme.colors.textTertiary}
             />
 
-            {/* Submit */}
-            <TouchableOpacity
-              style={styles.submitBtn}
-              onPress={handleSubmit}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.submitBtnText}>+ Post Asset to Portfolio</Text>
+            {/* Submit Button */}
+            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.8}>
+              <Text style={styles.submitBtnText}>+ Add Holding to Portfolio</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -189,73 +207,68 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(23, 35, 29, 0.65)',
+    backgroundColor: 'rgba(9, 13, 22, 0.75)',
     justifyContent: 'flex-end',
   },
-  sheetContainer: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
+  modalSheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1,
+    borderBottomWidth: 0,
+    maxHeight: '88%',
     paddingBottom: 24,
   },
   handleBar: {
-    width: 40,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: theme.colors.borderStrong,
     alignSelf: 'center',
-    marginTop: 8,
+    marginTop: 10,
     marginBottom: 6,
   },
-  modalHeader: {
+  headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 18,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   modalTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: theme.colors.textPrimary,
   },
   modalSubtitle: {
     fontSize: 11,
-    color: theme.colors.textTertiary,
     marginTop: 2,
   },
   closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surfaceElevated,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: theme.colors.textSecondary,
   },
-  modalBody: {
-    paddingHorizontal: 18,
-    paddingTop: 12,
+  formBody: {
+    paddingHorizontal: 20,
+    paddingTop: 14,
   },
-  fieldLabel: {
-    fontSize: 10,
+  label: {
+    fontSize: 11,
     fontWeight: '800',
-    color: theme.colors.textSecondary,
     letterSpacing: 0.5,
-    marginTop: 12,
+    marginTop: 10,
     marginBottom: 6,
   },
   classesRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginBottom: 10,
   },
   classChip: {
     flexDirection: 'row',
@@ -264,35 +277,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 10,
-    backgroundColor: theme.colors.canvas,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  classChipActive: {
-    backgroundColor: theme.colors.primaryLightSolid,
-    borderColor: theme.colors.primary,
   },
   classIcon: {
     fontSize: 12,
   },
   classText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-  },
-  classTextActive: {
-    color: theme.colors.primaryDark,
+    fontWeight: '600',
   },
   textInput: {
-    backgroundColor: theme.colors.canvas,
     borderWidth: 1,
-    borderColor: theme.colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
+    marginBottom: 12,
   },
   rowTwoCols: {
     flexDirection: 'row',
@@ -302,21 +302,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   submitBtn: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#10B981',
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 18,
+    marginTop: 12,
     marginBottom: 20,
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 5,
+    shadowRadius: 4,
     elevation: 3,
   },
   submitBtnText: {
-    color: theme.colors.textWhite,
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '800',
   },

@@ -11,7 +11,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { BankAccount } from '../types';
 
 interface AddTransactionModalProps {
@@ -52,7 +52,7 @@ const INCOME_CATEGORIES = [
   'Reimbursement / Refund',
 ];
 
-const EXPENSE_PRESETS = [500, 1000, 2500, 5000, 10000, 25000];
+const EXPENSE_PRESETS = [100, 500, 1000, 2500, 5000, 10000];
 const INCOME_PRESETS = [5000, 15000, 35000, 75000, 150000, 250000];
 
 interface HabitChip {
@@ -65,10 +65,10 @@ interface HabitChip {
 const QUICK_HABITS: HabitChip[] = [
   { icon: '☕', label: 'Coffee', amount: 150, category: 'Dining & Restaurants' },
   { icon: '⛽', label: 'Fuel', amount: 1000, category: 'Transport & Fuel' },
-  { icon: '🛒', label: 'Groceries', amount: 600, category: 'Food & Groceries' },
+  { icon: '🛒', label: 'Groceries', amount: 750, category: 'Food & Groceries' },
   { icon: '🍽️', label: 'Dining Out', amount: 850, category: 'Dining & Restaurants' },
-  { icon: '🚕', label: 'Cab / Ride', amount: 250, category: 'Transport & Fuel' },
-  { icon: '📱', label: 'Mobile / Net', amount: 299, category: 'Utilities & Bills' },
+  { icon: '🚕', label: 'Cab / Ride', amount: 300, category: 'Transport & Fuel' },
+  { icon: '📱', label: 'Mobile / Net', amount: 499, category: 'Utilities & Bills' },
 ];
 
 function parseNaturalLanguage(text: string, accounts: BankAccount[]) {
@@ -131,6 +131,15 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   initialType = 'DEBIT',
   onSubmit,
 }) => {
+  const { isDark } = useTheme();
+  const sheetBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+  const inputBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const cardSubtle = isDark ? '#1E293B' : '#F1F5F9';
+  const borderSubtle = isDark ? '#334155' : '#E2E8F0';
+
   const [type, setType] = useState<'DEBIT' | 'CREDIT'>(initialType);
   const [amount, setAmount] = useState('');
   const [title, setTitle] = useState('');
@@ -166,12 +175,20 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     if (visible) {
       setType(initialType);
       setCategory(initialType === 'CREDIT' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0]);
+      if (accounts.length > 0 && !selectedAccount) {
+        setSelectedAccount(accounts[0].name);
+      }
     }
-  }, [visible, initialType]);
+  }, [visible, initialType, accounts]);
 
   const handleTypeChange = (newType: 'DEBIT' | 'CREDIT') => {
     setType(newType);
     setCategory(newType === 'CREDIT' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0]);
+  };
+
+  const handleAddIncrement = (val: number) => {
+    const current = parseFloat(amount) || 0;
+    setAmount((current + val).toString());
   };
 
   const handleSubmit = () => {
@@ -187,12 +204,14 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
       amount: parsedAmount,
       category,
       type,
-      accountName: selectedAccount,
+      accountName: selectedAccount || 'Cash Wallet',
     });
 
     // Reset
     setAmount('');
     setTitle('');
+    setQuickInput('');
+    onClose();
   };
 
   const currentCategories = type === 'CREDIT' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -205,44 +224,78 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.modalOverlay}
       >
-        <View style={styles.modalSheet}>
-          <View style={styles.handleBar} />
+        <View style={[styles.modalSheet, { backgroundColor: sheetBg, borderColor }]}>
+          <View style={[styles.handleBar, { backgroundColor: borderSubtle }]} />
 
-          <View style={styles.headerRow}>
+          <View style={[styles.headerRow, { borderBottomColor: borderColor }]}>
             <View>
-              <Text style={styles.modalTitle}>
+              <Text style={[styles.modalTitle, { color: textPrimary }]}>
                 {isIncome ? '+ Record Income (Inflow)' : '− Record Expense (Outflow)'}
               </Text>
-              <Text style={styles.modalSubtitle}>
+              <Text style={[styles.modalSubtitle, { color: textSecondary }]}>
                 {isIncome
                   ? 'Double-Entry Inflow Posted to Bank Ledger'
                   : 'Double-Entry Expense Debited from Account'}
               </Text>
             </View>
-            <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
-              <Text style={styles.closeBtnText}>✕</Text>
+            <TouchableOpacity
+              style={[styles.closeBtn, { backgroundColor: cardSubtle }]}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.closeBtnText, { color: textSecondary }]}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
             {/* Primary Income / Expense Mode Switcher */}
-            <View style={styles.typeSwitcher}>
+            <View style={[styles.typeSwitcher, { backgroundColor: isDark ? '#0B0F19' : '#EEF2EF' }]}>
               <TouchableOpacity
-                style={[styles.typeBtn, !isIncome && styles.typeBtnDebitActive]}
+                style={[
+                  styles.typeBtn,
+                  !isIncome && [
+                    styles.typeBtnDebitActive,
+                    {
+                      backgroundColor: isDark ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2',
+                      borderColor: isDark ? '#EF4444' : '#FECACA',
+                    },
+                  ],
+                ]}
                 onPress={() => handleTypeChange('DEBIT')}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.typeBtnText, !isIncome && styles.typeBtnTextDebitActive]}>
+                <Text
+                  style={[
+                    styles.typeBtnText,
+                    { color: textSecondary },
+                    !isIncome && { color: isDark ? '#F87171' : '#DC2626', fontWeight: '800' },
+                  ]}
+                >
                   ↑ Expense (Outflow)
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.typeBtn, isIncome && styles.typeBtnCreditActive]}
+                style={[
+                  styles.typeBtn,
+                  isIncome && [
+                    styles.typeBtnCreditActive,
+                    {
+                      backgroundColor: isDark ? 'rgba(16, 185, 129, 0.2)' : '#DCFCE7',
+                      borderColor: isDark ? '#10B981' : '#BBF7D0',
+                    },
+                  ],
+                ]}
                 onPress={() => handleTypeChange('CREDIT')}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.typeBtnText, isIncome && styles.typeBtnTextCreditActive]}>
+                <Text
+                  style={[
+                    styles.typeBtnText,
+                    { color: textSecondary },
+                    isIncome && { color: isDark ? '#34D399' : '#059669', fontWeight: '800' },
+                  ]}
+                >
                   ↓ Income (Inflow)
                 </Text>
               </TouchableOpacity>
@@ -251,18 +304,26 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             {/* 1-Tap Frictionless Habit Chips (Daily Spends) */}
             {!isIncome && (
               <View style={styles.habitsSection}>
-                <Text style={styles.habitsLabel}>⚡ 1-TAP QUICK LOG HABITS</Text>
+                <Text style={[styles.habitsLabel, { color: textSecondary }]}>⚡ 1-TAP QUICK LOG HABITS</Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.habitsScroll}>
                   {QUICK_HABITS.map((h, i) => (
                     <TouchableOpacity
                       key={i}
-                      style={styles.habitChip}
+                      style={[
+                        styles.habitChip,
+                        {
+                          backgroundColor: cardSubtle,
+                          borderColor: borderSubtle,
+                        },
+                      ]}
                       onPress={() => handleApplyHabit(h)}
                       activeOpacity={0.75}
                     >
                       <Text style={styles.habitChipIcon}>{h.icon}</Text>
-                      <Text style={styles.habitChipText}>{h.label}</Text>
-                      <Text style={styles.habitChipAmount}>₹{h.amount}</Text>
+                      <Text style={[styles.habitChipText, { color: textPrimary }]}>{h.label}</Text>
+                      <Text style={[styles.habitChipAmount, { color: isDark ? '#38BDF8' : '#2563EB' }]}>
+                        ₹{h.amount}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -270,17 +331,17 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             )}
 
             {/* Natural Language Quick Input */}
-            <View style={styles.nlBox}>
+            <View style={[styles.nlBox, { backgroundColor: cardSubtle, borderColor: borderSubtle }]}>
               <View style={styles.nlLabelRow}>
-                <Text style={styles.nlLabel}>SMART ONE-LINER QUICK PARSER</Text>
+                <Text style={[styles.nlLabel, { color: textSecondary }]}>SMART ONE-LINER QUICK PARSER</Text>
                 <View style={styles.nlAiBadge}>
-                  <Text style={styles.nlAiBadgeText}>Instant</Text>
+                  <Text style={styles.nlAiBadgeText}>⚡ Instant</Text>
                 </View>
               </View>
               <TextInput
-                style={styles.nlInput}
+                style={[styles.nlInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
                 placeholder="e.g. 'Coffee 150 Cash', 'Dinner 850 HDFC', 'Salary 150000'"
-                placeholderTextColor="#94A3B8"
+                placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
                 value={quickInput}
                 onChangeText={handleQuickInputChange}
                 autoCapitalize="sentences"
@@ -288,17 +349,35 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             </View>
 
             {/* Amount Input */}
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: textSecondary }]}>
               {isIncome ? 'INCOME AMOUNT (INR)' : 'EXPENSE AMOUNT (INR)'}
             </Text>
-            <View style={[styles.amountInputRow, isIncome ? styles.borderGreen : styles.borderRed]}>
-              <Text style={[styles.currencySymbol, isIncome ? styles.textGreen : styles.textRed]}>
+            <View
+              style={[
+                styles.amountInputRow,
+                {
+                  backgroundColor: inputBg,
+                  borderColor: isIncome
+                    ? isDark ? '#10B981' : '#059669'
+                    : isDark ? '#EF4444' : '#DC2626',
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.currencySymbol,
+                  { color: isIncome ? (isDark ? '#34D399' : '#059669') : (isDark ? '#F87171' : '#DC2626') },
+                ]}
+              >
                 ₹
               </Text>
               <TextInput
-                style={[styles.amountInput, isIncome ? styles.textGreen : styles.textRed]}
+                style={[
+                  styles.amountInput,
+                  { color: isIncome ? (isDark ? '#34D399' : '#059669') : (isDark ? '#F87171' : '#DC2626') },
+                ]}
                 placeholder="0.00"
-                placeholderTextColor={theme.colors.textMuted}
+                placeholderTextColor={isDark ? '#475569' : '#94A3B8'}
                 keyboardType="numeric"
                 value={amount}
                 onChangeText={setAmount}
@@ -306,16 +385,16 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
               />
             </View>
 
-            {/* Quick Presets */}
+            {/* Quick Presets & Increment Buttons */}
             <View style={styles.presetsRow}>
               {currentPresets.map((val) => (
                 <TouchableOpacity
                   key={val}
-                  style={styles.presetChip}
-                  onPress={() => setAmount(val.toString())}
+                  style={[styles.presetChip, { backgroundColor: cardSubtle, borderColor: borderSubtle }]}
+                  onPress={() => handleAddIncrement(val)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.presetChipText}>
+                  <Text style={[styles.presetChipText, { color: textPrimary }]}>
                     +₹{val >= 100000 ? `${val / 100000}L` : val >= 1000 ? `${val / 1000}k` : val}
                   </Text>
                 </TouchableOpacity>
@@ -323,23 +402,23 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             </View>
 
             {/* Description / Merchant */}
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: textSecondary }]}>
               {isIncome ? 'SOURCE / CLIENT / PAYER' : 'DESCRIPTION / MERCHANT'}
             </Text>
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { backgroundColor: inputBg, borderColor: borderSubtle, color: textPrimary }]}
               placeholder={
                 isIncome
                   ? 'e.g. Infy Advisory Retainer, TCS Dividend, Salary'
                   : 'e.g. Whole Foods Organic, Amazon AWS, Shell Fuel'
               }
-              placeholderTextColor={theme.colors.textMuted}
+              placeholderTextColor={isDark ? '#64748B' : '#94A3B8'}
               value={title}
               onChangeText={setTitle}
             />
 
             {/* Category Selector */}
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: textSecondary }]}>
               {isIncome ? 'INCOME CATEGORY' : 'EXPENSE CATEGORY'}
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll}>
@@ -350,7 +429,18 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                     key={cat}
                     style={[
                       styles.catChip,
-                      isSelected && (isIncome ? styles.catChipGreenActive : styles.catChipRedActive),
+                      {
+                        backgroundColor: isSelected
+                          ? isIncome
+                            ? isDark ? 'rgba(16, 185, 129, 0.25)' : '#DCFCE7'
+                            : isDark ? 'rgba(239, 68, 68, 0.25)' : '#FEE2E2'
+                          : cardSubtle,
+                        borderColor: isSelected
+                          ? isIncome
+                            ? '#10B981'
+                            : '#EF4444'
+                          : borderSubtle,
+                      },
                     ]}
                     onPress={() => setCategory(cat)}
                     activeOpacity={0.7}
@@ -358,7 +448,14 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                     <Text
                       style={[
                         styles.catChipText,
-                        isSelected && styles.catChipTextActive,
+                        {
+                          color: isSelected
+                            ? isIncome
+                              ? isDark ? '#34D399' : '#059669'
+                              : isDark ? '#F87171' : '#DC2626'
+                            : textSecondary,
+                          fontWeight: isSelected ? '700' : '500',
+                        },
                       ]}
                     >
                       {cat}
@@ -369,18 +466,29 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             </ScrollView>
 
             {/* Account Selector */}
-            <Text style={styles.label}>
+            <Text style={[styles.label, { color: textSecondary }]}>
               {isIncome ? 'DEPOSITING ACCOUNT (RECEIVER)' : 'SOURCE PAYMENT ACCOUNT (DEBIT)'}
             </Text>
             <View style={styles.accountPicker}>
-              {accounts.slice(0, 4).map((acc) => {
+              {(accounts.length > 0 ? accounts.slice(0, 4) : [{ id: 'cash', name: 'Cash Wallet', accountNumberMask: '•••• Cash' }]).map((acc) => {
                 const isSelected = selectedAccount === acc.name;
                 return (
                   <TouchableOpacity
                     key={acc.id}
                     style={[
                       styles.accountChoice,
-                      isSelected && (isIncome ? styles.accountGreenActive : styles.accountChoiceActive),
+                      {
+                        backgroundColor: isSelected
+                          ? isIncome
+                            ? isDark ? 'rgba(16, 185, 129, 0.2)' : '#DCFCE7'
+                            : isDark ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF'
+                          : cardSubtle,
+                        borderColor: isSelected
+                          ? isIncome
+                            ? '#10B981'
+                            : '#3B82F6'
+                          : borderSubtle,
+                      },
                     ]}
                     onPress={() => setSelectedAccount(acc.name)}
                     activeOpacity={0.7}
@@ -388,12 +496,17 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                     <Text
                       style={[
                         styles.accountChoiceText,
-                        isSelected && styles.accountChoiceTextActive,
+                        {
+                          color: isSelected ? textPrimary : textSecondary,
+                          fontWeight: isSelected ? '700' : '600',
+                        },
                       ]}
                     >
                       {acc.name}
                     </Text>
-                    <Text style={styles.accountChoiceMask}>{acc.accountNumberMask}</Text>
+                    <Text style={[styles.accountChoiceMask, { color: textSecondary }]}>
+                      {acc.accountNumberMask}
+                    </Text>
                   </TouchableOpacity>
                 );
               })}
@@ -401,13 +514,22 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
           </ScrollView>
 
           {/* Action Buttons */}
-          <View style={styles.actionRow}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose} activeOpacity={0.7}>
-              <Text style={styles.cancelBtnText}>Cancel</Text>
+          <View style={[styles.actionRow, { borderTopColor: borderColor }]}>
+            <TouchableOpacity
+              style={[styles.cancelBtn, { backgroundColor: cardSubtle }]}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.cancelBtnText, { color: textSecondary }]}>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.submitBtn, isIncome ? styles.submitBtnGreen : styles.submitBtnRed]}
+              style={[
+                styles.submitBtn,
+                {
+                  backgroundColor: isIncome ? '#10B981' : '#EF4444',
+                },
+              ]}
               onPress={handleSubmit}
               activeOpacity={0.8}
             >
@@ -425,20 +547,20 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(23, 35, 29, 0.45)',
+    backgroundColor: 'rgba(9, 13, 22, 0.75)',
     justifyContent: 'flex-end',
   },
   modalSheet: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    borderWidth: 1,
+    borderBottomWidth: 0,
     maxHeight: '92%',
     paddingBottom: 24,
   },
   handleBar: {
     width: 36,
     height: 4,
-    backgroundColor: theme.colors.borderStrong,
     borderRadius: 2,
     alignSelf: 'center',
     marginTop: 10,
@@ -451,29 +573,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
   },
   modalTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: theme.colors.textPrimary,
   },
   modalSubtitle: {
     fontSize: 11,
-    color: theme.colors.textSecondary,
     marginTop: 2,
   },
   closeBtn: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: theme.colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeBtnText: {
     fontSize: 13,
-    color: theme.colors.textSecondary,
     fontWeight: '700',
   },
   formBody: {
@@ -482,7 +599,6 @@ const styles = StyleSheet.create({
   },
   typeSwitcher: {
     flexDirection: 'row',
-    backgroundColor: '#EEF2EF',
     borderRadius: 12,
     padding: 3,
     marginBottom: 16,
@@ -494,201 +610,14 @@ const styles = StyleSheet.create({
     borderRadius: 9,
   },
   typeBtnDebitActive: {
-    backgroundColor: '#FEE2E2',
     borderWidth: 1,
-    borderColor: '#FECACA',
   },
   typeBtnCreditActive: {
-    backgroundColor: '#DCFCE7',
     borderWidth: 1,
-    borderColor: '#BBF7D0',
   },
   typeBtnText: {
     fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  typeBtnTextDebitActive: {
-    color: '#991B1B',
-    fontWeight: '800',
-  },
-  typeBtnTextCreditActive: {
-    color: '#15803D',
-    fontWeight: '800',
-  },
-  label: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-    letterSpacing: 0.6,
-    marginBottom: 6,
-    marginTop: 8,
-  },
-  amountInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceElevated,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    paddingHorizontal: 14,
-    paddingVertical: 4,
-    marginBottom: 10,
-  },
-  borderGreen: {
-    borderColor: '#BBF7D0',
-  },
-  borderRed: {
-    borderColor: '#FECACA',
-  },
-  currencySymbol: {
-    fontSize: 22,
-    fontWeight: '800',
-    marginRight: 6,
-  },
-  textGreen: {
-    color: '#15803D',
-  },
-  textRed: {
-    color: '#DC2626',
-  },
-  amountInput: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: '800',
-    paddingVertical: 6,
-  },
-  presetsRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginBottom: 12,
-  },
-  presetChip: {
-    flex: 1,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  presetChipText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-  },
-  textInput: {
-    backgroundColor: theme.colors.surfaceElevated,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 13,
-    color: theme.colors.textPrimary,
-    marginBottom: 12,
-  },
-  chipsScroll: {
-    marginBottom: 14,
-  },
-  catChip: {
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  catChipRedActive: {
-    backgroundColor: '#FEE2E2',
-    borderColor: '#FECACA',
-  },
-  catChipGreenActive: {
-    backgroundColor: '#DCFCE7',
-    borderColor: '#BBF7D0',
-  },
-  catChipText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  catChipTextActive: {
-    color: theme.colors.textPrimary,
-    fontWeight: '700',
-  },
-  accountPicker: {
-    gap: 8,
-    marginBottom: 18,
-  },
-  accountChoice: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  accountChoiceActive: {
-    backgroundColor: '#FEF2F2',
-    borderColor: '#F87171',
-  },
-  accountGreenActive: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#4ADE80',
-  },
-  accountChoiceText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  accountChoiceTextActive: {
-    color: theme.colors.textPrimary,
-    fontWeight: '700',
-  },
-  accountChoiceMask: {
-    fontSize: 11,
-    color: theme.colors.textTertiary,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 20,
-    paddingTop: 8,
-  },
-  cancelBtn: {
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 12,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cancelBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
-  },
-  submitBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  submitBtnGreen: {
-    backgroundColor: '#16A36A',
-  },
-  submitBtnRed: {
-    backgroundColor: '#DC2626',
-  },
-  submitBtnText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: theme.colors.textWhite,
   },
   habitsSection: {
     marginBottom: 14,
@@ -696,7 +625,6 @@ const styles = StyleSheet.create({
   habitsLabel: {
     fontSize: 10,
     fontWeight: '800',
-    color: theme.colors.textSecondary,
     letterSpacing: 0.5,
     marginBottom: 8,
   },
@@ -706,69 +634,176 @@ const styles = StyleSheet.create({
   habitChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-    borderRadius: 10,
     marginRight: 8,
+    gap: 6,
   },
   habitChipIcon: {
-    fontSize: 13,
+    fontSize: 14,
   },
   habitChipText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#334155',
+    fontSize: 12,
+    fontWeight: '600',
   },
   habitChipAmount: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
-    color: '#087A50',
+    fontVariant: ['tabular-nums'],
   },
   nlBox: {
-    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 10,
     marginBottom: 16,
   },
   nlLabelRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 6,
   },
   nlLabel: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#64748B',
     letterSpacing: 0.5,
   },
   nlAiBadge: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#BFDBFE',
   },
   nlAiBadgeText: {
     fontSize: 9,
     fontWeight: '800',
-    color: '#2563EB',
+    color: '#10B981',
   },
   nlInput: {
-    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 12,
-    color: '#0F172A',
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginTop: 10,
+    marginBottom: 6,
+  },
+  amountInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+  },
+  currencySymbol: {
+    fontSize: 24,
+    fontWeight: '800',
+    marginRight: 8,
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 26,
+    fontWeight: '900',
+    paddingVertical: 10,
+    fontVariant: ['tabular-nums'],
+  },
+  presetsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  presetChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  presetChipText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  textInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 13,
+  },
+  chipsScroll: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  catChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginRight: 8,
+  },
+  catChipText: {
+    fontSize: 11,
+  },
+  accountPicker: {
+    gap: 8,
+    marginBottom: 16,
+  },
+  accountChoice: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  accountChoiceText: {
+    fontSize: 12,
+  },
+  accountChoiceMask: {
+    fontSize: 11,
+    fontVariant: ['tabular-nums'],
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    borderTopWidth: 1,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 13,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  submitBtn: {
+    flex: 2,
+    paddingVertical: 13,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  submitBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });

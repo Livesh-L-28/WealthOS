@@ -40,6 +40,8 @@ export const CopilotScreen: React.FC<CopilotScreenProps> = ({
     { label: '✈️ Afford ₹1.5L Trip?', prompt: 'Can I afford a ₹1,50,000 vacation?' },
     { label: '📈 Optimal Monthly SIP', prompt: 'How much surplus can I deploy into SIPs?' },
     { label: '⚖️ Verify Ledger Sigma', prompt: 'Verify ledger reconciliation balance' },
+    { label: '☕ Top Expense Category', prompt: 'What was my highest expense category this month?' },
+    { label: '🎯 Goals On Track?', prompt: 'Analyze my goal progress and savings rate' },
   ];
 
   return (

@@ -63,6 +63,37 @@ export default function DashboardPage() {
     'account' | 'transaction' | 'investment' | 'budget' | 'goal' | 'document' | null
   >(null);
 
+  // Global keyboard shortcuts for fast executive usability
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        setActiveModal('transaction');
+      } else if (e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        setActiveModal('account');
+      } else if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        setActiveModal('document');
+      } else if (e.key === 'Escape') {
+        setActiveModal(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleToggleCard = (id: string) => {
     setCards((prev) =>
       prev.map((c) => (c.id === id ? { ...c, visible: !c.visible } : c))
@@ -117,9 +148,11 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setActiveModal('transaction')}
             className="gap-1.5"
+            title="Press 'T' anywhere"
           >
             <PlusCircle className="w-3.5 h-3.5 text-[#10B981]" />
             <span>Add Transaction</span>
+            <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-slate-100 text-slate-500 rounded border border-slate-200">T</kbd>
           </Button>
 
           <Button
@@ -127,9 +160,11 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setActiveModal('document')}
             className="gap-2"
+            title="Press 'D' anywhere"
           >
             <UploadCloud className="w-3.5 h-3.5 text-[#10B981]" />
             <span>Import Statement</span>
+            <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-slate-100 text-slate-500 rounded border border-slate-200">D</kbd>
           </Button>
 
           <Button
@@ -137,9 +172,11 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setActiveModal('account')}
             className="gap-2"
+            title="Press 'A' anywhere"
           >
             <PlusCircle className="w-3.5 h-3.5" />
             <span>Add Account</span>
+            <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[9px] font-mono bg-emerald-700 text-emerald-100 rounded">A</kbd>
           </Button>
         </div>
       </div>

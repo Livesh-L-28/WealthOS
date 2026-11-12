@@ -7,7 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { DocumentItem } from '../types';
 import { documentsService } from '../api/domainServices';
 
@@ -48,26 +48,33 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({
     return () => { isMounted = false; };
   }, [propDocuments]);
 
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   const handleInspectDoc = (doc: DocumentItem) => {
     onShowToast(`Inspecting ${doc.name}: ${Math.round(doc.confidence * 100)}% OCR confidence • Arithmetic ${doc.arithmeticCheck}`);
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={[styles.container, { backgroundColor: canvasBg }]} showsVerticalScrollIndicator={false}>
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { borderBottomColor: borderColor }]}>
         <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backLabel}>Overview</Text>
+          <Text style={[styles.backArrow, { color: textSecondary }]}>‹</Text>
+          <Text style={[styles.backLabel, { color: textSecondary }]}>Overview</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Document Vault & OCR</Text>
+        <Text style={[styles.screenTitle, { color: textPrimary }]}>Document Vault & OCR</Text>
         <View style={styles.topRightBadge}>
           <Text style={styles.topRightBadgeText}>ENCRYPTED</Text>
         </View>
       </View>
 
       {/* Summary KPI Strip */}
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.heroTopRow}>
           <View style={styles.vaultIconBox}>
             <Text style={styles.vaultIcon}>📁</Text>
@@ -135,19 +142,19 @@ export const DocumentsScreen: React.FC<DocumentsScreenProps> = ({
           return (
             <TouchableOpacity
               key={doc.id}
-              style={styles.docCard}
+              style={[styles.docCard, { backgroundColor: cardBg, borderColor }]}
               onPress={() => handleInspectDoc(doc)}
               activeOpacity={0.7}
             >
               <View style={styles.docHeaderRow}>
-                <View style={styles.pdfIconBox}>
+                <View style={[styles.pdfIconBox, { backgroundColor: isDark ? '#1E293B' : '#FEF2F2', borderColor: isDark ? '#334155' : '#FEE2E2' }]}>
                   <Text style={styles.pdfIcon}>📄</Text>
                 </View>
                 <View style={styles.docInfoCol}>
-                  <Text style={styles.docName} numberOfLines={1}>
+                  <Text style={[styles.docName, { color: textPrimary }]} numberOfLines={1}>
                     {doc.name}
                   </Text>
-                  <Text style={styles.docMeta}>
+                  <Text style={[styles.docMeta, { color: textSecondary }]}>
                     {doc.size} • Uploaded {doc.uploadDate}
                   </Text>
                 </View>

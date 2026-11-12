@@ -7,7 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { theme } from '../theme';
+import { theme, useTheme } from '../theme';
 import { formatINR } from '../formatters';
 import { reconciliationService, accountingService } from '../api/domainServices';
 import { DiscrepancyItem } from '../types';
@@ -78,22 +78,29 @@ export const ReconciliationScreen: React.FC<ReconciliationScreenProps> = ({
     }
   };
 
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const canvasBg = isDark ? '#0B0F19' : '#F8FAFC';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={[styles.container, { backgroundColor: canvasBg }]} showsVerticalScrollIndicator={false}>
       {/* Top Navigation */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { borderBottomColor: borderColor }]}>
         <TouchableOpacity style={styles.backButton} onPress={onBack} activeOpacity={0.7}>
-          <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backLabel}>Overview</Text>
+          <Text style={[styles.backArrow, { color: textSecondary }]}>‹</Text>
+          <Text style={[styles.backLabel, { color: textSecondary }]}>Overview</Text>
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Control Centre & Reconciliation</Text>
+        <Text style={[styles.screenTitle, { color: textPrimary }]}>Control Centre & Reconciliation</Text>
         <View style={styles.topRightBadge}>
           <Text style={styles.topRightBadgeText}>GATE 9</Text>
         </View>
       </View>
 
       {/* Merkle Ledger Assurance Hero */}
-      <View style={styles.auditHeroCard}>
+      <View style={[styles.auditHeroCard, { backgroundColor: cardBg, borderColor }]}>
         <View style={styles.auditTopRow}>
           <View style={styles.shieldIconBox}>
             <Text style={styles.shieldIcon}>🛡️</Text>
@@ -189,7 +196,7 @@ export const ReconciliationScreen: React.FC<ReconciliationScreenProps> = ({
           const isResolved = item.status === 'MATCHED';
 
           return (
-            <View key={item.id} style={styles.itemCard}>
+            <View key={item.id} style={[styles.itemCard, { backgroundColor: cardBg, borderColor }]}>
               {/* Card Header */}
               <View style={styles.itemHeaderRow}>
                 <View style={styles.itemRefCol}>

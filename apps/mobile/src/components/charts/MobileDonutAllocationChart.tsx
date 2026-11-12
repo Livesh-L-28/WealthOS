@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
 import Svg, { Circle, G } from 'react-native-svg';
-import { theme } from '../../theme';
+import { theme, useTheme } from '../../theme';
 import { formatINR } from '../../formatters';
 import { InvestmentHolding } from '../../types';
 
@@ -86,15 +86,21 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
+  const { isDark } = useTheme();
+  const cardBg = isDark ? '#111827' : '#FFFFFF';
+  const borderColor = isDark ? '#1F2937' : '#E2E8F0';
+  const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
+  const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
   let accumulatedPct = 0;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
       {/* Header */}
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.title}>PORTFOLIO ASSET ALLOCATION</Text>
-          <Text style={styles.subtitle}>Multi-Asset Distribution & Returns</Text>
+          <Text style={[styles.title, { color: textSecondary }]}>PORTFOLIO ASSET ALLOCATION</Text>
+          <Text style={[styles.subtitle, { color: isDark ? '#64748B' : '#94A3B8' }]}>Multi-Asset Distribution & Returns</Text>
         </View>
 
         <View style={styles.headerActions}>
@@ -108,13 +114,13 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
           )}
           {onOpenPortfolio && (
             <TouchableOpacity
-              style={styles.portfolioBtn}
+              style={[styles.portfolioBtn, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderColor: isDark ? '#334155' : '#E2E8F0' }]}
               onPress={onOpenPortfolio}
               activeOpacity={0.7}
               accessibilityRole="button"
               accessibilityLabel="Open Portfolio View"
             >
-              <Text style={styles.portfolioBtnText}>Portfolio ›</Text>
+              <Text style={[styles.portfolioBtnText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>Portfolio ›</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -124,8 +130,8 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
       {totalValue <= 0 || slices.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyEmoji}>📈</Text>
-          <Text style={styles.emptyTitle}>No Investment Holdings Tracked</Text>
-          <Text style={styles.emptySubtitle}>
+          <Text style={[styles.emptyTitle, { color: textPrimary }]}>No Investment Holdings Tracked</Text>
+          <Text style={[styles.emptySubtitle, { color: textSecondary }]}>
             Add equities, mutual funds, gold or SIPs to monitor your unified portfolio allocation and unrealized gains.
           </Text>
           {onAddInvestment && (
@@ -172,13 +178,13 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
 
             {/* Central Cutout Info */}
             <View style={styles.centerHole} pointerEvents="none">
-              <Text style={styles.centerLabel}>
+              <Text style={[styles.centerLabel, { color: textSecondary }]}>
                 {activeSlice ? activeSlice.label.toUpperCase() : 'PORTFOLIO'}
               </Text>
-              <Text style={styles.centerValue}>
+              <Text style={[styles.centerValue, { color: textPrimary }]}>
                 {activeSlice ? `${activeSlice.pct}%` : formatINR(totalValue)}
               </Text>
-              <Text style={styles.centerSub}>
+              <Text style={[styles.centerSub, { color: isDark ? '#34D399' : '#059669' }]}>
                 {activeSlice
                   ? formatINR(activeSlice.amount)
                   : `${pnlPct >= 0 ? '+' : ''}${pnlPct.toFixed(1)}% Gain`}
@@ -193,19 +199,19 @@ export const MobileDonutAllocationChart: React.FC<MobileDonutAllocationChartProp
               return (
                 <TouchableOpacity
                   key={slice.id}
-                  style={[styles.assetRow, isSelected && styles.assetRowSelected]}
+                  style={[styles.assetRow, isSelected && [styles.assetRowSelected, { backgroundColor: isDark ? '#1E293B' : '#F8FAFC' }]]}
                   onPress={() => setSelectedId(selectedId === slice.id ? null : slice.id)}
                   activeOpacity={0.7}
                 >
                   <View style={styles.assetLeft}>
                     <View style={[styles.colorDot, { backgroundColor: slice.color }]} />
                     <View>
-                      <Text style={styles.assetLabel}>{slice.label}</Text>
-                      <Text style={styles.assetAmount}>{formatINR(slice.amount)}</Text>
+                      <Text style={[styles.assetLabel, { color: textPrimary }]}>{slice.label}</Text>
+                      <Text style={[styles.assetAmount, { color: textSecondary }]}>{formatINR(slice.amount)}</Text>
                     </View>
                   </View>
                   <View style={styles.assetRight}>
-                    <Text style={styles.assetPct}>{slice.pct}%</Text>
+                    <Text style={[styles.assetPct, { color: textPrimary }]}>{slice.pct}%</Text>
                     <Text
                       style={[
                         styles.assetPnl,

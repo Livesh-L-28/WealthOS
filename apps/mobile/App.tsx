@@ -1023,6 +1023,7 @@ function WealthOSContent() {
               budgets={budgets}
               goals={goals}
               transactions={transactions}
+              accounts={accounts}
               holdings={holdings}
               userName="Livesh"
               isPrivacyMode={isPrivacyMode}
@@ -1041,6 +1042,8 @@ function WealthOSContent() {
               onAddBudget={() => setIsCreateBudgetModalOpen(true)}
               onAddGoal={() => setIsCreateGoalModalOpen(true)}
               onAddInvestment={() => setIsAddInvestmentModalOpen(true)}
+              onLoadSampleData={handleLoadDemoData}
+              onResetToFresh={handleResetToFresh}
             />
           </ScrollView>
         )}
