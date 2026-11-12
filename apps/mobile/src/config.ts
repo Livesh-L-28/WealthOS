@@ -62,7 +62,7 @@ function resolveApiBaseUrl(): string {
   }
 
   // 5. Native platform default - Host Machine Current LAN IP
-  return 'http://192.168.31.120:8000';
+  return 'http://192.168.31.228:8000';
 }
 
 export const config: AppConfig = {

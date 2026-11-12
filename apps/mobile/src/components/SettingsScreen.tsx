@@ -215,7 +215,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           style={styles.serverInput}
           value={serverUrl}
           onChangeText={setServerUrl}
-          placeholder="http://192.168.31.120:8000"
+          placeholder="http://192.168.31.228:8000"
           placeholderTextColor="#94A3B8"
           autoCapitalize="none"
           autoCorrect={false}
@@ -225,14 +225,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
           <TouchableOpacity
             style={styles.serverPresetBtn}
             onPress={() => {
-              const url = 'http://192.168.31.120:8000';
+              const url = 'http://192.168.31.228:8000';
               setServerUrl(url);
               handleSaveServerUrl(url);
               handleTestConnection(url);
             }}
             activeOpacity={0.7}
           >
-            <Text style={styles.serverPresetBtnText}>LAN (192.168.31.120)</Text>
+            <Text style={styles.serverPresetBtnText}>LAN (192.168.31.228)</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
