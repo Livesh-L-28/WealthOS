@@ -10,6 +10,7 @@ import { FinancialHealthCard } from './FinancialHealthCard';
 import { MobileAreaChart } from './charts/MobileAreaChart';
 import { MobileCashFlowBarChart } from './charts/MobileCashFlowBarChart';
 import { MobileDonutAllocationChart } from './charts/MobileDonutAllocationChart';
+import { QuickActionsSection } from './QuickActionsSection';
 import { WidgetErrorBoundary } from './WidgetErrorBoundary';
 
 interface OverviewScreenProps {
@@ -106,6 +107,19 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
         />
       </WidgetErrorBoundary>
 
+      {/* 1.2. Institutional Fast Action Dock */}
+      <WidgetErrorBoundary name="Quick Actions Dock">
+        <QuickActionsSection
+          onConnectBank={onConnectBank}
+          onImportStatement={onImportStatement}
+          onAddTransaction={onAddTransaction}
+          onAddExpense={onAddExpense}
+          onAddIncome={onAddIncome}
+          onAddInvestment={onAddInvestment}
+          onAskCopilot={onAskCopilot}
+        />
+      </WidgetErrorBoundary>
+
       {/* 1.5. Clean Slate Welcome & Quick Start Onboarding Card */}
       {isLedgerEmpty && (
         <View
@@ -136,6 +150,22 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
               activeOpacity={0.8}
             >
               <Text style={styles.demoLoadBtnText}>➕ Add Bank Account</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.addAccountBtn,
+                {
+                  backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                  borderColor: isDark ? '#334155' : '#CBD5E1',
+                },
+              ]}
+              onPress={onImportStatement}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.addAccountBtnText, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+                📄 Import Statement
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity

@@ -304,6 +304,15 @@ export const localStore = {
     }
   },
 
+  async saveDocuments(documents: DocumentItem[]): Promise<void> {
+    try {
+      const enc = await securePack(JSON.stringify(documents), STORAGE_KEYS.DOCUMENTS);
+      await AsyncStorage.setItem(STORAGE_KEYS.DOCUMENTS, enc);
+    } catch (err: any) {
+      logger.error('Failed to save documents:', err.message);
+    }
+  },
+
   async saveCopilotMessages(messages: CopilotMessage[]): Promise<void> {
     try {
       const enc = await securePack(JSON.stringify(messages), STORAGE_KEYS.COPILOT_MESSAGES);

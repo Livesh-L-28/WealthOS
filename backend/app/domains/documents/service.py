@@ -1,7 +1,9 @@
 """WealthOS Universal Financial Document Intelligence Service."""
 
 import base64
+import csv
 import hashlib
+import io
 import re
 import uuid
 from datetime import UTC, date, datetime
@@ -31,10 +33,14 @@ from app.domains.documents.schemas import (
     DocumentExtractionCreate,
     DocumentReconciliationResponse,
     FinancialDocumentCreate,
+    ParsedStatementHolding,
+    ParsedStatementTransaction,
     ReceiptScanRequest,
     ReceiptScanResult,
     ReconciliationMatchItem,
     ScannedReceiptLineItem,
+    StatementParseRequest,
+    StatementParseResult,
 )
 
 logger = get_logger("wealthos.documents")
@@ -102,7 +108,6 @@ class DocumentIntelligenceService:
             document_type=payload.document_type,
             processing_status="PENDING",
             created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC),
         )
         return await self.repo.create_document(doc)
 
@@ -768,7 +773,6 @@ class DocumentIntelligenceService:
             ocr_text=raw_text,
             extracted_data=extracted_data,
             created_at=datetime.now(UTC),
-            updated_at=datetime.now(UTC),
         )
         await self.repo.create_document(doc)
 
@@ -787,4 +791,460 @@ class DocumentIntelligenceService:
             raw_text=raw_text,
             suggested_account_type="EXPENSE",
         )
+
+    async def parse_statement(
+        self, tenant_id: uuid.UUID, request: StatementParseRequest
+    ) -> StatementParseResult:
+        """Parse bank statement (CSV/PDF), Zerodha/Groww Tradebook, or CAMS/KFintech CAS."""
+        quota_service = TenantQuotaService(self.session)
+        await quota_service.check_and_consume_quota(tenant_id, QuotaResourceType.OCR_DOCUMENTS, 1)
+
+
+        content = request.raw_content or ""
+        format_type = (request.document_format or "BANK_CSV").upper()
+        filename = request.filename or "statement.csv"
+
+        lower_content = content.lower()
+        if "trade_type" in lower_content and ("isin" in lower_content or "order_id" in lower_content or "exchange" in lower_content):
+            format_type = "ZERODHA"
+        elif "folio" in lower_content and ("scheme" in lower_content or "nav" in lower_content or "cams" in lower_content or "kfintech" in lower_content):
+            format_type = "CAS"
+
+        institution = "General Bank"
+        if format_type == "ZERODHA" or "zerodha" in lower_content:
+            institution = "Zerodha Broking Ltd"
+        elif format_type == "CAS" or "cams" in lower_content or "kfintech" in lower_content:
+            institution = "CAMS Mutual Fund Registry"
+        elif "hdfc" in lower_content:
+            institution = "HDFC Bank"
+        elif "icici" in lower_content:
+            institution = "ICICI Bank"
+        elif "sbi" in lower_content or "state bank" in lower_content:
+            institution = "State Bank of India"
+        elif "axis" in lower_content:
+            institution = "Axis Bank"
+        elif "kotak" in lower_content:
+            institution = "Kotak Mahindra Bank"
+        elif "groww" in lower_content:
+            institution = "Groww"
+
+        transactions: list[ParsedStatementTransaction] = []
+        holdings: list[ParsedStatementHolding] = []
+        opening_balance: Decimal | None = None
+        closing_balance: Decimal | None = None
+        account_mask: str | None = None
+
+        mask_m = re.search(r"(?:account\s*(?:no\.?|number|#)?)\s*[:=\s]?\s*([xX*0-9\-]{6,20})", content, re.IGNORECASE)
+        if mask_m:
+            account_mask = mask_m.group(1).strip()
+
+        op_m = re.search(r"^[ \t]*opening\s*balance\s*[:=\-]?\s*(?:₹|rs\.?|inr)?\s*([0-9,]+(?:\.[0-9]{1,2})?)", content, re.IGNORECASE | re.MULTILINE)
+        if op_m:
+            try:
+                opening_balance = Decimal(op_m.group(1).replace(",", "")).quantize(Decimal("0.01"))
+            except Exception:
+                pass
+
+        cl_m = re.search(r"^[ \t]*closing\s*balance\s*[:=\-]?\s*(?:₹|rs\.?|inr)?\s*([0-9,]+(?:\.[0-9]{1,2})?)", content, re.IGNORECASE | re.MULTILINE)
+        if cl_m:
+            try:
+                closing_balance = Decimal(cl_m.group(1).replace(",", "")).quantize(Decimal("0.01"))
+            except Exception:
+                pass
+
+
+        def parse_date(date_str: str) -> date:
+            d_str = date_str.strip()
+            for fmt in (
+                "%d/%m/%Y",
+                "%Y-%m-%d",
+                "%d-%m-%Y",
+                "%d-%b-%Y",
+                "%d/%m/%y",
+                "%d-%b-%y",
+                "%d %b %Y",
+                "%b %d, %Y",
+            ):
+                try:
+                    return datetime.strptime(d_str, fmt).date()
+                except ValueError:
+                    continue
+            return date.today()
+
+        def clean_amt(val_str: str) -> Decimal:
+            cleaned = re.sub(r"[₹RsINR,\s]", "", val_str)
+            try:
+                return Decimal(cleaned).quantize(Decimal("0.01"))
+            except Exception:
+                return Decimal("0.00")
+
+        def categorize(desc: str, is_debit: bool) -> str:
+            d_lower = desc.lower()
+            if any(k in d_lower for k in ("swiggy", "zomato", "domino", "mcdonald", "starbucks", "subway", "restaurant", "cafe", "dining", "food")):
+                return "Food & Dining"
+            if any(k in d_lower for k in ("amazon", "flipkart", "myntra", "zara", "croma", "retail", "shopping", "decathlon", "ikea")):
+                return "Shopping & Retail"
+            if any(k in d_lower for k in ("shell", "hpcl", "bpcl", "ioc", "petrol", "fuel", "uber", "ola", "fastag", "metro")):
+                return "Transport & Fuel"
+            if any(k in d_lower for k in ("salary", "payroll", "wage", "interest credit", "interest rec", "dividend")):
+                return "Income & Salary"
+            if any(k in d_lower for k in ("airtel", "jio", "bescom", "tneb", "electricity", "broadband", "bill", "recharge", "water")):
+                return "Utilities & Bills"
+            if any(k in d_lower for k in ("sip", "mutual fund", "zerodha", "groww", "indmoney", "nse", "bse", "demat")):
+                return "Investments"
+            if any(k in d_lower for k in ("apollo", "medplus", "1mg", "pharmacy", "hospital", "clinic", "doctor")):
+                return "Healthcare & Wellness"
+            if any(k in d_lower for k in ("rent", "housing", "maintenance", "society")):
+                return "Housing & Rent"
+            return "General Expense" if is_debit else "General Income"
+
+        if format_type == "ZERODHA":
+            f = io.StringIO(content.strip())
+            reader = csv.reader(f)
+            header_idx = {}
+            for row in reader:
+                if not row:
+                    continue
+                row_lower = [c.lower().strip() for c in row]
+                if "symbol" in row_lower and "trade_type" in row_lower:
+                    header_idx = {c: i for i, c in enumerate(row_lower)}
+                    break
+
+            if header_idx:
+                holdings_map: dict[str, dict[str, Any]] = {}
+                for row in reader:
+                    if len(row) <= max(header_idx.values()):
+                        continue
+                    symbol = row[header_idx["symbol"]].strip().upper()
+                    if not symbol:
+                        continue
+                    trade_date_str = row[header_idx.get("trade_date", 0)].strip()
+                    t_date = parse_date(trade_date_str)
+                    trade_type = row[header_idx["trade_type"]].strip().upper()
+                    qty = clean_amt(row[header_idx.get("quantity", 0)])
+                    price = clean_amt(row[header_idx.get("price", 0)])
+                    trade_val = (qty * price).quantize(Decimal("0.01"))
+                    ref = row[header_idx.get("order_id", 0)].strip() if "order_id" in header_idx else None
+
+                    is_buy = "BUY" in trade_type
+                    tx_type = "DEBIT" if is_buy else "CREDIT"
+                    transactions.append(
+                        ParsedStatementTransaction(
+                            date=t_date,
+                            description=f"{trade_type} {qty} {symbol} @ ₹{price}",
+                            reference=ref,
+                            type=tx_type,
+                            amount=trade_val,
+                            category="Investments",
+                            status="RECONCILED",
+                        )
+                    )
+
+                    if is_buy:
+                        if symbol not in holdings_map:
+                            holdings_map[symbol] = {
+                                "name": symbol,
+                                "type": "EQUITY",
+                                "quantity": qty,
+                                "total_cost": trade_val,
+                                "current_price": price,
+                            }
+                        else:
+                            h = holdings_map[symbol]
+                            h["quantity"] += qty
+                            h["total_cost"] += trade_val
+                            h["current_price"] = price
+
+                for sym, h in holdings_map.items():
+                    avg_p = (h["total_cost"] / h["quantity"]).quantize(Decimal("0.01"))
+                    holdings.append(
+                        ParsedStatementHolding(
+                            symbol=sym,
+                            name=h["name"],
+                            type="EQUITY",
+                            quantity=h["quantity"],
+                            avg_price=avg_p,
+                            current_price=h["current_price"],
+                            invested_value=h["total_cost"],
+                            current_value=(h["quantity"] * h["current_price"]).quantize(Decimal("0.01")),
+                        )
+                    )
+
+        elif format_type == "CAS":
+            lines = [l.strip() for l in content.splitlines() if l.strip()]
+            current_scheme = ""
+            for line in lines:
+                if any(w in line.lower() for w in ("fund", "growth", "direct", "index", "plan")) and not re.match(r"^\d{1,2}[/-]", line):
+                    current_scheme = line.strip()
+                    continue
+
+                m = re.match(r"^(\d{1,2}[/-]\w+[/-]\d{2,4}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\s+(.+?)\s+(?:₹|rs\.?)?\s*([0-9,]+\.[0-9]{2})\s+([0-9,]+\.[0-9]{2,4})\s+(?:₹|rs\.?)?\s*([0-9,]+\.[0-9]{2,4})", line, re.IGNORECASE)
+                if m:
+                    t_date = parse_date(m.group(1))
+                    txn_type_str = m.group(2).strip()
+                    amt = clean_amt(m.group(3))
+                    units = clean_amt(m.group(4))
+                    nav = clean_amt(m.group(5))
+
+                    is_inflow = any(k in txn_type_str.upper() for k in ("PURCHASE", "SIP", "REINVEST"))
+                    tx_type = "DEBIT" if is_inflow else "CREDIT"
+                    desc = f"{current_scheme or 'Mutual Fund'} - {txn_type_str}"
+
+                    transactions.append(
+                        ParsedStatementTransaction(
+                            date=t_date,
+                            description=desc,
+                            reference=None,
+                            type=tx_type,
+                            amount=amt,
+                            category="Investments",
+                            status="RECONCILED",
+                        )
+                    )
+
+                    sym = (current_scheme[:15] if current_scheme else "MUTUAL_FUND").upper().replace(" ", "")
+                    holdings.append(
+                        ParsedStatementHolding(
+                            symbol=sym,
+                            name=current_scheme or "Mutual Fund",
+                            type="MUTUAL_FUND",
+                            quantity=units,
+                            avg_price=nav,
+                            current_price=nav,
+                            invested_value=amt,
+                            current_value=amt,
+                        )
+                    )
+
+        else:
+            f = io.StringIO(content.strip())
+            reader = csv.reader(f)
+            header_map = {}
+            for row in reader:
+                if not row:
+                    continue
+                r_lower = [c.lower().strip() for c in row]
+                is_header = any("date" in c for c in r_lower) and any(
+                    any(k in c for k in ("narration", "description", "particulars", "remarks"))
+                    for c in r_lower
+                ) and any(
+                    any(k in c for k in ("withdrawal", "debit", "deposit", "credit", "amount", "dr", "cr"))
+                    for c in r_lower
+                )
+                if is_header:
+                    for i, c in enumerate(r_lower):
+                        if "date" in c and "val" not in c and "date" not in header_map:
+                            header_map["date"] = i
+                        elif any(k in c for k in ("narration", "description", "particulars", "remarks")):
+                            header_map["desc"] = i
+                        elif any(k in c for k in ("chq", "ref", "cheque", "reference")):
+                            header_map["ref"] = i
+                        elif any(k in c for k in ("withdrawal", "debit", "dr")):
+                            header_map["debit"] = i
+                        elif any(k in c for k in ("deposit", "credit", "cr")):
+                            header_map["credit"] = i
+                        elif any(k in c for k in ("balance", "bal")):
+                            header_map["balance"] = i
+                    break
+
+            if header_map and "date" in header_map and "desc" in header_map:
+                for row in reader:
+                    if len(row) <= max(header_map.values()):
+                        continue
+                    raw_date = row[header_map["date"]].strip()
+                    if not raw_date:
+                        continue
+                    t_date = parse_date(raw_date)
+                    desc = row[header_map["desc"]].strip()
+                    ref = row[header_map["ref"]].strip() if "ref" in header_map and len(row) > header_map["ref"] else None
+
+                    debit_val = Decimal("0.00")
+                    credit_val = Decimal("0.00")
+
+                    if "debit" in header_map and len(row) > header_map["debit"]:
+                        debit_val = clean_amt(row[header_map["debit"]])
+                    if "credit" in header_map and len(row) > header_map["credit"]:
+                        credit_val = clean_amt(row[header_map["credit"]])
+
+                    run_bal = None
+                    if "balance" in header_map and len(row) > header_map["balance"]:
+                        b_str = row[header_map["balance"]].strip()
+                        if b_str:
+                            run_bal = clean_amt(b_str)
+
+                    if debit_val > Decimal("0.00"):
+                        transactions.append(
+                            ParsedStatementTransaction(
+                                date=t_date,
+                                description=desc,
+                                reference=ref,
+                                type="DEBIT",
+                                amount=debit_val,
+                                running_balance=run_bal,
+                                category=categorize(desc, True),
+                                status="RECONCILED",
+                            )
+                        )
+                    elif credit_val > Decimal("0.00"):
+                        transactions.append(
+                            ParsedStatementTransaction(
+                                date=t_date,
+                                description=desc,
+                                reference=ref,
+                                type="CREDIT",
+                                amount=credit_val,
+                                running_balance=run_bal,
+                                category=categorize(desc, False),
+                                status="RECONCILED",
+                            )
+                        )
+
+        total_credits = sum((t.amount for t in transactions if t.type == "CREDIT"), Decimal("0.00")).quantize(Decimal("0.01"))
+        total_debits = sum((t.amount for t in transactions if t.type == "DEBIT"), Decimal("0.00")).quantize(Decimal("0.01"))
+        net_change = (total_credits - total_debits).quantize(Decimal("0.01"))
+
+        if closing_balance is None and transactions and transactions[-1].running_balance is not None:
+            closing_balance = transactions[-1].running_balance
+
+        is_balanced = True
+        if opening_balance is not None and closing_balance is not None:
+            expected_closing = opening_balance + net_change
+            is_balanced = abs(expected_closing - closing_balance) <= Decimal("0.05")
+
+        doc_hash = hashlib.sha256(f"{tenant_id}:{filename}:{net_change}:{datetime.now(UTC).isoformat()}".encode()).hexdigest()
+        doc = FinancialDocument(
+            id=uuid.uuid4(),
+            tenant_id=tenant_id,
+            filename=filename,
+            file_size_bytes=len(content.encode("utf-8")),
+            mime_type="text/csv" if "csv" in filename.lower() else "application/pdf",
+            storage_path=f"tenants/{tenant_id}/statements/{filename}",
+            file_hash=doc_hash,
+            document_type=format_type,
+            processing_status="EXTRACTED",
+            ocr_text=content[:4000],
+            extracted_data={
+                "institution": institution,
+                "account_number_mask": account_mask,
+                "total_credits": str(total_credits),
+                "total_debits": str(total_debits),
+                "net_change": str(net_change),
+                "transactions_count": len(transactions),
+                "holdings_count": len(holdings),
+            },
+            created_at=datetime.now(UTC),
+        )
+        await self.repo.create_document(doc)
+
+        extraction = DocumentExtraction(
+            id=uuid.uuid4(),
+            tenant_id=tenant_id,
+            document_id=doc.id,
+            schema_version="v1",
+            document_type=format_type,
+            currency="INR",
+            confidence_score=Decimal("0.9900"),
+            validation_status="VALIDATED" if is_balanced else "ARITHMETIC_MISMATCH",
+            approval_status="APPROVED" if request.auto_post else "PENDING_APPROVAL",
+            extracted_payload={
+                "transactions": [t.model_dump(mode="json") for t in transactions],
+                "holdings": [h.model_dump(mode="json") for h in holdings],
+                "opening_balance": str(opening_balance) if opening_balance else None,
+                "closing_balance": str(closing_balance) if closing_balance else None,
+            },
+            created_at=datetime.now(UTC),
+        )
+        await self.repo.create_extraction(extraction)
+
+        posted_entry_ids: list[uuid.UUID] = []
+        if request.auto_post and transactions:
+            cash_act = None
+            if request.target_account_id:
+                cash_act = await AccountRepository.get_by_id(self.session, tenant_id, request.target_account_id)
+            if not cash_act:
+                cash_act = await AccountRepository.get_by_code(self.session, tenant_id, "1010")
+
+            expense_act = await AccountRepository.get_by_code(self.session, tenant_id, "5000")
+            income_act = await AccountRepository.get_by_code(self.session, tenant_id, "4000")
+
+            if cash_act and expense_act and income_act:
+                for t in transactions:
+                    entry_num = await JournalRepository.generate_entry_number(self.session, tenant_id)
+                    entry = JournalEntry(
+                        id=uuid.uuid4(),
+                        tenant_id=tenant_id,
+                        entry_number=entry_num,
+                        entry_date=t.date,
+                        posting_date=datetime.now(UTC),
+                        description=f"Statement Import: {t.description[:200]}",
+                        source_type="STATEMENT_IMPORT",
+                        source_id=str(doc.id),
+                        functional_currency="INR",
+                        status="POSTED",
+                        total_debit=quantize_money(t.amount),
+                        total_credit=quantize_money(t.amount),
+                    )
+                    self.session.add(entry)
+                    await self.session.flush()
+
+                    if t.type == "DEBIT":
+                        dr_acc_id = expense_act.id
+                        cr_acc_id = cash_act.id
+                    else:
+                        dr_acc_id = cash_act.id
+                        cr_acc_id = income_act.id
+
+                    l1 = JournalLine(
+                        id=uuid.uuid4(),
+                        tenant_id=tenant_id,
+                        journal_entry_id=entry.id,
+                        line_number=1,
+                        account_id=dr_acc_id,
+                        description=t.description[:255],
+                        debit_amount=quantize_money(t.amount),
+                        credit_amount=Decimal("0.0000"),
+                        transaction_currency="INR",
+                        transaction_amount=quantize_money(t.amount),
+                        exchange_rate=Decimal("1.00000000"),
+                        functional_debit_amount=quantize_money(t.amount),
+                        functional_credit_amount=Decimal("0.0000"),
+                    )
+                    l2 = JournalLine(
+                        id=uuid.uuid4(),
+                        tenant_id=tenant_id,
+                        journal_entry_id=entry.id,
+                        line_number=2,
+                        account_id=cr_acc_id,
+                        description=t.description[:255],
+                        debit_amount=Decimal("0.0000"),
+                        credit_amount=quantize_money(t.amount),
+                        transaction_currency="INR",
+                        transaction_amount=quantize_money(t.amount),
+                        exchange_rate=Decimal("1.00000000"),
+                        functional_debit_amount=Decimal("0.0000"),
+                        functional_credit_amount=quantize_money(t.amount),
+                    )
+                    self.session.add_all([l1, l2])
+                    await self.session.flush()
+                    posted_entry_ids.append(entry.id)
+
+        await self.session.commit()
+
+        return StatementParseResult(
+            document_id=doc.id,
+            extraction_id=extraction.id,
+            document_format=format_type,
+            institution=institution,
+            account_number_mask=account_mask,
+            total_credits=total_credits,
+            total_debits=total_debits,
+            net_change=net_change,
+            opening_balance=opening_balance,
+            closing_balance=closing_balance,
+            is_balanced=is_balanced,
+            transactions=transactions,
+            holdings=holdings,
+            posted_entry_ids=posted_entry_ids,
+        )
+
 

@@ -18,6 +18,8 @@ from app.domains.documents.schemas import (
     FinancialDocumentResponse,
     ReceiptScanRequest,
     ReceiptScanResult,
+    StatementParseRequest,
+    StatementParseResult,
 )
 from app.domains.documents.service import DocumentIntelligenceService
 
@@ -81,6 +83,27 @@ async def scan_receipt(
     except Exception as e:
         logger.error(f"Receipt scan failed: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post(
+    "/parse-statement",
+    response_model=StatementParseResult,
+    status_code=status.HTTP_200_OK,
+    summary="Parse financial bank statement, CAS, or Tradebook CSV/PDF",
+)
+async def parse_statement(
+    payload: StatementParseRequest,
+    context: TenantContext = Depends(get_current_tenant_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> StatementParseResult:
+    """Parse bank statement, Zerodha tradebook, or CAMS CAS and extract validated line items."""
+    service = DocumentIntelligenceService(session)
+    try:
+        return await service.parse_statement(context.tenant.id, payload)
+    except Exception as e:
+        logger.error(f"Statement parse failed: {e}")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
 
 
 @router.get(

@@ -83,6 +83,7 @@ import {
   copilotService,
 } from './src/api/domainServices';
 import { validateDeepLink } from './src/deeplink';
+import { ParsedStatementResult } from './src/statementParserService';
 
 // Global unhandled error & promise trap to prevent Android release process termination
 if (typeof globalThis !== 'undefined') {
@@ -546,38 +547,118 @@ function WealthOSContent() {
     }
   };
 
-  const handleSimulateImport = () => {
+  const handleRealStatementImport = async (
+    result: ParsedStatementResult,
+    targetAccountId?: string
+  ) => {
     setIsImportModalOpen(false);
-    const parsedTx1: Transaction = {
-      id: `tx-imp-${Date.now()}-1`,
-      title: 'HDFC Interest Credit Q2',
-      category: 'Interest Income',
-      amount: 4210.0,
-      type: 'CREDIT',
-      accountName: 'HDFC Corporate Salary',
-      date: 'Today',
+
+    // 1. Identify target account
+    let targetAcc = accounts.find((a) => a.id === targetAccountId);
+    if (!targetAcc && accounts.length > 0) {
+      targetAcc = accounts[0];
+    }
+
+    // 2. Map parsed transactions into application Transaction schema
+    const newTransactions: Transaction[] = result.transactions.map((t, idx) => ({
+      id: t.id || `tx-imp-${Date.now()}-${idx}`,
+      title: t.description,
+      category: t.category,
+      amount: t.amount,
+      type: t.type,
+      accountName: targetAcc ? targetAcc.name : result.institution,
+      date: t.date,
       status: 'RECONCILED',
-    };
-    const parsedTx2: Transaction = {
-      id: `tx-imp-${Date.now()}-2`,
-      title: 'Swiggy Gourmet Dining',
-      category: 'Food & Dining',
-      amount: 1450.0,
-      type: 'DEBIT',
-      accountName: 'HDFC Corporate Salary',
-      date: 'Today',
-      status: 'RECONCILED',
+      notes: t.reference ? `Ref: ${t.reference}` : undefined,
+    }));
+
+    // 3. Update account balance with net cash flow
+    const updatedAccounts = accounts.map((acc) => {
+      if (targetAcc && acc.id === targetAcc.id) {
+        return {
+          ...acc,
+          balance: Math.round((acc.balance + result.netChange) * 100) / 100,
+          lastSynced: 'Just now',
+        };
+      }
+      return acc;
+    });
+
+    // 4. Update holdings if any (for CAS or Zerodha)
+    let updatedHoldings = [...holdings];
+    if (result.holdings && result.holdings.length > 0) {
+      for (const h of result.holdings) {
+        const existingIdx = updatedHoldings.findIndex(
+          (ex) => ex.symbol.toUpperCase() === h.symbol.toUpperCase()
+        );
+        if (existingIdx !== -1) {
+          const ex = updatedHoldings[existingIdx];
+          const newQty = ex.quantity + h.quantity;
+          const newInv = ex.investedValue + h.investedValue;
+          const newAvg = Math.round((newInv / newQty) * 100) / 100;
+          const curVal = Math.round(newQty * h.currentPrice * 100) / 100;
+          const pnl = curVal - newInv;
+          updatedHoldings[existingIdx] = {
+            ...ex,
+            quantity: newQty,
+            avgBuyPrice: newAvg,
+            currentPrice: h.currentPrice,
+            investedValue: newInv,
+            currentValue: curVal,
+            pnl,
+            pnlPercentage: newInv > 0 ? Math.round((pnl / newInv) * 10000) / 100 : 0,
+          };
+        } else {
+          updatedHoldings.push({
+            id: h.id,
+            symbol: h.symbol,
+            name: h.name,
+            type: h.type,
+            quantity: h.quantity,
+            avgBuyPrice: h.avgBuyPrice,
+            currentPrice: h.currentPrice,
+            investedValue: h.investedValue,
+            currentValue: h.currentValue,
+            pnl: h.pnl,
+            pnlPercentage: h.pnlPercentage,
+            fifoLotAge: h.fifoLotAge,
+          });
+        }
+      }
+    }
+
+    // 5. Add document item to documents list
+    const newDocItem: DocumentItem = {
+      id: `doc-imp-${Date.now()}`,
+      name: result.filename || `${result.institution} Statement.csv`,
+      mimeType: result.documentFormat === 'BANK_PDF' ? 'application/pdf' : 'text/csv',
+      size: `${(result.transactions.length * 0.4 + 1.2).toFixed(1)} KB`,
+      uploadDate: new Date().toISOString().split('T')[0],
+      status: 'POSTED',
+      confidence: 99.2,
+      arithmeticCheck: result.isBalanced ? 'VALIDATED' : 'MISMATCH',
     };
 
-    setTransactions([parsedTx1, parsedTx2, ...transactions]);
-    setAccounts((prev) =>
-      prev.map((acc) =>
-        acc.id === 'acc-hdfc-sal'
-          ? { ...acc, balance: acc.balance + (4210.0 - 1450.0) }
-          : acc
-      )
+    const updatedTransactions = [...newTransactions, ...transactions];
+    const updatedDocuments = [newDocItem, ...documents];
+
+    setAccounts(updatedAccounts);
+    setTransactions(updatedTransactions);
+    setHoldings(updatedHoldings);
+    setDocuments(updatedDocuments);
+
+    // Save state to encrypted local storage
+    await localStore.saveAccounts(updatedAccounts);
+    await localStore.saveTransactions(updatedTransactions);
+    await localStore.saveHoldings(updatedHoldings);
+    await localStore.saveDocuments(updatedDocuments);
+
+    // Show confirmation notification
+    const inflow = formatINR(result.totalCredits);
+    const outflow = formatINR(result.totalDebits);
+    showNotification(
+      `✓ Reconciled ${result.transactions.length} entries (+${inflow}, -${outflow}) into ${targetAcc ? targetAcc.name : result.institution}`
     );
-    showNotification('Statement parsed: 2 journal entries reconciled into general ledger');
   };
 
   const handleCreateBudget = async (newBudget: BudgetEnvelope) => {
@@ -1210,7 +1291,8 @@ function WealthOSContent() {
       <ImportStatementModal
         visible={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
-        onImportSuccess={handleSimulateImport}
+        accounts={accounts}
+        onImportSuccess={handleRealStatementImport}
       />
 
       <CreateBudgetModal

@@ -268,3 +268,59 @@ class ReceiptScanResult(BaseModel):
     suggested_account_type: str = "EXPENSE"
 
 
+class StatementParseRequest(BaseModel):
+    """Payload to parse bank statement, broker tradebook, or mutual fund CAS."""
+
+    raw_content: str
+    document_format: str = Field(default="BANK_CSV", description="BANK_CSV, BANK_PDF, CAS, ZERODHA")
+    filename: str | None = "statement.csv"
+    target_account_id: uuid.UUID | None = None
+    auto_post: bool = False
+
+
+class ParsedStatementTransaction(BaseModel):
+    """Individual transaction extracted from financial statement."""
+
+    date: date
+    description: str
+    reference: str | None = None
+    type: str = Field(..., description="CREDIT or DEBIT")
+    amount: Decimal = Field(..., gt=0)
+    running_balance: Decimal | None = None
+    category: str = "General"
+    status: str = "RECONCILED"
+
+
+class ParsedStatementHolding(BaseModel):
+    """Asset holding extracted from CAS or tradebook."""
+
+    symbol: str
+    name: str
+    type: str = Field(..., description="EQUITY or MUTUAL_FUND")
+    quantity: Decimal = Field(..., gt=0)
+    avg_price: Decimal = Field(..., gt=0)
+    current_price: Decimal = Field(..., gt=0)
+    invested_value: Decimal = Field(..., gt=0)
+    current_value: Decimal = Field(..., gt=0)
+
+
+class StatementParseResult(BaseModel):
+    """Structured result of statement or CAS document parsing."""
+
+    document_id: uuid.UUID
+    extraction_id: uuid.UUID | None = None
+    document_format: str
+    institution: str
+    account_number_mask: str | None = None
+    total_credits: Decimal = Decimal("0.0000")
+    total_debits: Decimal = Decimal("0.0000")
+    net_change: Decimal = Decimal("0.0000")
+    opening_balance: Decimal | None = None
+    closing_balance: Decimal | None = None
+    is_balanced: bool = True
+    transactions: list[ParsedStatementTransaction] = Field(default_factory=list)
+    holdings: list[ParsedStatementHolding] = Field(default_factory=list)
+    posted_entry_ids: list[uuid.UUID] = Field(default_factory=list)
+
+
+
