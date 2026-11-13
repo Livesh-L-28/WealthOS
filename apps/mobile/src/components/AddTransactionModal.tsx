@@ -28,6 +28,7 @@ interface AddTransactionModalProps {
   onClose: () => void;
   accounts: BankAccount[];
   initialType?: 'DEBIT' | 'CREDIT';
+  initialScanMode?: boolean;
   onSubmit: (data: {
     title: string;
     amount: number;
@@ -150,6 +151,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   onClose,
   accounts,
   initialType = 'DEBIT',
+  initialScanMode = false,
   onSubmit,
 }) => {
   const { isDark } = useTheme();
@@ -172,10 +174,16 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
     accounts[0]?.name || 'Primary Operating Savings'
   );
 
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(initialScanMode);
   const [isScanning, setIsScanning] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
   const [scannedReceipt, setScannedReceipt] = useState<ScannedReceiptData | null>(null);
+
+  useEffect(() => {
+    if (visible && initialScanMode) {
+      setIsScannerOpen(true);
+    }
+  }, [visible, initialScanMode]);
 
   const handleCameraScan = async () => {
     try {

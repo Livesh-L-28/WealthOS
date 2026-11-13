@@ -103,3 +103,4 @@ Date,Narration,Withdrawal,Deposit,Balance
     expect(result.isBalanced).toBe(false);
   });
 });
+

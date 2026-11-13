@@ -40,6 +40,7 @@ interface OverviewScreenProps {
   onAddGoal?: () => void;
   onAddInvestment?: () => void;
   onTransferFunds?: () => void;
+  onScanReceipt?: () => void;
   onAskCopilot: () => void;
   onViewAllTransactions: () => void;
   onOpenNetWorth?: () => void;
@@ -75,6 +76,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
   onAddGoal,
   onAddInvestment,
   onTransferFunds,
+  onScanReceipt,
   onAskCopilot,
   onViewAllTransactions,
   onOpenNetWorth,
@@ -116,7 +118,9 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
           onAddExpense={onAddExpense}
           onAddIncome={onAddIncome}
           onAddInvestment={onAddInvestment}
+          onScanReceipt={onScanReceipt}
           onAskCopilot={onAskCopilot}
+          accountsCount={accounts.length}
         />
       </WidgetErrorBoundary>
 

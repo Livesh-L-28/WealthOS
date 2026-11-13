@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { theme, useTheme } from '../theme';
 import { Transaction } from '../types';
 import { formatINR } from '../formatters';
+import { getCategoryVisualMeta } from '../utils/categoryMeta';
 
 interface RecentTransactionsCardProps {
   transactions: Transaction[];
   onViewAll: () => void;
 }
+
+const FILTER_CHIPS = [
+  { id: 'ALL', label: 'All' },
+  { id: 'DEBIT', label: 'Expenses' },
+  { id: 'CREDIT', label: 'Incomes' },
+  { id: 'FOOD', label: 'Food & Dining' },
+  { id: 'SHOPPING', label: 'Shopping' },
+  { id: 'BILLS', label: 'Bills' },
+  { id: 'FUEL', label: 'Fuel / Travel' },
+] as const;
 
 export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
   transactions,
@@ -15,6 +26,7 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
 }) => {
   const { isDark } = useTheme();
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>('ALL');
 
   const cardBg = isDark ? '#111827' : '#FFFFFF';
   const borderColor = isDark ? '#1E293B' : '#E2E8F0';
@@ -24,6 +36,19 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
   const modalBoxBg = isDark ? '#1E293B' : '#F8FAFC';
   const dividerColor = isDark ? '#1E293B' : '#F1F5F9';
 
+  // Filter transactions based on selected chip
+  const filtered = transactions.filter((tx) => {
+    if (activeFilter === 'ALL') return true;
+    if (activeFilter === 'DEBIT') return tx.type === 'DEBIT';
+    if (activeFilter === 'CREDIT') return tx.type === 'CREDIT';
+    const cat = (tx.category || '').toLowerCase();
+    if (activeFilter === 'FOOD') return cat.includes('food') || cat.includes('dining') || cat.includes('restaurant') || cat.includes('grocer');
+    if (activeFilter === 'SHOPPING') return cat.includes('shop') || cat.includes('retail') || cat.includes('amazon');
+    if (activeFilter === 'BILLS') return cat.includes('bill') || cat.includes('utilit') || cat.includes('electric') || cat.includes('tech');
+    if (activeFilter === 'FUEL') return cat.includes('fuel') || cat.includes('transport') || cat.includes('travel') || cat.includes('cab');
+    return true;
+  });
+
   return (
     <View style={styles.container}>
       <View style={[styles.card, { backgroundColor: cardBg, borderColor }]}>
@@ -32,12 +57,68 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
             <Text style={[styles.title, { color: titleColor }]}>RECENT ACTIVITY</Text>
             <Text style={[styles.subtitle, { color: subColor }]}>Double-Entry General Journal</Text>
           </View>
-          <TouchableOpacity onPress={onViewAll} activeOpacity={0.7}>
+          <TouchableOpacity onPress={onViewAll} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="View all transactions">
             <Text style={[styles.viewAllText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
               View All ›
             </Text>
           </TouchableOpacity>
         </View>
+
+        {/* 1-Tap Horizontal Quick Filter Chips */}
+        {transactions.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterScroll}
+            contentContainerStyle={styles.filterContainer}
+          >
+            {FILTER_CHIPS.map((chip) => {
+              const isActive = activeFilter === chip.id;
+              return (
+                <TouchableOpacity
+                  key={chip.id}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: isActive
+                        ? isDark
+                          ? '#2563EB'
+                          : '#2563EB'
+                        : isDark
+                        ? '#1E293B'
+                        : '#F1F5F9',
+                      borderColor: isActive
+                        ? isDark
+                          ? '#3B82F6'
+                          : '#1D4ED8'
+                        : isDark
+                        ? '#334155'
+                        : '#E2E8F0',
+                    },
+                  ]}
+                  onPress={() => setActiveFilter(chip.id)}
+                  activeOpacity={0.75}
+                >
+                  <Text
+                    style={[
+                      styles.chipText,
+                      {
+                        color: isActive
+                          ? '#FFFFFF'
+                          : isDark
+                          ? '#CBD5E1'
+                          : '#475569',
+                        fontWeight: isActive ? '700' : '600',
+                      },
+                    ]}
+                  >
+                    {chip.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        )}
 
         {transactions.length === 0 ? (
           <View style={styles.emptyContainer}>
@@ -47,11 +128,24 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
               Tap '+ Record' on the top card to log your first income or expense.
             </Text>
           </View>
+        ) : filtered.length === 0 ? (
+          <View style={styles.emptyFilteredContainer}>
+            <Text style={[styles.emptyFilteredText, { color: subColor }]}>
+              No {FILTER_CHIPS.find((c) => c.id === activeFilter)?.label.toLowerCase()} entries found.
+            </Text>
+            <TouchableOpacity onPress={() => setActiveFilter('ALL')} activeOpacity={0.7}>
+              <Text style={[styles.resetFilterText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                Show All
+              </Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.txList}>
-            {transactions.slice(0, 4).map((tx, idx) => {
+            {filtered.slice(0, 5).map((tx, idx) => {
               const isCredit = tx.type === 'CREDIT';
-              const isLast = idx === Math.min(3, transactions.length - 1);
+              const isLast = idx === Math.min(4, filtered.length - 1);
+              const meta = getCategoryVisualMeta(tx.category, tx.type, isDark);
+
               return (
                 <TouchableOpacity
                   key={tx.id}
@@ -61,38 +155,21 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                   ]}
                   onPress={() => setSelectedTx(tx)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${tx.title}, ${formatINR(tx.amount)}`}
                 >
                   <View style={styles.txLeft}>
                     <View
                       style={[
                         styles.txIconBadge,
                         {
-                          backgroundColor: isCredit
-                            ? isDark
-                              ? 'rgba(16, 185, 129, 0.2)'
-                              : '#ECFDF5'
-                            : isDark
-                            ? 'rgba(239, 68, 68, 0.2)'
-                            : '#FEF2F2',
+                          backgroundColor: meta.bgColor,
+                          borderColor: meta.borderColor,
+                          borderWidth: 1,
                         },
                       ]}
                     >
-                      <Text
-                        style={[
-                          styles.txIconText,
-                          {
-                            color: isCredit
-                              ? isDark
-                                ? '#34D399'
-                                : '#059669'
-                              : isDark
-                              ? '#F87171'
-                              : '#DC2626',
-                          },
-                        ]}
-                      >
-                        {isCredit ? '↓' : '↑'}
-                      </Text>
+                      <Text style={styles.txIconEmoji}>{meta.icon}</Text>
                     </View>
                     <View style={styles.txMeta}>
                       <Text
@@ -161,14 +238,35 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
               ]}
             >
               <View style={[styles.modalBar, { backgroundColor: borderColor }]} />
+              
+              {/* Header with Category Icon */}
               <View style={styles.modalHeader}>
-                <View>
-                  <Text style={[styles.modalTitle, { color: primaryText }]}>
-                    {selectedTx.title}
-                  </Text>
-                  <Text style={[styles.modalSub, { color: subColor }]}>
-                    {selectedTx.category} • {selectedTx.date}
-                  </Text>
+                <View style={styles.modalHeaderLeft}>
+                  {(() => {
+                    const modalMeta = getCategoryVisualMeta(selectedTx.category, selectedTx.type, isDark);
+                    return (
+                      <View
+                        style={[
+                          styles.modalCategoryIconCircle,
+                          {
+                            backgroundColor: modalMeta.bgColor,
+                            borderColor: modalMeta.borderColor,
+                            borderWidth: 1,
+                          },
+                        ]}
+                      >
+                        <Text style={styles.modalCategoryIcon}>{modalMeta.icon}</Text>
+                      </View>
+                    );
+                  })()}
+                  <View style={styles.modalTitleCol}>
+                    <Text style={[styles.modalTitle, { color: primaryText }]} numberOfLines={1}>
+                      {selectedTx.title}
+                    </Text>
+                    <Text style={[styles.modalSub, { color: subColor }]}>
+                      {selectedTx.category} • {selectedTx.date}
+                    </Text>
+                  </View>
                 </View>
                 <View
                   style={[
@@ -321,6 +419,24 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.primaryDark,
   },
+  filterScroll: {
+    marginVertical: 8,
+    marginHorizontal: -4,
+  },
+  filterContainer: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 4,
+  },
+  chip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  chipText: {
+    fontSize: 11,
+  },
   txList: {
     marginTop: 4,
   },
@@ -342,38 +458,25 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   txIconBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 9,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconBadgeCredit: {
-    backgroundColor: theme.colors.primaryLightSolid,
-  },
-  iconBadgeDebit: {
-    backgroundColor: theme.colors.negativeBgSolid,
-  },
-  txIconText: {
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  iconTextCredit: {
-    color: theme.colors.positiveDark,
-  },
-  iconTextDebit: {
-    color: theme.colors.negativeDark,
+  txIconEmoji: {
+    fontSize: 16,
   },
   txMeta: {
     flex: 1,
   },
   txTitle: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
     color: theme.colors.textPrimary,
   },
   txSubtitle: {
-    fontSize: 10,
+    fontSize: 10.5,
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
@@ -387,16 +490,10 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
     letterSpacing: -0.3,
   },
-  amountCredit: {
-    color: theme.colors.positive,
-  },
-  amountDebit: {
-    color: theme.colors.textPrimary,
-  },
   reconciledPill: {
     backgroundColor: '#F0F4F1',
-    paddingHorizontal: 4.5,
-    paddingVertical: 1,
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
     borderRadius: 4,
   },
   reconciledText: {
@@ -404,6 +501,18 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: theme.colors.textSecondary,
     letterSpacing: 0.3,
+  },
+  emptyFilteredContainer: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    gap: 6,
+  },
+  emptyFilteredText: {
+    fontSize: 12,
+  },
+  resetFilterText: {
+    fontSize: 12,
+    fontWeight: '700',
   },
   modalBackdrop: {
     flex: 1,
@@ -435,11 +544,31 @@ const styles = StyleSheet.create({
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 16,
   },
+  modalHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    marginRight: 8,
+  },
+  modalCategoryIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCategoryIcon: {
+    fontSize: 18,
+  },
+  modalTitleCol: {
+    flex: 1,
+  },
   modalTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
     color: '#17231D',
   },
@@ -453,21 +582,9 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 6,
   },
-  badgeCredit: {
-    backgroundColor: '#DCFCE7',
-  },
-  badgeDebit: {
-    backgroundColor: '#FEE2E2',
-  },
   modalBadgeText: {
     fontSize: 9,
     fontWeight: '800',
-  },
-  badgeTextCredit: {
-    color: '#087A50',
-  },
-  badgeTextDebit: {
-    color: '#991B1B',
   },
   modalAmountBox: {
     backgroundColor: '#F7F9F7',

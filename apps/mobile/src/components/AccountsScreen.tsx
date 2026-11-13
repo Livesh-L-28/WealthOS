@@ -11,6 +11,7 @@ import {
 import { theme, useTheme } from '../theme';
 import { BankAccount, Transaction } from '../types';
 import { formatINR } from '../formatters';
+import { getCategoryVisualMeta } from '../utils/categoryMeta';
 
 interface AccountsScreenProps {
   accounts: BankAccount[];
@@ -19,6 +20,9 @@ interface AccountsScreenProps {
   onAddTransaction: () => void;
   onAddExpense?: () => void;
   onAddIncome?: () => void;
+  onTransferFunds?: () => void;
+  onImportStatement?: () => void;
+  onOpenReconciliation?: () => void;
   initialSubTab?: 'ACCOUNTS' | 'TRANSACTIONS';
 }
 
@@ -29,6 +33,9 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
   onAddTransaction,
   onAddExpense,
   onAddIncome,
+  onTransferFunds,
+  onImportStatement,
+  onOpenReconciliation,
   initialSubTab,
 }) => {
   const { isDark } = useTheme();
@@ -300,6 +307,69 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                       )}
                     </View>
 
+                    <View style={styles.cardActionsStrip}>
+                      {onTransferFunds && (
+                        <TouchableOpacity
+                          style={[
+                            styles.accActionBtn,
+                            {
+                              backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                              borderColor: isDark ? '#334155' : '#E2E8F0',
+                            },
+                          ]}
+                          onPress={(e) => {
+                            e.stopPropagation?.();
+                            onTransferFunds();
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.accActionBtnText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+                            ⇄ Transfer
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                      {onImportStatement && (
+                        <TouchableOpacity
+                          style={[
+                            styles.accActionBtn,
+                            {
+                              backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                              borderColor: isDark ? '#334155' : '#E2E8F0',
+                            },
+                          ]}
+                          onPress={(e) => {
+                            e.stopPropagation?.();
+                            onImportStatement();
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.accActionBtnText, { color: isDark ? '#34D399' : '#059669' }]}>
+                            📄 Statement
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                      {onOpenReconciliation && (
+                        <TouchableOpacity
+                          style={[
+                            styles.accActionBtn,
+                            {
+                              backgroundColor: isDark ? '#1E293B' : '#F1F5F9',
+                              borderColor: isDark ? '#334155' : '#E2E8F0',
+                            },
+                          ]}
+                          onPress={(e) => {
+                            e.stopPropagation?.();
+                            onOpenReconciliation();
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.accActionBtnText, { color: isDark ? '#CBD5E1' : '#475569' }]}>
+                            ✓ Reconcile
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+
                     <View style={styles.cardFooter}>
                       <Text style={styles.syncStatusText}>Synced: {acc.lastSynced}</Text>
                       <View style={styles.verifiedRow}>
@@ -492,6 +562,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
             <View style={styles.txList}>
               {filteredTransactions.map((tx) => {
                 const isCredit = tx.type === 'CREDIT';
+                const meta = getCategoryVisualMeta(tx.category, tx.type, isDark);
                 return (
                   <TouchableOpacity
                     key={tx.id}
@@ -503,10 +574,14 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                       <View
                         style={[
                           styles.txIconBox,
-                          isCredit ? styles.txIconCredit : styles.txIconDebit,
+                          {
+                            backgroundColor: meta.bgColor,
+                            borderColor: meta.borderColor,
+                            borderWidth: 1,
+                          },
                         ]}
                       >
-                        <Text style={styles.txIconText}>{isCredit ? '↓' : '↑'}</Text>
+                        <Text style={styles.txIconEmoji}>{meta.icon}</Text>
                       </View>
 
                       <View style={styles.txInfoCol}>
@@ -1039,14 +1114,30 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.textSecondary,
   },
+  cardActionsStrip: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.borderLight,
+  },
+  accActionBtn: {
+    paddingVertical: 5,
+    paddingHorizontal: 9,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  accActionBtnText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+  },
   cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.borderLight,
-    marginTop: 8,
+    paddingTop: 8,
+    marginTop: 6,
   },
   syncStatusText: {
     fontSize: 10,
@@ -1165,6 +1256,9 @@ const styles = StyleSheet.create({
   txIconText: {
     fontSize: 16,
     fontWeight: '800',
+  },
+  txIconEmoji: {
+    fontSize: 16,
   },
   txInfoCol: {
     flex: 1,

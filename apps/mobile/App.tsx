@@ -345,6 +345,7 @@ function WealthOSContent() {
   const [isReconModalOpen, setIsReconModalOpen] = useState(false);
   const [isAddTxModalOpen, setIsAddTxModalOpen] = useState(false);
   const [txModalType, setTxModalType] = useState<'DEBIT' | 'CREDIT'>('DEBIT');
+  const [isScanMode, setIsScanMode] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isCreateBudgetModalOpen, setIsCreateBudgetModalOpen] = useState(false);
@@ -353,11 +354,19 @@ function WealthOSContent() {
 
   const handleOpenAddExpense = () => {
     setTxModalType('DEBIT');
+    setIsScanMode(false);
     setIsAddTxModalOpen(true);
   };
 
   const handleOpenAddIncome = () => {
     setTxModalType('CREDIT');
+    setIsScanMode(false);
+    setIsAddTxModalOpen(true);
+  };
+
+  const handleOpenScanReceipt = () => {
+    setTxModalType('DEBIT');
+    setIsScanMode(true);
     setIsAddTxModalOpen(true);
   };
 
@@ -1104,6 +1113,7 @@ function WealthOSContent() {
               onTransferFunds={() => setIsTransferModalOpen(true)}
               onConnectBank={() => setIsConnectModalOpen(true)}
               onImportStatement={() => setIsImportModalOpen(true)}
+              onScanReceipt={handleOpenScanReceipt}
               onAddTransaction={() => handleOpenAddExpense()}
               onAddExpense={handleOpenAddExpense}
               onAddIncome={handleOpenAddIncome}
@@ -1143,6 +1153,9 @@ function WealthOSContent() {
               onAddTransaction={() => handleOpenAddExpense()}
               onAddExpense={handleOpenAddExpense}
               onAddIncome={handleOpenAddIncome}
+              onTransferFunds={() => setIsTransferModalOpen(true)}
+              onImportStatement={() => setIsImportModalOpen(true)}
+              onOpenReconciliation={() => setActiveScreen('reconciliation')}
               initialSubTab={activeScreen === 'transactions' ? 'TRANSACTIONS' : 'ACCOUNTS'}
             />
           </ScrollView>
@@ -1237,6 +1250,7 @@ function WealthOSContent() {
         onSelectExpense={handleOpenAddExpense}
         onSelectIncome={handleOpenAddIncome}
         onSelectTransfer={() => setIsTransferModalOpen(true)}
+        onSelectScanReceipt={handleOpenScanReceipt}
         onSelectConnectBank={() => setIsConnectModalOpen(true)}
         onSelectImportStatement={() => setIsImportModalOpen(true)}
         onSelectAddInvestment={() => setIsAddInvestmentModalOpen(true)}
@@ -1276,10 +1290,14 @@ function WealthOSContent() {
 
       <AddTransactionModal
         visible={isAddTxModalOpen}
-        onClose={() => setIsAddTxModalOpen(false)}
+        onClose={() => {
+          setIsAddTxModalOpen(false);
+          setIsScanMode(false);
+        }}
         accounts={accounts}
         onSubmit={handleAddTransaction}
         initialType={txModalType}
+        initialScanMode={isScanMode}
       />
 
       <ConnectAccountModal

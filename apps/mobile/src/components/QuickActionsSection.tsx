@@ -9,7 +9,9 @@ interface QuickActionsSectionProps {
   onAddExpense?: () => void;
   onAddIncome?: () => void;
   onAddInvestment?: () => void;
+  onScanReceipt?: () => void;
   onAskCopilot: () => void;
+  accountsCount?: number;
 }
 
 export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
@@ -19,7 +21,9 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
   onAddExpense,
   onAddIncome,
   onAddInvestment,
+  onScanReceipt,
   onAskCopilot,
+  accountsCount = 0,
 }) => {
   const { theme, isDark } = useTheme();
 
@@ -28,21 +32,28 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
       id: 'connect',
       label: 'Link Bank',
       icon: '🏛️',
-      sublabel: '6 Connected',
+      sublabel: `${accountsCount} Linked`,
       onPress: onConnectBank,
+    },
+    {
+      id: 'scan',
+      label: 'Scan Bill',
+      icon: '📷',
+      sublabel: 'AI OCR',
+      onPress: onScanReceipt || onAddTransaction,
     },
     {
       id: 'import',
       label: 'Import CAS',
       icon: '📄',
-      sublabel: 'CAMS / KFin',
+      sublabel: 'Bank / MF',
       onPress: onImportStatement,
     },
     {
       id: 'invest',
       label: 'Add Asset',
       icon: '📈',
-      sublabel: 'MF / Equity',
+      sublabel: 'Equities',
       onPress: onAddInvestment || onAddTransaction,
     },
     {
@@ -71,6 +82,8 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
             style={styles.actionItem}
             onPress={act.onPress}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`${act.label}, ${act.sublabel}`}
           >
             <View
               style={[
@@ -83,10 +96,16 @@ export const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
             >
               <Text style={styles.iconText}>{act.icon}</Text>
             </View>
-            <Text style={[styles.actionLabel, { color: isDark ? '#F8FAFC' : '#0F172A' }]}>
+            <Text
+              style={[styles.actionLabel, { color: isDark ? '#F8FAFC' : '#0F172A' }]}
+              numberOfLines={1}
+            >
               {act.label}
             </Text>
-            <Text style={[styles.actionSublabel, { color: isDark ? '#94A3B8' : '#64748B' }]}>
+            <Text
+              style={[styles.actionSublabel, { color: isDark ? '#94A3B8' : '#64748B' }]}
+              numberOfLines={1}
+            >
               {act.sublabel}
             </Text>
           </TouchableOpacity>
@@ -104,13 +123,13 @@ const styles = StyleSheet.create({
   dock: {
     backgroundColor: theme.colors.surface,
     borderRadius: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
     borderWidth: 1,
     borderColor: 'rgba(22, 163, 106, 0.2)',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     shadowColor: theme.colors.textPrimary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
@@ -120,29 +139,30 @@ const styles = StyleSheet.create({
   actionItem: {
     alignItems: 'center',
     flex: 1,
+    paddingHorizontal: 2,
   },
   iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     backgroundColor: '#F8FAF9',
     borderWidth: 1,
     borderColor: theme.colors.borderLight,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginBottom: 5,
   },
   iconText: {
-    fontSize: 20,
+    fontSize: 18,
   },
   actionLabel: {
-    fontSize: 11.5,
+    fontSize: 10.5,
     fontWeight: '800',
     color: theme.colors.textPrimary,
     textAlign: 'center',
   },
   actionSublabel: {
-    fontSize: 9,
+    fontSize: 8.5,
     color: theme.colors.textTertiary,
     marginTop: 1,
     textAlign: 'center',

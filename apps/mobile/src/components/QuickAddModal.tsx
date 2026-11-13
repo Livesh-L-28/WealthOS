@@ -16,6 +16,7 @@ interface QuickAddModalProps {
   onSelectExpense: () => void;
   onSelectIncome: () => void;
   onSelectTransfer: () => void;
+  onSelectScanReceipt?: () => void;
   onSelectConnectBank: () => void;
   onSelectImportStatement: () => void;
   onSelectAddInvestment: () => void;
@@ -29,13 +30,14 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
   onSelectExpense,
   onSelectIncome,
   onSelectTransfer,
+  onSelectScanReceipt,
   onSelectConnectBank,
   onSelectImportStatement,
   onSelectAddInvestment,
   onSelectCreateBudget,
   onSelectCopilot,
 }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -161,6 +163,42 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                     </Text>
                   </View>
                 </TouchableOpacity>
+
+                {/* Scan Receipt / Invoice AI OCR */}
+                {onSelectScanReceipt && (
+                  <TouchableOpacity
+                    style={[
+                      styles.transferCard,
+                      {
+                        backgroundColor: isDark ? 'rgba(16, 185, 129, 0.12)' : '#ECFDF5',
+                        borderColor: isDark ? 'rgba(16, 185, 129, 0.35)' : 'rgba(5, 150, 105, 0.3)',
+                        marginTop: 10,
+                      },
+                    ]}
+                    onPress={() => {
+                      onClose();
+                      onSelectScanReceipt();
+                    }}
+                    activeOpacity={0.85}
+                  >
+                    <View style={[styles.transferIconBox, { backgroundColor: '#059669' }]}>
+                      <Text style={styles.transferIconText}>📷</Text>
+                    </View>
+                    <View style={styles.transferTextCol}>
+                      <View style={styles.cardHeaderRow}>
+                        <Text style={[styles.transferTitle, { color: isDark ? '#34D399' : '#065F46' }]}>
+                          Scan Receipt / Invoice
+                        </Text>
+                        <View style={[styles.tagBlue, { backgroundColor: '#059669' }]}>
+                          <Text style={styles.tagTextWhite}>AI OCR</Text>
+                        </View>
+                      </View>
+                      <Text style={[styles.cardSub, { color: theme.colors.textSecondary }]}>
+                        Snap camera or pick photo to auto-extract merchant & amount
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
 
                 {/* Secondary Strategic Financial Actions */}
                 <View style={[styles.sectionDivider, { backgroundColor: theme.colors.border }]} />
