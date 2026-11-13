@@ -160,8 +160,12 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer error='invalid_token'"},
         )
 
-    # Update session activity
-    user_session.last_active_at = now
+    # Update session activity (throttled to 300s to eliminate DB row-lock contention)
+    last_active = user_session.last_active_at
+    if last_active and last_active.tzinfo is None:
+        last_active = last_active.replace(tzinfo=UTC)
+    if not last_active or (now - last_active).total_seconds() >= 300:
+        user_session.last_active_at = now
 
     # Set context variables and database session context
     current_user_id_ctx.set(user.id)

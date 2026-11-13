@@ -61,6 +61,42 @@ describe('WealthOS Web Application Security Hardening Suite', () => {
         expect(res.headers.get('location')).toContain('/auth/login');
       }
     });
+
+    it('rejects expired JWT session cookies and redirects to login', () => {
+      // Create an expired JWT (exp in the past)
+      const pastExp = Math.floor(Date.now() / 1000) - 3600;
+      const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+      const payload = btoa(JSON.stringify({ sub: 'user-123', exp: pastExp }));
+      const expiredJwt = `${header}.${payload}.mocksignature`;
+
+      const req = new NextRequest('http://localhost:3000/dashboard', {
+        headers: {
+          cookie: `wealthos_access_token=${expiredJwt}`,
+        },
+      });
+      const res = middleware(req);
+
+      expect(res.status).toBe(307);
+      expect(res.headers.get('location')).toContain('/auth/login?redirect=%2Fdashboard');
+    });
+
+    it('permits unexpired JWT session cookies', () => {
+      // Create a valid future JWT (exp 1 hour in the future)
+      const futureExp = Math.floor(Date.now() / 1000) + 3600;
+      const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+      const payload = btoa(JSON.stringify({ sub: 'user-123', exp: futureExp }));
+      const validJwt = `${header}.${payload}.mocksignature`;
+
+      const req = new NextRequest('http://localhost:3000/dashboard', {
+        headers: {
+          cookie: `wealthos_access_token=${validJwt}`,
+        },
+      });
+      const res = middleware(req);
+
+      expect(res.status).toBe(200);
+      expect(res.headers.get('Cache-Control')).toContain('no-store');
+    });
   });
 
   describe('Zero Persistent LocalStorage Credential Retention Policy', () => {

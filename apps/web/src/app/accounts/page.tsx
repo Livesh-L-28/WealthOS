@@ -32,68 +32,7 @@ interface AccountItem {
   status: 'ACTIVE' | 'SYNCED' | 'DISCONNECTED';
 }
 
-const INITIAL_ACCOUNTS: AccountItem[] = [
-  {
-    id: 'acc-1',
-    name: 'HDFC Corporate Salary',
-    institution: 'HDFC Bank',
-    type: 'SAVINGS',
-    mask: '•••• 4921',
-    currency: 'INR',
-    balance: 482450.0,
-    status: 'ACTIVE',
-  },
-  {
-    id: 'acc-2',
-    name: 'ICICI Privileged Savings',
-    institution: 'ICICI Bank',
-    type: 'SAVINGS',
-    mask: '•••• 8192',
-    currency: 'INR',
-    balance: 845200.0,
-    status: 'ACTIVE',
-  },
-  {
-    id: 'acc-3',
-    name: 'SBI Tax Saver Term Deposit',
-    institution: 'State Bank of India',
-    type: 'SAVINGS',
-    mask: '•••• 1042',
-    currency: 'INR',
-    balance: 1500000.0,
-    status: 'SYNCED',
-  },
-  {
-    id: 'acc-4',
-    name: 'Zerodha Demat & Trading',
-    institution: 'Zerodha Broking',
-    type: 'DEMAT',
-    mask: '•••• 3391',
-    currency: 'INR',
-    balance: 4522551.25,
-    status: 'ACTIVE',
-  },
-  {
-    id: 'acc-5',
-    name: 'HDFC Priority Home Loan',
-    institution: 'HDFC Bank',
-    type: 'LOAN',
-    mask: '•••• 9940',
-    currency: 'INR',
-    balance: -1650000.0,
-    status: 'ACTIVE',
-  },
-  {
-    id: 'acc-6',
-    name: 'Axis Bank Magnus Card',
-    institution: 'Axis Bank',
-    type: 'CREDIT_CARD',
-    mask: '•••• 1102',
-    currency: 'INR',
-    balance: -242300.0,
-    status: 'ACTIVE',
-  },
-];
+const INITIAL_ACCOUNTS: AccountItem[] = [];
 
 export default function AccountsPage() {
   const [accounts, setAccounts] = useState<AccountItem[]>(INITIAL_ACCOUNTS);

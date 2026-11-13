@@ -60,13 +60,16 @@ class IdempotencyEngine:
         clean_key = str(idempotency_key).strip()[:128]
         req_hash = IdempotencyEngine.compute_request_hash(payload)
 
-        # Query existing record
+        # Query existing record (FOR UPDATE only supported on PostgreSQL)
+        bind = session.get_bind() if hasattr(session, "get_bind") else getattr(session, "bind", None)
+        dialect_name = getattr(getattr(bind, "dialect", None), "name", "")
+        for_update_clause = " FOR UPDATE;" if dialect_name == "postgresql" else ";"
+
         query = text(
-            """
+            f"""
             SELECT id, request_hash, status, response_code, response_body, expires_at
             FROM api_idempotency_records
-            WHERE tenant_id = :tenant_id AND idempotency_key = :key
-            FOR UPDATE;
+            WHERE tenant_id = :tenant_id AND idempotency_key = :key{for_update_clause}
             """
         )
         result = await session.execute(query, {"tenant_id": str(tenant_id), "key": clean_key})
@@ -112,7 +115,7 @@ class IdempotencyEngine:
                 id, tenant_id, user_id, idempotency_key, operation,
                 request_hash, status, created_at, expires_at
             ) VALUES (
-                gen_random_uuid(), :tenant_id, :user_id, :key, :operation,
+                :rec_id, :tenant_id, :user_id, :key, :operation,
                 :hash, 'IN_PROGRESS', :now, :expires_at
             )
             ON CONFLICT (tenant_id, idempotency_key) DO UPDATE
@@ -123,6 +126,7 @@ class IdempotencyEngine:
         await session.execute(
             insert_stmt,
             {
+                "rec_id": str(uuid.uuid4()),
                 "tenant_id": str(tenant_id),
                 "user_id": str(user_id),
                 "key": clean_key,
@@ -149,12 +153,16 @@ class IdempotencyEngine:
         if hasattr(response_body, "model_dump"):
             body_json = response_body.model_dump(mode="json")
 
+        bind = session.get_bind() if hasattr(session, "get_bind") else getattr(session, "bind", None)
+        dialect_name = getattr(getattr(bind, "dialect", None), "name", "")
+        body_cast = "CAST(:body AS JSONB)" if dialect_name == "postgresql" else ":body"
+
         update_stmt = text(
-            """
+            f"""
             UPDATE api_idempotency_records
             SET status = 'COMPLETED',
                 response_code = :code,
-                response_body = CAST(:body AS JSONB)
+                response_body = {body_cast}
             WHERE tenant_id = :tenant_id AND idempotency_key = :key;
             """
         )

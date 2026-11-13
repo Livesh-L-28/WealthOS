@@ -17,64 +17,17 @@ interface TransactionItem {
   status: 'RECONCILED' | 'CLEARED' | 'PENDING';
 }
 
-const RECENT_TRANSACTIONS: TransactionItem[] = [
-  {
-    id: 'tx-1',
-    name: 'Infy Tech Advisory Services',
-    account: 'HDFC Corporate Salary',
-    category: 'Professional Income',
-    date: '5 Nov 2026',
-    amount: 185000.0,
-    type: 'CREDIT',
-    status: 'RECONCILED',
-  },
-  {
-    id: 'tx-2',
-    name: 'Tata Consultancy Services Dividend',
-    account: 'Zerodha Demat & Trading',
-    category: 'Investment Yield',
-    date: '3 Nov 2026',
-    amount: 14500.0,
-    type: 'CREDIT',
-    status: 'RECONCILED',
-  },
-  {
-    id: 'tx-3',
-    name: 'DLF CyberCity Lease Rent',
-    account: 'HDFC Corporate Salary',
-    category: 'Housing & Rent',
-    date: '2 Nov 2026',
-    amount: 45000.0,
-    type: 'DEBIT',
-    status: 'RECONCILED',
-  },
-  {
-    id: 'tx-4',
-    name: 'Monthly SIP - Parag Parikh Flexi Cap',
-    account: 'ICICI Privileged Savings',
-    category: 'Mutual Fund SIP',
-    date: '1 Nov 2026',
-    amount: 50000.0,
-    type: 'DEBIT',
-    status: 'RECONCILED',
-  },
-  {
-    id: 'tx-5',
-    name: 'Axis Magnus Card Statement Settlement',
-    account: 'HDFC Corporate Salary',
-    category: 'Credit Card Bill',
-    date: '28 Oct 2026',
-    amount: 38200.0,
-    type: 'DEBIT',
-    status: 'CLEARED',
-  },
-];
+interface RecentTransactionsTableProps {
+  transactions?: TransactionItem[];
+}
 
-export function RecentTransactionsTable() {
+export function RecentTransactionsTable({ transactions }: RecentTransactionsTableProps = {}) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'ALL' | 'INFLOW' | 'OUTFLOW'>('ALL');
 
-  const filtered = RECENT_TRANSACTIONS.filter((tx) => {
+  const txList = transactions !== undefined ? transactions : [];
+
+  const filtered = txList.filter((tx) => {
     const matchesSearch =
       tx.name.toLowerCase().includes(search.toLowerCase()) ||
       tx.category.toLowerCase().includes(search.toLowerCase()) ||
@@ -134,56 +87,63 @@ export function RecentTransactionsTable() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead>
-            <tr className="border-b border-[#E2E8F0] text-[#475569] uppercase tracking-wider font-semibold">
-              <th className="py-2.5 px-3">Transaction</th>
-              <th className="py-2.5 px-3">Category</th>
-              <th className="py-2.5 px-3">Account</th>
-              <th className="py-2.5 px-3">Date</th>
-              <th className="py-2.5 px-3">Status</th>
-              <th className="py-2.5 px-3 text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#E2E8F0]">
-            {filtered.map((tx) => (
-              <tr key={tx.id} className="hover:bg-[#F8FAFC] transition-colors">
-                <td className="py-3 px-3">
-                  <div className="font-semibold text-[#0F172A]">{tx.name}</div>
-                  <div className="text-[10px] text-[#475569] font-mono">{tx.id}</div>
-                </td>
-                <td className="py-3 px-3 text-[#475569] font-medium">{tx.category}</td>
-                <td className="py-3 px-3 text-[#475569]">{tx.account}</td>
-                <td className="py-3 px-3 text-[#475569] font-mono">{tx.date}</td>
-                <td className="py-3 px-3">
-                  <Badge
-                    variant={
-                      tx.status === 'RECONCILED'
-                        ? 'positive'
-                        : tx.status === 'CLEARED'
-                        ? 'brand'
-                        : 'warning'
-                    }
-                    size="sm"
-                  >
-                    {tx.status}
-                  </Badge>
-                </td>
-                <td className="py-3 px-3 text-right font-mono font-semibold">
-                  <span
-                    className={tx.type === 'CREDIT' ? 'text-[#10B981]' : 'text-[#0F172A]'}
-                  >
-                    {tx.type === 'CREDIT' ? '+' : '-'}₹
-                    {tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </span>
-                </td>
+      {/* Table / Empty State */}
+      {filtered.length === 0 ? (
+        <div className="py-10 px-4 text-center">
+          <p className="text-xs font-semibold text-[#0F172A]">No recent ledger transactions</p>
+          <p className="text-xs text-[#64748B] mt-1">Connect an account or post a journal entry to view settled activity.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-[#E2E8F0] text-[#475569] uppercase tracking-wider font-semibold">
+                <th className="py-2.5 px-3">Transaction</th>
+                <th className="py-2.5 px-3">Category</th>
+                <th className="py-2.5 px-3">Account</th>
+                <th className="py-2.5 px-3">Date</th>
+                <th className="py-2.5 px-3">Status</th>
+                <th className="py-2.5 px-3 text-right">Amount</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {filtered.map((tx) => (
+                <tr key={tx.id} className="hover:bg-[#F8FAFC] transition-colors">
+                  <td className="py-3 px-3">
+                    <div className="font-semibold text-[#0F172A]">{tx.name}</div>
+                    <div className="text-[10px] text-[#475569] font-mono">{tx.id}</div>
+                  </td>
+                  <td className="py-3 px-3 text-[#475569] font-medium">{tx.category}</td>
+                  <td className="py-3 px-3 text-[#475569]">{tx.account}</td>
+                  <td className="py-3 px-3 text-[#475569] font-mono">{tx.date}</td>
+                  <td className="py-3 px-3">
+                    <Badge
+                      variant={
+                        tx.status === 'RECONCILED'
+                          ? 'positive'
+                          : tx.status === 'CLEARED'
+                          ? 'brand'
+                          : 'warning'
+                      }
+                      size="sm"
+                    >
+                      {tx.status}
+                    </Badge>
+                  </td>
+                  <td className="py-3 px-3 text-right font-mono font-semibold">
+                    <span
+                      className={tx.type === 'CREDIT' ? 'text-[#10B981]' : 'text-[#0F172A]'}
+                    >
+                      {tx.type === 'CREDIT' ? '+' : '-'}₹
+                      {tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </Card>
   );
 }

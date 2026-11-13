@@ -92,7 +92,7 @@ function parseCsvRows(csvText: string): string[][] {
   return rows;
 }
 
-function parseDate(dateStr: string): string {
+function parseDate(dateStr: string): string | null {
   const cleaned = dateStr.trim();
   const dmyMatch = cleaned.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
   if (dmyMatch) {
@@ -119,7 +119,15 @@ function parseDate(dateStr: string): string {
     return `${year}-${m}-${d.padStart(2, '0')}`;
   }
 
-  return new Date().toISOString().split('T')[0];
+  const monDYMatch = cleaned.match(/^([A-Za-z]{3})[ -](\d{1,2})[ -](\d{2,4})$/);
+  if (monDYMatch) {
+    const [, mon, d, y] = monDYMatch;
+    const m = monthNames[mon.toLowerCase()] || '01';
+    const year = y.length === 2 ? `20${y}` : y;
+    return `${year}-${m}-${d.padStart(2, '0')}`;
+  }
+
+  return null;
 }
 
 function cleanAmount(valStr: string | undefined): number {
@@ -223,6 +231,7 @@ export function parseBankStatementCsv(csvText: string, filename?: string): Parse
       const rawDate = row[headerMap.date];
       if (!rawDate) continue;
       const date = parseDate(rawDate);
+      if (!date) continue;
       const desc = row[headerMap.desc];
       if (!desc) continue;
       const ref = 'ref' in headerMap ? row[headerMap.ref] : undefined;
@@ -324,6 +333,7 @@ export function parseZerodhaTradebook(csvText: string, filename?: string): Parse
 
       const dateStr = row[headerIdx.trade_date] || row[headerIdx.order_execution_time] || '';
       const date = parseDate(dateStr);
+      if (!date) continue;
       const tradeType = row[headerIdx.trade_type]?.trim().toUpperCase() || 'BUY';
       const qty = cleanAmount(row[headerIdx.quantity]);
       const price = cleanAmount(row[headerIdx.price]);
@@ -419,6 +429,7 @@ export function parseCamsCas(rawText: string, filename?: string): ParsedStatemen
     const match = line.match(/^(\d{1,2}[/-]\w+[/-]\d{2,4}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\s+(.+?)\s+(?:₹|rs\.?)?\s*([0-9,]+\.[0-9]{2})\s+([0-9,]+\.[0-9]{2,4})\s+(?:₹|rs\.?)?\s*([0-9,]+\.[0-9]{2,4})/i);
     if (match) {
       const date = parseDate(match[1]);
+      if (!date) continue;
       const txnType = match[2].trim();
       const amt = cleanAmount(match[3]);
       const units = cleanAmount(match[4]);

@@ -26,6 +26,37 @@ const PROTECTED_PREFIXES = [
   '/settings',
 ];
 
+export function isJwtActive(token: string | null | undefined): boolean {
+  if (!token || typeof token !== 'string' || token.trim().length === 0) {
+    return false;
+  }
+  const parts = token.split('.');
+  if (parts.length === 3) {
+    try {
+      const base64Url = parts[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const raw = typeof atob === 'function' ? atob(base64) : Buffer.from(base64, 'base64').toString('utf-8');
+      const payload = JSON.parse(raw);
+      if (payload && typeof payload.exp === 'number') {
+        const nowSec = Math.floor(Date.now() / 1000);
+        if (payload.exp <= nowSec) {
+          return false; // Expired token
+        }
+      }
+      return true;
+    } catch {
+      return false; // Malformed payload
+    }
+  }
+
+  // Non-JWT tokens only permitted in test/development environments if minimum length satisfied
+  if (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development') {
+    return token.length >= 8;
+  }
+
+  return false;
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -35,15 +66,18 @@ export function middleware(request: NextRequest) {
   );
 
   if (isProtected) {
-    // Check for presence of active auth token cookie
-    const hasAccessToken = request.cookies.has('wealthos_access_token') || request.cookies.has('access_token');
-    const hasRefreshToken = request.cookies.has('refresh_token');
+    // Validate structural integrity and expiration of session cookies
+    const accessToken = request.cookies.get('wealthos_access_token')?.value || request.cookies.get('access_token')?.value;
+    const refreshToken = request.cookies.get('refresh_token')?.value;
 
-    if (!hasAccessToken && !hasRefreshToken) {
-      // In development or e2e tests where bearer token is stored in localStorage or headers,
-      // allow through if requested with Authorization header or if running in test bypass
+    const hasValidAccessToken = isJwtActive(accessToken);
+    const hasValidRefreshToken = isJwtActive(refreshToken);
+
+    if (!hasValidAccessToken && !hasValidRefreshToken) {
+      // In development, mobile API requests, or e2e tests where bearer token is passed in header
       const authHeader = request.headers.get('authorization');
-      if (!authHeader) {
+      const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+      if (!isJwtActive(bearerToken)) {
         const loginUrl = new URL('/auth/login', request.url);
         loginUrl.searchParams.set('redirect', pathname);
         return NextResponse.redirect(loginUrl);

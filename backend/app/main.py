@@ -41,6 +41,22 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         f"profile={settings.RUNTIME_PROFILE}..."
     )
 
+    # 0. Production Security Hardening & Secret Rotation Validation (SEC-03)
+    if settings.is_production or settings.ENVIRONMENT in ("production", "staging"):
+        insecure_keys = (
+            "insecure_dev_secret_key_change_in_production_min_32_bytes_long_12345",
+            "wealthos_local_32_byte_master_key_for_aes_gcm_123",
+        )
+        if settings.SECRET_KEY in insecure_keys or len(settings.SECRET_KEY) < 32:
+            raise RuntimeError(
+                "[CRITICAL SECURITY ERROR] Production startup aborted: SECRET_KEY is using an insecure default dev key. "
+                "Set a secure, high-entropy SECRET_KEY via environment variables before deploying to production."
+            )
+        if settings.ENCRYPTION_MASTER_KEY in insecure_keys:
+            raise RuntimeError(
+                "[CRITICAL SECURITY ERROR] Production startup aborted: ENCRYPTION_MASTER_KEY is using a default key."
+            )
+
     # 1. Database Initialization (Always Mandatory)
     try:
         await init_db()

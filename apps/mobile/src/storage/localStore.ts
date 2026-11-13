@@ -91,8 +91,18 @@ async function getMasterKey(): Promise<string | null> {
   return masterKeyInitPromise;
 }
 
+const SENSITIVE_STORAGE_KEYS = new Set<string>([
+  STORAGE_KEYS.ACCOUNTS,
+  STORAGE_KEYS.TRANSACTIONS,
+  STORAGE_KEYS.HOLDINGS,
+  STORAGE_KEYS.BUDGETS,
+  STORAGE_KEYS.GOALS,
+  STORAGE_KEYS.DOCUMENTS,
+]);
+
 /**
  * Encrypts a payload string with AES-256-GCM if hardware key is available.
+ * Fails closed on sensitive financial data to prevent plaintext leakage.
  */
 async function securePack(rawJson: string, aadKey: string): Promise<string> {
   if (!rawJson) return rawJson ?? '';
@@ -105,8 +115,17 @@ async function securePack(rawJson: string, aadKey: string): Promise<string> {
       }
     }
   } catch (err: any) {
-    logger.warn(`Encryption deferred for ${aadKey}:`, err?.message || String(err));
+    logger.error(`Encryption failure for sensitive key ${aadKey}:`, err?.message || String(err));
+    if (SENSITIVE_STORAGE_KEYS.has(aadKey)) {
+      throw new Error(`[SECURITY] Cryptographic failure: cannot persist ${aadKey} in plaintext (fail-closed).`);
+    }
   }
+
+  if (SENSITIVE_STORAGE_KEYS.has(aadKey)) {
+    logger.error(`Master encryption key unavailable when saving sensitive key ${aadKey}`);
+    throw new Error(`[SECURITY] Encryption key unavailable: cannot persist ${aadKey} in plaintext (fail-closed).`);
+  }
+
   return rawJson ?? '';
 }
 

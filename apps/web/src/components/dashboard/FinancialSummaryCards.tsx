@@ -60,10 +60,16 @@ const SUMMARY_ITEMS: SummaryCardItem[] = [
   },
 ];
 
-export function FinancialSummaryCards() {
+export interface FinancialSummaryCardsProps {
+  items?: SummaryCardItem[];
+}
+
+export function FinancialSummaryCards({ items }: FinancialSummaryCardsProps = {}) {
+  const displayItems = items || SUMMARY_ITEMS;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {SUMMARY_ITEMS.map((item) => {
+      {displayItems.map((item) => {
         const Icon = item.icon;
 
         return (

@@ -743,7 +743,7 @@ class DocumentIntelligenceService:
         if amount == Decimal("0.00") and line_items:
             amount = sum(li.amount for li in line_items)
         if amount == Decimal("0.00"):
-            amount = Decimal("450.00")
+            confidence = Decimal("0.3500")
 
         # Register document entity in audit trail
         doc_hash = hashlib.sha256(f"{tenant_id}:{merchant_name}:{amount}:{datetime.now(UTC).isoformat()}".encode()).hexdigest()
@@ -853,7 +853,7 @@ class DocumentIntelligenceService:
                 pass
 
 
-        def parse_date(date_str: str) -> date:
+        def parse_date(date_str: str) -> date | None:
             d_str = date_str.strip()
             for fmt in (
                 "%d/%m/%Y",
@@ -864,12 +864,17 @@ class DocumentIntelligenceService:
                 "%d-%b-%y",
                 "%d %b %Y",
                 "%b %d, %Y",
+                "%Y/%m/%d",
+                "%m/%d/%Y",
+                "%d.%m.%Y",
+                "%d %B %Y",
+                "%Y%m%d",
             ):
                 try:
                     return datetime.strptime(d_str, fmt).date()
                 except ValueError:
                     continue
-            return date.today()
+            return None
 
         def clean_amt(val_str: str) -> Decimal:
             cleaned = re.sub(r"[₹RsINR,\s]", "", val_str)
@@ -920,6 +925,8 @@ class DocumentIntelligenceService:
                         continue
                     trade_date_str = row[header_idx.get("trade_date", 0)].strip()
                     t_date = parse_date(trade_date_str)
+                    if not t_date:
+                        continue
                     trade_type = row[header_idx["trade_type"]].strip().upper()
                     qty = clean_amt(row[header_idx.get("quantity", 0)])
                     price = clean_amt(row[header_idx.get("price", 0)])
@@ -981,6 +988,8 @@ class DocumentIntelligenceService:
                 m = re.match(r"^(\d{1,2}[/-]\w+[/-]\d{2,4}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\s+(.+?)\s+(?:₹|rs\.?)?\s*([0-9,]+\.[0-9]{2})\s+([0-9,]+\.[0-9]{2,4})\s+(?:₹|rs\.?)?\s*([0-9,]+\.[0-9]{2,4})", line, re.IGNORECASE)
                 if m:
                     t_date = parse_date(m.group(1))
+                    if not t_date:
+                        continue
                     txn_type_str = m.group(2).strip()
                     amt = clean_amt(m.group(3))
                     units = clean_amt(m.group(4))
@@ -1055,6 +1064,8 @@ class DocumentIntelligenceService:
                     if not raw_date:
                         continue
                     t_date = parse_date(raw_date)
+                    if not t_date:
+                        continue
                     desc = row[header_map["desc"]].strip()
                     ref = row[header_map["ref"]].strip() if "ref" in header_map and len(row) > header_map["ref"] else None
 

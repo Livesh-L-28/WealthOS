@@ -114,9 +114,7 @@ export function parseReceiptTextLocally(
   if (amount === 0 && lineItems.length > 0) {
     amount = lineItems.reduce((acc, curr) => acc + curr.amount, 0);
   }
-  if (amount === 0) {
-    amount = 450;
-  }
+  const confidence = amount > 0 ? 0.95 : 0.35;
 
   return {
     merchantName: merchantName || 'Retail Merchant',
@@ -127,7 +125,7 @@ export function parseReceiptTextLocally(
     gstin,
     invoiceNumber,
     lineItems,
-    confidence: 0.95,
+    confidence,
     source,
     rawText: text,
   };
@@ -263,7 +261,7 @@ export async function scanReceiptWithHybridOCR(params: {
     }
   }
 
-  return parseReceiptTextLocally(params.rawText || 'RECEIPT\nTOTAL: ₹450.00', source);
+  return parseReceiptTextLocally(params.rawText || '', source);
 }
 
 export async function captureReceiptFromCamera(): Promise<{ uri: string; base64?: string } | null> {
