@@ -12,6 +12,7 @@ interface HeaderProps {
   onOpenSearch?: () => void;
   activeWorkspace?: string;
   isSyncing?: boolean;
+  syncStatus?: 'SYNCED' | 'SYNCING' | 'OFFLINE_PENDING' | 'ERROR';
   isPrivacyMode?: boolean;
   onTogglePrivacy?: () => void;
 }
@@ -23,6 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   activeWorkspace = 'Family Office',
   isSyncing = false,
+  syncStatus = 'SYNCED',
   isPrivacyMode = false,
   onTogglePrivacy,
 }) => {
@@ -66,12 +68,27 @@ export const Header: React.FC<HeaderProps> = ({
             <View
               style={[
                 styles.syncDot,
-                { backgroundColor: '#10B981' },
-                isSyncing && styles.syncDotPulse,
+                {
+                  backgroundColor:
+                    syncStatus === 'OFFLINE_PENDING'
+                      ? '#F59E0B'
+                      : syncStatus === 'SYNCING'
+                      ? '#3B82F6'
+                      : syncStatus === 'ERROR'
+                      ? '#EF4444'
+                      : '#10B981',
+                },
+                (isSyncing || syncStatus === 'SYNCING') && styles.syncDotPulse,
               ]}
             />
             <Text style={[styles.syncText, { color: isDark ? '#94A3B8' : '#64748B' }]}>
-              {isSyncing ? 'Syncing...' : 'Ledger In Sync'}
+              {syncStatus === 'SYNCING'
+                ? 'Syncing Cloud...'
+                : syncStatus === 'OFFLINE_PENDING'
+                ? 'Offline (Saved Locally)'
+                : syncStatus === 'ERROR'
+                ? 'Sync Attention Needed'
+                : 'Ledger In Sync'}
             </Text>
           </TouchableOpacity>
         </View>

@@ -181,6 +181,7 @@ function WealthOSContent() {
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isStorageReady, setIsStorageReady] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<'SYNCED' | 'SYNCING' | 'OFFLINE_PENDING' | 'ERROR'>('SYNCED');
 
   // Load persistent state from device storage on startup (Preserves data across updates)
   useEffect(() => {
@@ -214,20 +215,27 @@ function WealthOSContent() {
     };
   }, []);
 
-  const syncToCloud = (override?: {
+  const syncToCloud = async (override?: {
     accounts?: BankAccount[];
     transactions?: Transaction[];
     budgets?: BudgetEnvelope[];
     goals?: FinancialGoal[];
     holdings?: InvestmentHolding[];
   }) => {
-    syncService.syncLedgerSnapshot({
-      accounts: override?.accounts ?? accounts,
-      transactions: override?.transactions ?? transactions,
-      budgets: override?.budgets ?? budgets,
-      goals: override?.goals ?? goals,
-      holdings: override?.holdings ?? holdings,
-    });
+    setSyncStatus('SYNCING');
+    try {
+      await syncService.syncLedgerSnapshot({
+        accounts: override?.accounts ?? accounts,
+        transactions: override?.transactions ?? transactions,
+        budgets: override?.budgets ?? budgets,
+        goals: override?.goals ?? goals,
+        holdings: override?.holdings ?? holdings,
+      });
+      setSyncStatus('SYNCED');
+    } catch (err) {
+      console.warn('Background cloud sync deferred (saved locally):', err);
+      setSyncStatus('OFFLINE_PENDING');
+    }
   };
 
   const loadLiveLedgerData = async () => {
@@ -507,27 +515,38 @@ function WealthOSContent() {
     setIsAddTxModalOpen(true);
   };
 
-  // Computed Financial Totals
-  const totalAssets = accounts
-    .filter((a) => a.category === 'ASSET')
-    .reduce((sum, a) => sum + a.balance, 0);
+  // Fixed-Point Decimal Rounding Helper (prevents IEEE 754 floating-point balance drift)
+  const roundMoney = (val: number) => Math.round((val + Number.EPSILON) * 100) / 100;
 
-  const totalLiabilities = accounts
-    .filter((a) => a.category === 'LIABILITY')
-    .reduce((sum, a) => sum + a.balance, 0);
+  // Computed Financial Totals with Fixed-Point Precision
+  const totalAssets = roundMoney(
+    accounts
+      .filter((a) => a.category === 'ASSET')
+      .reduce((sum, a) => sum + a.balance, 0)
+  );
 
-  const netWorth = totalAssets - totalLiabilities;
+  const totalLiabilities = roundMoney(
+    accounts
+      .filter((a) => a.category === 'LIABILITY')
+      .reduce((sum, a) => sum + a.balance, 0)
+  );
 
-  const totalPortfolioValue = holdings.reduce((sum, h) => sum + h.currentValue, 0);
-  const totalInvestedValue = holdings.reduce((sum, h) => sum + h.investedValue, 0);
+  const netWorth = roundMoney(totalAssets - totalLiabilities);
 
-  const monthlyInflows = transactions
-    .filter((t) => t.type === 'CREDIT')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const totalPortfolioValue = roundMoney(holdings.reduce((sum, h) => sum + h.currentValue, 0));
+  const totalInvestedValue = roundMoney(holdings.reduce((sum, h) => sum + h.investedValue, 0));
 
-  const monthlyOutflows = transactions
-    .filter((t) => t.type === 'DEBIT')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const monthlyInflows = roundMoney(
+    transactions
+      .filter((t) => t.type === 'CREDIT')
+      .reduce((sum, t) => sum + t.amount, 0)
+  );
+
+  const monthlyOutflows = roundMoney(
+    transactions
+      .filter((t) => t.type === 'DEBIT')
+      .reduce((sum, t) => sum + t.amount, 0)
+  );
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -716,11 +735,17 @@ function WealthOSContent() {
     if (!acc) return;
 
     const doDelete = async () => {
-      const updated = accounts.filter((a) => a.id !== accountId);
-      setAccounts(updated);
-      await localStore.saveAccounts(updated);
-      syncToCloud({ accounts: updated });
-      showNotification(`Removed account: ${acc.name}`);
+      const updatedAccounts = accounts.filter((a) => a.id !== accountId);
+      // Clean up orphaned transactions associated with this unlinked account to maintain ledger integrity
+      const updatedTransactions = transactions.filter(
+        (t) => t.accountId !== accountId && t.account !== acc.name
+      );
+      setAccounts(updatedAccounts);
+      setTransactions(updatedTransactions);
+      await localStore.saveAccounts(updatedAccounts);
+      await localStore.saveTransactions(updatedTransactions);
+      syncToCloud({ accounts: updatedAccounts, transactions: updatedTransactions });
+      showNotification(`Unlinked ${acc.name} and purged associated ledger entries`);
     };
 
     if (Platform.OS === 'web') {
@@ -1028,9 +1053,12 @@ function WealthOSContent() {
       const liquid = accounts
         .filter((a) => a.category === 'ASSET' && (a.type === 'SAVINGS' || a.type === 'TERM_DEPOSIT'))
         .reduce((s, a) => s + a.balance, 0);
-      const monthlyBurn = monthlyOutflows > 0 ? monthlyOutflows : 157950;
-      const months = (liquid / monthlyBurn).toFixed(1);
-      answer = `Based on your liquid reserves of ${formatINR(liquid)} and monthly outflows of ${formatINR(monthlyBurn)}, your emergency runway is ${months} months. Recommended safety guideline is 6.0 months, so your liquid cash buffer is healthy and secure.`;
+      if (monthlyOutflows > 0) {
+        const months = (liquid / monthlyOutflows).toFixed(1);
+        answer = `Based on your liquid reserves of ${formatINR(liquid)} and verified monthly outflows of ${formatINR(monthlyOutflows)}, your emergency runway is ${months} months. Standard financial advisory guideline is 6.0 months.`;
+      } else {
+        answer = `Your liquid cash reserves stand at ${formatINR(liquid)}. However, you have not recorded any recurring monthly expenses yet in this workspace. Please record your typical monthly bills or expense transactions to calculate an accurate runway without fabrication.`;
+      }
     } else if (q.includes('afford') || q.includes('trip') || q.includes('vacation') || q.includes('buy')) {
       const surplus = monthlyInflows - monthlyOutflows;
       answer = `Analyzing your live cash flow: You generate approximately ${formatINR(surplus)} in net monthly surplus. Your current liquid savings balance is ${formatINR(totalAssets)}. A planned expense can be absorbed without breaching your core emergency reserves.`;
@@ -1215,6 +1243,7 @@ function WealthOSContent() {
         onOpenSearch={() => setIsSearchModalOpen(true)}
         activeWorkspace={activeWorkspace}
         isSyncing={refreshing}
+        syncStatus={syncStatus}
         isPrivacyMode={isPrivacyMode}
         onTogglePrivacy={handleTogglePrivacy}
       />
