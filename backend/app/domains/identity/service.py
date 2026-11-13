@@ -4,6 +4,7 @@ Comprehensive business logic for user registration, Argon2id authentication,
 session management, refresh-token rotation, multi-factor authentication, and password lifecycle.
 """
 
+import os
 import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -1197,9 +1198,10 @@ async def delete_user_account(
 # Passwordless Mobile / Email OTP Authentication & Auto-Provisioning
 # --------------------------------------------------------------------------
 
-# Global thread-safe cache for OTP verification:
-# { normalized_id: { "code": str, "expires_at": datetime, "attempts": int, "internal_email": str, "id_type": str } }
+# Global thread-safe cache for OTP verification, rate-limiting & security lockouts:
 _OTP_CACHE: dict[str, dict[str, Any]] = {}
+_OTP_RATE_LIMITS: dict[str, list[datetime]] = {}
+_OTP_LOCKOUTS: dict[str, datetime] = {}
 
 
 def normalize_identifier(raw: str) -> tuple[str, str, str]:
@@ -1231,15 +1233,47 @@ async def send_otp(identifier: str) -> dict[str, Any]:
         raise AuthenticationServiceError("Please provide a valid mobile number or email address.")
 
     id_type, normalized_id, internal_email = normalize_identifier(identifier)
+    now = datetime.now(UTC)
+
+    # 1. Enforce temporal lockout defense against brute force
+    if normalized_id in _OTP_LOCKOUTS:
+        lock_until = _OTP_LOCKOUTS[normalized_id]
+        if lock_until > now:
+            remaining = int((lock_until - now).total_seconds())
+            raise AuthenticationServiceError(
+                f"Account temporarily locked due to multiple failed verification attempts. Please try again in {remaining}s."
+            )
+        del _OTP_LOCKOUTS[normalized_id]
+
+    # 2. Enforce 60-second cooldown per identifier against rapid spamming
+    if normalized_id in _OTP_CACHE:
+        existing = _OTP_CACHE[normalized_id]
+        created_at = existing.get("created_at", now)
+        elapsed = (now - created_at).total_seconds()
+        if elapsed < 60:
+            remaining = int(60 - elapsed)
+            raise AuthenticationServiceError(
+                f"Please wait {remaining} seconds before requesting a new verification code."
+            )
+
+    # 3. Enforce sliding-window rate limit (max 5 requests per 15 minutes)
+    history = _OTP_RATE_LIMITS.get(normalized_id, [])
+    history = [t for t in history if (now - t).total_seconds() < 900]
+    if len(history) >= 5:
+        raise AuthenticationServiceError(
+            "Rate limit exceeded: Maximum 5 verification codes per 15 minutes. Please try again later."
+        )
+    history.append(now)
+    _OTP_RATE_LIMITS[normalized_id] = history
 
     # 6-digit cryptographic token: 100000 - 999999
     code = f"{secrets.randbelow(900000) + 100000:06d}"
-    now = datetime.now(UTC)
     expires_at = now + timedelta(minutes=5)
 
     _OTP_CACHE[normalized_id] = {
         "code": code,
         "expires_at": expires_at,
+        "created_at": now,
         "attempts": 0,
         "internal_email": internal_email,
         "id_type": id_type,
@@ -1268,14 +1302,20 @@ async def send_otp(identifier: str) -> dict[str, Any]:
         except Exception as exc:
             logger.info(f"Email dispatch notice: {exc}")
 
-    logger.info(f"[OTP DISPATCH] Generated 6-digit OTP for {normalized_id} ({id_type}): [CODE: {code}]")
+    # Log masked OTP dispatch - never print secret OTP in production logs
+    logger.info(f"[OTP DISPATCH] Generated 6-digit OTP for {normalized_id} ({id_type})")
 
-    return {
+    response_payload: dict[str, Any] = {
         "success": True,
         "message": f"Verification code sent to {normalized_id}",
         "identifier": normalized_id,
-        "debug_otp": code,
     }
+
+    # Debug OTP is strictly restricted to test automation environments
+    if settings.ENVIRONMENT == "test" or os.environ.get("WEALTHOS_ALLOW_DEBUG_OTP") == "1":
+        response_payload["debug_otp"] = code
+
+    return response_payload
 
 
 async def verify_otp(
@@ -1294,6 +1334,17 @@ async def verify_otp(
     clean_code = otp_code.strip()
 
     now = datetime.now(UTC)
+
+    # Check temporal lockout first
+    if normalized_id in _OTP_LOCKOUTS:
+        lock_until = _OTP_LOCKOUTS[normalized_id]
+        if lock_until > now:
+            remaining = int((lock_until - now).total_seconds())
+            raise AuthenticationServiceError(
+                f"Account temporarily locked due to multiple failed verification attempts. Please try again in {remaining}s."
+            )
+        del _OTP_LOCKOUTS[normalized_id]
+
     otp_entry = _OTP_CACHE.get(normalized_id)
     cached_code: str | None = None
 
@@ -1302,8 +1353,11 @@ async def verify_otp(
             del _OTP_CACHE[normalized_id]
             raise AuthenticationServiceError("Verification code has expired. Please request a new code.")
         if otp_entry["attempts"] >= 5:
+            _OTP_LOCKOUTS[normalized_id] = now + timedelta(minutes=15)
             del _OTP_CACHE[normalized_id]
-            raise AuthenticationServiceError("Too many failed attempts. Please request a new verification code.")
+            raise AuthenticationServiceError(
+                "Too many failed attempts. For your security, this account has been locked for 15 minutes."
+            )
         cached_code = otp_entry["code"]
     else:
         # Check Redis if available
@@ -1317,11 +1371,21 @@ async def verify_otp(
     if not cached_code or cached_code != clean_code:
         if otp_entry:
             otp_entry["attempts"] += 1
+            if otp_entry["attempts"] >= 5:
+                _OTP_LOCKOUTS[normalized_id] = now + timedelta(minutes=15)
+                del _OTP_CACHE[normalized_id]
+                raise AuthenticationServiceError(
+                    "Too many failed attempts. For your security, this account has been locked for 15 minutes."
+                )
+            remaining = 5 - otp_entry["attempts"]
+            raise AuthenticationServiceError(f"Invalid 6-digit verification code. {remaining} attempt(s) remaining.")
         raise AuthenticationServiceError("Invalid 6-digit verification code. Please check and try again.")
 
     # Verification successful: purge single-use OTP
     if normalized_id in _OTP_CACHE:
         del _OTP_CACHE[normalized_id]
+    if normalized_id in _OTP_LOCKOUTS:
+        del _OTP_LOCKOUTS[normalized_id]
     try:
         redis = get_redis()
         if redis:

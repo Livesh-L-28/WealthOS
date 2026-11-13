@@ -231,9 +231,15 @@ async def login(
             "data": result,
         }
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["temporarily locked", "too many failed"])
+            else status.HTTP_401_UNAUTHORIZED
+        )
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
@@ -252,9 +258,15 @@ async def request_otp(
         res = await send_otp(payload.identifier)
         return res
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["rate limit", "temporarily locked", "please wait", "too many failed"])
+            else status.HTTP_400_BAD_REQUEST
+        )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
         ) from exc
     except Exception as exc:
         logger.error(f"Failed to dispatch OTP: {exc}")
@@ -296,9 +308,15 @@ async def verify_otp_endpoint(
             "data": result,
         }
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["temporarily locked", "too many failed"])
+            else status.HTTP_401_UNAUTHORIZED
+        )
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
 
@@ -573,9 +591,15 @@ async def delete_account(
             "data": result,
         }
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["rate limit", "temporarily locked", "please wait", "too many failed"])
+            else status.HTTP_400_BAD_REQUEST
+        )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
         ) from exc
 
 
@@ -612,9 +636,15 @@ async def verify_email(
             "data": {"user_id": user.id, "email": user.email, "status": user.status},
         }
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["rate limit", "temporarily locked", "please wait", "too many failed"])
+            else status.HTTP_400_BAD_REQUEST
+        )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
         ) from exc
 
 
@@ -705,9 +735,15 @@ async def reset_password(
             detail=str(exc),
         ) from exc
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["rate limit", "temporarily locked", "please wait", "too many failed"])
+            else status.HTTP_400_BAD_REQUEST
+        )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
         ) from exc
 
 
@@ -747,9 +783,15 @@ async def update_password(
             detail=str(exc),
         ) from exc
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["rate limit", "temporarily locked", "please wait", "too many failed"])
+            else status.HTTP_400_BAD_REQUEST
+        )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
         ) from exc
 
 
@@ -833,9 +875,15 @@ async def mfa_enroll(
             ).model_dump(mode="json"),
         }
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["rate limit", "temporarily locked", "please wait", "too many failed"])
+            else status.HTTP_400_BAD_REQUEST
+        )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
         ) from exc
 
 
@@ -933,7 +981,13 @@ async def mfa_regenerate_recovery_codes(
             "message": "Recovery codes regenerated successfully. Store them in a secure password manager.",
         }
     except AuthenticationServiceError as exc:
+        msg = str(exc)
+        err_status = (
+            status.HTTP_429_TOO_MANY_REQUESTS
+            if any(term in msg.lower() for term in ["rate limit", "temporarily locked", "please wait", "too many failed"])
+            else status.HTTP_400_BAD_REQUEST
+        )
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
+            status_code=err_status,
+            detail=msg,
         ) from exc
