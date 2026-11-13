@@ -4,11 +4,11 @@ import { BankAccount, Transaction, BudgetEnvelope, FinancialGoal } from './types
 describe('Usability, Fault-Tolerance & Clean-Slate Resilience', () => {
   it('auto-provisions primary cash operating account when recording transaction with zero accounts', () => {
     const initialAccounts: BankAccount[] = [];
-    const txData = {
+    const txData: { title: string; amount: number; category: string; type: 'DEBIT' | 'CREDIT'; accountName: string } = {
       title: 'Espresso Coffee',
       amount: 220,
       category: 'Food & Dining',
-      type: 'DEBIT' as const,
+      type: 'DEBIT',
       accountName: 'Cash Wallet',
     };
 
@@ -31,7 +31,8 @@ describe('Usability, Fault-Tolerance & Clean-Slate Resilience', () => {
       updatedAccounts = [defaultCashAcc, ...initialAccounts];
     }
 
-    const balanceDelta = txData.type === 'CREDIT' ? txData.amount : -txData.amount;
+    const txType: 'DEBIT' | 'CREDIT' = txData.type;
+    const balanceDelta = txType === 'CREDIT' ? txData.amount : -txData.amount;
     updatedAccounts = updatedAccounts.map((acc) =>
       acc.id === targetAccount.id
         ? { ...acc, balance: acc.balance + balanceDelta, lastSynced: 'Just now' }
@@ -149,7 +150,7 @@ describe('Usability, Fault-Tolerance & Clean-Slate Resilience', () => {
       { id: 'b-1', category: 'Dining', budgeted: 10000, spent: 4000, color: '#F00' },
     ];
     const goals: FinancialGoal[] = [
-      { id: 'g-1', title: 'Trip', targetAmount: 50000, currentAmount: 10000, targetYear: 2027 },
+      { id: 'g-1', title: 'Trip', category: 'Travel', targetAmount: 50000, currentAmount: 10000, targetYear: 2027 },
     ];
 
     const updatedBudgets = budgets.filter((b) => b.id !== 'b-1');

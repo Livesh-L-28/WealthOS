@@ -92,12 +92,32 @@ export const Header: React.FC<HeaderProps> = ({
             onPress={onOpenSearch}
             activeOpacity={0.75}
             accessibilityLabel="Open Global Search"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.actionIconSmall}>🔍</Text>
           </TouchableOpacity>
         )}
 
-        {/* 2. Quick Theme Mode Toggle */}
+        {/* 2. Stealth / Privacy Mode Toggle */}
+        {onTogglePrivacy && (
+          <TouchableOpacity
+            style={[
+              styles.iconButton,
+              {
+                backgroundColor: isDark ? '#111827' : '#FFFFFF',
+                borderColor: isDark ? '#1F2937' : '#E2E8F0',
+              },
+            ]}
+            onPress={onTogglePrivacy}
+            activeOpacity={0.75}
+            accessibilityLabel="Toggle Privacy Stealth Mode"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.actionIconSmall}>{isPrivacyMode ? '🙈' : '👁️'}</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* 3. Quick Theme Mode Toggle */}
         <TouchableOpacity
           style={[
             styles.iconButton,
@@ -109,11 +129,12 @@ export const Header: React.FC<HeaderProps> = ({
           onPress={toggleTheme}
           activeOpacity={0.75}
           accessibilityLabel="Toggle Dark/Light Mode"
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text style={styles.actionIconSmall}>{isDark ? '☀️' : '🌙'}</Text>
         </TouchableOpacity>
 
-        {/* 3. Workspace / Enterprise Drawer Menu */}
+        {/* 4. Workspace / Enterprise Drawer Menu (Three Dots) */}
         {onOpenHub && (
           <TouchableOpacity
             style={[
@@ -125,9 +146,10 @@ export const Header: React.FC<HeaderProps> = ({
             ]}
             onPress={onOpenHub}
             activeOpacity={0.75}
-            accessibilityLabel="Open Menu"
+            accessibilityLabel="Open Navigation Menu"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={styles.actionIconSmall}>☰</Text>
+            <Text style={[styles.actionIconSmall, { fontSize: 20, fontWeight: '800', lineHeight: 22 }]}>⋮</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -196,9 +218,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,

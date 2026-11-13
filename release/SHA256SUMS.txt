@@ -1,1 +1,1 @@
-a1b0c5f91a27897cf68fb3e494cc82d48f82514a04935aef7b9db83091ece1b6  wealthos-release.apk
+4e112d58e6ce7ead8ca1f74b73a9fe60d6d7111ff3e7d83f6aff7c99bd046871  wealthos-release.apk

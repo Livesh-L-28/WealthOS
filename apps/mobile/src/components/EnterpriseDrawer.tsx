@@ -24,6 +24,7 @@ interface EnterpriseDrawerProps {
   userEmail?: string;
   netWorth?: number;
   totalAccounts?: number;
+  isPrivacyMode?: boolean;
   onResetToFresh?: () => void;
   onLogout?: () => void;
 }
@@ -156,6 +157,7 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
   userEmail,
   netWorth = 0,
   totalAccounts = 0,
+  isPrivacyMode = false,
   onResetToFresh,
   onLogout,
 }) => {
@@ -164,6 +166,8 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
   const borderColor = isDark ? '#1E293B' : '#E2E8F0';
   const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
   const textSecondary = isDark ? '#94A3B8' : '#64748B';
+
+  if (!isOpen) return null;
 
   const displayName = userName && userName !== 'User' && userName.trim() ? userName : (userEmail || 'Personal Account');
   const avatarInitials = displayName
@@ -174,23 +178,19 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
     .slice(0, 2)
     .toUpperCase() || 'WO';
 
-  const formattedBalance = netWorth > 0 ? formatINR(netWorth) : '₹0.00';
+  const formattedBalance = isPrivacyMode
+    ? '₹••••••'
+    : (netWorth > 0 ? formatINR(netWorth) : '₹0.00');
 
   const workspacesList = [
     { id: 'personal', name: 'Personal Holdings', balance: formattedBalance },
-    { id: 'family', name: 'Family Office', balance: '₹0.00' },
-    { id: 'business', name: 'Business Treasury', balance: '₹0.00' },
+    { id: 'family', name: 'Family Office', balance: isPrivacyMode ? '₹••••••' : '₹0.00' },
+    { id: 'business', name: 'Business Treasury', balance: isPrivacyMode ? '₹••••••' : '₹0.00' },
   ];
 
   return (
-    <Modal
-      visible={isOpen}
-      animationType="slide"
-      transparent={false}
-      presentationStyle="fullScreen"
-      onRequestClose={onClose}
-    >
-      <SafeAreaView style={[styles.fullPageContainer, { backgroundColor: drawerBg }]}>
+    <View style={[StyleSheet.absoluteFillObject, styles.fullPageContainer, { backgroundColor: drawerBg, zIndex: 99999, elevation: 99999 }]}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: drawerBg }]}>
         {/* Full-Page App Bar */}
         <View style={[styles.fullPageHeader, { borderBottomColor: borderColor, backgroundColor: drawerBg }]}>
           <TouchableOpacity
@@ -198,6 +198,7 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
             style={styles.headerBackBtn}
             activeOpacity={0.7}
             accessibilityLabel="Back to previous screen"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={[styles.headerBackArrow, { color: textPrimary }]}>←</Text>
             <Text style={[styles.headerBackText, { color: textPrimary }]}>Back</Text>
@@ -213,6 +214,7 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
             style={styles.headerDoneBtn}
             activeOpacity={0.7}
             accessibilityLabel="Close and return"
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.headerDoneText}>Done</Text>
           </TouchableOpacity>
@@ -221,8 +223,12 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
         <ScrollView
           style={styles.fullPageScroll}
           contentContainerStyle={styles.fullPageScrollContent}
-          showsVerticalScrollIndicator={false}
+          showsVerticalScrollIndicator={true}
           keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled={true}
+          overScrollMode="always"
+          bounces={true}
+          scrollEventThrottle={16}
         >
           {/* User Profile / Identity Card */}
           <View style={[styles.profileCard, { backgroundColor: isDark ? '#111827' : '#F8FAFC', borderColor }]}>
@@ -382,15 +388,27 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
           )}
         </ScrollView>
       </SafeAreaView>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   fullPageContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    minHeight: 0,
+    overflow: 'hidden',
+  },
+  safeArea: {
     flex: 1,
     width: '100%',
     height: '100%',
+    minHeight: 0,
   },
   fullPageHeader: {
     flexDirection: 'row',
@@ -442,11 +460,14 @@ const styles = StyleSheet.create({
   },
   fullPageScroll: {
     flex: 1,
+    width: '100%',
+    minHeight: 0,
   },
   fullPageScrollContent: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 28,
+    paddingBottom: Platform.OS === 'ios' ? 48 : 36,
   },
   profileCard: {
     flexDirection: 'row',

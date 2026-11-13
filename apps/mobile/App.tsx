@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Dimensions,
   BackHandler,
+  Alert,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import {
@@ -306,15 +307,32 @@ function WealthOSContent() {
   }, []);
 
   const handleResetToFresh = async () => {
-    const clean = await localStore.resetToCleanSlate();
-    setAccounts(clean.accounts);
-    setTransactions(clean.transactions);
-    setHoldings(clean.holdings);
-    setBudgets(clean.budgets);
-    setGoals(clean.goals);
-    setDocuments(clean.documents);
-    setCopilotMessages(clean.copilotMessages);
-    showNotification('Ledger cleared to clean production state');
+    const executeReset = async () => {
+      const clean = await localStore.resetToCleanSlate();
+      setAccounts(clean.accounts);
+      setTransactions(clean.transactions);
+      setHoldings(clean.holdings);
+      setBudgets(clean.budgets);
+      setGoals(clean.goals);
+      setDocuments(clean.documents);
+      setCopilotMessages(clean.copilotMessages);
+      showNotification('Ledger cleared to clean production state');
+    };
+
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm('Reset to Fresh Ledger: Are you sure you want to clear all accounts and return to a clean ledger?')) {
+        await executeReset();
+      }
+    } else {
+      Alert.alert(
+        'Reset to Fresh Ledger',
+        'Are you sure you want to clear all accounts, transactions, and documents? This will reset your ledger to a clean production state.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Reset Ledger', style: 'destructive', onPress: executeReset },
+        ]
+      );
+    }
   };
 
   // Modals & Drawer
@@ -644,28 +662,60 @@ function WealthOSContent() {
   const handleDeleteAccount = async (accountId: string) => {
     const acc = accounts.find((a) => a.id === accountId);
     if (!acc) return;
-    const updated = accounts.filter((a) => a.id !== accountId);
-    setAccounts(updated);
-    await localStore.saveAccounts(updated);
-    showNotification(`Removed account: ${acc.name}`);
+
+    const doDelete = async () => {
+      const updated = accounts.filter((a) => a.id !== accountId);
+      setAccounts(updated);
+      await localStore.saveAccounts(updated);
+      showNotification(`Removed account: ${acc.name}`);
+    };
+
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm(`Remove account ${acc.name}?`)) {
+        await doDelete();
+      }
+    } else {
+      Alert.alert('Remove Account', `Are you sure you want to unlink and remove ${acc.name}?`, [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Remove', style: 'destructive', onPress: doDelete },
+      ]);
+    }
   };
 
   const handleDeleteTransaction = async (txId: string) => {
     const tx = transactions.find((t) => t.id === txId);
     if (!tx) return;
-    const delta = tx.type === 'CREDIT' ? -tx.amount : tx.amount;
-    const updatedAccounts = accounts.map((acc) => {
-      if (acc.name === tx.accountName) {
-        return { ...acc, balance: acc.balance + delta, lastSynced: 'Just now' };
+
+    const doDelete = async () => {
+      const delta = tx.type === 'CREDIT' ? -tx.amount : tx.amount;
+      const updatedAccounts = accounts.map((acc) => {
+        if (acc.name === tx.accountName) {
+          return { ...acc, balance: acc.balance + delta, lastSynced: 'Just now' };
+        }
+        return acc;
+      });
+      const updatedTx = transactions.filter((t) => t.id !== txId);
+      setAccounts(updatedAccounts);
+      setTransactions(updatedTx);
+      await localStore.saveAccounts(updatedAccounts);
+      await localStore.saveTransactions(updatedTx);
+      showNotification(`Reversed & deleted transaction: ${tx.title}`);
+    };
+
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm(`Reverse and delete transaction: ${tx.title}?`)) {
+        await doDelete();
       }
-      return acc;
-    });
-    const updatedTx = transactions.filter((t) => t.id !== txId);
-    setAccounts(updatedAccounts);
-    setTransactions(updatedTx);
-    await localStore.saveAccounts(updatedAccounts);
-    await localStore.saveTransactions(updatedTx);
-    showNotification(`Reversed & deleted transaction: ${tx.title}`);
+    } else {
+      Alert.alert(
+        'Delete Transaction',
+        `Are you sure you want to reverse and delete "${tx.title}" (${formatINR(tx.amount)})?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Delete & Revert', style: 'destructive', onPress: doDelete },
+        ]
+      );
+    }
   };
 
   const handleDeleteBudget = async (budgetId: string) => {
@@ -1392,6 +1442,7 @@ function WealthOSContent() {
         userName={userName}
         netWorth={netWorth}
         totalAccounts={accounts.length}
+        isPrivacyMode={isPrivacyMode}
         onResetToFresh={handleResetToFresh}
         onLogout={handleLogout}
       />
