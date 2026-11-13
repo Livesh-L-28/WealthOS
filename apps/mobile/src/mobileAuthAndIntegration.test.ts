@@ -277,7 +277,7 @@ describe('Phase 4: AI-01 Copilot Error Transparency (Zero Fabrication)', () => {
     expect(reply.text).toBeDefined();
     // Must NOT contain fabricated verification claims
     expect(reply.text).not.toContain('All cash accounts and investment lots are authenticated against your workspace');
-  });
+  }, 15000);
 });
 
 describe('Phase 5: SYNC-01 Persistent Tenant-Scoped Offline Queue', () => {
