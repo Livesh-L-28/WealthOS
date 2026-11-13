@@ -58,7 +58,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
   const [mask, setMask] = useState('');
 
   const handleConnect = () => {
-    const bal = parseFloat(balance) || 0;
+    const bal = Math.abs(parseFloat(balance) || 0);
     const isLiability = type === 'LOAN' || type === 'CREDIT_CARD';
     const isManual = bank === 'Manual / Custom';
     const accName = isManual
@@ -103,7 +103,7 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Institution Grid (Clean 2-Column Responsive) */}
             <Text style={[styles.label, { color: textSecondary }]}>SELECT FINANCIAL INSTITUTION</Text>
             <View style={styles.bankGrid}>

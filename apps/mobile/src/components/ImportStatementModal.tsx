@@ -149,7 +149,7 @@ export const ImportStatementModal: React.FC<ImportStatementModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Format Selector */}
             <Text style={[styles.label, { color: textSecondary }]}>DOCUMENT CATEGORY</Text>
             <View style={styles.formatRow}>

@@ -23,6 +23,8 @@ interface AccountsScreenProps {
   onTransferFunds?: () => void;
   onImportStatement?: () => void;
   onOpenReconciliation?: () => void;
+  onDeleteAccount?: (accountId: string) => void;
+  onDeleteTransaction?: (txId: string) => void;
   initialSubTab?: 'ACCOUNTS' | 'TRANSACTIONS';
 }
 
@@ -36,6 +38,8 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
   onTransferFunds,
   onImportStatement,
   onOpenReconciliation,
+  onDeleteAccount,
+  onDeleteTransaction,
   initialSubTab,
 }) => {
   const { isDark } = useTheme();
@@ -513,6 +517,7 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             style={styles.categoryFilterScroll}
             contentContainerStyle={styles.categoryFilterContent}
           >
@@ -729,6 +734,19 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
                   </View>
                 </View>
 
+                {onDeleteTransaction && (
+                  <TouchableOpacity
+                    style={styles.deleteActionBtn}
+                    onPress={() => {
+                      onDeleteTransaction(selectedTx.id);
+                      setSelectedTx(null);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.deleteActionBtnText}>🗑️ Reverse & Delete Journal Entry</Text>
+                  </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
                   style={styles.closeModalBtn}
                   onPress={() => setSelectedTx(null)}
@@ -807,6 +825,19 @@ export const AccountsScreen: React.FC<AccountsScreenProps> = ({
               >
                 <Text style={styles.filterTxBtnText}>View Transactions for this Account →</Text>
               </TouchableOpacity>
+
+              {onDeleteAccount && (
+                <TouchableOpacity
+                  style={styles.deleteActionBtn}
+                  onPress={() => {
+                    onDeleteAccount(selectedAccount.id);
+                    setSelectedAccount(null);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.deleteActionBtnText}>🗑️ Unlink & Remove Account</Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 style={styles.closeModalBtn}
@@ -1605,6 +1636,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
+  },
+  deleteActionBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    marginBottom: 8,
+  },
+  deleteActionBtnText: {
+    color: '#EF4444',
+    fontSize: 13,
+    fontWeight: '700',
   },
   closeModalBtnText: {
     fontSize: 13,

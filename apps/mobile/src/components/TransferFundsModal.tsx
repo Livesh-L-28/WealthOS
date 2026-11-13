@@ -91,7 +91,21 @@ export const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                 </TouchableOpacity>
               </View>
 
-              <ScrollView showsVerticalScrollIndicator={false}>
+              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+                {assetAccounts.length < 2 && (
+                  <View style={[styles.insufficientAccountsBox, { backgroundColor: theme.colors.cardSubtle, borderColor: theme.colors.border }]}>
+                    <Text style={styles.insufficientAccountsIcon}>ℹ️</Text>
+                    <View style={styles.insufficientAccountsTextCol}>
+                      <Text style={[styles.insufficientAccountsTitle, { color: theme.colors.textPrimary }]}>
+                        Two Accounts Required
+                      </Text>
+                      <Text style={[styles.insufficientAccountsSub, { color: theme.colors.textSecondary }]}>
+                        You have {assetAccounts.length} asset account connected. Transfers require at least two accounts to move funds.
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
                 {errorMsg && (
                   <View style={[styles.errorBox, { backgroundColor: theme.colors.negativeBgSolid }]}>
                     <Text style={[styles.errorText, { color: theme.colors.negativeDark }]}>
@@ -240,11 +254,20 @@ export const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
 
                 {/* Execution Button */}
                 <TouchableOpacity
-                  style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
+                  style={[
+                    styles.submitButton,
+                    {
+                      backgroundColor: assetAccounts.length < 2 ? (theme.isDark ? '#334155' : '#CBD5E1') : theme.colors.primary,
+                      opacity: assetAccounts.length < 2 ? 0.6 : 1,
+                    },
+                  ]}
                   onPress={handleTransfer}
+                  disabled={assetAccounts.length < 2}
                   activeOpacity={0.85}
                 >
-                  <Text style={styles.submitText}>Post Transfer to Ledger</Text>
+                  <Text style={styles.submitText}>
+                    {assetAccounts.length < 2 ? 'Connect Another Account to Transfer' : 'Post Transfer to Ledger'}
+                  </Text>
                 </TouchableOpacity>
               </ScrollView>
             </View>
@@ -268,6 +291,30 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 36,
     maxHeight: '85%',
+  },
+  insufficientAccountsBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+  },
+  insufficientAccountsIcon: {
+    fontSize: 20,
+  },
+  insufficientAccountsTextCol: {
+    flex: 1,
+  },
+  insufficientAccountsTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  insufficientAccountsSub: {
+    fontSize: 11,
+    lineHeight: 16,
   },
   dragPill: {
     width: 40,

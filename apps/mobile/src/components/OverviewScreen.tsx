@@ -47,6 +47,7 @@ interface OverviewScreenProps {
   onOpenAnalytics?: () => void;
   onOpenPortfolio?: () => void;
   onResetToFresh?: () => void;
+  onDeleteTransaction?: (id: string) => void;
 }
 
 export const OverviewScreen: React.FC<OverviewScreenProps> = ({
@@ -83,6 +84,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
   onOpenAnalytics,
   onOpenPortfolio,
   onResetToFresh,
+  onDeleteTransaction,
 }) => {
   const { theme, isDark } = useTheme();
   const [tab, setTab] = useState<'activity' | 'insights'>('activity');
@@ -328,6 +330,7 @@ export const OverviewScreen: React.FC<OverviewScreenProps> = ({
             <RecentTransactionsCard
               transactions={transactions}
               onViewAll={onViewAllTransactions}
+              onDeleteTransaction={onDeleteTransaction}
             />
           </WidgetErrorBoundary>
 

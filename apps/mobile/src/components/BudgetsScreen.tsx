@@ -21,6 +21,8 @@ interface BudgetsScreenProps {
   onAddEnvelope?: () => void;
   onAddGoal?: () => void;
   onUpdateGoal?: (updatedGoal: FinancialGoal) => void;
+  onDeleteEnvelope?: (id: string) => void;
+  onDeleteGoal?: (id: string) => void;
   initialSubTab?: 'BUDGETS' | 'GOALS' | 'ALL';
 }
 
@@ -54,6 +56,8 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
   onAddEnvelope,
   onAddGoal,
   onUpdateGoal,
+  onDeleteEnvelope,
+  onDeleteGoal,
   initialSubTab,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'BUDGETS' | 'GOALS' | 'ALL'>(
@@ -694,6 +698,19 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                     <Text style={styles.modalPrimaryActionBtnText}>+ Log Expense to {selectedEnv.category.split(' ')[0]}</Text>
                   </TouchableOpacity>
                 )}
+                {onDeleteEnvelope && (
+                  <TouchableOpacity
+                    style={styles.modalDeleteActionBtn}
+                    onPress={() => {
+                      onDeleteEnvelope(selectedEnv.id);
+                      setSelectedEnv(null);
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.modalDeleteActionBtnText}>🗑️ Remove Budget Envelope</Text>
+                  </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
                   style={styles.modalCloseActionBtn}
                   onPress={() => setSelectedEnv(null)}
@@ -805,6 +822,19 @@ export const BudgetsScreen: React.FC<BudgetsScreenProps> = ({
                   </Text>
                 </TouchableOpacity>
               </View>
+
+              {onDeleteGoal && (
+                <TouchableOpacity
+                  style={styles.modalDeleteActionBtn}
+                  onPress={() => {
+                    onDeleteGoal(selectedGoal.id);
+                    setSelectedGoal(null);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.modalDeleteActionBtnText}>🗑️ Remove Financial Goal</Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 style={styles.modalCloseBtn}
@@ -1621,6 +1651,21 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '800',
+  },
+  modalDeleteActionBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    marginBottom: 8,
+  },
+  modalDeleteActionBtnText: {
+    color: '#EF4444',
+    fontSize: 12,
+    fontWeight: '700',
   },
   modalCloseActionBtn: {
     backgroundColor: '#F1F5F9',

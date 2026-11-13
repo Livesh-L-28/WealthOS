@@ -222,6 +222,7 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
           style={styles.fullPageScroll}
           contentContainerStyle={styles.fullPageScrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           {/* User Profile / Identity Card */}
           <View style={[styles.profileCard, { backgroundColor: isDark ? '#111827' : '#F8FAFC', borderColor }]}>

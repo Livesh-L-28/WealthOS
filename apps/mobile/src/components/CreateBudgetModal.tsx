@@ -90,7 +90,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Category Presets Carousel */}
             <Text style={[styles.label, { color: textSecondary }]}>CHOOSE CATEGORY</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetsScroll}>

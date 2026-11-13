@@ -8,6 +8,7 @@ import { getCategoryVisualMeta } from '../utils/categoryMeta';
 interface RecentTransactionsCardProps {
   transactions: Transaction[];
   onViewAll: () => void;
+  onDeleteTransaction?: (id: string) => void;
 }
 
 const FILTER_CHIPS = [
@@ -23,6 +24,7 @@ const FILTER_CHIPS = [
 export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
   transactions,
   onViewAll,
+  onDeleteTransaction,
 }) => {
   const { isDark } = useTheme();
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
@@ -361,6 +363,19 @@ export const RecentTransactionsCard: React.FC<RecentTransactionsCardProps> = ({
                 </Text>
               </View>
 
+              {onDeleteTransaction && (
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={() => {
+                    onDeleteTransaction(selectedTx.id);
+                    setSelectedTx(null);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.deleteBtnText}>🗑️ Reverse & Delete Entry</Text>
+                </TouchableOpacity>
+              )}
+
               <TouchableOpacity
                 style={[
                   styles.closeBtn,
@@ -631,6 +646,22 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontFamily: 'monospace',
     color: '#758078',
+  },
+  deleteBtn: {
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
+    marginTop: 18,
+    marginBottom: -8,
+  },
+  deleteBtnText: {
+    color: '#EF4444',
+    fontSize: 13,
+    fontWeight: '700',
   },
   closeBtn: {
     backgroundColor: '#16A36A',

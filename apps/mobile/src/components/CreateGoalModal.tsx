@@ -92,7 +92,7 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Presets Grid */}
             <Text style={[styles.label, { color: textSecondary }]}>MILESTONE BLUEPRINTS</Text>
             <View style={styles.presetsGrid}>

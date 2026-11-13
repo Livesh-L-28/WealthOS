@@ -229,7 +229,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           </ScrollView>
 
           {/* Results List */}
-          <ScrollView style={styles.resultsScroll} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.resultsScroll} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {query.trim().length === 0 ? (
               <View style={styles.emptyPrompt}>
                 <Text style={styles.emptyEmoji}>⚡</Text>

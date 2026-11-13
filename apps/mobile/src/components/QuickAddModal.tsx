@@ -61,7 +61,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                 </TouchableOpacity>
               </View>
 
-              <ScrollView showsVerticalScrollIndicator={false}>
+              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
                 {/* Primary Dual Actions: Expense & Income */}
                 <View style={styles.primaryGrid}>
                   {/* Add Expense (Outflow) */}

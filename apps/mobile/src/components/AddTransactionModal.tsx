@@ -345,7 +345,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Primary Income / Expense Mode Switcher */}
             <View style={[styles.typeSwitcher, { backgroundColor: isDark ? '#0B0F19' : '#EEF2EF' }]}>
               <TouchableOpacity

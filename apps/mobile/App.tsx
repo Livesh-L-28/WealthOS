@@ -11,6 +11,7 @@ import {
   Linking,
   ActivityIndicator,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import {
@@ -352,6 +353,77 @@ function WealthOSContent() {
   const [isCreateGoalModalOpen, setIsCreateGoalModalOpen] = useState(false);
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
 
+  // Global Android Hardware Back Button Handler & Modal Router
+  useEffect(() => {
+    const onBackPress = () => {
+      if (isEnterpriseDrawerOpen) {
+        setIsEnterpriseDrawerOpen(false);
+        return true;
+      }
+      if (isQuickAddOpen) {
+        setIsQuickAddOpen(false);
+        return true;
+      }
+      if (isAddTxModalOpen) {
+        setIsAddTxModalOpen(false);
+        return true;
+      }
+      if (isConnectModalOpen) {
+        setIsConnectModalOpen(false);
+        return true;
+      }
+      if (isImportModalOpen) {
+        setIsImportModalOpen(false);
+        return true;
+      }
+      if (isTransferModalOpen) {
+        setIsTransferModalOpen(false);
+        return true;
+      }
+      if (isSearchModalOpen) {
+        setIsSearchModalOpen(false);
+        return true;
+      }
+      if (isReconModalOpen) {
+        setIsReconModalOpen(false);
+        return true;
+      }
+      if (isCreateBudgetModalOpen) {
+        setIsCreateBudgetModalOpen(false);
+        return true;
+      }
+      if (isCreateGoalModalOpen) {
+        setIsCreateGoalModalOpen(false);
+        return true;
+      }
+      if (isAddInvestmentModalOpen) {
+        setIsAddInvestmentModalOpen(false);
+        return true;
+      }
+      if (activeScreen !== 'overview') {
+        setActiveScreen('overview');
+        return true;
+      }
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [
+    isEnterpriseDrawerOpen,
+    isQuickAddOpen,
+    isAddTxModalOpen,
+    isConnectModalOpen,
+    isImportModalOpen,
+    isTransferModalOpen,
+    isSearchModalOpen,
+    isReconModalOpen,
+    isCreateBudgetModalOpen,
+    isCreateGoalModalOpen,
+    isAddInvestmentModalOpen,
+    activeScreen,
+  ]);
+
   const handleOpenAddExpense = () => {
     setTxModalType('DEBIT');
     setIsScanMode(false);
@@ -442,11 +514,24 @@ function WealthOSContent() {
       return;
     }
 
-    const targetAccount = accounts.find((a) => a.name === data.accountName) || accounts[0];
+    let targetAccount = accounts.find((a) => a.name === data.accountName) || accounts[0];
+    let updatedAccounts = [...accounts];
     if (!targetAccount) {
-      failIdempotencyKey(idempotencyKey);
-      showNotification('Please connect an account first.');
-      return;
+      // Auto-provision a default operating account if user starts clean
+      const defaultCashAcc: BankAccount = {
+        id: `acc-cash-${Date.now()}`,
+        name: data.accountName || 'Cash Wallet',
+        institution: 'Cash & Liquid Assets',
+        accountNumberMask: '•••• Cash',
+        type: 'SAVINGS',
+        category: 'ASSET',
+        balance: 0,
+        currency: 'INR',
+        status: 'ACTIVE',
+        lastSynced: 'Just now',
+      };
+      targetAccount = defaultCashAcc;
+      updatedAccounts = [defaultCashAcc, ...accounts];
     }
 
     // 1. Optimistically post transaction locally immediately (Zero latency)
@@ -462,7 +547,7 @@ function WealthOSContent() {
     };
 
     const balanceDelta = data.type === 'CREDIT' ? data.amount : -data.amount;
-    const updatedAccounts = accounts.map((acc) =>
+    updatedAccounts = updatedAccounts.map((acc) =>
       acc.id === targetAccount.id
         ? { ...acc, balance: acc.balance + balanceDelta, lastSynced: 'Just now' }
         : acc
@@ -556,6 +641,47 @@ function WealthOSContent() {
     }
   };
 
+  const handleDeleteAccount = async (accountId: string) => {
+    const acc = accounts.find((a) => a.id === accountId);
+    if (!acc) return;
+    const updated = accounts.filter((a) => a.id !== accountId);
+    setAccounts(updated);
+    await localStore.saveAccounts(updated);
+    showNotification(`Removed account: ${acc.name}`);
+  };
+
+  const handleDeleteTransaction = async (txId: string) => {
+    const tx = transactions.find((t) => t.id === txId);
+    if (!tx) return;
+    const delta = tx.type === 'CREDIT' ? -tx.amount : tx.amount;
+    const updatedAccounts = accounts.map((acc) => {
+      if (acc.name === tx.accountName) {
+        return { ...acc, balance: acc.balance + delta, lastSynced: 'Just now' };
+      }
+      return acc;
+    });
+    const updatedTx = transactions.filter((t) => t.id !== txId);
+    setAccounts(updatedAccounts);
+    setTransactions(updatedTx);
+    await localStore.saveAccounts(updatedAccounts);
+    await localStore.saveTransactions(updatedTx);
+    showNotification(`Reversed & deleted transaction: ${tx.title}`);
+  };
+
+  const handleDeleteBudget = async (budgetId: string) => {
+    const updated = budgets.filter((b) => b.id !== budgetId);
+    setBudgets(updated);
+    await localStore.saveBudgets(updated);
+    showNotification('Budget envelope removed.');
+  };
+
+  const handleDeleteGoal = async (goalId: string) => {
+    const updated = goals.filter((g) => g.id !== goalId);
+    setGoals(updated);
+    await localStore.saveGoals(updated);
+    showNotification('Financial goal removed.');
+  };
+
   const handleRealStatementImport = async (
     result: ParsedStatementResult,
     targetAccountId?: string
@@ -564,8 +690,27 @@ function WealthOSContent() {
 
     // 1. Identify target account
     let targetAcc = accounts.find((a) => a.id === targetAccountId);
-    if (!targetAcc && accounts.length > 0) {
-      targetAcc = accounts[0];
+    let updatedAccounts = [...accounts];
+    if (!targetAcc) {
+      if (accounts.length > 0) {
+        targetAcc = accounts[0];
+      } else {
+        const isDemat = !!(result.holdings && result.holdings.length > 0);
+        const importedAcc: BankAccount = {
+          id: `acc-stmt-${Date.now()}`,
+          name: `${result.institution || 'Primary'} ${isDemat ? 'Investment' : 'Savings'}`,
+          institution: result.institution || 'Banking Partner',
+          accountNumberMask: result.accountNumberMask ? `•••• ${result.accountNumberMask.slice(-4)}` : '•••• Stmt',
+          type: isDemat ? 'DEMAT' : 'SAVINGS',
+          category: 'ASSET',
+          balance: 0,
+          currency: 'INR',
+          status: 'ACTIVE',
+          lastSynced: 'Just now',
+        };
+        targetAcc = importedAcc;
+        updatedAccounts = [importedAcc];
+      }
     }
 
     // 2. Map parsed transactions into application Transaction schema
@@ -582,7 +727,7 @@ function WealthOSContent() {
     }));
 
     // 3. Update account balance with net cash flow
-    const updatedAccounts = accounts.map((acc) => {
+    updatedAccounts = updatedAccounts.map((acc) => {
       if (targetAcc && acc.id === targetAcc.id) {
         return {
           ...acc,
@@ -1126,6 +1271,7 @@ function WealthOSContent() {
               onAddGoal={() => setIsCreateGoalModalOpen(true)}
               onAddInvestment={() => setIsAddInvestmentModalOpen(true)}
               onResetToFresh={handleResetToFresh}
+              onDeleteTransaction={handleDeleteTransaction}
             />
           </ScrollView>
         )}
@@ -1156,6 +1302,8 @@ function WealthOSContent() {
               onTransferFunds={() => setIsTransferModalOpen(true)}
               onImportStatement={() => setIsImportModalOpen(true)}
               onOpenReconciliation={() => setActiveScreen('reconciliation')}
+              onDeleteAccount={handleDeleteAccount}
+              onDeleteTransaction={handleDeleteTransaction}
               initialSubTab={activeScreen === 'transactions' ? 'TRANSACTIONS' : 'ACCOUNTS'}
             />
           </ScrollView>
@@ -1205,6 +1353,8 @@ function WealthOSContent() {
               onAddEnvelope={() => setIsCreateBudgetModalOpen(true)}
               onAddGoal={() => setIsCreateGoalModalOpen(true)}
               onUpdateGoal={handleUpdateGoal}
+              onDeleteEnvelope={handleDeleteBudget}
+              onDeleteGoal={handleDeleteGoal}
               initialSubTab={activeScreen === 'goals' ? 'GOALS' : 'ALL'}
             />
           </ScrollView>

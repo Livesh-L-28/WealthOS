@@ -96,7 +96,7 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false}>
+          <ScrollView style={styles.formBody} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             {/* Asset Class Selector */}
             <Text style={[styles.label, { color: textSecondary }]}>ASSET CLASS</Text>
             <View style={styles.classesRow}>
