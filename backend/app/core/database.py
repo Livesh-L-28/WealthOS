@@ -117,6 +117,11 @@ def get_engine() -> AsyncEngine:
         logger.info(
             f"Initializing database engine: host={settings.POSTGRES_HOST}, port={settings.POSTGRES_PORT}, db={settings.POSTGRES_DB}"
         )
+        connect_args: dict[str, Any] = {}
+        if "pooler.supabase.com" in db_url or ":6543" in db_url:
+            connect_args["statement_cache_size"] = 0
+            connect_args["prepared_statement_cache_size"] = 0
+
         engine = create_async_engine(
             db_url,
             pool_size=settings.DB_POOL_SIZE,
@@ -124,6 +129,7 @@ def get_engine() -> AsyncEngine:
             pool_timeout=settings.DB_POOL_TIMEOUT,
             pool_pre_ping=settings.DB_POOL_PRE_PING,
             pool_recycle=1800,
+            connect_args=connect_args,
             echo=settings.DEBUG and settings.LOG_LEVEL == "DEBUG",
         )
     return engine
