@@ -150,6 +150,28 @@ export class WealthOSClient {
     });
   }
 
+  public async sendOtp(payload: {
+    identifier: string;
+  }): Promise<ApiResponse<{ success: boolean; message: string; identifier: string; debug_otp?: string }>> {
+    return this.request<{ success: boolean; message: string; identifier: string; debug_otp?: string }>(
+      '/api/v1/auth/otp/send',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    );
+  }
+
+  public async verifyOtp(payload: {
+    identifier: string;
+    otp: string;
+  }): Promise<ApiResponse<LoginResponse>> {
+    return this.request<LoginResponse>('/api/v1/auth/otp/verify', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   public async verifyMfa(payload: {
     mfa_token: string;
     code?: string;

@@ -181,7 +181,7 @@ export function sha256Bytes(data: Uint8Array): Uint8Array {
  */
 export function computeHmacSha256(keyHex: string, messageUtf8: string): string {
   // Check if Node.js native crypto is available for maximum performance
-  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+  if (typeof process !== 'undefined' && process.versions && process.versions.node && typeof Buffer !== 'undefined') {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const crypto = require('crypto');

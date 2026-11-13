@@ -9,6 +9,7 @@ from app.core.security import TenantContext, get_current_tenant_context
 from app.domains.sync.schemas import (
     DeviceRegistrationRequest,
     DeviceRegistrationResponse,
+    LedgerSnapshotPayload,
     SyncBatchRequest,
     SyncBatchResponse,
     SyncConflictItem,
@@ -194,4 +195,40 @@ async def revoke_device(
         return DeviceRegistrationResponse(**res)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+
+@router.post(
+    "/ledger-state",
+    status_code=status.HTTP_200_OK,
+    summary="Save tenant ledger snapshot for cross-device sync",
+)
+async def save_ledger_state(
+    body: LedgerSnapshotPayload,
+    context: TenantContext = Depends(get_current_tenant_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """Store complete ledger state snapshot (accounts, transactions, budgets, goals, holdings) for cross-device sync."""
+    from typing import Any
+    service = SyncService(session)
+    res = await service.save_ledger_snapshot(
+        tenant_id=str(context.tenant.id),
+        snapshot=body.model_dump(),
+    )
+    return {"success": True, "data": res}
+
+
+@router.get(
+    "/ledger-state",
+    summary="Fetch tenant ledger snapshot for cross-device sync",
+)
+async def get_ledger_state(
+    context: TenantContext = Depends(get_current_tenant_context),
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """Retrieve the authoritative ledger snapshot for the authenticated tenant to hydrate another device."""
+    from typing import Any
+    service = SyncService(session)
+    res = await service.get_ledger_snapshot(tenant_id=str(context.tenant.id))
+    return {"success": True, "data": res}
+
 

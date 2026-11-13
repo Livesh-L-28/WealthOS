@@ -175,3 +175,38 @@ class DeleteAccountRequest(BaseModel):
 
     password: str = Field(min_length=1, description="Current password for verification")
     confirmation_phrase: str = Field(description="Must match 'DELETE MY ACCOUNT'")
+
+
+class OTPSendRequest(BaseModel):
+    """Payload for requesting a 6-digit OTP code for mobile phone or email."""
+
+    identifier: str = Field(
+        min_length=3,
+        max_length=255,
+        description="Mobile phone number (e.g. +91 9876543210) or email address",
+    )
+
+
+class OTPSendResponse(BaseModel):
+    """Response returned upon OTP code generation and dispatch."""
+
+    success: bool
+    message: str
+    identifier: str
+    debug_otp: str | None = None
+
+
+class OTPVerifyRequest(BaseModel):
+    """Payload for verifying 6-digit OTP code and completing login."""
+
+    identifier: str = Field(
+        min_length=3,
+        max_length=255,
+        description="Mobile phone number or email address",
+    )
+    otp: str = Field(
+        min_length=4,
+        max_length=8,
+        description="6-digit verification code",
+    )
+

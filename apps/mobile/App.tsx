@@ -83,6 +83,7 @@ import {
   investmentsService,
   documentsService,
   copilotService,
+  syncService,
 } from './src/api/domainServices';
 import { validateDeepLink } from './src/deeplink';
 import { ParsedStatementResult } from './src/statementParserService';
@@ -213,8 +214,54 @@ function WealthOSContent() {
     };
   }, []);
 
+  const syncToCloud = (override?: {
+    accounts?: BankAccount[];
+    transactions?: Transaction[];
+    budgets?: BudgetEnvelope[];
+    goals?: FinancialGoal[];
+    holdings?: InvestmentHolding[];
+  }) => {
+    syncService.syncLedgerSnapshot({
+      accounts: override?.accounts ?? accounts,
+      transactions: override?.transactions ?? transactions,
+      budgets: override?.budgets ?? budgets,
+      goals: override?.goals ?? goals,
+      holdings: override?.holdings ?? holdings,
+    });
+  };
+
   const loadLiveLedgerData = async () => {
     try {
+      // 1. Hydrate from authoritative cross-device cloud ledger snapshot
+      try {
+        const snapshot = await syncService.fetchLedgerSnapshot();
+        if (snapshot) {
+          if (snapshot.accounts && snapshot.accounts.length > 0) {
+            setAccounts(snapshot.accounts);
+            await localStore.saveAccounts(snapshot.accounts);
+          }
+          if (snapshot.transactions && snapshot.transactions.length > 0) {
+            setTransactions(snapshot.transactions);
+            await localStore.saveTransactions(snapshot.transactions);
+          }
+          if (snapshot.budgets && snapshot.budgets.length > 0) {
+            setBudgets(snapshot.budgets);
+            await localStore.saveBudgets(snapshot.budgets);
+          }
+          if (snapshot.goals && snapshot.goals.length > 0) {
+            setGoals(snapshot.goals);
+            await localStore.saveGoals(snapshot.goals);
+          }
+          if (snapshot.holdings && snapshot.holdings.length > 0) {
+            setHoldings(snapshot.holdings);
+            await localStore.saveHoldings(snapshot.holdings);
+          }
+        }
+      } catch (snapErr) {
+        console.warn('Cross-device snapshot hydration notice:', snapErr);
+      }
+
+      // 2. Query live domain APIs
       const [liveAccounts, liveTxs, liveBudgets, liveGoals, liveHoldings, liveDocs] =
         await Promise.all([
           accountingService.fetchAccounts(),
@@ -510,6 +557,9 @@ function WealthOSContent() {
         currencyCode: newAcc.currency || 'INR',
       });
     } catch {}
+
+    // Synchronize cloud snapshot for cross-device access
+    syncToCloud({ accounts: updated });
   };
 
   const handleAddTransaction = async (data: {
@@ -576,6 +626,7 @@ function WealthOSContent() {
     setTransactions(updatedTransactions);
     await localStore.saveAccounts(updatedAccounts);
     await localStore.saveTransactions(updatedTransactions);
+    syncToCloud({ accounts: updatedAccounts, transactions: updatedTransactions });
 
     // 2. Immediately close modal and show confirmation
     setIsAddTxModalOpen(false);
@@ -646,6 +697,7 @@ function WealthOSContent() {
     setTransactions(updatedTransactions);
     await localStore.saveAccounts(updatedAccounts);
     await localStore.saveTransactions(updatedTransactions);
+    syncToCloud({ accounts: updatedAccounts, transactions: updatedTransactions });
 
     // 2. Close modal & show confirmation
     setIsTransferModalOpen(false);
@@ -667,6 +719,7 @@ function WealthOSContent() {
       const updated = accounts.filter((a) => a.id !== accountId);
       setAccounts(updated);
       await localStore.saveAccounts(updated);
+      syncToCloud({ accounts: updated });
       showNotification(`Removed account: ${acc.name}`);
     };
 
@@ -699,6 +752,7 @@ function WealthOSContent() {
       setTransactions(updatedTx);
       await localStore.saveAccounts(updatedAccounts);
       await localStore.saveTransactions(updatedTx);
+      syncToCloud({ accounts: updatedAccounts, transactions: updatedTx });
       showNotification(`Reversed & deleted transaction: ${tx.title}`);
     };
 
@@ -722,6 +776,7 @@ function WealthOSContent() {
     const updated = budgets.filter((b) => b.id !== budgetId);
     setBudgets(updated);
     await localStore.saveBudgets(updated);
+    syncToCloud({ budgets: updated });
     showNotification('Budget envelope removed.');
   };
 
@@ -729,6 +784,7 @@ function WealthOSContent() {
     const updated = goals.filter((g) => g.id !== goalId);
     setGoals(updated);
     await localStore.saveGoals(updated);
+    syncToCloud({ goals: updated });
     showNotification('Financial goal removed.');
   };
 
@@ -856,6 +912,7 @@ function WealthOSContent() {
     await localStore.saveTransactions(updatedTransactions);
     await localStore.saveHoldings(updatedHoldings);
     await localStore.saveDocuments(updatedDocuments);
+    syncToCloud({ accounts: updatedAccounts, transactions: updatedTransactions, holdings: updatedHoldings });
 
     // Show confirmation notification
     const inflow = formatINR(result.totalCredits);
@@ -869,6 +926,7 @@ function WealthOSContent() {
     const updated = [...budgets, newBudget];
     setBudgets(updated);
     await localStore.saveBudgets(updated);
+    syncToCloud({ budgets: updated });
     setIsCreateBudgetModalOpen(false);
     showNotification(`Created ${newBudget.category} envelope (${formatINR(newBudget.budgeted)})`);
 
@@ -885,6 +943,7 @@ function WealthOSContent() {
     const updated = [...goals, newGoal];
     setGoals(updated);
     await localStore.saveGoals(updated);
+    syncToCloud({ goals: updated });
     setIsCreateGoalModalOpen(false);
     showNotification(`Strategic goal established: ${newGoal.title}`);
 
@@ -906,6 +965,7 @@ function WealthOSContent() {
     const updated = goals.map((g) => (g.id === updatedGoal.id ? updatedGoal : g));
     setGoals(updated);
     await localStore.saveGoals(updated);
+    syncToCloud({ goals: updated });
     showNotification(`Updated savings for ${updatedGoal.title}: ${formatINR(updatedGoal.currentAmount)}`);
 
     if (deltaDeposit > 0) {
@@ -919,6 +979,7 @@ function WealthOSContent() {
     const updated = [...holdings, newHolding];
     setHoldings(updated);
     await localStore.saveHoldings(updated);
+    syncToCloud({ holdings: updated });
     setIsAddInvestmentModalOpen(false);
     showNotification(`Recorded ${newHolding.symbol} (${newHolding.name}) in portfolio`);
 

@@ -16,6 +16,7 @@ _SYNC_SESSIONS: dict[str, dict[str, Any]] = {}
 _PROCESSED_OPERATIONS: dict[str, dict[str, Any]] = {}
 _REGISTERED_DEVICES: dict[str, dict[str, Any]] = {}
 _ACTIVE_CONFLICTS: dict[str, dict[str, Any]] = {}
+_TENANT_LEDGER_SNAPSHOTS: dict[str, dict[str, Any]] = {}
 
 
 class SyncService:
@@ -283,4 +284,54 @@ class SyncService:
             "registered_at": device["registered_at"],
             "revoked_at": now_iso,
         }
+
+    async def save_ledger_snapshot(self, tenant_id: str, snapshot: dict[str, Any]) -> dict[str, Any]:
+        """Save complete tenant ledger state (accounts, txs, budgets, goals, holdings) for cross-device sync."""
+        now_iso = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        snapshot["updated_at"] = now_iso
+        snapshot["tenant_id"] = tenant_id
+
+        _TENANT_LEDGER_SNAPSHOTS[tenant_id] = snapshot
+
+        # Persist to disk in var/data
+        try:
+            from pathlib import Path
+            var_dir = Path(__file__).resolve().parent.parent.parent / "var" / "data"
+            var_dir.mkdir(parents=True, exist_ok=True)
+            snap_file = var_dir / f"sync_snapshot_{tenant_id}.json"
+            snap_file.write_text(json.dumps(snapshot, indent=2))
+        except Exception as exc:
+            logger.warning(f"Could not persist ledger snapshot file: {exc}")
+
+        logger.info(f"Ledger snapshot persisted for tenant {tenant_id}")
+        return snapshot
+
+    async def get_ledger_snapshot(self, tenant_id: str) -> dict[str, Any]:
+        """Retrieve authoritative tenant ledger state for cross-device hydration."""
+        if tenant_id in _TENANT_LEDGER_SNAPSHOTS:
+            return _TENANT_LEDGER_SNAPSHOTS[tenant_id]
+
+        # Try loading from disk
+        try:
+            from pathlib import Path
+            var_dir = Path(__file__).resolve().parent.parent.parent / "var" / "data"
+            snap_file = var_dir / f"sync_snapshot_{tenant_id}.json"
+            if snap_file.exists():
+                data = json.loads(snap_file.read_text())
+                _TENANT_LEDGER_SNAPSHOTS[tenant_id] = data
+                return data
+        except Exception as exc:
+            logger.warning(f"Could not read ledger snapshot file: {exc}")
+
+        # Return empty ledger state structure ready for population
+        return {
+            "tenant_id": tenant_id,
+            "accounts": [],
+            "transactions": [],
+            "budgets": [],
+            "goals": [],
+            "holdings": [],
+            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        }
+
 

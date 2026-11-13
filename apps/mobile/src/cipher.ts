@@ -144,9 +144,17 @@ export async function encryptAes256Gcm(
     }
   })();
 
-  const keyBuffer = nodeCrypto ? Buffer.from(keyHex, 'hex') : new Uint8Array(keyHex.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
+  const hasNodeCrypto =
+    typeof Buffer !== 'undefined' &&
+    nodeCrypto &&
+    typeof nodeCrypto.randomBytes === 'function' &&
+    typeof nodeCrypto.createCipheriv === 'function';
 
-  if (nodeCrypto && typeof nodeCrypto.randomBytes === 'function' && typeof nodeCrypto.createCipheriv === 'function') {
+  const keyBuffer = hasNodeCrypto
+    ? Buffer.from(keyHex, 'hex')
+    : new Uint8Array(keyHex.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
+
+  if (hasNodeCrypto) {
     // 1. Node.js / Server / Vitest runtime
     const iv = nodeCrypto.randomBytes(12);
     const cipher = nodeCrypto.createCipheriv('aes-256-gcm', keyBuffer, iv);
@@ -211,11 +219,22 @@ export async function decryptAes256Gcm(
     }
   })();
 
-  const keyBuffer = nodeCrypto ? Buffer.from(keyHex, 'hex') : new Uint8Array(keyHex.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
-  const ivBuffer = nodeCrypto ? Buffer.from(envelope.iv, 'hex') : new Uint8Array(envelope.iv.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
-  const tagBuffer = nodeCrypto ? Buffer.from(envelope.tag, 'hex') : new Uint8Array(envelope.tag.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
+  const hasNodeDecipher =
+    typeof Buffer !== 'undefined' &&
+    nodeCrypto &&
+    typeof nodeCrypto.createDecipheriv === 'function';
 
-  if (nodeCrypto && typeof nodeCrypto.createDecipheriv === 'function') {
+  const keyBuffer = hasNodeDecipher
+    ? Buffer.from(keyHex, 'hex')
+    : new Uint8Array(keyHex.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
+  const ivBuffer = hasNodeDecipher
+    ? Buffer.from(envelope.iv, 'hex')
+    : new Uint8Array(envelope.iv.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
+  const tagBuffer = hasNodeDecipher
+    ? Buffer.from(envelope.tag, 'hex')
+    : new Uint8Array(envelope.tag.match(/.{1,2}/g)!.map((b) => parseInt(b, 16)));
+
+  if (hasNodeDecipher) {
     // 1. Node.js / Server / Vitest runtime
     const decipher = nodeCrypto.createDecipheriv('aes-256-gcm', keyBuffer, ivBuffer);
     decipher.setAuthTag(tagBuffer);

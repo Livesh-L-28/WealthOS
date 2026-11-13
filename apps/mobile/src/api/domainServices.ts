@@ -1027,3 +1027,65 @@ export const copilotService = {
     }
   },
 };
+
+// -----------------------------------------------------------------------------
+// Cross-Device Ledger State Sync Service
+// -----------------------------------------------------------------------------
+
+export interface LedgerSnapshotData {
+  accounts?: BankAccount[];
+  transactions?: Transaction[];
+  budgets?: BudgetEnvelope[];
+  goals?: FinancialGoal[];
+  holdings?: InvestmentHolding[];
+  updated_at?: string;
+}
+
+export const syncService = {
+  /**
+   * Persist full tenant ledger state snapshot (accounts, transactions, budgets, goals, holdings)
+   * to backend cloud for seamless multi-device synchronization.
+   */
+  async syncLedgerSnapshot(state: {
+    accounts?: BankAccount[];
+    transactions?: Transaction[];
+    budgets?: BudgetEnvelope[];
+    goals?: FinancialGoal[];
+    holdings?: InvestmentHolding[];
+  }): Promise<boolean> {
+    try {
+      const res = await (apiClient as any).request('/api/v1/sync/ledger-state', {
+        method: 'POST',
+        body: JSON.stringify({
+          accounts: state.accounts || [],
+          transactions: state.transactions || [],
+          budgets: state.budgets || [],
+          goals: state.goals || [],
+          holdings: state.holdings || [],
+          timestamp: new Date().toISOString(),
+        }),
+      });
+      return !!res?.success;
+    } catch (err: any) {
+      console.warn('Cross-device ledger snapshot sync deferred:', err?.message || err);
+      return false;
+    }
+  },
+
+  /**
+   * Fetch complete tenant ledger state snapshot from backend to hydrate secondary devices.
+   */
+  async fetchLedgerSnapshot(): Promise<LedgerSnapshotData | null> {
+    try {
+      const res = await (apiClient as any).request('/api/v1/sync/ledger-state');
+      if (res && res.success && res.data) {
+        return res.data as LedgerSnapshotData;
+      }
+      return null;
+    } catch (err: any) {
+      console.warn('Cross-device ledger snapshot fetch deferred:', err?.message || err);
+      return null;
+    }
+  },
+};
+

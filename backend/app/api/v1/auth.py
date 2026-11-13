@@ -26,6 +26,9 @@ from app.domains.identity.schemas import (
     MFADisableRequest,
     MFAEnrollResponse,
     MFAVerifyEnrollmentRequest,
+    OTPSendRequest,
+    OTPSendResponse,
+    OTPVerifyRequest,
     RefreshTokenRequest,
     RegisterRequest,
     RegisterResponse,
@@ -53,8 +56,10 @@ from app.domains.identity.service import (
     resend_verification_email,
     reset_password_with_token,
     rotate_refresh_token,
+    send_otp,
     verify_and_activate_mfa,
     verify_email_token,
+    verify_otp,
 )
 from app.domains.tenants.service import list_user_tenants
 
@@ -231,6 +236,72 @@ async def login(
             detail=str(exc),
             headers={"WWW-Authenticate": "Bearer"},
         ) from exc
+
+
+@router.post(
+    "/otp/send",
+    response_model=dict[str, Any],
+    dependencies=[Depends(auth_limiter)],
+    summary="Dispatch 6-digit OTP to mobile phone number or email",
+)
+async def request_otp(
+    payload: OTPSendRequest,
+) -> dict[str, Any]:
+    """Generate and dispatch a cryptographically secure 6-digit OTP code to mobile phone or email."""
+    try:
+        res = await send_otp(payload.identifier)
+        return res
+    except AuthenticationServiceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+    except Exception as exc:
+        logger.error(f"Failed to dispatch OTP: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate verification code. Please try again.",
+        ) from exc
+
+
+@router.post(
+    "/otp/verify",
+    response_model=dict[str, Any],
+    dependencies=[Depends(auth_limiter)],
+    summary="Verify OTP code and authenticate session",
+)
+async def verify_otp_endpoint(
+    payload: OTPVerifyRequest,
+    request: Request,
+    response: Response,
+    session: AsyncSession = Depends(get_db_session),
+) -> dict[str, Any]:
+    """Verify 6-digit OTP code. Auto-provisions new user or authenticates existing user."""
+    ip, ua, cid = _get_client_meta(request)
+
+    try:
+        result = await verify_otp(
+            session=session,
+            identifier=payload.identifier,
+            otp_code=payload.otp,
+            ip_address=ip,
+            user_agent=ua,
+            correlation_id=cid,
+        )
+
+        _set_refresh_cookie(response, result["refresh_token"])
+        _set_access_cookie(response, result["access_token"])
+        return {
+            "success": True,
+            "data": result,
+        }
+    except AuthenticationServiceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(exc),
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
 
 
 @router.post(

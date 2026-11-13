@@ -89,3 +89,20 @@ class DeviceRegistrationResponse(BaseModel):
     registered_at: str
     revoked_at: str | None = None
 
+
+class LedgerSnapshotPayload(BaseModel):
+    accounts: list[dict[str, Any]] = Field(default_factory=list)
+    transactions: list[dict[str, Any]] = Field(default_factory=list)
+    budgets: list[dict[str, Any]] = Field(default_factory=list)
+    goals: list[dict[str, Any]] = Field(default_factory=list)
+    holdings: list[dict[str, Any]] = Field(default_factory=list)
+    timestamp: str | None = None
+
+
+class LedgerSnapshotResponse(BaseModel):
+    success: bool = True
+    tenant_id: str
+    data: dict[str, Any]
+    server_timestamp: str
+
+
