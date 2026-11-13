@@ -1228,7 +1228,7 @@ function WealthOSContent() {
         onOpenQuickAction={() => setIsQuickAddOpen(true)}
       />
 
-      {/* Enterprise Drawer Hub */}
+      {/* Enterprise Drawer Hub (Full Page Navigation) */}
       <EnterpriseDrawer
         isOpen={isEnterpriseDrawerOpen}
         onClose={() => setIsEnterpriseDrawerOpen(false)}
@@ -1239,6 +1239,9 @@ function WealthOSContent() {
           setActiveWorkspace(ws);
           showNotification(`Active tenant switched to ${ws}`);
         }}
+        userName={userName}
+        netWorth={netWorth}
+        totalAccounts={accounts.length}
         onResetToFresh={handleResetToFresh}
         onLogout={handleLogout}
       />

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { theme, useTheme } from '../theme';
 import { ActiveScreen } from '../types';
+import { formatINR } from '../formatters';
 
 interface EnterpriseDrawerProps {
   isOpen: boolean;
@@ -19,6 +20,10 @@ interface EnterpriseDrawerProps {
   onSelectScreen: (screen: ActiveScreen) => void;
   activeWorkspace: string;
   onSelectWorkspace: (workspace: string) => void;
+  userName?: string;
+  userEmail?: string;
+  netWorth?: number;
+  totalAccounts?: number;
   onResetToFresh?: () => void;
   onLogout?: () => void;
 }
@@ -140,12 +145,6 @@ const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
-const WORKSPACES = [
-  { id: 'family', name: 'Family Office', balance: '₹75,37,901' },
-  { id: 'personal', name: 'Personal Holdings', balance: '₹42,15,000' },
-  { id: 'business', name: 'Business Treasury', balance: '₹1.20 Cr' },
-];
-
 export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
   isOpen,
   onClose,
@@ -153,233 +152,300 @@ export const EnterpriseDrawer: React.FC<EnterpriseDrawerProps> = ({
   onSelectScreen,
   activeWorkspace,
   onSelectWorkspace,
+  userName,
+  userEmail,
+  netWorth = 0,
+  totalAccounts = 0,
   onResetToFresh,
   onLogout,
 }) => {
   const { isDark } = useTheme();
-  const drawerBg = isDark ? '#111827' : '#FFFFFF';
+  const drawerBg = isDark ? '#090D16' : '#FFFFFF';
   const borderColor = isDark ? '#1E293B' : '#E2E8F0';
   const textPrimary = isDark ? '#F8FAFC' : '#0F172A';
   const textSecondary = isDark ? '#94A3B8' : '#64748B';
 
-  return (
-    <Modal visible={isOpen} animationType="slide" transparent={true} onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <TouchableOpacity style={styles.backdrop} activeOpacity={1} onPress={onClose} />
+  const displayName = userName && userName !== 'User' && userName.trim() ? userName : (userEmail || 'Personal Account');
+  const avatarInitials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'WO';
 
-        <SafeAreaView style={[styles.drawerContainer, { backgroundColor: drawerBg }]}>
-          {/* Header Drag Pill & Close Button */}
-          <View style={styles.drawerTopBar}>
-            <View style={styles.dragPill} />
-            <TouchableOpacity onPress={onClose} style={styles.closeButton} activeOpacity={0.7}>
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
+  const formattedBalance = netWorth > 0 ? formatINR(netWorth) : '₹0.00';
+
+  const workspacesList = [
+    { id: 'personal', name: 'Personal Holdings', balance: formattedBalance },
+    { id: 'family', name: 'Family Office', balance: '₹0.00' },
+    { id: 'business', name: 'Business Treasury', balance: '₹0.00' },
+  ];
+
+  return (
+    <Modal
+      visible={isOpen}
+      animationType="slide"
+      transparent={false}
+      presentationStyle="fullScreen"
+      onRequestClose={onClose}
+    >
+      <SafeAreaView style={[styles.fullPageContainer, { backgroundColor: drawerBg }]}>
+        {/* Full-Page App Bar */}
+        <View style={[styles.fullPageHeader, { borderBottomColor: borderColor, backgroundColor: drawerBg }]}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.headerBackBtn}
+            activeOpacity={0.7}
+            accessibilityLabel="Back to previous screen"
+          >
+            <Text style={[styles.headerBackArrow, { color: textPrimary }]}>←</Text>
+            <Text style={[styles.headerBackText, { color: textPrimary }]}>Back</Text>
+          </TouchableOpacity>
+
+          <View style={styles.headerTitleCol}>
+            <Text style={[styles.headerTitleText, { color: textPrimary }]}>Navigation & Hub</Text>
+            <Text style={[styles.headerSubText, { color: textSecondary }]}>All Modules & Controls</Text>
           </View>
 
-          <ScrollView style={styles.drawerScroll} showsVerticalScrollIndicator={false}>
-            {/* User Profile / Identity Card */}
-            <View style={styles.profileCard}>
-              <View style={styles.avatarCircle}>
-                <Text style={styles.avatarText}>LJ</Text>
-              </View>
-              <View style={styles.profileTextCol}>
-                <View style={styles.profileNameRow}>
-                  <Text style={styles.profileName}>Livesh J</Text>
-                  <View style={styles.verifiedBadge}>
-                    <Text style={styles.verifiedBadgeText}>EXECUTIVE</Text>
-                  </View>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.headerDoneBtn}
+            activeOpacity={0.7}
+            accessibilityLabel="Close and return"
+          >
+            <Text style={styles.headerDoneText}>Done</Text>
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          style={styles.fullPageScroll}
+          contentContainerStyle={styles.fullPageScrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* User Profile / Identity Card */}
+          <View style={[styles.profileCard, { backgroundColor: isDark ? '#111827' : '#F8FAFC', borderColor }]}>
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarText}>{avatarInitials}</Text>
+            </View>
+            <View style={styles.profileTextCol}>
+              <View style={styles.profileNameRow}>
+                <Text style={[styles.profileName, { color: textPrimary }]}>{displayName}</Text>
+                <View style={styles.verifiedBadge}>
+                  <Text style={styles.verifiedBadgeText}>VERIFIED</Text>
                 </View>
-                <Text style={styles.profileRole}>Principal Family Wealth Architect</Text>
-                <Text style={styles.profileUid}>ID: #WOS-8942 • Hardware Enclave</Text>
               </View>
+              <Text style={[styles.profileRole, { color: textSecondary }]}>
+                {totalAccounts > 0 ? `${totalAccounts} Connected Accounts` : 'Ready to link financial accounts'}
+              </Text>
+              <Text style={[styles.profileUid, { color: isDark ? '#64748B' : '#94A3B8' }]}>
+                Hardware Secure Enclave • AES-256
+              </Text>
             </View>
+          </View>
 
-            {/* Workspace Selector */}
-            <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionLabel}>ACTIVE TENANT WORKSPACE</Text>
-            </View>
-            <View style={styles.workspacePillsRow}>
-              {WORKSPACES.map((w) => {
-                const isSelected = activeWorkspace === w.name;
-                return (
-                  <TouchableOpacity
-                    key={w.id}
-                    style={[styles.workspacePill, isSelected && styles.workspacePillActive]}
-                    onPress={() => onSelectWorkspace(w.name)}
-                    activeOpacity={0.7}
+          {/* Active Tenant Workspace */}
+          <View style={styles.sectionHeaderRow}>
+            <Text style={[styles.sectionLabel, { color: textSecondary }]}>ACTIVE TENANT WORKSPACE</Text>
+          </View>
+          <View style={styles.workspacePillsRow}>
+            {workspacesList.map((w) => {
+              const isSelected = activeWorkspace === w.name;
+              return (
+                <TouchableOpacity
+                  key={w.id}
+                  style={[
+                    styles.workspacePill,
+                    { backgroundColor: isDark ? '#111827' : '#F8FAFC', borderColor },
+                    isSelected && styles.workspacePillActive,
+                  ]}
+                  onPress={() => onSelectWorkspace(w.name)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.workspacePillText,
+                      { color: textSecondary },
+                      isSelected && styles.workspacePillTextActive,
+                    ]}
                   >
-                    <Text
-                      style={[
-                        styles.workspacePillText,
-                        isSelected && styles.workspacePillTextActive,
-                      ]}
+                    {w.name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.workspaceBalanceText,
+                      { color: textPrimary },
+                      isSelected && styles.workspaceBalanceTextActive,
+                    ]}
+                  >
+                    {w.balance}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* All Categorized Navigation Sections (Matching Web Sidebar 1:1) */}
+          {NAV_SECTIONS.map((section, sIdx) => (
+            <View key={section.title || `sec-${sIdx}`} style={sIdx > 0 ? styles.sectionSpacing : undefined}>
+              {section.title && (
+                <View style={styles.sectionHeaderRow}>
+                  <Text style={[styles.sectionLabel, { color: textSecondary }]}>{section.title}</Text>
+                </View>
+              )}
+
+              <View style={[styles.menuContainer, { backgroundColor: isDark ? '#111827' : '#F8FAFC', borderColor }]}>
+                {section.items.map((item, iIdx) => {
+                  const isActive = activeScreen === item.id;
+                  return (
+                    <TouchableOpacity
+                      key={`${item.id}-${iIdx}`}
+                      style={[styles.menuItemRow, isActive && styles.menuItemRowActive]}
+                      onPress={() => {
+                        onSelectScreen(item.id);
+                        onClose();
+                      }}
+                      activeOpacity={0.7}
                     >
-                      {w.name}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.workspaceBalanceText,
-                        isSelected && styles.workspaceBalanceTextActive,
-                      ]}
-                    >
-                      {w.balance}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* All Categorized Navigation Sections (Matching Web Sidebar 1:1) */}
-            {NAV_SECTIONS.map((section, sIdx) => (
-              <View key={section.title || `sec-${sIdx}`} style={sIdx > 0 ? styles.sectionSpacing : undefined}>
-                {section.title && (
-                  <View style={styles.sectionHeaderRow}>
-                    <Text style={styles.sectionLabel}>{section.title}</Text>
-                  </View>
-                )}
-
-                <View style={styles.menuContainer}>
-                  {section.items.map((item, iIdx) => {
-                    const isActive = activeScreen === item.id;
-                    return (
-                      <TouchableOpacity
-                        key={`${item.id}-${iIdx}`}
-                        style={[styles.menuItemRow, isActive && styles.menuItemRowActive]}
-                        onPress={() => {
-                          onSelectScreen(item.id);
-                          onClose();
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <View style={[styles.menuIconBox, isActive && styles.menuIconBoxActive]}>
-                          <Text style={[styles.menuIconText, isActive && styles.menuIconTextActive]}>
-                            {item.icon}
-                          </Text>
-                        </View>
-
-                        <Text style={[styles.menuTitle, isActive && styles.menuTitleActive]}>
-                          {item.title}
+                      <View style={[styles.menuIconBox, isActive && styles.menuIconBoxActive]}>
+                        <Text style={[styles.menuIconText, isActive && styles.menuIconTextActive]}>
+                          {item.icon}
                         </Text>
+                      </View>
 
-                        {item.badge && (
-                          <View style={styles.menuBadgeSuccess}>
-                            <Text style={styles.menuBadgeTextSuccess}>{item.badge}</Text>
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-            ))}
+                      <Text style={[styles.menuTitle, { color: textPrimary }, isActive && styles.menuTitleActive]}>
+                        {item.title}
+                      </Text>
 
-            {/* Ledger Mode & Data Controls */}
-            {onResetToFresh && (
-              <View style={styles.dataControlsContainer}>
-                <Text style={styles.sectionLabel}>LEDGER STATE & DATA CONTROLS</Text>
-                <View style={styles.dataControlsRow}>
-                  <TouchableOpacity
-                    style={styles.dataControlBtnFresh}
-                    onPress={() => {
-                      onResetToFresh();
-                      onClose();
-                    }}
-                    activeOpacity={0.75}
-                  >
-                    <Text style={styles.dataControlBtnIcon}>🌱</Text>
-                    <View style={styles.dataControlBtnTexts}>
-                      <Text style={styles.dataControlBtnTitleFresh}>Reset to Fresh Ledger</Text>
-                      <Text style={styles.dataControlBtnSubFresh}>Reset to clean slate</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            {/* System Security / Ledger Assurance Strip */}
-            <View style={styles.assuranceCard}>
-              <View style={styles.assuranceIconBox}>
-                <Text style={styles.assuranceIcon}>🔒</Text>
-              </View>
-              <View style={styles.assuranceTextCol}>
-                <Text style={styles.assuranceTitle}>Double-Entry Ledger In Balance</Text>
-                <Text style={styles.assuranceSub}>
-                  Zero variance (₹0.00) • AES-256-GCM SecureStore • Tamper-evident Merkle hash
-                </Text>
+                      {item.badge && (
+                        <View style={styles.menuBadgeSuccess}>
+                          <Text style={styles.menuBadgeTextSuccess}>{item.badge}</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
+          ))}
 
-            {/* Log Out Session Button */}
-            {onLogout && (
-              <TouchableOpacity
-                style={styles.logoutDrawerBtn}
-                onPress={() => {
-                  onLogout();
-                  onClose();
-                }}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.logoutDrawerBtnIcon}>🚪</Text>
-                <Text style={styles.logoutDrawerBtnText}>Log Out / Lock Session</Text>
-              </TouchableOpacity>
-            )}
-          </ScrollView>
-        </SafeAreaView>
-      </View>
+          {/* Ledger Mode & Data Controls */}
+          {onResetToFresh && (
+            <View style={styles.dataControlsContainer}>
+              <Text style={[styles.sectionLabel, { color: textSecondary }]}>LEDGER STATE & DATA CONTROLS</Text>
+              <View style={styles.dataControlsRow}>
+                <TouchableOpacity
+                  style={[styles.dataControlBtnFresh, { borderColor }]}
+                  onPress={() => {
+                    onResetToFresh();
+                    onClose();
+                  }}
+                  activeOpacity={0.75}
+                >
+                  <Text style={styles.dataControlBtnIcon}>🌱</Text>
+                  <View style={styles.dataControlBtnTexts}>
+                    <Text style={[styles.dataControlBtnTitleFresh, { color: textPrimary }]}>Reset to Fresh Ledger</Text>
+                    <Text style={styles.dataControlBtnSubFresh}>Clear all accounts & return to clean slate</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* System Security / Ledger Assurance Strip */}
+          <View style={[styles.assuranceCard, { borderColor, backgroundColor: isDark ? '#111827' : '#F8FAFC' }]}>
+            <View style={styles.assuranceIconBox}>
+              <Text style={styles.assuranceIcon}>🔒</Text>
+            </View>
+            <View style={styles.assuranceTextCol}>
+              <Text style={[styles.assuranceTitle, { color: textPrimary }]}>Double-Entry Ledger In Balance</Text>
+              <Text style={styles.assuranceSub}>
+                Zero variance (₹0.00) • AES-256-GCM SecureStore • Tamper-evident Merkle hash
+              </Text>
+            </View>
+          </View>
+
+          {/* Log Out Session Button */}
+          {onLogout && (
+            <TouchableOpacity
+              style={styles.logoutDrawerBtn}
+              onPress={() => {
+                onLogout();
+                onClose();
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.logoutDrawerBtnIcon}>🚪</Text>
+              <Text style={styles.logoutDrawerBtnText}>Log Out / Lock Session</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </SafeAreaView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
+  fullPageContainer: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 20, 0.45)',
-    justifyContent: 'flex-end',
+    width: '100%',
+    height: '100%',
   },
-  backdrop: {
-    flex: 1,
-  },
-  drawerContainer: {
-    backgroundColor: theme.colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '88%',
-    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  drawerTopBar: {
+  fullPageHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    position: 'relative',
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderLight,
+    minHeight: 56,
   },
-  dragPill: {
-    width: 44,
-    height: 5,
-    borderRadius: 3,
-    backgroundColor: theme.colors.border,
-  },
-  closeButton: {
-    position: 'absolute',
-    right: 16,
-    top: 6,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surfaceElevated,
+  headerBackBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 6,
+    paddingRight: 10,
+    gap: 4,
   },
-  closeButtonText: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
+  headerBackArrow: {
+    fontSize: 20,
     fontWeight: '700',
+    lineHeight: 22,
   },
-  drawerScroll: {
+  headerBackText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  headerTitleCol: {
+    alignItems: 'center',
+  },
+  headerTitleText: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  headerSubText: {
+    fontSize: 11,
+    marginTop: 1,
+  },
+  headerDoneBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: theme.colors.primaryAlpha10,
+  },
+  headerDoneText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: theme.colors.primary,
+  },
+  fullPageScroll: {
+    flex: 1,
+  },
+  fullPageScrollContent: {
     paddingHorizontal: 20,
     paddingTop: 16,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 28,
   },
   profileCard: {
     flexDirection: 'row',
