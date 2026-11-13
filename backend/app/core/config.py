@@ -324,7 +324,12 @@ class Settings(BaseSettings):
     def get_database_url(self) -> str:
         """Return the async database URL for application runtime, using restricted app role."""
         if self.DATABASE_URL:
-            return self.DATABASE_URL
+            url = self.DATABASE_URL
+            if url.startswith("postgres://"):
+                url = "postgresql+asyncpg://" + url[len("postgres://"):]
+            elif url.startswith("postgresql://") and not url.startswith("postgresql+"):
+                url = "postgresql+asyncpg://" + url[len("postgresql://"):]
+            return url
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
             f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -344,6 +349,13 @@ class Settings(BaseSettings):
 
     def get_database_admin_url(self) -> str:
         """Return the async database URL with admin credentials for migrations."""
+        if self.DATABASE_URL:
+            url = self.DATABASE_URL
+            if url.startswith("postgres://"):
+                url = "postgresql+asyncpg://" + url[len("postgres://"):]
+            elif url.startswith("postgresql://") and not url.startswith("postgresql+"):
+                url = "postgresql+asyncpg://" + url[len("postgresql://"):]
+            return url
         return (
             f"postgresql+asyncpg://{self.POSTGRES_ADMIN_USER}:{self.POSTGRES_ADMIN_PASSWORD}@"
             f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -353,6 +365,15 @@ class Settings(BaseSettings):
         """Return the sync database URL for Alembic migrations."""
         if self.DATABASE_SYNC_URL:
             return self.DATABASE_SYNC_URL
+        if self.DATABASE_URL:
+            url = self.DATABASE_URL
+            if url.startswith("postgresql+asyncpg://"):
+                return "postgresql+psycopg://" + url[len("postgresql+asyncpg://"):]
+            elif url.startswith("postgres://"):
+                return "postgresql+psycopg://" + url[len("postgres://"):]
+            elif url.startswith("postgresql://"):
+                return "postgresql+psycopg://" + url[len("postgresql://"):]
+            return url
         return (
             f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@"
             f"{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
