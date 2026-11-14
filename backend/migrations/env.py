@@ -23,7 +23,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Set the SQLAlchemy connection URL dynamically from WealthOS settings using admin role
-config.set_main_option("sqlalchemy.url", settings.get_database_admin_url())
+admin_url = settings.get_database_admin_url().replace("%", "%%")
+config.set_main_option("sqlalchemy.url", admin_url)
 
 # Target metadata for autogenerate support
 target_metadata = Base.metadata

@@ -99,7 +99,7 @@ async def register_user(
         logger.warning(f"Registration attempted with existing email: {clean_email}")
         raise AuthenticationServiceError("An account with this email address already exists.")
 
-    initial_status = "pending_verification" if getattr(settings, 'is_production', False) else "active"
+    initial_status = "pending_verification"
     user = User(
         id=uuid.uuid4(),
         email=clean_email,

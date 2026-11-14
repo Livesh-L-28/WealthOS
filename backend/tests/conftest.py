@@ -240,7 +240,12 @@ async def clean_database():
         async with admin_engine.begin() as conn:
             await conn.execute(text("SET LOCAL wealthos.allow_audit_cleanup = 'on';"))
             for tbl in tables:
-                await conn.execute(text(f"DELETE FROM {tbl};"))
+                sp = await conn.begin_nested()
+                try:
+                    await conn.execute(text(f"DELETE FROM {tbl};"))
+                    await sp.commit()
+                except Exception:
+                    await sp.rollback()
             await conn.execute(text("DELETE FROM roles WHERE is_system_role = false;"))
             await _ensure_rbac_seeded(conn)
     except Exception:
