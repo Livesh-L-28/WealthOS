@@ -87,4 +87,36 @@ describe('WealthOSClient', () => {
       expect.objectContaining({ method: 'POST' })
     );
   });
+
+  it('silently refreshes auth token and retries request on 401 response', async () => {
+    client.setAuthToken('expired-jwt');
+    const refreshFn = vi.fn().mockResolvedValue('refreshed-jwt');
+    client.setOnTokenRefresh(refreshFn);
+
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        json: async () => ({ detail: 'Token has expired' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          data: { id: 'usr-1', email: 'refreshed@example.com' },
+          error: null,
+        }),
+      });
+    global.fetch = mockFetch;
+
+    const res = await client.getMe();
+
+    expect(refreshFn).toHaveBeenCalledTimes(1);
+    expect(client.getAuthToken()).toBe('refreshed-jwt');
+    expect(res.success).toBe(true);
+    expect(res.data?.email).toBe('refreshed@example.com');
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
 });

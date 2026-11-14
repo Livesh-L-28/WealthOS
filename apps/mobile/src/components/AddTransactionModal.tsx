@@ -173,6 +173,7 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   const [selectedAccount, setSelectedAccount] = useState(
     accounts[0]?.name || 'Primary Operating Savings'
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isScannerOpen, setIsScannerOpen] = useState(initialScanMode);
   const [isScanning, setIsScanning] = useState(false);
@@ -290,26 +291,32 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
   };
 
   const handleSubmit = () => {
+    if (isSubmitting) return;
     const parsedAmount = parseFloat(amount);
     if (!parsedAmount || isNaN(parsedAmount) || parsedAmount <= 0) {
       Alert.alert('Invalid Amount', 'Please enter a valid transaction amount.');
       return;
     }
-    const finalTitle = title.trim() || `${category} ${isIncome ? 'Inflow' : 'Expense'}`;
+    setIsSubmitting(true);
+    try {
+      const finalTitle = title.trim() || `${category} ${isIncome ? 'Inflow' : 'Expense'}`;
 
-    onSubmit({
-      title: finalTitle,
-      amount: parsedAmount,
-      category,
-      type,
-      accountName: selectedAccount || 'Cash Wallet',
-    });
+      onSubmit({
+        title: finalTitle,
+        amount: parsedAmount,
+        category,
+        type,
+        accountName: selectedAccount || 'Cash Wallet',
+      });
 
-    // Reset
-    setAmount('');
-    setTitle('');
-    setQuickInput('');
-    onClose();
+      // Reset
+      setAmount('');
+      setTitle('');
+      setQuickInput('');
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const currentCategories = type === 'CREDIT' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -827,12 +834,18 @@ export const AddTransactionModal: React.FC<AddTransactionModalProps> = ({
                 {
                   backgroundColor: isIncome ? '#10B981' : '#EF4444',
                 },
+                isSubmitting && { opacity: 0.6 },
               ]}
               onPress={handleSubmit}
+              disabled={isSubmitting}
               activeOpacity={0.8}
             >
               <Text style={styles.submitBtnText}>
-                {isIncome ? '+ Post Income to Ledger' : '− Post Expense to Ledger'}
+                {isSubmitting
+                  ? 'Posting...'
+                  : isIncome
+                  ? '+ Post Income to Ledger'
+                  : '− Post Expense to Ledger'}
               </Text>
             </TouchableOpacity>
           </View>
