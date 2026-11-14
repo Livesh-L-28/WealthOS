@@ -232,11 +232,7 @@ async def login(
         }
     except AuthenticationServiceError as exc:
         msg = str(exc)
-        err_status = (
-            status.HTTP_429_TOO_MANY_REQUESTS
-            if any(term in msg.lower() for term in ["temporarily locked", "too many failed"])
-            else status.HTTP_401_UNAUTHORIZED
-        )
+        err_status = status.HTTP_401_UNAUTHORIZED
         raise HTTPException(
             status_code=err_status,
             detail=msg,
@@ -309,11 +305,7 @@ async def verify_otp_endpoint(
         }
     except AuthenticationServiceError as exc:
         msg = str(exc)
-        err_status = (
-            status.HTTP_429_TOO_MANY_REQUESTS
-            if any(term in msg.lower() for term in ["temporarily locked", "too many failed"])
-            else status.HTTP_401_UNAUTHORIZED
-        )
+        err_status = status.HTTP_401_UNAUTHORIZED
         raise HTTPException(
             status_code=err_status,
             detail=msg,

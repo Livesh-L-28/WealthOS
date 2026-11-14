@@ -77,7 +77,7 @@ async def register_user(
     email: str,
     password: str,
     first_name: str,
-    last_name: str,
+    last_name: str = "",
     ip_address: str | None = None,
     user_agent: str | None = None,
     correlation_id: str | None = None,
@@ -99,7 +99,7 @@ async def register_user(
         logger.warning(f"Registration attempted with existing email: {clean_email}")
         raise AuthenticationServiceError("An account with this email address already exists.")
 
-    initial_status = "pending_verification" if getattr(settings, 'is_production', False) else "active"
+    initial_status = "pending_verification"
     user = User(
         id=uuid.uuid4(),
         email=clean_email,
@@ -255,6 +255,11 @@ async def authenticate_user(
             details={"status": user.status},
         )
         raise AuthenticationServiceError(f"Account is {user.status}. Please contact support.")
+
+    if user.status == "pending_verification":
+        user.status = "active"
+        if not user.email_verified_at:
+            user.email_verified_at = now
 
     # Password verified: reset failure counter
     user.credential.failed_login_attempts = 0

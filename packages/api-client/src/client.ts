@@ -17,6 +17,7 @@ export interface ClientConfig {
   timeoutMs?: number;
   tenantId?: string;
   authToken?: string;
+  onTokenRefresh?: () => Promise<string | null>;
 }
 
 export class WealthOSClient {
@@ -24,12 +25,19 @@ export class WealthOSClient {
   private timeoutMs: number;
   private tenantId?: string;
   private authToken?: string;
+  private onTokenRefresh?: () => Promise<string | null>;
+  private isRefreshing = false;
 
   constructor(config: ClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, '');
     this.timeoutMs = config.timeoutMs ?? 45000;
     this.tenantId = config.tenantId;
     this.authToken = config.authToken;
+    this.onTokenRefresh = config.onTokenRefresh;
+  }
+
+  public setOnTokenRefresh(callback: (() => Promise<string | null>) | undefined): void {
+    this.onTokenRefresh = callback;
   }
 
   public setTenantId(tenantId: string | undefined): void {
@@ -77,6 +85,40 @@ export class WealthOSClient {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
+        if (
+          response.status === 401 &&
+          this.onTokenRefresh &&
+          !this.isRefreshing &&
+          !endpoint.includes('/auth/login') &&
+          !endpoint.includes('/auth/refresh')
+        ) {
+          this.isRefreshing = true;
+          try {
+            const newToken = await this.onTokenRefresh();
+            if (newToken) {
+              this.setAuthToken(newToken);
+              const retryHeaders = {
+                ...headers,
+                Authorization: `Bearer ${newToken}`,
+              };
+              const retryResponse = await fetch(url, {
+                ...options,
+                headers: retryHeaders,
+                credentials: options.credentials ?? 'include',
+                signal: controller.signal,
+              });
+              const retryData = await retryResponse.json().catch(() => null);
+              if (retryResponse.ok) {
+                return retryData as ApiResponse<T>;
+              }
+            }
+          } catch {
+            // Refresh failed, proceed to return original 401 response
+          } finally {
+            this.isRefreshing = false;
+          }
+        }
+
         return {
           success: false,
           data: null,

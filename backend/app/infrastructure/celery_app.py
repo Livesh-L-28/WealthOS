@@ -163,8 +163,16 @@ async def release_task_lock(redis_client, lock_key: str, owner_token: str) -> bo
 
 def check_celery_health() -> dict:
     """Check connectivity to the Celery broker (Redis) with local eager fallback."""
+    if not settings.is_production and getattr(celery_app.conf, "task_always_eager", False):
+        return {
+            "status": "healthy",
+            "mode": "eager_fallback",
+            "note": "Broker offline; task execution running in resilient eager mode.",
+        }
     try:
-        conn = celery_app.connection()
+        conn = celery_app.connection_for_write(
+            transport_options={"max_retries": 1, "interval_start": 0, "interval_step": 0, "timeout": 0.5}
+        )
         conn.connect()
         conn.release()
         return {"status": "healthy", "broker": "connected"}

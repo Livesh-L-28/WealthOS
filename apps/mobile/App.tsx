@@ -104,6 +104,22 @@ if (typeof globalThis !== 'undefined') {
   }
 }
 
+// Non-destructive merge helper to preserve offline-created entities during cloud hydration
+function mergeById<T extends { id: string }>(currentList: T[], incomingList: T[]): T[] {
+  if (!incomingList || incomingList.length === 0) return currentList;
+  if (!currentList || currentList.length === 0) return incomingList;
+
+  const incomingMap = new Map(incomingList.map((item) => [item.id, item]));
+  const merged: T[] = [...incomingList];
+
+  for (const item of currentList) {
+    if (!incomingMap.has(item.id)) {
+      merged.unshift(item);
+    }
+  }
+  return merged;
+}
+
 export { formatINR };
 
 // Class ErrorBoundary for resilient native error trapping
@@ -245,24 +261,39 @@ function WealthOSContent() {
         const snapshot = await syncService.fetchLedgerSnapshot();
         if (snapshot) {
           if (snapshot.accounts && snapshot.accounts.length > 0) {
-            setAccounts(snapshot.accounts);
-            await localStore.saveAccounts(snapshot.accounts);
+            setAccounts((curr) => {
+              const merged = mergeById(curr, snapshot.accounts);
+              localStore.saveAccounts(merged).catch(() => {});
+              return merged;
+            });
           }
           if (snapshot.transactions && snapshot.transactions.length > 0) {
-            setTransactions(snapshot.transactions);
-            await localStore.saveTransactions(snapshot.transactions);
+            setTransactions((curr) => {
+              const merged = mergeById(curr, snapshot.transactions);
+              localStore.saveTransactions(merged).catch(() => {});
+              return merged;
+            });
           }
           if (snapshot.budgets && snapshot.budgets.length > 0) {
-            setBudgets(snapshot.budgets);
-            await localStore.saveBudgets(snapshot.budgets);
+            setBudgets((curr) => {
+              const merged = mergeById(curr, snapshot.budgets);
+              localStore.saveBudgets(merged).catch(() => {});
+              return merged;
+            });
           }
           if (snapshot.goals && snapshot.goals.length > 0) {
-            setGoals(snapshot.goals);
-            await localStore.saveGoals(snapshot.goals);
+            setGoals((curr) => {
+              const merged = mergeById(curr, snapshot.goals);
+              localStore.saveGoals(merged).catch(() => {});
+              return merged;
+            });
           }
           if (snapshot.holdings && snapshot.holdings.length > 0) {
-            setHoldings(snapshot.holdings);
-            await localStore.saveHoldings(snapshot.holdings);
+            setHoldings((curr) => {
+              const merged = mergeById(curr, snapshot.holdings);
+              localStore.saveHoldings(merged).catch(() => {});
+              return merged;
+            });
           }
         }
       } catch (snapErr) {
@@ -272,33 +303,48 @@ function WealthOSContent() {
       // 2. Query live domain APIs
       const [liveAccounts, liveTxs, liveBudgets, liveGoals, liveHoldings, liveDocs] =
         await Promise.all([
-          accountingService.fetchAccounts(),
-          accountingService.fetchTransactions(),
-          budgetService.fetchBudgets(),
-          goalsService.fetchGoals(),
-          investmentsService.fetchHoldings(),
-          documentsService.fetchDocuments(),
+          accountingService.fetchAccounts().catch(() => []),
+          accountingService.fetchTransactions().catch(() => []),
+          budgetService.fetchBudgets().catch(() => []),
+          goalsService.fetchGoals().catch(() => []),
+          investmentsService.fetchHoldings().catch(() => []),
+          documentsService.fetchDocuments().catch(() => []),
         ]);
 
       if (liveAccounts && liveAccounts.length > 0) {
-        setAccounts(liveAccounts);
-        await localStore.saveAccounts(liveAccounts);
+        setAccounts((curr) => {
+          const merged = mergeById(curr, liveAccounts);
+          localStore.saveAccounts(merged).catch(() => {});
+          return merged;
+        });
       }
       if (liveTxs && liveTxs.length > 0) {
-        setTransactions(liveTxs);
-        await localStore.saveTransactions(liveTxs);
+        setTransactions((curr) => {
+          const merged = mergeById(curr, liveTxs);
+          localStore.saveTransactions(merged).catch(() => {});
+          return merged;
+        });
       }
       if (liveBudgets && liveBudgets.length > 0) {
-        setBudgets(liveBudgets);
-        await localStore.saveBudgets(liveBudgets);
+        setBudgets((curr) => {
+          const merged = mergeById(curr, liveBudgets);
+          localStore.saveBudgets(merged).catch(() => {});
+          return merged;
+        });
       }
       if (liveGoals && liveGoals.length > 0) {
-        setGoals(liveGoals);
-        await localStore.saveGoals(liveGoals);
+        setGoals((curr) => {
+          const merged = mergeById(curr, liveGoals);
+          localStore.saveGoals(merged).catch(() => {});
+          return merged;
+        });
       }
       if (liveHoldings && liveHoldings.length > 0) {
-        setHoldings(liveHoldings);
-        await localStore.saveHoldings(liveHoldings);
+        setHoldings((curr) => {
+          const merged = mergeById(curr, liveHoldings);
+          localStore.saveHoldings(merged).catch(() => {});
+          return merged;
+        });
       }
       if (liveDocs && liveDocs.length > 0) {
         setDocuments(liveDocs);
@@ -555,6 +601,9 @@ function WealthOSContent() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    if (syncStatus === 'OFFLINE_PENDING') {
+      await syncToCloud();
+    }
     await loadLiveLedgerData();
     setRefreshing(false);
     showNotification('Ledger synchronized across connected institutions');

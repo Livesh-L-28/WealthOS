@@ -56,32 +56,39 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
   const [type, setType] = useState<'SAVINGS' | 'TERM_DEPOSIT' | 'DEMAT' | 'CREDIT_CARD' | 'LOAN'>('SAVINGS');
   const [balance, setBalance] = useState('');
   const [mask, setMask] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleConnect = () => {
-    const bal = Math.abs(parseFloat(balance) || 0);
-    const isLiability = type === 'LOAN' || type === 'CREDIT_CARD';
-    const isManual = bank === 'Manual / Custom';
-    const accName = isManual
-      ? (customName.trim() || 'Custom Ledger Account')
-      : `${bank} ${type === 'SAVINGS' ? 'Savings' : type.replace('_', ' ')}`;
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const bal = Math.abs(parseFloat(balance) || 0);
+      const isLiability = type === 'LOAN' || type === 'CREDIT_CARD';
+      const isManual = bank === 'Manual / Custom';
+      const accName = isManual
+        ? (customName.trim() || 'Custom Ledger Account')
+        : `${bank} ${type === 'SAVINGS' ? 'Savings' : type.replace('_', ' ')}`;
 
-    const newAcc: BankAccount = {
-      id: `acc-${Date.now()}`,
-      name: accName,
-      institution: isManual ? 'Custom Ledger' : bank,
-      accountNumberMask: mask || '•••• 0000',
-      type,
-      category: isLiability ? 'LIABILITY' : 'ASSET',
-      balance: bal,
-      currency: 'INR',
-      status: 'ACTIVE',
-      lastSynced: 'Just now',
-    };
+      const newAcc: BankAccount = {
+        id: `acc-${Date.now()}`,
+        name: accName,
+        institution: isManual ? 'Custom Ledger' : bank,
+        accountNumberMask: mask || '•••• 0000',
+        type,
+        category: isLiability ? 'LIABILITY' : 'ASSET',
+        balance: bal,
+        currency: 'INR',
+        status: 'ACTIVE',
+        lastSynced: 'Just now',
+      };
 
-    onSubmit(newAcc);
-    setBalance('');
-    setCustomName('');
-    onClose();
+      onSubmit(newAcc);
+      setBalance('');
+      setCustomName('');
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -232,8 +239,15 @@ export const ConnectAccountModal: React.FC<ConnectAccountModalProps> = ({
               <Text style={[styles.cancelBtnText, { color: textSecondary }]}>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.submitBtn} onPress={handleConnect} activeOpacity={0.8}>
-              <Text style={styles.submitBtnText}>✓ Add Account to Ledger</Text>
+            <TouchableOpacity
+              style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
+              onPress={handleConnect}
+              disabled={isSubmitting}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.submitBtnText}>
+                {isSubmitting ? 'Adding...' : '✓ Add Account to Ledger'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

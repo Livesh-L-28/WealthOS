@@ -16,6 +16,30 @@ export const apiClient = new WealthOSClient({
   timeoutMs: config.requestTimeoutMs,
 });
 
+// Configure silent token refresh interceptor for mobile session persistence
+apiClient.setOnTokenRefresh(async () => {
+  try {
+    const stored = await authStorage.getSession();
+    if (!stored?.refreshToken) return null;
+
+    const res = await apiClient.refreshToken(stored.refreshToken);
+    if (res.success && res.data) {
+      const tokens = res.data as any;
+      const newAccessToken = tokens.access_token;
+      const newRefreshToken = tokens.refresh_token || stored.refreshToken;
+      await authStorage.storeSession({
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+        tenantId: stored.tenantId || '',
+      });
+      return newAccessToken;
+    }
+  } catch {
+    // Refresh failed or network offline
+  }
+  return null;
+});
+
 export interface UserSessionData {
   user: {
     id: string;

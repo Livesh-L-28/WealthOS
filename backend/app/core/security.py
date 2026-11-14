@@ -120,7 +120,7 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer error='invalid_token'"},
         )
 
-    if user.status != "active":
+    if user.status not in ("active", "pending_verification"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=f"User account is not active (current status: {user.status}).",

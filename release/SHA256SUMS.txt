@@ -1,1 +1,1 @@
-94041f2268cce02e9046b746e3ed6fd47352ff0f3441320ed67ff96c7480d01c  release/wealthos-release.apk
+80b2eae2375dfc29956fddad49489005038f9f3ecc771deab040dea333822ce1  release/wealthos-release.apk
