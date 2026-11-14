@@ -676,10 +676,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
             {/* Biometric Quick Unlock */}
             <TouchableOpacity
               style={[styles.biometricBtn, { borderColor: theme.colors.border }]}
-              onPress={() => {
-                onShowToast?.('✓ Biometric authentication verified.');
-                onUnlock();
-              }}
+              onPress={handleBiometricUnlock}
               activeOpacity={0.8}
             >
               <Text style={styles.biometricBtnIcon}>🛡️</Text>

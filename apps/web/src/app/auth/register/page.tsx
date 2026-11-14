@@ -2,12 +2,16 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, Mail, User, Building, AlertCircle, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { apiClient } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { login } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -52,10 +56,10 @@ export default function RegisterPage() {
 
     try {
       const res = await apiClient.register({
-        email,
+        email: email.trim().toLowerCase(),
         password,
-        first_name: firstName,
-        last_name: lastName,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         personal_workspace_name: workspaceName.trim() || defaultWorkspaceName,
       });
 
@@ -63,6 +67,22 @@ export default function RegisterPage() {
         setErrorMessage(res.error?.message || 'Registration failed. Please check the provided details.');
         setIsLoading(false);
         return;
+      }
+
+      // Auto-login to provisioned workspace
+      try {
+        const loginRes = await apiClient.login({
+          email: email.trim().toLowerCase(),
+          password,
+        });
+
+        if (loginRes.success && loginRes.data?.access_token && loginRes.data.user) {
+          await login(loginRes.data.access_token, loginRes.data.user);
+          router.push('/dashboard');
+          return;
+        }
+      } catch {
+        // Fallback to success confirmation screen
       }
 
       setIsSuccess(true);

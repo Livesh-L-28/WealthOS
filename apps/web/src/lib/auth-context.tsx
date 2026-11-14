@@ -52,17 +52,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.success && res.data) {
         setUser(res.data);
       } else {
-        // Attempt token refresh via httpOnly cookie
+        // Attempt token refresh via cookie or session
         const refreshRes = await apiClient.refreshToken();
         if (refreshRes.success && refreshRes.data) {
           apiClient.setAuthToken(refreshRes.data.access_token);
-          // Purge persistent unencrypted credential from localStorage (in-memory & HttpOnly cookie only)
-          localStorage.removeItem('wealthos_access_token');
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('wealthos_access_token', refreshRes.data.access_token);
+          }
+          if (typeof document !== 'undefined') {
+            document.cookie = `wealthos_access_token=${refreshRes.data.access_token}; path=/; max-age=86400; SameSite=Lax;`;
+            document.cookie = `access_token=${refreshRes.data.access_token}; path=/; max-age=86400; SameSite=Lax;`;
+          }
           setUser(refreshRes.data.user);
         } else {
           setUser(null);
           apiClient.setAuthToken(undefined);
-          localStorage.removeItem('wealthos_access_token');
         }
       }
     } catch {
@@ -72,6 +76,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      const isAuthRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/');
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('wealthos_access_token') : null;
+      const hasCookie = typeof document !== 'undefined' && document.cookie.includes('wealthos_access_token');
+
+      // If user is unauthenticated on an auth route, do not spam backend with doomed 401 requests
+      if (isAuthRoute && !storedToken && !hasCookie) {
+        setIsLoading(false);
+        return;
+      }
+
+      if (storedToken && !apiClient.getAuthToken()) {
+        apiClient.setAuthToken(storedToken);
+      }
+
       setIsLoading(true);
       await refreshUser();
       await refreshWorkspaces();
@@ -82,9 +100,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser, refreshWorkspaces]);
 
   const login = async (accessToken: string, userProfile: UserProfile) => {
-    // Keep access token in memory only; backend attaches HttpOnly session cookie
     apiClient.setAuthToken(accessToken);
-    localStorage.removeItem('wealthos_access_token');
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('wealthos_access_token', accessToken);
+    }
+    if (typeof document !== 'undefined') {
+      document.cookie = `wealthos_access_token=${accessToken}; path=/; max-age=86400; SameSite=Lax;`;
+      document.cookie = `access_token=${accessToken}; path=/; max-age=86400; SameSite=Lax;`;
+    }
     setUser(userProfile);
     await refreshWorkspaces();
   };
@@ -97,8 +120,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       apiClient.setAuthToken(undefined);
       apiClient.setTenantId(undefined);
-      localStorage.removeItem('wealthos_access_token');
-      localStorage.removeItem('wealthos_current_tenant_id');
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem('wealthos_access_token');
+        localStorage.removeItem('wealthos_current_tenant_id');
+      }
+      if (typeof document !== 'undefined') {
+        document.cookie = 'wealthos_access_token=; path=/; max-age=0; SameSite=Lax;';
+        document.cookie = 'access_token=; path=/; max-age=0; SameSite=Lax;';
+      }
       setUser(null);
       setWorkspaces([]);
       setCurrentWorkspace(null);

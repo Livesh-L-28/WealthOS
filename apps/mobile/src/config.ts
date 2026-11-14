@@ -68,5 +68,5 @@ function resolveApiBaseUrl(): string {
 export const config: AppConfig = {
   apiUrl: resolveApiBaseUrl(),
   isDevelopment: typeof __DEV__ !== 'undefined' ? Boolean(__DEV__) : process.env.NODE_ENV !== 'production',
-  requestTimeoutMs: 3000,
+  requestTimeoutMs: 45000,
 };
