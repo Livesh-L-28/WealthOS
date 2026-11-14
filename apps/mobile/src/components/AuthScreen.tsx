@@ -296,7 +296,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
     }
 
     if (regPassword.length < 12) {
-      setErrorMessage('Password must be at least 12 characters long and contain uppercase, lowercase, numbers, and symbols.');
+      setErrorMessage('Password must be at least 12 characters long.');
       return;
     }
 
@@ -310,7 +310,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
           email: regEmail.trim().toLowerCase(),
           password: regPassword,
           first_name: regFirstName.trim(),
-          last_name: regLastName.trim() || undefined,
+          last_name: regLastName.trim() || regFirstName.trim(),
           personal_workspace_name: regWorkspace.trim() || undefined,
         }),
       });

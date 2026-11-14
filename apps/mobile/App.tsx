@@ -272,12 +272,12 @@ function WealthOSContent() {
       // 2. Query live domain APIs
       const [liveAccounts, liveTxs, liveBudgets, liveGoals, liveHoldings, liveDocs] =
         await Promise.all([
-          accountingService.fetchAccounts(),
-          accountingService.fetchTransactions(),
-          budgetService.fetchBudgets(),
-          goalsService.fetchGoals(),
-          investmentsService.fetchHoldings(),
-          documentsService.fetchDocuments(),
+          accountingService.fetchAccounts().catch(() => []),
+          accountingService.fetchTransactions().catch(() => []),
+          budgetService.fetchBudgets().catch(() => []),
+          goalsService.fetchGoals().catch(() => []),
+          investmentsService.fetchHoldings().catch(() => []),
+          documentsService.fetchDocuments().catch(() => []),
         ]);
 
       if (liveAccounts && liveAccounts.length > 0) {
