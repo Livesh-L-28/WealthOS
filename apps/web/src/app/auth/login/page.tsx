@@ -55,8 +55,8 @@ export default function LoginPage() {
       const res = await (apiClient as any).sendOtp({ identifier: cleanId });
       if (res.success) {
         setOtpStep('VERIFY');
-        setDebugOtp(res.data?.debug_otp || null);
-        setResendTimer(30);
+        setDebugOtp((res as any).debug_otp || (res as any).data?.debug_otp || null);
+        setResendTimer(10);
       } else {
         setErrorMessage(res.error?.message || 'Failed to dispatch verification code.');
       }

@@ -27,7 +27,7 @@ export class WealthOSClient {
 
   constructor(config: ClientConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, '');
-    this.timeoutMs = config.timeoutMs ?? 15000;
+    this.timeoutMs = config.timeoutMs ?? 45000;
     this.tenantId = config.tenantId;
     this.authToken = config.authToken;
   }

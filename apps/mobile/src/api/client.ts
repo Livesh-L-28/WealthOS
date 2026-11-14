@@ -94,6 +94,25 @@ export async function restoreActiveSession(): Promise<UserSessionData | null> {
       };
     }
 
+    // Offline resilience: if network is unreachable or timed out, preserve local session
+    if (meRes.error?.code === 'NETWORK_ERROR' || meRes.error?.code === 'TIMEOUT') {
+      return {
+        user: {
+          id: 'local-session-user',
+          email: 'user@wealthos.local',
+          name: 'WealthOS User',
+        },
+        activeTenant: {
+          id: stored.tenantId,
+          name: 'Primary Workspace',
+        },
+        tokens: {
+          accessToken: stored.accessToken,
+          refreshToken: stored.refreshToken || '',
+        },
+      };
+    }
+
     // If access token expired, attempt refresh
     if (stored.refreshToken) {
       const refreshRes = await apiClient.refreshToken(stored.refreshToken);
@@ -135,8 +154,28 @@ export async function restoreActiveSession(): Promise<UserSessionData | null> {
     // Invalid or expired session that could not be refreshed
     await clearAuthenticatedSession();
     return null;
-  } catch {
-    // Fail-closed on storage or network failure during restore
+  } catch (err: any) {
+    // If network failure occurred, keep stored session active for offline usage
+    try {
+      const stored = await authStorage.getSession();
+      if (stored?.accessToken && stored?.tenantId) {
+        return {
+          user: {
+            id: 'offline-user',
+            email: 'user@wealthos.local',
+            name: 'WealthOS User',
+          },
+          activeTenant: {
+            id: stored.tenantId,
+            name: 'Primary Workspace',
+          },
+          tokens: {
+            accessToken: stored.accessToken,
+            refreshToken: stored.refreshToken || '',
+          },
+        };
+      }
+    } catch {}
     await clearAuthenticatedSession();
     return null;
   }

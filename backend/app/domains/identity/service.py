@@ -366,9 +366,11 @@ async def _create_authenticated_session(
         "token_type": "Bearer",
         "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         "user": {
-            "id": user.id,
+            "id": str(user.id),
             "email": user.email,
             "name": user.full_name,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
             "mfa_enabled": bool(user.mfa_credential and user.mfa_credential.is_enabled),
         },
         "active_tenant": active_tenant_data,
@@ -1245,13 +1247,14 @@ async def send_otp(identifier: str) -> dict[str, Any]:
             )
         del _OTP_LOCKOUTS[normalized_id]
 
-    # 2. Enforce 60-second cooldown per identifier against rapid spamming
+    # 2. Enforce cooldown per identifier against rapid spamming (60s prod, 10s dev)
+    cooldown_seconds = 60 if getattr(settings, "is_production", False) else 10
     if normalized_id in _OTP_CACHE:
         existing = _OTP_CACHE[normalized_id]
         created_at = existing.get("created_at", now)
         elapsed = (now - created_at).total_seconds()
-        if elapsed < 60:
-            remaining = int(60 - elapsed)
+        if elapsed < cooldown_seconds:
+            remaining = int(cooldown_seconds - elapsed)
             raise AuthenticationServiceError(
                 f"Please wait {remaining} seconds before requesting a new verification code."
             )
@@ -1311,8 +1314,8 @@ async def send_otp(identifier: str) -> dict[str, Any]:
         "identifier": normalized_id,
     }
 
-    # Debug OTP is strictly restricted to test automation environments
-    if settings.ENVIRONMENT == "test" or os.environ.get("WEALTHOS_ALLOW_DEBUG_OTP") == "1":
+    # Debug OTP is strictly restricted to test and non-production environments
+    if not getattr(settings, "is_production", False) or os.environ.get("WEALTHOS_ALLOW_DEBUG_OTP") == "1":
         response_payload["debug_otp"] = code
 
     return response_payload
