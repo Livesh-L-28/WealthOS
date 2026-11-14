@@ -289,8 +289,9 @@ def get_s3_client() -> Any:
                 config=Config(
                     signature_version="s3v4",
                     s3={"addressing_style": "path"},
-                    connect_timeout=1.5,
-                    read_timeout=1.5,
+                    connect_timeout=0.8,
+                    read_timeout=0.8,
+                    retries={"max_attempts": 1},
                 ),
             )
             client.list_buckets()
