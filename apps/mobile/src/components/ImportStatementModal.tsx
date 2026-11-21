@@ -50,6 +50,7 @@ export const ImportStatementModal: React.FC<ImportStatementModalProps> = ({
     accounts.length > 0 ? accounts[0].id : ''
   );
   const [isParsing, setIsParsing] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [parsedResult, setParsedResult] = useState<ParsedStatementResult | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -57,6 +58,7 @@ export const ImportStatementModal: React.FC<ImportStatementModalProps> = ({
     setParsedResult(null);
     setErrorMessage(null);
     setIsParsing(false);
+    setIsImporting(false);
   };
 
   const handleClose = () => {
@@ -117,8 +119,10 @@ export const ImportStatementModal: React.FC<ImportStatementModalProps> = ({
   };
 
   const handleConfirmImport = () => {
-    if (!parsedResult) return;
+    if (!parsedResult || isImporting) return;
+    setIsImporting(true);
     onImportSuccess(parsedResult, selectedAccountId || undefined);
+    setIsImporting(false);
     handleClose();
   };
 
@@ -480,12 +484,15 @@ export const ImportStatementModal: React.FC<ImportStatementModalProps> = ({
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.confirmBtn}
+                    style={[styles.confirmBtn, isImporting && { opacity: 0.6 }]}
                     onPress={handleConfirmImport}
+                    disabled={isImporting}
                     activeOpacity={0.8}
                   >
                     <Text style={styles.confirmBtnText}>
-                      ✓ Reconcile & Import ({parsedResult.transactions.length})
+                      {isImporting
+                        ? 'Importing...'
+                        : `✓ Reconcile & Import (${parsedResult.transactions.length})`}
                     </Text>
                   </TouchableOpacity>
                 </View>

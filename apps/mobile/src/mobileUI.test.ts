@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { theme } from './theme';
-import { formatINR } from './formatters';
+import { formatINR, formatPercentage } from './formatters';
 import {
   INITIAL_ACCOUNTS,
   INITIAL_TRANSACTIONS,
@@ -50,6 +50,22 @@ describe('WealthOS Mobile UI/UX Acceptance Suite', () => {
 
     it('formats zero correctly', () => {
       expect(formatINR(0)).toBe('₹0.00');
+    });
+
+    it('safely handles NaN, null, undefined and Infinity without crashing or rendering NaN', () => {
+      expect(formatINR(NaN)).toBe('₹0.00');
+      expect(formatINR(null as any)).toBe('₹0.00');
+      expect(formatINR(undefined as any)).toBe('₹0.00');
+      expect(formatINR(Infinity)).toBe('₹0.00');
+      expect(formatINR(-Infinity)).toBe('₹0.00');
+    });
+
+    it('formats percentages safely with precision and robust error handling', () => {
+      expect(formatPercentage(15.42)).toBe('+15.4%');
+      expect(formatPercentage(-3.2)).toBe('-3.2%');
+      expect(formatPercentage(0)).toBe('0.0%');
+      expect(formatPercentage(NaN)).toBe('0.0%');
+      expect(formatPercentage(undefined as any)).toBe('0.0%');
     });
   });
 

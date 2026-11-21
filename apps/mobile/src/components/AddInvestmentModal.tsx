@@ -46,19 +46,22 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
   const [quantity, setQuantity] = useState('10');
   const [buyPrice, setBuyPrice] = useState('2500');
   const [currentPrice, setCurrentPrice] = useState('2750');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = () => {
-    const qty = parseFloat(quantity) || 1;
-    const avgPrice = parseFloat(buyPrice) || 100;
-    const ltp = parseFloat(currentPrice) || avgPrice;
+    if (isSubmitting) return;
+    const qty = Math.abs(parseFloat(quantity)) || 1;
+    const avgPrice = Math.abs(parseFloat(buyPrice)) || 100;
+    const ltp = Math.abs(parseFloat(currentPrice)) || avgPrice;
     const invested = qty * avgPrice;
     const current = qty * ltp;
     const pnl = current - invested;
     const pnlPercent = invested > 0 ? (pnl / invested) * 100 : 0;
 
+    setIsSubmitting(true);
     const newHolding: InvestmentHolding = {
       id: `inv-${Date.now()}`,
-      symbol: symbol.toUpperCase() || 'EQUITY',
+      symbol: (symbol.trim() || 'EQUITY').toUpperCase(),
       name: assetName.trim() || 'Investment Asset',
       type: assetClass,
       quantity: qty,
@@ -74,6 +77,7 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
     onSubmit(newHolding);
     setAssetName('');
     setSymbol('');
+    setIsSubmitting(false);
     onClose();
   };
 
@@ -194,8 +198,15 @@ export const AddInvestmentModal: React.FC<AddInvestmentModalProps> = ({
             />
 
             {/* Submit Button */}
-            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.8}>
-              <Text style={styles.submitBtnText}>+ Add Holding to Portfolio</Text>
+            <TouchableOpacity
+              style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.submitBtnText}>
+                {isSubmitting ? 'Recording Asset...' : '+ Add Holding to Portfolio'}
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
