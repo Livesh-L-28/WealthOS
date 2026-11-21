@@ -45,6 +45,14 @@ export function isValidUUID(id: string | undefined | null): boolean {
   return UUID_REGEX.test(id);
 }
 
+// Transparently unwraps either raw JSON or { success, data } envelope
+function unwrap<T>(res: any): T {
+  if (res && typeof res === 'object' && 'data' in res && res.data !== null && res.data !== undefined) {
+    return res.data as T;
+  }
+  return res as T;
+}
+
 // Cached Chart of Accounts for contra-account resolution
 let _cachedChartOfAccounts: any[] = [];
 
@@ -59,19 +67,39 @@ export const accountingService = {
    */
   async fetchAccounts(): Promise<BankAccount[]> {
     try {
-      let res = await (apiClient as any).request('/api/v1/accounting/accounts');
+      let rawRes = await (apiClient as any).request('/api/v1/accounting/accounts');
+      let res = unwrap<any[]>(rawRes);
       if (Array.isArray(res) && res.length === 0) {
         // Automatically seed standard CoA for fresh workspace
         await (apiClient as any).request('/api/v1/accounting/accounts/seed?currency_code=INR', {
           method: 'POST',
         });
-        res = await (apiClient as any).request('/api/v1/accounting/accounts');
+        rawRes = await (apiClient as any).request('/api/v1/accounting/accounts');
+        res = unwrap<any[]>(rawRes);
       }
 
       if (!Array.isArray(res)) return [];
 
       // Update cached Chart of Accounts for contra resolution
       _cachedChartOfAccounts = res;
+
+      // Efficient single-query balance lookup via Trial Balance report (O(1) instead of N+1 requests)
+      const balanceMap = new Map<string, number>();
+      try {
+        const tbRaw = await (apiClient as any).request('/api/v1/accounting/reports/trial-balance');
+        const tbData = unwrap<any>(tbRaw);
+        const tbAccounts = tbData?.accounts;
+        if (Array.isArray(tbAccounts)) {
+          for (const item of tbAccounts) {
+            const deb = parseFloat(item.debit_balance || '0');
+            const cred = parseFloat(item.credit_balance || '0');
+            const net = item.normal_balance === 'DEBIT' ? (deb - cred) : (cred - deb);
+            balanceMap.set(item.account_id, isNaN(net) ? 0 : net);
+          }
+        }
+      } catch {
+        // Fallback gracefully without blocking account display
+      }
 
       const accounts: BankAccount[] = [];
       for (const raw of res) {
@@ -81,23 +109,7 @@ export const accountingService = {
         // Filter to displayable balance sheet accounts
         if (!isAsset && !isLiability) continue;
 
-        // Fetch real balance for this account
-        let balance = 0;
-        try {
-          if (isValidUUID(raw.id)) {
-            const balRes = await (apiClient as any).request(
-              `/api/v1/accounting/accounts/${raw.id}/balance`
-            );
-            if (balRes) {
-              const balStr = balRes.balance ?? balRes.current_balance;
-              if (typeof balStr !== 'undefined') {
-                balance = parseFloat(balStr);
-              }
-            }
-          }
-        } catch {
-          balance = 0;
-        }
+        const balance = balanceMap.get(raw.id) ?? 0;
 
         let acctType: BankAccount['type'] = 'SAVINGS';
         const nameLower = (raw.account_name || '').toLowerCase();
@@ -204,7 +216,7 @@ export const accountingService = {
     currencyCode?: string;
   }): Promise<BankAccount | null> {
     try {
-      const res = await (apiClient as any).request('/api/v1/accounting/accounts', {
+      const rawRes = await (apiClient as any).request('/api/v1/accounting/accounts', {
         method: 'POST',
         body: JSON.stringify({
           account_code: payload.accountCode,
@@ -214,6 +226,7 @@ export const accountingService = {
           description: 'Custom account added from WealthOS Mobile',
         }),
       });
+      const res = unwrap<any>(rawRes);
 
       if (!res || !res.id) return null;
 
@@ -239,7 +252,8 @@ export const accountingService = {
    */
   async fetchTransactions(): Promise<Transaction[]> {
     try {
-      const res = await (apiClient as any).request('/api/v1/accounting/journals');
+      const rawRes = await (apiClient as any).request('/api/v1/accounting/journals');
+      const res = unwrap<any[]>(rawRes);
       if (!Array.isArray(res)) return [];
 
       return res.map((entry: any) => {
@@ -475,11 +489,13 @@ export const accountingService = {
 export const budgetService = {
   async fetchBudgets(): Promise<BudgetEnvelope[]> {
     try {
-      let res = await (apiClient as any).request('/api/v1/budgets');
+      let rawRes = await (apiClient as any).request('/api/v1/budgets');
+      let res = unwrap<any[]>(rawRes);
       if (Array.isArray(res) && res.length === 0) {
         // Seed standard budget categories if empty
         await (apiClient as any).request('/api/v1/budgets/categories/seed', { method: 'POST' });
-        res = await (apiClient as any).request('/api/v1/budgets');
+        rawRes = await (apiClient as any).request('/api/v1/budgets');
+        res = unwrap<any[]>(rawRes);
       }
 
       if (!Array.isArray(res)) return [];
@@ -502,7 +518,7 @@ export const budgetService = {
     color: string;
   }): Promise<BudgetEnvelope | null> {
     try {
-      const res = await (apiClient as any).request('/api/v1/budgets', {
+      const rawRes = await (apiClient as any).request('/api/v1/budgets', {
         method: 'POST',
         body: JSON.stringify({
           name: payload.category,
@@ -511,6 +527,7 @@ export const budgetService = {
           period_type: 'MONTHLY',
         }),
       });
+      const res = unwrap<any>(rawRes);
 
       if (!res || !res.id) return null;
 
@@ -534,7 +551,8 @@ export const budgetService = {
 export const goalsService = {
   async fetchGoals(): Promise<FinancialGoal[]> {
     try {
-      const res = await (apiClient as any).request('/api/v1/goals');
+      const rawRes = await (apiClient as any).request('/api/v1/goals');
+      const res = unwrap<any[]>(rawRes);
       if (!Array.isArray(res)) return [];
 
       return res.map((g: any) => ({
@@ -560,7 +578,7 @@ export const goalsService = {
   }): Promise<FinancialGoal | null> {
     try {
       const targetDate = `${payload.targetYear}-12-31`;
-      const res = await (apiClient as any).request('/api/v1/goals', {
+      const rawRes = await (apiClient as any).request('/api/v1/goals', {
         method: 'POST',
         body: JSON.stringify({
           name: payload.title,
@@ -571,6 +589,7 @@ export const goalsService = {
           currency: 'INR',
         }),
       });
+      const res = unwrap<any>(rawRes);
 
       if (!res || !res.id) return null;
 
@@ -612,7 +631,8 @@ export const goalsService = {
 export const investmentsService = {
   async fetchHoldings(): Promise<InvestmentHolding[]> {
     try {
-      const res = await (apiClient as any).request('/api/v1/investments/lots');
+      const rawRes = await (apiClient as any).request('/api/v1/investments/lots');
+      const res = unwrap<any[]>(rawRes);
       if (!Array.isArray(res)) return [];
 
       return res.map((lot: any) => {
@@ -935,7 +955,8 @@ export const householdService = {
 export const documentsService = {
   async fetchDocuments(): Promise<DocumentItem[]> {
     try {
-      const res = await (apiClient as any).request('/api/v1/documents');
+      const rawRes = await (apiClient as any).request('/api/v1/documents');
+      const res = unwrap<any[]>(rawRes);
       if (!Array.isArray(res)) return [];
 
       return res.map((doc: any) => ({
@@ -969,14 +990,16 @@ export const copilotService = {
     try {
       // 1. Create or retrieve conversation session
       let convId = '';
-      const listRes = await (apiClient as any).request('/api/v1/copilot/conversations');
+      const listRaw = await (apiClient as any).request('/api/v1/copilot/conversations');
+      const listRes = unwrap<any[]>(listRaw);
       if (Array.isArray(listRes) && listRes.length > 0) {
         convId = listRes[0].id;
       } else {
-        const createRes = await (apiClient as any).request('/api/v1/copilot/conversations', {
+        const createRaw = await (apiClient as any).request('/api/v1/copilot/conversations', {
           method: 'POST',
           body: JSON.stringify({ title: 'WealthOS Mobile Session' }),
         });
+        const createRes = unwrap<any>(createRaw);
         if (createRes && createRes.id) {
           convId = createRes.id;
         }
@@ -991,19 +1014,20 @@ export const copilotService = {
         };
       }
 
-      const msgRes = await (apiClient as any).request(
+      const msgRaw = await (apiClient as any).request(
         `/api/v1/copilot/conversations/${convId}/messages`,
         {
           method: 'POST',
           body: JSON.stringify({ message: queryText }),
         }
       );
+      const msgRes = unwrap<any>(msgRaw);
 
-      if (msgRes && msgRes.response_text) {
+      if (msgRes && (msgRes.content || msgRes.response_text || msgRes.message)) {
         return {
           id: `reply-${Date.now()}`,
           sender: 'copilot',
-          text: msgRes.response_text,
+          text: msgRes.content || msgRes.response_text || msgRes.message,
           timestamp: 'Just now',
           metrics: msgRes.metrics,
           citations: msgRes.citations,
