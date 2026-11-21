@@ -48,6 +48,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
   const [customName, setCustomName] = useState(CATEGORY_PRESETS[0].name);
   const [budgetCap, setBudgetCap] = useState(CATEGORY_PRESETS[0].defaultCap);
   const [warningThreshold, setWarningThreshold] = useState('85');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSelectPreset = (p: typeof CATEGORY_PRESETS[0]) => {
     setSelectedPreset(p);
@@ -56,9 +57,11 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
   };
 
   const handleSubmit = () => {
-    const capNum = parseFloat(budgetCap) || 15000;
+    if (isSubmitting) return;
+    const capNum = Math.abs(parseFloat(budgetCap)) || 15000;
     const threshNum = parseFloat(warningThreshold) || 85;
 
+    setIsSubmitting(true);
     const newEnvelope: BudgetEnvelope = {
       id: `bgt-${Date.now()}`,
       category: customName.trim() || selectedPreset.name,
@@ -68,6 +71,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
     };
 
     onSubmit(newEnvelope);
+    setIsSubmitting(false);
     onClose();
   };
 
@@ -197,8 +201,15 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
             </View>
 
             {/* Submit Button */}
-            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.8}>
-              <Text style={styles.submitBtnText}>✓ Create Budget Envelope</Text>
+            <TouchableOpacity
+              style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.submitBtnText}>
+                {isSubmitting ? 'Creating Envelope...' : '✓ Create Budget Envelope'}
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>

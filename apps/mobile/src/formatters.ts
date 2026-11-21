@@ -12,9 +12,12 @@ export function isGlobalPrivacyMode(): boolean {
   return privacyModeActive;
 }
 
-export function formatINR(val: number, options?: { forceShow?: boolean }): string {
+export function formatINR(val: number | null | undefined, options?: { forceShow?: boolean }): string {
   if (privacyModeActive && !options?.forceShow) {
     return '₹••••••';
+  }
+  if (val === null || val === undefined || typeof val !== 'number' || isNaN(val) || !isFinite(val)) {
+    return '₹0.00';
   }
   const isNegative = val < 0;
   const absVal = Math.abs(val);
@@ -31,7 +34,10 @@ export function formatINR(val: number, options?: { forceShow?: boolean }): strin
   return `${isNegative ? '-' : ''}₹${formatted}.${decimalPart}`;
 }
 
-export function formatPercentage(val: number, precision: number = 1): string {
+export function formatPercentage(val: number | null | undefined, precision: number = 1): string {
+  if (val === null || val === undefined || typeof val !== 'number' || isNaN(val) || !isFinite(val)) {
+    return '0.0%';
+  }
   const sign = val > 0 ? '+' : '';
   return `${sign}${val.toFixed(precision)}%`;
 }

@@ -39,11 +39,13 @@ export const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
   const [amountStr, setAmountStr] = useState('');
   const [notes, setNotes] = useState('Account-to-account treasury transfer');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fromAcc = accounts.find((a) => a.id === fromAccountId);
   const toAcc = accounts.find((a) => a.id === toAccountId);
 
   const handleTransfer = () => {
+    if (isSubmitting) return;
     const val = parseFloat(amountStr.replace(/,/g, ''));
     if (!val || val <= 0) {
       setErrorMsg('Please enter a valid transfer amount.');
@@ -58,6 +60,7 @@ export const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       return;
     }
 
+    setIsSubmitting(true);
     setErrorMsg(null);
     onSubmit({
       fromAccountId,
@@ -66,6 +69,7 @@ export const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
       notes,
     });
     setAmountStr('');
+    setIsSubmitting(false);
     onClose();
   };
 
@@ -258,15 +262,19 @@ export const TransferFundsModal: React.FC<TransferFundsModalProps> = ({
                     styles.submitButton,
                     {
                       backgroundColor: assetAccounts.length < 2 ? (theme.isDark ? '#334155' : '#CBD5E1') : theme.colors.primary,
-                      opacity: assetAccounts.length < 2 ? 0.6 : 1,
+                      opacity: (assetAccounts.length < 2 || isSubmitting) ? 0.6 : 1,
                     },
                   ]}
                   onPress={handleTransfer}
-                  disabled={assetAccounts.length < 2}
+                  disabled={assetAccounts.length < 2 || isSubmitting}
                   activeOpacity={0.85}
                 >
                   <Text style={styles.submitText}>
-                    {assetAccounts.length < 2 ? 'Connect Another Account to Transfer' : 'Post Transfer to Ledger'}
+                    {isSubmitting
+                      ? 'Posting Transfer...'
+                      : assetAccounts.length < 2
+                      ? 'Connect Another Account to Transfer'
+                      : 'Post Transfer to Ledger'}
                   </Text>
                 </TouchableOpacity>
               </ScrollView>

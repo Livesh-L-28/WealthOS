@@ -47,6 +47,7 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
   const [targetAmount, setTargetAmount] = useState(GOAL_PRESETS[1].target);
   const [savedAmount, setSavedAmount] = useState('0');
   const [targetYear, setTargetYear] = useState(GOAL_PRESETS[1].year);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSelectPreset = (p: typeof GOAL_PRESETS[0]) => {
     setSelectedPreset(p);
@@ -56,20 +57,23 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
   };
 
   const handleSubmit = () => {
-    const target = parseFloat(targetAmount) || 1000000;
-    const current = parseFloat(savedAmount) || 0;
-    const progress = target > 0 ? (current / target) * 100 : 0;
+    if (isSubmitting) return;
+    const target = Math.abs(parseFloat(targetAmount)) || 1000000;
+    const current = Math.abs(parseFloat(savedAmount)) || 0;
+    const year = parseInt(targetYear, 10) || new Date().getFullYear() + 2;
 
+    setIsSubmitting(true);
     const newGoal: FinancialGoal = {
       id: `goal-${Date.now()}`,
       title: goalTitle.trim() || selectedPreset.title,
       targetAmount: target,
       currentAmount: current,
-      targetYear: parseInt(targetYear, 10) || 2028,
+      targetYear: year,
       category: 'WEALTH_CREATION',
     };
 
     onSubmit(newGoal);
+    setIsSubmitting(false);
     onClose();
   };
 
@@ -183,8 +187,15 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
             </View>
 
             {/* Submit Button */}
-            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.8}>
-              <Text style={styles.submitBtnText}>+ Activate Goal Tracking</Text>
+            <TouchableOpacity
+              style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.submitBtnText}>
+                {isSubmitting ? 'Activating Milestone...' : '+ Activate Goal Tracking'}
+              </Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
